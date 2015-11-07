@@ -8,7 +8,7 @@ Created on Fri Aug 28 17:46:45 2015
 import numpy as np
 import matplotlib.pyplot as plt
 
-Location='Ground'
+Location='FSPL'
 
 Fits=np.loadtxt('./'+Location+'/Fits_'+Location+'.txt',dtype='string')
 Names=Fits[:,0]
@@ -55,8 +55,8 @@ for i in xrange(len(Fits)):
         #SNR=(Model[i,3]*(Amax-1))/errf
         #import pdb; pdb.set_trace()
 
-        if (np.isnan(Errors[i]).any()) and (0.0 in Errors[i]):
-            
+        #if (np.isnan(Errors[i]).any()) and (0.0 in Errors[i]):
+        if len(Names)<0:
            count=count+1
            print 'blabla'
            #plt.subplot(311)
@@ -85,15 +85,15 @@ for i in xrange(len(Fits)):
             SigmaSource.append((Source[i,0]-Model[i,3])/Source_err[i])
             SigmaBlend.append((Blend[i,0]-Model[i,4])/Blend_err[i])
             DChi2.append(Fits[i,4]-Model[i,6])
-           
-            if Fits[i,4]>Model[i,6]+1000:
-                #import pdb; pdb.set_trace()
-               
+            print Names[i]
+            if Names[i]=='Lightcurve_215_':
+            #if 27.4-2.5*np.log10(Model[i,3]*(Model[i,4]))<16:
+                print 27.4-2.5*np.log10(Model[i,3]*(Model[i,4]))
                 print Names[i]
                 print (Fits[i,4]-Model[i,6])
                 print Model[i,5]
                 print Fits[i,0]
-                data=np.loadtxt(Events_path+Names[i])
+                data=np.loadtxt(Events_path+Names[i]+'Survey.dat')
                 
                 plt.errorbar(data[:,0],data[:,1],yerr=data[:,2],linestyle='none')
                 tt=np.arange(data[0,0],data[-1,0],0.01)
@@ -107,7 +107,7 @@ for i in xrange(len(Fits)):
                 plt.ylabel('I')
                 plt.show()
                 count=count+1
-                #import pdb; pdb.set_trace()
+                import pdb; pdb.set_trace()
 
             #Sigmato.append((Fits[i,0]-Model[i,0]))
             #Sigmauo.append((Fits[i,1]-Model[i,1]))

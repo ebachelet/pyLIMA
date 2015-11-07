@@ -86,7 +86,7 @@ for i in xrange(len(Fits)):
             #SigmaBlend.append((Blend[i,0]-Model[i,4])/Blend_err[i])
             #DChi2.append(Fits[i,4]-Model[i,6])
           
-            if Fits[i,0]==1:
+            if Names[i]=='OGLE-2015-BLG-0909.phot':
                 #import pdb; pdb.set_trace()
                
                 print Names[i]
