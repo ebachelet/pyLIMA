@@ -36,3 +36,4 @@ class ML_plotter(object):
         U = np.sqrt(uo**2+(t-to)**2/tE**2)
         A = (U**2+2)/(U*np.sqrt(U**2+4))
         plt.plot(t, 27.4-2.5*np.log10(fs*A+fb))
+        

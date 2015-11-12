@@ -153,7 +153,7 @@ class MLFits(object):
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
         fit_quality_flag = self.check_fit()
-        fit_quality_flag = 'Bad Fit'
+        
 
 
         if fit_quality_flag == 'Bad Fit':
@@ -165,11 +165,6 @@ class MLFits(object):
             self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
-            import pdb; pdb.set_trace()
-
-            self.fit_results = len(self.fit_results)*[0.0]
-            self.fit_covariance = np.zeros((len(self.fit_results[:-1]), len(self.fit_results[:-1])))
-            self.fit_time = 0.0
 
     def number_of_parameters(self):
         '''Provide the number of parameters on which depend the magnification computation.
@@ -210,14 +205,15 @@ class MLFits(object):
 
         if (0.0 in self.fit_covariance) or (True in diago):
 
-            print 'Your fit probably wrong'
+            print 'Your fit probably wrong. Cause ==> bad covariance matrix'
             flag = 'Bad Fit'
             return flag
 
         for i in xrange(len(self.event.telescopes)):
 
             if self.fit_results[self.number_of_parameters+2*i] < 0:
-                print 'Your fit probably wrong'
+
+                print 'Your fit probably wrong. Cause ==> negative source flux for telescope '+self.event.telescopes[i].name+''
                 flag = 'Bad Fit'
                 return flag
 
@@ -277,21 +273,22 @@ class MLFits(object):
         while np.abs(baseline_flux_0-baseline_flux) > 0.01*baseline_flux:
 
             baseline_flux_0 = baseline_flux
-            index = np.where((flux > baseline_flux))[0].tolist()+np.where(
+            index = np.where((flux < baseline_flux))[0].tolist()+np.where(
                 np.abs(flux-baseline_flux) < np.abs(errflux))[0].tolist()
-            baseline_flux = np.median(flux)
+            baseline_flux = np.median(flux[index])
 
             if  len(index) < 100:
 
                 print 'low'
-                baseline_flux = np.median(flux.argsort()[-100:])
+                baseline_flux = np.median(flux[flux.argsort()[-100:]])
                 break
 
-
+        
         fs=baseline_flux
         max_flux = Max_flux[0]
         Amax = max_flux/fs
         uo = np.sqrt(-2+2*np.sqrt(1-1/(1-Amax**2)))
+        
         if self.model[0] == 'FSPL':
 
             if np.abs(uo) > 0.05:
@@ -303,7 +300,6 @@ class MLFits(object):
         index_plus = np.where((Time > to)&(flux < flux_demi))[0]
         index_moins = np.where((Time < to)&(flux < flux_demi))[0]
         B = 0.5*(Amax+1)
-
         if len(index_plus) != 0:
 
             if len(index_moins) != 0:
@@ -367,7 +363,7 @@ class MLFits(object):
 
         if self.model[0] == 'FSPL':
 
-            parameters = [to, uo, tE, 1.1*uo]+fluxes
+            parameters = [to, uo, tE, 1.5*uo]+fluxes
 
         return parameters
 
@@ -394,6 +390,7 @@ class MLFits(object):
         start = time.time()
         lmarquardt_fit = leastsq(self.residuals, self.guess, args=(self.model), maxfev=50000, Dfun=self.Jacobian,
                                  col_deriv=1, full_output=1, ftol=0.00001)
+       
         #lmarquardt_fit=leastsq(self.residuals,guess,args=(self.model,target),maxfev=5000,full_output=1,ftol=0.00001)
 
         computation_time = time.time()-start
@@ -615,14 +612,7 @@ class MLFits(object):
                                         parameters[self.number_of_parameters+2*count])/errflux)
 
             count = count+1
-       # import matplotlib.pyplot as plt
-        #count=1
-        #print parameters,sum(errors**2)
-        #plt.scatter(Time,flux)
-        #plt.plot(Time,ampli*parameters[self.number_of_parameters+2*count]+
-         #                               parameters[self.number_of_parameters+2*count+1]*
-         #                               parameters[self.number_of_parameters+2*count])
-        #plt.show()
+    
         return errors
 
     def chichi(self, parameters):
@@ -673,3 +663,5 @@ class MLFits(object):
                 fluxes.append(fs)
                 fluxes.append(fb/fs)
         return fluxes
+    
+   

@@ -20,12 +20,15 @@ class Event(object):
     Keyword arguments:
 
     kind --> type of event. In general, should be 'Microlensing' (default)
-    name --> name of the event. Should be a string. Default is 'None'
-    ra --> Right ascension of the event (J2000). Should be a float in degree between 0.0 and 360.0. Default is 0.0.
-    dec --> Declination of the event (J2000). Should be a float in degree between -90 and 90. Default is 0.0.
+    name --> name of the event. Should be a string. Default is 'Sagittarius A*'
+    ra --> Right ascension of the event (J2000). Should be a float in degree between 0.0 and 360.0. Default is 
+           ra of Sagittarius A == 266.416792 from Baker & Sramek 1999ApJ...524..805B.
+    dec --> Declination of the event (J2000). Should be a float in degree between -90 and 90. Default is 
+            dec of Sagittarius A == -29.007806 from Baker & Sramek 1999ApJ...524..805B.
     Teff --> Effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K.
     logg --> Surface gravity in log10 cgs unit. Should be a float. Default is 4.5.
-    telescopes --> List of telescopes names (strings). Default is an empty list.
+    telescopes --> List of telescopes names (strings). Default is an empty list. Have to be fill with some 
+                   telescopes class instances.
 
     '''
 
@@ -34,9 +37,9 @@ class Event(object):
         ''' Initialization of the attributes described above.
         '''
         self.kind = 'Microlensing'
-        self.name = 'None'
-        self.ra = 0.0
-        self.dec = 0.0
+        self.name = 'Sagittarius A*'
+        self.ra = 266.416792
+        self.dec = -29.007806
         self.Teff = 5000
         self.logg = 4.5
         self.telescopes = []
@@ -127,7 +130,7 @@ class Event(object):
         '''
         available_kind = ['Microlensing']
         available_models = ['PSPL', 'FSPL']
-        available_methods = [0]
+        available_methods = [0,1]
         available_parallax = ['None', 'Annual']
         available_orbital_motion = ['None']
         available_source_spots = ['None']
@@ -202,6 +205,12 @@ class Event(object):
             print 'ERROR : The event ra ('+str(self.name)+') is not correct, it has to be between -90 and 90 degrees'
             return
 
+        if len(self.telescopes) == 0:
+
+            print 'ERROR : There is no associated telescopes with this event, add some using self.telescopes.append'
+            return
+
+
         print 'Everything is fine, this event can be treat'
 
     def find_survey(self, choice):
@@ -211,9 +220,17 @@ class Event(object):
 
         self.survey = choice
         names = np.array([i.name for i in self.telescopes])
-        name =[i.name for i in self.telescopes if choice in i.name][0]
-        index = np.where(self.survey == names)[0]
-        sorting = np.arange(0, len(self.telescopes))
-        sorting = np.delete(sorting, index)
-        sorting = np.insert(sorting, 0, index)
-        self.telescopes = np.array(self.telescopes)[sorting.tolist()].tolist()
+
+        if self.survey in names:
+
+            name =[i.name for i in self.telescopes if choice in i.name][0]
+            index = np.where(self.survey == names)[0]
+            sorting = np.arange(0, len(self.telescopes))
+            sorting = np.delete(sorting, index)
+            sorting = np.insert(sorting, 0, index)
+            self.telescopes = np.array(self.telescopes)[sorting.tolist()].tolist()
+
+        else:
+
+            print 'ERROR : There is no telescope names containing '+self.survey
+            return
