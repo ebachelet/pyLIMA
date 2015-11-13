@@ -14,6 +14,7 @@ Created on Fri Aug 28 10:17:30 2015
 import numpy as np
 import os
 import time
+import matplotlib.pyplot as plt
 
 import event
 import telescopes
@@ -26,7 +27,7 @@ def main(path):
 
     
     Events_names=[i for i in os.listdir(Events_path) if 'Survey' in i]
-    EEvents_names=[i for i in os.listdir(Events_path) if '.phot' in i]
+    #EEvents_names=[i for i in os.listdir(Events_path) if '.phot' in i]
     Events=[]
     start=time.time()
     Results=[]
@@ -37,7 +38,7 @@ def main(path):
     Blend_err=[]
     Models=[]
     time_fit=[]
-    for i in Events_names[389:] :
+    for i in Events_names[0:] :
         #i='OGLE-2015-BLG-0542.phot'
         #i='Lightcurve_51.dat'
         name=i.replace('Survey.dat','')
@@ -60,7 +61,7 @@ def main(path):
             Tel.name=k[-1][:-4]
             #Tel.name=k[1]
             #Tel.name=j[:4]
-            #Tel.name=j
+            #Tel.name=k[0]
             Tel.lightcurve=np.genfromtxt(Events_path+j,usecols = (0,1,2))
             
             
@@ -71,7 +72,7 @@ def main(path):
    
         Events.append(Event)
         print 'Start;',Event.name
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         #Event.check_event()
         Event.find_survey('Survey')
         Event.check_event()

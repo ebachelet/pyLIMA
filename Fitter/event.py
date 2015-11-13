@@ -6,8 +6,10 @@ Created on Thu Aug 27 16:39:32 2015
 """
 from __future__ import division
 import numpy as np
+import matplotlib.pyplot as plt
 
 import microlfits
+import microlplotter
 
 
 class Event(object):
@@ -219,7 +221,8 @@ class Event(object):
         '''
 
         self.survey = choice
-        names = np.array([i.name for i in self.telescopes])
+        names = [i.name for i in self.telescopes]
+       
 
         if self.survey in names:
 
@@ -234,3 +237,26 @@ class Event(object):
 
             print 'ERROR : There is no telescope names containing '+self.survey
             return
+
+    def plot_data(self, choice):
+
+
+
+        if choice == 'Mag' :
+            mlplotter.plot_lightcurves_mag(self)
+        if choice == 'Flux' :
+            mlplotter.plot_lightcurves_flux(self)
+
+    def plot_model(self, model, second_order, choice):
+
+        import pdb; pdb.set_trace()
+
+        available_fits=[i[0] for i in self.fits_results]
+        index = np.where(model in available_fits)[0]
+        parameters = self.fits_results[index][2]
+       
+        if choice == 'Mag' :
+            mlplotter.plot_model_mag(self, model, parameters, second_order)
+        if choice == 'Flux' :
+            mlplotter.plot_model_flux(self, model, parameters, second_order)
+

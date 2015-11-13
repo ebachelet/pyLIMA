@@ -11,7 +11,7 @@ from astropy import constants as const
 
 
 
-class Parallaxes(object):
+class MLParallaxes(object):
 
     def __init__(self, event, model):
         ''' Initialization of the attributes described above.
