@@ -86,7 +86,7 @@ for i in xrange(len(Fits)):
             #SigmaBlend.append((Blend[i,0]-Model[i,4])/Blend_err[i])
             #DChi2.append(Fits[i,4]-Model[i,6])
           
-            if Fits[i,0]==1:
+            if Names[i]=='OGLE-2015-BLG-0909.phot':
                 #import pdb; pdb.set_trace()
                
                 print Names[i]
@@ -120,19 +120,19 @@ for i in xrange(len(Fits)):
 #plt.show()
 print count
 criteria=1
-plt.subplot(321)
+plt.subplot(221)
 plt.hist(Sigmato,np.arange(-3,3,0.1))
 index=np.where(np.abs(Sigmato)<criteria)[0]
 plt.xlabel('To',fontsize=20)
 print float(len(index))/len(Sigmato)*100
 
-plt.subplot(322)
+plt.subplot(222)
 plt.hist(Sigmauo,np.arange(-3,3,0.1))
 index=np.where(np.abs(Sigmauo)<criteria)[0]
 plt.xlabel('Uo',fontsize=20)
 print float(len(index))/len(Sigmato)*100
 
-plt.subplot(323)
+plt.subplot(223)
 plt.hist(Sigmate,np.arange(-3,3,0.1))
 index=np.where(np.abs(Sigmate)<criteria)[0]
 plt.xlabel('tE',fontsize=20)
@@ -159,7 +159,7 @@ print float(len(index))/len(Sigmato)*100
 
 #plt.hist(DChi2,np.arange(-100,100,10))
 #plt.xlabel('DChi2',fontsize=20)
-#plt.suptitle(''+Location+'',fontsize=50)
+plt.suptitle(''+Location+'',fontsize=50)
 plt.show()
 import pdb; pdb.set_trace()
 

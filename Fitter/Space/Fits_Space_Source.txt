@@ -6292,7 +6292,7 @@ Lightcurve_6290.dat 2066.71572651
 Lightcurve_6291.dat 3005.04072762
 Lightcurve_6292.dat 21961.8939725
 Lightcurve_6293.dat 3431.71884651
-Lightcurve_6294.dat 6023.50484905
+Lightcurve_6294.dat 3497.028
 Lightcurve_6295.dat 7355.14202644
 Lightcurve_6296.dat 5475.64852551
 Lightcurve_6297.dat 7204.43581071
