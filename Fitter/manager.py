@@ -72,13 +72,13 @@ def main(path):
    
         Events.append(Event)
         print 'Start;',Event.name
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         #Event.check_event()
         Event.find_survey('Survey')
         Event.check_event()
         Event.fit(Model,0,second_order)
         #import pdb; pdb.set_trace()
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         if Model=='PSPL' :
             
             Results.append([Event.name,Event.fits_results[0][1],Event.fits_results[0][2][0],Event.fits_results[0][2][1],Event.fits_results[0][2][2],Event.fits_results[0][2][-1],Event.fits_time[0][2]])

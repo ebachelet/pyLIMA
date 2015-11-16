@@ -49,7 +49,8 @@ class Event(object):
         self.fits_results = []
         self.fits_covariance = []
         self.fits_time = []
-
+        self.outputs = []
+    
     def fit(self, model, method, second_order):
         '''Function to fit the event.
 
@@ -243,9 +244,9 @@ class Event(object):
 
 
         if choice == 'Mag' :
-            mlplotter.plot_lightcurves_mag(self)
+            microlplotter.plot_lightcurves_mag(self)
         if choice == 'Flux' :
-            mlplotter.plot_lightcurves_flux(self)
+            microlplotter.plot_lightcurves_flux(self)
 
     def plot_model(self, model, second_order, choice):
 

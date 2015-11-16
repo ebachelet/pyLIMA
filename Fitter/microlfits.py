@@ -409,7 +409,7 @@ class MLFits(object):
         fit_res.append(self.chichi(lmarquardt_fit[0]))
 
         ndata = 0.0
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
 
         for i in self.event.telescopes:
 
@@ -674,4 +674,12 @@ class MLFits(object):
                 fluxes.append(fb/fs)
         return fluxes
     
-   
+    def cov2corr(self,A):
+        """
+        covariance matrix to correlation matrix.
+        """
+
+        d = np.sqrt(A.diagonal())
+        B = ((A.T/d).T)/d
+        #A[ np.diag_indices(A.shape[0]) ] = np.ones( A.shape[0] )
+        return B
