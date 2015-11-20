@@ -20,9 +20,9 @@ import event
 import telescopes
 
 Location='FSPL'
-Model='FSPL'
+Model='PSPL'
 second_order=[['None',2457164.6365],['None',0],'None']
-def main(path):
+def main(path, arguments):
     Events_path = path
 
     
@@ -118,5 +118,18 @@ def main(path):
     np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Source_errors.txt',ESource,fmt="%s")
     np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Blend_errors.txt',EBlend,fmt="%s")
 if __name__=='__main__':
-    path=  '/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_'+Location+'/Lightcurves/'
-    main(path)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-l', '--location', default='FSPL')
+    parser.add_argument('-m', '--model', default='PSPL')
+    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_')
+    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/')
+    arguments = parser.parse_args() 
+    
+    Location = arguments.location
+    Model = arguments.model
+    input_directory = arguments.input_directory
+    
+    path= input_directory + Location + '/Lightcurves/'
+    main(path, arguments)

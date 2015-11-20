@@ -419,9 +419,7 @@ class MLFits(object):
 
             if lmarquardt_fit[1] != None:
 
-                cov = lmarquardt_fit[1]*fit_res[self.number_of_parameters+
-                                                2*len(self.event.telescopes)]/ndata
-
+                cov = lmarquardt_fit[1]
             else:
 
                 print 'rough cov'
