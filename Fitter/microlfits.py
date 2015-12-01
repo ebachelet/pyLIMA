@@ -290,7 +290,7 @@ class MLFits(object):
             if  len(index) < 100:
 
                 print 'low'
-                baseline_flux = np.median(flux[flux.argsort()[-100:]])
+                baseline_flux = np.median(flux[flux.argsort()[:100]])
                 break
 
         
@@ -298,7 +298,8 @@ class MLFits(object):
         max_flux = Max_flux[0]
         Amax = max_flux/fs
         uo = np.sqrt(-2+2*np.sqrt(1-1/(1-Amax**2)))
-        
+        #import pdb; pdb.set_trace()
+    
         if self.model[0] == 'FSPL':
 
             if np.abs(uo) > 0.05:
@@ -409,7 +410,7 @@ class MLFits(object):
         fit_res.append(self.chichi(lmarquardt_fit[0]))
 
         ndata = 0.0
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         for i in self.event.telescopes:
 

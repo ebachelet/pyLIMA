@@ -19,14 +19,14 @@ import matplotlib.pyplot as plt
 import event
 import telescopes
 
-Location='FSPL'
+Location='Ground'
 Model='PSPL'
 second_order=[['None',2457164.6365],['None',0],'None']
 def main(path, arguments):
     Events_path = path
 
     
-    Events_names=[i for i in os.listdir(Events_path) if 'Survey' in i]
+    Events_names=[i for i in os.listdir(Events_path) if '.dat' in i]
     #EEvents_names=[i for i in os.listdir(Events_path) if '.phot' in i]
     Events=[]
     start=time.time()
@@ -39,12 +39,12 @@ def main(path, arguments):
     Models=[]
     time_fit=[]
     for i in Events_names[0:] :
-        #i='OGLE-2015-BLG-0542.phot'
-        #i='Lightcurve_51.dat'
-        name=i.replace('Survey.dat','')
+        #i='OGLE-2015-BLG-3851.phot'
+        #i='Lightcurve_3851.dat'
+        #name=i.replace('Survey.dat','')
         #name=i.replace('.dat','')
         #name='.phot'
-        #name=i
+        name=i
         Event=event.Event()
         Event.name=name
         Event.ra=270.65404166666667
@@ -58,10 +58,11 @@ def main(path, arguments):
 
             k=j.partition(name)
             Tel=telescopes.Telescope()
-            Tel.name=k[-1][:-4]
+            #Tel.name=k[-1][:-4]
             #Tel.name=k[1]
             #Tel.name=j[:4]
             #Tel.name=k[0]
+            Tel.name=name
             Tel.lightcurve=np.genfromtxt(Events_path+j,usecols = (0,1,2))
             
             
@@ -74,11 +75,11 @@ def main(path, arguments):
         print 'Start;',Event.name
         #import pdb; pdb.set_trace()
         #Event.check_event()
-        Event.find_survey('Survey')
+        #Event.find_survey('Lightcurve_3851.dat')
         Event.check_event()
         Event.fit(Model,0,second_order)
         #import pdb; pdb.set_trace()
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         if Model=='PSPL' :
             
             Results.append([Event.name,Event.fits_results[0][1],Event.fits_results[0][2][0],Event.fits_results[0][2][1],Event.fits_results[0][2][2],Event.fits_results[0][2][-1],Event.fits_time[0][2]])
@@ -121,7 +122,7 @@ if __name__=='__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--location', default='FSPL')
+    parser.add_argument('-l', '--location', default='Ground')
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_')
     parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/')
