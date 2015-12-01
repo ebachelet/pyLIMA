@@ -1,6 +1,6 @@
 # OpenSourceProject
 
-Author : Etienne Bachelet, etibachelet@gmail.com
+Author : Etienne Bachelet, etibachelet@gmail.com and friends !
 
 
 This is an alpha version, do not expect it works :)
