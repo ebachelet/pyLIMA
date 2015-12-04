@@ -156,7 +156,7 @@ class MLFits(object):
 
             AA=differential_evolution(self.chi_differential,bounds=self.parameters_boundaries,mutation=[0.1,0.2],recombination=0.8,polish='None')
             print AA['fun']
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
 
             self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
@@ -408,7 +408,7 @@ class MLFits(object):
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         ndata = 0.0
 
         for i in self.event.telescopes:
@@ -417,11 +417,11 @@ class MLFits(object):
 
         try:
 
-            if lmarquardt_fit[1] != None:
+            if lmarquardt_fit[1] is not None:
 
                 cov = lmarquardt_fit[1]*fit_res[self.number_of_parameters
                                                            +2*len(self.event.telescopes)]/ndata
-                import pdb; pdb.set_trace()
+                #import pdb; pdb.set_trace()
 
             else:
 

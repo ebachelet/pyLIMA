@@ -48,11 +48,11 @@ Events_path=  '/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourcePr
 for i in xrange(len(Fits)):
         #print Names[i]
         #data=np.loadtxt(Events_path+Names[i])
-        #fbaseline=Model[i,3]*(1+Model[i,4])
+        #fbaseline=model[i,3]*(1+model[i,4])
         #errf=np.sqrt(fbaseline)
-        #Uo=Model[i,1]
+        #Uo=model[i,1]
         #Amax=(Uo**2+2)/(Uo*np.sqrt(Uo**2+4))
-        #SNR=(Model[i,3]*(Amax-1))/errf
+        #SNR=(model[i,3]*(Amax-1))/errf
         #import pdb; pdb.set_trace()
 
         #if (np.isnan(Errors[i]).any()) and (0.0 in Errors[i]):
@@ -60,24 +60,24 @@ for i in xrange(len(Fits)):
            count=count+1
            print 'blabla'
            #plt.subplot(311)
-           #plt.scatter(Model[i,0],Model[i,1])
+           #plt.scatter(model[i,0],model[i,1])
            #plt.subplot(312)
-           #plt.scatter(Model[i,2],Model[i,3])
+           #plt.scatter(model[i,2],model[i,3])
            #plt.subplot(313)
-           #plt.scatter(Model[i,4],SNR)
+           #plt.scatter(model[i,4],SNR)
         else :
            
 
-            #if Fits[i,3]>Model[i,6] :
+            #if Fits[i,3]>model[i,6] :
                 #plt.subplot(311)
-                #plt.scatter(Model[i,0],Model[i,1],color='r')
+                #plt.scatter(model[i,0],model[i,1],color='r')
                 #plt.subplot(312)
-                #plt.scatter(Model[i,2],Model[i,3],color='r')
+                #plt.scatter(model[i,2],model[i,3],color='r')
                 #plt.subplot(313)
-                #plt.scatter(Model[i,4],SNR,color='r')
+                #plt.scatter(model[i,4],SNR,color='r')
                 #snr.append(SNR)
                 #ffb1.append(Blend[i,0])
-                #ffb2.append(Model[i,4])
+                #ffb2.append(model[i,4])
                 #count=count+1
             Sigmato.append((Fits[i,1]-Model[i,0])/Errors[i,0])
             Sigmauo.append((Fits[i,2]-Model[i,1])/Errors[i,1])
@@ -87,7 +87,7 @@ for i in xrange(len(Fits)):
             DChi2.append(Fits[i,4]-Model[i,6])
             print Names[i]
             if Names[i]=='Lightcurve_215_':
-            #if 27.4-2.5*np.log10(Model[i,3]*(Model[i,4]))<16:
+            #if 27.4-2.5*np.log10(model[i,3]*(model[i,4]))<16:
                 print 27.4-2.5*np.log10(Model[i,3]*(Model[i,4]))
                 print Names[i]
                 print (Fits[i,4]-Model[i,6])
@@ -109,10 +109,10 @@ for i in xrange(len(Fits)):
                 count=count+1
                 import pdb; pdb.set_trace()
 
-            #Sigmato.append((Fits[i,0]-Model[i,0]))
-            #Sigmauo.append((Fits[i,1]-Model[i,1]))
-            #Sigmate.append((Fits[i,2]-Model[i,2]))
-            #DChi2.append(Fits[i,5]-Model[i,5])
+            #Sigmato.append((Fits[i,0]-model[i,0]))
+            #Sigmauo.append((Fits[i,1]-model[i,1]))
+            #Sigmate.append((Fits[i,2]-model[i,2]))
+            #DChi2.append(Fits[i,5]-model[i,5])
 #plt.show()
 print count
 criteria=1
@@ -155,7 +155,7 @@ print float(len(index))/len(Sigmato)*100
 
 #plt.hist(DChi2,np.arange(-100,100,10))
 #plt.xlabel('DChi2',fontsize=20)
-#plt.suptitle(''+Location+'',fontsize=50)
+#plt.suptitle(''+location+'',fontsize=50)
 plt.show()
 import pdb; pdb.set_trace()
 

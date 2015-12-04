@@ -7,147 +7,157 @@ Created on Fri Aug 28 10:17:30 2015
 
 ###############################################################################
 
-#General code manager
+# General code manager
 
 ###############################################################################
 
-import numpy as np
 import os
 import time
-import matplotlib.pyplot as plt
+
+import numpy as np
 
 import event
 import telescopes
 
-Location='Space'
-Model='PSPL'
-second_order=[['None',2457164.6365],['None',0],'None']
-def main(path, arguments):
-    Events_path = path
+location = 'Space'
+model = 'PSPL'
+second_order = [['None', 2457164.6365], ['None', 0], 'None']
 
-    Events_names=[i for i in os.listdir(Events_path) if 'Survey' in i]
 
-    #Events_names=[i for i in os.listdir(Events_path) if '.dat' in i]
-    #EEvents_names=[i for i in os.listdir(Events_path) if '.phot' in i]
-    Events=[]
-    start=time.time()
-    Results=[]
-    Errors=[]
-    Source=[]
-    Blend=[]
-    Source_err=[]
-    Blend_err=[]
-    Models=[]
-    time_fit=[]
-    for i in Events_names[6:] :
-        #i='OGLE-2015-BLG-3851.phot'
-        #i='Lightcurve_3016.dat'
-        name=i.replace('Survey.dat','')
-        #name=i.replace('.dat','')
-        #name='.phot'
-        #name=i
-        Event=event.Event()
-        Event.name=name
-        Event.ra=270.65404166666667
-        Event.dec=-27.721305555555553
-        tels=[j for j in os.listdir(Events_path) if name in j]
-        #tels=['OGLE-2015-BLG-1577.phot','MOA-2015-BLG-363.phot']
-        #tels=['MOA-2015-BLG-363.phot']
-        for j in tels :
-        
-            #import pdb; pdb.set_trace()
+def main(events_path, command_line):
 
-            k=j.partition(name)
-            Tel=telescopes.Telescope()
-            #Tel.name=k[-1][:-4]
-            #Tel.name=k[1]
-            #Tel.name=j[:4]
-            #Tel.name=k[0]
-            Tel.name=k[-1]
-            Tel.lightcurve=np.genfromtxt(Events_path+j,usecols = (0,1,2))
-            
-            
-            Tel.lightcurve_in_flux()
-            Tel.filter='I'
-            Tel.find_gamma(5300.0,4.5)
-            Event.telescopes.append(Tel)
-   
-        Events.append(Event)
-        print 'Start;',Event.name
-        #import pdb; pdb.set_trace()
-        #Event.check_event()
-        Event.find_survey('Survey')
-        Event.check_event()
-        Event.fit(Model,0,second_order)
-        Event.produce_outputs()
-        Event.output.student_errors()
-        Event.plot_data('Mag')
-        Event.plot_model('PSPL',second_order,'Mag')
-        #tt=np.arange(min(Event.telescopes[0].lightcurve[:,0]),max(Event.telescopes[0].lightcurve[:,0]),0.01)
-        #par=Event.output.lower
-        #uu=(par[1]**2+(tt-par[0])**2/par[2]**2)**0.5
-        #aa=(uu**2+2)/(uu*(uu**2+4)**0.5)
-        #plt.plot(tt,27.4-2.5*np.log10(par[3]*(aa+par[4])),'k--',lw=2)
+    events_names = [event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
 
-        #par=Event.output.upper
-        #uu=(par[1]**2+(tt-par[0])**2/par[2]**2)**0.5
-        #aa=(uu**2+2)/(uu*(uu**2+4)**0.5)
-        #plt.plot(tt,27.4-2.5*np.log10(par[3]*(aa+par[4])),'k--',lw=2)
+    # events_names=[event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
+    # EEvents_names=[event_name for event_name in os.listdir(events_path) if '.phot' in event_name]
+    events = []
+    start = time.time()
+    results = []
+    errors = []
+    source = []
+    blend = []
+    source_error = []
+    blend_error = []
+    models = []
+    time_fit = []
 
-        #plt.show()
-        #import pdb; pdb.set_trace()
-        #import pdb; pdb.set_trace()
-        if Model=='PSPL' :
-            
-            Results.append([Event.name,Event.fits_results[0][1],Event.fits_results[0][2][0],Event.fits_results[0][2][1],Event.fits_results[0][2][2],Event.fits_results[0][2][-1],Event.fits_time[0][2]])
-        
-            Errors.append([Event.name]+np.sqrt(np.diagonal( Event.fits_covariance[0][2]))[:3].tolist())
-            Source.append([Event.name,Event.fits_results[0][2][3]])
-            Blend.append([Event.name,Event.fits_results[0][2][4]])
-            Source_err.append([Event.name,np.sqrt(np.diagonal(Event.fits_covariance[0][2]))[3]])
-            Blend_err.append([Event.name,np.sqrt(np.diagonal(Event.fits_covariance[0][2]))[4]])
-        
-        if Model=='FSPL':
+    for event_name in events_names[6:10]:
+        # event_name='OGLE-2015-BLG-3851.phot'
+        # event_name='Lightcurve_3016.dat'
+        name = event_name.replace('Survey.dat', '')
+        # name=event_name.replace('.dat','')
+        # name='.phot'
+        # name=event_name
+        current_event = event.Event()
+        current_event.name = name
+        current_event.ra = 270.65404166666667
+        current_event.dec = -27.721305555555553
+        event_telescopes = [event_telescope for event_telescope in os.listdir(events_path) if name in event_telescope]
+        # event_telescopes=['OGLE-2015-BLG-1577.phot','MOA-2015-BLG-363.phot']
+        # event_telescopes=['MOA-2015-BLG-363.phot']
+        for event_telescope in event_telescopes:
+            # import pdb; pdb.set_trace()
 
-            
-            Results.append([Event.name,Event.fits_results[0][1],Event.fits_results[0][2][0],Event.fits_results[0][2][1],Event.fits_results[0][2][2],Event.fits_results[0][2][3],Event.fits_results[0][2][-1],Event.fits_time[0][2]])
-        
-            Errors.append([Event.name]+np.sqrt(np.diagonal( Event.fits_covariance[0][2]))[:4].tolist())
-            Source.append([Event.name,Event.fits_results[0][2][4]])
-            Blend.append([Event.name,Event.fits_results[0][2][5]])
-            Source_err.append([Event.name,np.sqrt(np.diagonal(Event.fits_covariance[0][2]))[4]])
-            Blend_err.append([Event.name,np.sqrt(np.diagonal(Event.fits_covariance[0][2]))[5]])
-        
-    end=time.time()
-    print end-start
-    Reresults=np.array(Results) 
-    EErrors=np.array(Errors) 
-    SSource=np.array(Source) 
-    BBlend=np.array(Blend) 
-    ESource=np.array(Source_err)
-    EBlend=np.array(Blend_err)
-    TTime=np.array(time_fit)
-    import pdb; pdb.set_trace()
+            k = event_telescope.partition(name)
+            telescope = telescopes.Telescope()
+            # telescope.name=k[-1][:-4]
+            # telescope.name=k[1]
+            # telescope.name=event_telescope[:4]
+            # telescope.name=k[0]
+            telescope.name = k[-1]
+            telescope.lightcurve = np.genfromtxt(events_path + event_telescope, usecols=(0, 1, 2))
 
-    np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'.txt',Reresults,fmt="%s")
-    np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Error.txt',EErrors,fmt="%s")
-    np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Source.txt',SSource,fmt="%s")
-    np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Blend.txt',BBlend,fmt="%s")
-    np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Source_errors.txt',ESource,fmt="%s")
-    np.savetxt('/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/'+Location+'/Fits_'+Location+'_Blend_errors.txt',EBlend,fmt="%s")
-if __name__=='__main__':
+            telescope.lightcurve_in_flux()
+            telescope.filter = 'I'
+            telescope.find_gamma(5300.0, 4.5)
+            current_event.telescopes.append(telescope)
+
+        events.append(current_event)
+        print 'Start;', current_event.name
+        # import pdb; pdb.set_trace()
+        # current_event.check_event()
+        current_event.find_survey('Survey')
+        current_event.check_event()
+        current_event.fit(model, 0, second_order)
+        current_event.produce_outputs()
+        current_event.output.student_errors()
+        current_event.plot_data('Mag')
+        current_event.plot_model('PSPL', second_order, 'Mag')
+        # tt=np.arange(min(current_event.telescopes[0].lightcurve[:,0]),max(current_event.telescopes[0].lightcurve[:,0]),0.01)
+        # par=current_event.output.lower
+        # uu=(par[1]**2+(tt-par[0])**2/par[2]**2)**0.5
+        # aa=(uu**2+2)/(uu*(uu**2+4)**0.5)
+        # plt.plot(tt,27.4-2.5*np.log10(par[3]*(aa+par[4])),'k--',lw=2)
+
+        # par=current_event.output.upper
+        # uu=(par[1]**2+(tt-par[0])**2/par[2]**2)**0.5
+        # aa=(uu**2+2)/(uu*(uu**2+4)**0.5)
+        # plt.plot(tt,27.4-2.5*np.log10(par[3]*(aa+par[4])),'k--',lw=2)
+
+        # plt.show()
+        # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
+        if model == 'PSPL':
+            results.append(
+                [current_event.name, current_event.fits_results[0][1], current_event.fits_results[0][2][0],
+                 current_event.fits_results[0][2][1],
+                 current_event.fits_results[0][2][2], current_event.fits_results[0][2][-1],
+                 current_event.fits_time[0][2]])
+
+            errors.append([current_event.name] + np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[:3].tolist())
+            source.append([current_event.name, current_event.fits_results[0][2][3]])
+            blend.append([current_event.name, current_event.fits_results[0][2][4]])
+            source_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[3]])
+            blend_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[4]])
+
+        if model == 'FSPL':
+            results.append(
+                [current_event.name, current_event.fits_results[0][1], current_event.fits_results[0][2][0],
+                 current_event.fits_results[0][2][1],
+                 current_event.fits_results[0][2][2], current_event.fits_results[0][2][3],
+                 current_event.fits_results[0][2][-1],
+                 current_event.fits_time[0][2]])
+
+            errors.append([current_event.name] + np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[:4].tolist())
+            source.append([current_event.name, current_event.fits_results[0][2][4]])
+            blend.append([current_event.name, current_event.fits_results[0][2][5]])
+            source_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[4]])
+            blend_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[5]])
+
+    end = time.time()
+    print end - start
+    reresults = np.array(results)
+    eerrors = np.array(errors)
+    ssource = np.array(source)
+    bblend = np.array(blend)
+    esource = np.array(source_error)
+    eblend = np.array(blend_error)
+    TTime = np.array(time_fit)
+    # import pdb; pdb.set_trace()
+
+    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '.txt', reresults, fmt="%s")
+    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Error.txt', eerrors, fmt="%s")
+    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Source.txt', ssource, fmt="%s")
+    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Blend.txt', bblend, fmt="%s")
+    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Source_errors.txt', esource, fmt="%s")
+    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Blend_errors.txt', eblend, fmt="%s")
+
+
+if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--location', default='FSPL')
     parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_')
-    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/')
-    arguments = parser.parse_args() 
-    
-    Location = arguments.location
-    Model = arguments.model
+    parser.add_argument('-i', '--input_directory',
+                        default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_')
+    parser.add_argument('-o', '--output_directory',
+                        default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/')
+    arguments = parser.parse_args()
+
+    location = arguments.location
+    model = arguments.model
     input_directory = arguments.input_directory
-    
-    path= input_directory + Location + '/Lightcurves/'
+
+    path = input_directory + location + '/Lightcurves/'
     main(path, arguments)

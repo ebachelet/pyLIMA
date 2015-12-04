@@ -88,7 +88,7 @@ class Telescope(object):
         metal = 0.0
 
 
-        claret_path = '/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/'
+        claret_path = '/home/mnorbury/Microlensing/Claret2011/J_A+A_529_A75/'
         claret = fits.open(claret_path+'Claret2011.fits')
         claret = np.array([claret[1].data['log g'], claret[1].data['Teff (K)'], claret[1].data['Z (Sun)'],
                            claret[1].data['Xi (km/s)'], claret[1].data['u'], claret[1].data['filter']]).T
