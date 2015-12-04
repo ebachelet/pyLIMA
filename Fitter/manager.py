@@ -13,20 +13,20 @@ Created on Fri Aug 28 10:17:30 2015
 
 import os
 import time
+import glob
 
 import numpy as np
 
 import event
 import telescopes
 
-location = 'Space'
-model = 'PSPL'
+# location = 'Space'
+# model = 'PSPL'
 second_order = [['None', 2457164.6365], ['None', 0], 'None']
 
 
-def main(events_path, command_line):
-
-    events_names = [event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
+def main(command_line):
+    events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.dat')]
 
     # events_names=[event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
     # EEvents_names=[event_name for event_name in os.listdir(events_path) if '.phot' in event_name]
@@ -52,7 +52,8 @@ def main(events_path, command_line):
         current_event.name = name
         current_event.ra = 270.65404166666667
         current_event.dec = -27.721305555555553
-        event_telescopes = [event_telescope for event_telescope in os.listdir(events_path) if name in event_telescope]
+        event_telescopes = [event_telescope for event_telescope in os.listdir(command_line.input_directory) if
+                            name in event_telescope]
         # event_telescopes=['OGLE-2015-BLG-1577.phot','MOA-2015-BLG-363.phot']
         # event_telescopes=['MOA-2015-BLG-363.phot']
         for event_telescope in event_telescopes:
@@ -65,7 +66,7 @@ def main(events_path, command_line):
             # telescope.name=event_telescope[:4]
             # telescope.name=k[0]
             telescope.name = k[-1]
-            telescope.lightcurve = np.genfromtxt(events_path + event_telescope, usecols=(0, 1, 2))
+            telescope.lightcurve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
 
             telescope.lightcurve_in_flux()
             telescope.filter = 'I'
@@ -125,39 +126,29 @@ def main(events_path, command_line):
             blend_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[5]])
 
     end = time.time()
-    print end - start
-    reresults = np.array(results)
-    eerrors = np.array(errors)
-    ssource = np.array(source)
-    bblend = np.array(blend)
-    esource = np.array(source_error)
-    eblend = np.array(blend_error)
-    TTime = np.array(time_fit)
-    # import pdb; pdb.set_trace()
 
-    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '.txt', reresults, fmt="%s")
-    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Error.txt', eerrors, fmt="%s")
-    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Source.txt', ssource, fmt="%s")
-    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Blend.txt', bblend, fmt="%s")
-    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Source_errors.txt', esource, fmt="%s")
-    np.savetxt('/home/mnorbury/Microlensing/Fits_' + location + '_Blend_errors.txt', eblend, fmt="%s")
+    print end - start
+
+    all_results = [('Fits.txt', results),
+                   ('Fits_Error.txt', errors),
+                   ('Fits_Source.txt', source),
+                   ('Fits_Blend.txt', blend),
+                   ('Fits_Source_errors.txt', source_error),
+                   ('Fits_Blend_errors.txt', blend_error), ]
+
+    for file_name, values in all_results:
+        np.savetxt(os.path.join(command_line.output_directory, file_name), np.array(values), fmt="%s")
 
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--location', default='FSPL')
     parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory',
-                        default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_')
-    parser.add_argument('-o', '--output_directory',
-                        default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/')
+    parser.add_argument('-i', '--input_directory')
+    parser.add_argument('-o', '--output_directory')
     arguments = parser.parse_args()
 
-    location = arguments.location
     model = arguments.model
-    input_directory = arguments.input_directory
 
-    path = input_directory + location + '/Lightcurves/'
-    main(path, arguments)
+    main(arguments)
