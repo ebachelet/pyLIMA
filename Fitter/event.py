@@ -10,7 +10,7 @@ import numpy as np
 
 import microlfits
 import microlplotter
-
+import microloutputs
 
 class Event(object):
     """
@@ -49,6 +49,8 @@ class Event(object):
         self.fits_covariance = []
         self.fits_time = []
         self.outputs = []
+        self.plots_mag = microlplotter.MLPlotter(self)
+        self.plots_flux = microlplotter.MLPlotter(self)
 
     def fit(self, model, method, second_order):
         """Function to fit the event.
@@ -210,8 +212,7 @@ class Event(object):
 
         self.survey = choice
         names = [i.name for i in self.telescopes]
-
-        if self.survey in names:
+        if any(self.survey in i for i in names):
 
             name = [i.name for i in self.telescopes if choice in i.name][0]
             index = np.where(self.survey == names)[0]
@@ -228,20 +229,37 @@ class Event(object):
     def plot_data(self, choice):
 
         if choice == 'Mag':
-            microlplotter.plot_lightcurves_mag(self)
+
+            self.plots_mag.plot_lightcurves_mag()
+
         if choice == 'Flux':
-            microlplotter.plot_lightcurves_flux(self)
+
+            self.plots_flux.plot_lightcurves_flux()
 
     def plot_model(self, model, second_order, choice):
 
-        import pdb;
-        pdb.set_trace()
 
         available_fits = [i[0] for i in self.fits_results]
-        index = np.where(model in available_fits)[0]
-        parameters = self.fits_results[index][2]
 
-        if choice == 'Mag':
-            mlplotter.plot_model_mag(self, model, parameters, second_order)
-        if choice == 'Flux':
-            mlplotter.plot_model_flux(self, model, parameters, second_order)
+        if model not in available_fits:
+
+            print 'ERROR : The model '+model+' you want to plot is not fitted yet! You can articially add it with self.fit_results.append(your model) (Check conventions)'
+
+        else:
+
+            index = np.where(model in available_fits)[0]
+            parameters = self.fits_results[index][2]
+
+            if choice == 'Mag':
+
+                self.plots_mag.plot_model_mag(model, parameters, second_order)
+
+            if choice == 'Flux':
+
+                microlplotter.plot_model_flux(self, model, parameters, second_order)
+
+    def produce_outputs(self):
+
+        self.output=microloutputs.MLOutputs(self)
+        self.output.cov2corr()
+        self.correlations=self.output.correlations

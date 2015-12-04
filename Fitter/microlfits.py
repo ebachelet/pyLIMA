@@ -177,7 +177,7 @@ class MLFits(object):
 
 
     def number_of_parameters(self):
-        '''Provide the number of parameters on which depend the magnification computation.
+        '''Provide the number of parameters on which depend the magnification computation.(Paczynski parameters+binary)
         '''
         model = {'PSPL':3, 'FSPL':4}
         model_boundaries = {'PSPL':[(min(self.event.telescopes[0].lightcurve[:,0])-300,
@@ -374,7 +374,7 @@ class MLFits(object):
 
         if self.model[0] == 'FSPL':
 
-            parameters = [to, uo, tE, 1.5*uo]+fluxes
+            parameters = [to, uo, tE,1.5*uo]+fluxes
 
         return parameters
 
@@ -402,15 +402,14 @@ class MLFits(object):
         lmarquardt_fit = leastsq(self.residuals, self.guess, args=(self.model), maxfev=50000, Dfun=self.Jacobian,
                                  col_deriv=1, full_output=1, ftol=0.00001)
        
-        #lmarquardt_fit=leastsq(self.residuals,guess,args=(self.model,target),maxfev=5000,full_output=1,ftol=0.00001)
+        #lmarquardt_fit=leastsq(self.residuals,self.guess,args=(self.model),maxfev=50000,full_output=1,ftol=0.00001)
 
         computation_time = time.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-
+        import pdb; pdb.set_trace()
         ndata = 0.0
-        #import pdb; pdb.set_trace()
 
         for i in self.event.telescopes:
 
@@ -420,7 +419,10 @@ class MLFits(object):
 
             if lmarquardt_fit[1] != None:
 
-                cov = lmarquardt_fit[1]
+                cov = lmarquardt_fit[1]*fit_res[self.number_of_parameters
+                                                           +2*len(self.event.telescopes)]/ndata
+                import pdb; pdb.set_trace()
+
             else:
 
                 print 'rough cov'
@@ -673,12 +675,4 @@ class MLFits(object):
                 fluxes.append(fb/fs)
         return fluxes
     
-    def cov2corr(self,A):
-        """
-        covariance matrix to correlation matrix.
-        """
-
-        d = np.sqrt(A.diagonal())
-        B = ((A.T/d).T)/d
-        #A[ np.diag_indices(A.shape[0]) ] = np.ones( A.shape[0] )
-        return B
+  

@@ -8,6 +8,7 @@ from __future__ import division
 import numpy as np
 import datetime
 from astropy.time import Time
+from scipy.stats.distributions import t as student
 
 class MLOutputs(object):
     
@@ -24,8 +25,8 @@ class MLOutputs(object):
         
         
         for i in self.event.fits_covariance :
-            import pdb; pdb.set_trace()
-            self.error_parameters.append([i[0],i[1],np.sqrt(i[2].diagonal)] 
+            
+            self.error_parameters.append([i[0],i[1],np.sqrt(i[2].diagonal)]) 
 
     def find_observables(self):
         
@@ -106,15 +107,38 @@ class MLOutputs(object):
         
         
         for i in self.event.fits_covariance :
-            import pdb; pdb.set_trace()
-            self.error_parameters.append([i[0],i[1],np.sqrt(i[2].diagonal)] 
             
-     def cov2corr(self,A):
+            self.error_parameters.append([i[0],i[1],np.sqrt(i[2].diagonal)]) 
+            
+    def cov2corr(self):
         """
         covariance matrix to correlation matrix.
         """
+        self.correlations=[]
+        for i in self.event.fits_covariance :
+            
+            A=i[2]    
+            d = np.sqrt(A.diagonal())
+            B = ((A.T/d).T)/d
+            
+            self.correlations.append([i[0],i[1],B])
+     
+    def student_errors(self):
+        
+        alpha=0.05
+        ndata=len(self.event.telescopes[0].lightcurve_flux)
+        npar=5
+        dof=ndata-npar
+        tval=student.ppf(1-alpha/2, dof)
+        
+        lower=[]
+        upper=[]
+        
+        for i in xrange(len(self.event.fits_covariance[0][2].diagonal())):
+            
+            sigma=self.event.fits_covariance[0][2].diagonal()[i]**0.5
+            lower.append(self.event.fits_results[0][2][i]-sigma*tval)
+            upper.append(self.event.fits_results[0][2][i]+sigma*tval)
 
-        d = np.sqrt(A.diagonal())
-        B = ((A.T/d).T)/d
-        #A[ np.diag_indices(A.shape[0]) ] = np.ones( A.shape[0] )
-        return B
+        self.upper=upper
+        self.lower=lower
