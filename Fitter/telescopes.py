@@ -9,9 +9,17 @@ import numpy as np
 import astropy.io.fits as fits
 
 
+def read_claret(file_name, filter='I'):
+    # TODO: Read columns into named tuple.
+    with open('tableu.dat', 'r') as file_socket:
+        for line in file_socket:
+            columns = line.strip().split()
+            if columns[5] == filter:
+                yield columns
+
 
 class Telescope(object):
-    '''
+    """
     ######## Telescope module ########
     @author : Etienne Bachelet
 
@@ -45,15 +53,18 @@ class Telescope(object):
               The classical (Milne definition) linear limb darkening coefficient can be found using:
               u=(3*gamma)/(2+gamma).
               Default is 0.5.
-    '''
+    """
 
-    def __init__(self):
-        ''' Initialization of the attributes described above.
-        '''
-        self.name = 'None'
+    def __init__(self, name='None', camera_filter='I', light_curve=None):
+        """ Initialization of the attributes described above."""
+        self.name = name
         self.kind = 'Earth'
-        self.filter = 'I' #Claret2011 convention
-        self.lightcurve = []
+        self.filter = camera_filter  # Claret2011 convention
+
+        self.lightcurve = light_curve
+        if self.lightcurve is None:
+            self.lightcurve = np.array()
+
         self.lightcurve_flux = []
         self.altitude = 0.0
         self.longitude = 0.0
@@ -61,20 +72,18 @@ class Telescope(object):
         self.gamma = 0.0
 
     def n_data(self):
-        '''
-        Return the number of data points in the lightcurve.
-        '''
+        """ Return the number of data points in the lightcurve."""
         return len(self.lightcurve[:, 0])
 
-    def find_gamma(self, Teff, logg):
-        '''
+    def find_gamma(self, Teff, log_g, path):
+        """
         Return the associated gamma linear limb-darkening coefficient associated to the filter, the given effective
         temperature and the given surface gravity in log10 cgs.
 
         Keyword arguments:
 
         Teff --> The effective temperature of the source in Kelvin.
-        logg --> The log10 surface gravity in cgs.
+        log_g --> The log10 surface gravity in cgs.
                  WARNING : Two strong assomption are made :
                  the microturbulent velocity vt is fixed to 2 km/s
             -    the metallicity is fixed equal to the Sun : metal=0.0
@@ -82,60 +91,64 @@ class Telescope(object):
         Return :
 
         gamma
-        '''
-        #assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011 convention
+        """
+        # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011 convention
         vt = 2.0
         metal = 0.0
 
+        #TODO: Use read claret generator
 
-        claret_path = '/home/mnorbury/Microlensing/Claret2011/J_A+A_529_A75/'
-        claret = fits.open(claret_path+'Claret2011.fits')
+        claret = fits.open(path + 'Claret2011.fits')
         claret = np.array([claret[1].data['log g'], claret[1].data['Teff (K)'], claret[1].data['Z (Sun)'],
                            claret[1].data['Xi (km/s)'], claret[1].data['u'], claret[1].data['filter']]).T
 
         index_filter = np.where(claret[:, 5] == self.filter)[0]
         claret_reduce = claret[index_filter, :-1].astype(float)
-        coeff_index = np.sqrt((claret_reduce[:, 0]-logg)**2+(claret_reduce[:, 1]-Teff)**2+(claret_reduce[:, 2]-metal)**2
-                              +(claret_reduce[:, 3]-vt)**2).argmin()
+        coeff_index = np.sqrt(
+            (claret_reduce[:, 0] - log_g) ** 2 + (claret_reduce[:, 1] - Teff) ** 2 + (claret_reduce[:, 2] - metal) ** 2
+            + (claret_reduce[:, 3] - vt) ** 2).argmin()
         uu = claret_reduce[coeff_index, -1]
 
-        self.gamma = 2*uu/(3-uu)
+        self.gamma = 2 * uu / (3 - uu)
         self.gamma = 0.5
 
     def clean_data(self):
-        '''
+        """
         Clean outliers of the telescope for the fits. Points are considered as outliers if they are 10 mag brighter
         or fainter than the lightcurve median or if nan appears in any columns or errobar higher than a 1 mag.
 
         Return :
 
         the lightcurve without outliers.
-        '''
-        #self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
+        """
+        # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
 
-        index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (np.abs(self.lightcurve[:, 1]-np.median(self.lightcurve[:, 1])) > 10) | (np.abs(self.lightcurve[:, 2]) > 1.0))[0]
+        index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
+            np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 10) | (
+                         np.abs(self.lightcurve[:, 2]) > 1.0))[
+            0]
         for i in index:
-            print self.name+' point '+str(self.lightcurve[i])+' is consider as outlier and will be '+\
-            'rejected for the fit'
-        index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (np.abs(self.lightcurve[:, 1]-np.median(self.lightcurve[:, 1])) < 10) & (np.abs(self.lightcurve[:, 2]) < 1.0))[0]
+            print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and will be ' + \
+                  'rejected for the fit'
+        index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
+            np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) < 10) & (
+                         np.abs(self.lightcurve[:, 2]) < 1.0))[
+            0]
 
         lightcurve = self.lightcurve[index]
 
         return lightcurve
 
     def lightcurve_in_flux(self):
-        '''
+        """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar accordingly.
         Perform a clean_data call to avoid outliers.
 
         Return :
 
         lighhtcurve_flux : the lightcurve in flux.
-        '''
+        """
         lightcurve = self.clean_data()
-        flux = 10**((27.4-lightcurve[:, 1])/2.5)
-        errflux = -lightcurve[:, 2]*flux/(2.5)*np.log(10)
+        flux = 10 ** ((27.4 - lightcurve[:, 1]) / 2.5)
+        errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
         self.lightcurve_flux = np.array([lightcurve[:, 0], flux, errflux]).T
-
-
-    

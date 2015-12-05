@@ -27,6 +27,7 @@ second_order = [['None', 2457164.6365], ['None', 0], 'None']
 
 def main(command_line):
     events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.dat')]
+    print 'event_names = ', events_names
 
     # events_names=[event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
     # EEvents_names=[event_name for event_name in os.listdir(events_path) if '.phot' in event_name]
@@ -60,17 +61,14 @@ def main(command_line):
             # import pdb; pdb.set_trace()
 
             k = event_telescope.partition(name)
-            telescope = telescopes.Telescope()
+            raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
+            telescope = telescopes.Telescope(name=k[-1], camera_filter='I', light_curve=raw_light_curve)
             # telescope.name=k[-1][:-4]
             # telescope.name=k[1]
             # telescope.name=event_telescope[:4]
             # telescope.name=k[0]
-            telescope.name = k[-1]
-            telescope.lightcurve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
-
             telescope.lightcurve_in_flux()
-            telescope.filter = 'I'
-            telescope.find_gamma(5300.0, 4.5)
+            telescope.find_gamma(5300.0, 4.5, command_line.claret)
             current_event.telescopes.append(telescope)
 
         events.append(current_event)
@@ -79,7 +77,7 @@ def main(command_line):
         # current_event.check_event()
         current_event.find_survey('Survey')
         current_event.check_event()
-        current_event.fit(model, 0, second_order)
+        current_event.fit(command_line.model, 0, second_order)
         current_event.produce_outputs()
         current_event.output.student_errors()
         current_event.plot_data('Mag')
@@ -98,7 +96,7 @@ def main(command_line):
         # plt.show()
         # import pdb; pdb.set_trace()
         # import pdb; pdb.set_trace()
-        if model == 'PSPL':
+        if command_line.model == 'PSPL':
             results.append(
                 [current_event.name, current_event.fits_results[0][1], current_event.fits_results[0][2][0],
                  current_event.fits_results[0][2][1],
@@ -111,7 +109,7 @@ def main(command_line):
             source_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[3]])
             blend_error.append([current_event.name, np.sqrt(np.diagonal(current_event.fits_covariance[0][2]))[4]])
 
-        if model == 'FSPL':
+        if command_line.model == 'FSPL':
             results.append(
                 [current_event.name, current_event.fits_results[0][1], current_event.fits_results[0][2][0],
                  current_event.fits_results[0][2][1],
@@ -147,6 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory')
     parser.add_argument('-o', '--output_directory')
+    parser.add_argument('-c', '--claret')
     arguments = parser.parse_args()
 
     model = arguments.model
