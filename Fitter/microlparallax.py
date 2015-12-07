@@ -195,8 +195,23 @@ class MLParallaxes(object):
         dec_interpolated = interpol_dec[times]
         distance_interpolated = interpol_dist[times]
 
-        print 'continue....'
+        delta_North = []
+        delta_East = []
+        for i in xrange(len(times)):
 
+            tt = i-2400000.5
+            
+            delta_North.append( distance_interpolated[i]*(np.sin(dec_interpolated[i])*np.cos(
+                                self.target_angles[1])-np.cos(dec_interpolated[i])*np.sin(
+                                   self.target_angles[1])*np.cos(ra_interpolated[i])))
+            delta_East.append( distance_interpolated[i]*np.cos(dec_interpolated[i])*np.sin(ra_interpolated[i]))
+
+        delta_positions = np.array([delta_North, delta_East])
+       
+        return delta_positions
+
+        
+       
 
 
     def parallax_outputs(self, PiE):

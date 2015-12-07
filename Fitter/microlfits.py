@@ -10,6 +10,7 @@ from scipy.optimize import leastsq, differential_evolution
 from scipy import interpolate
 import time
 
+import microlmodels
 import microlparallax
 
 
@@ -129,24 +130,11 @@ class MLFits(object):
     def __init__(self, event, model, method, second_order):
 
         self.event = event
-        self.model = [model]
+        self.model = microlmodels.MLModels(event, model, second_order)
         self.method = method
         self.second_order = second_order
 
 
-        self.number_of_parameters()
-
-        if self.model[0] == 'FSPL':
-
-            self.model.append(np.loadtxt('b0b1.dat'))
-
-        if self.second_order[0][0] != 'None':
-            #import pdb; pdb.set_trace()
-
-            self.parallax = microlparallax.Parallaxes(self.event, self.second_order[0])
-            self.parallax.parallax_combination()
-            #parallax = self.parallax.parallax_outputs([0.2, 0.2])
-            #import pdb; pdb.set_trace()
         if self.method == 0:
 
             self.guess = self.initial_guess()
@@ -154,13 +142,13 @@ class MLFits(object):
             
         if self.method == 1:
 
-            AA=differential_evolution(self.chi_differential,bounds=self.parameters_boundaries,mutation=[0.1,0.2],recombination=0.8,polish='None')
+            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=[0.1,0.2],recombination=0.8,polish='None')
             print AA['fun']
             #import pdb; pdb.set_trace()
 
             self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
-       
+
 
         fit_quality_flag = self.check_fit()
         
@@ -168,43 +156,16 @@ class MLFits(object):
 
         if fit_quality_flag == 'Bad Fit':
 
-            print 'We have to change method, this fit was unsuccessfull'
-            self.method = 1
-            AA=differential_evolution(self.chi_differential,bounds=self.parameters_boundaries,mutation=[0.1,1.0],recombination=0.5,polish='None')
-            print AA['fun']
-            self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
-            self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
+            if self.method == 0 :
+                
+                print 'We have to change method, this fit was unsuccessfull. We decided to switch method to 1'
+                self.method = 1
+                self.__init__(self.event,self.model.paczynski_model,self.method,self.model.second_order)
 
-
-    def number_of_parameters(self):
-        '''Provide the number of parameters on which depend the magnification computation.(Paczynski parameters+binary)
-        '''
-        model = {'PSPL':3, 'FSPL':4}
-        model_boundaries = {'PSPL':[(min(self.event.telescopes[0].lightcurve[:,0])-300,
-                                     max(self.event.telescopes[0].lightcurve[:,0])+300),
-                                     (0.000001,2.0), (0.1,300)],'FSPL':[
-                                     (min(self.event.telescopes[0].lightcurve[:,0])-300,
-                                     max(self.event.telescopes[0].lightcurve[:,0])+300),
-                                     (0.000001,2.0), (0.1,300), (0.00001,0.1)]}
-
-        parallax = {'None':0, 'Annual':2, 'Terrestrial':2, 'Full':2}
-        parallax_boundaries =  {'None':[], 'Annual':[(-2.0, 2.0), (-2.0, 2.0)],
-                                'Terrestrial':[(-2.0, 2.0), (-2.0, 2.0)], 'Full':
-                                 [(-2.0, 2.0), (-2.0, 2.0)]}
-
-        orbital_motion={'None':0, '2D':2, '3D':999999}
-        orbital_motion_boundaries={'None':[], '2D':[], '3D':[]}
-
-        source_spots={'None':0}
-        source_spots_boundaries={'None':[]}
-
-        self.number_of_parameters = model[self.model[0]]+parallax[self.second_order[0][0]]+orbital_motion[
-                                    self.second_order[1][0]]+source_spots[self.second_order[2]]
-
-        self.parameters_boundaries = model_boundaries[self.model[0]]+parallax_boundaries[self.second_order[0][0]
-                                     ]+orbital_motion_boundaries[self.second_order[1][0]]+source_spots_boundaries[
-                                     self.second_order[2]]
-
+            else :
+                
+                print 'Unfortunately, this is too hard for pyLIMA :('
+ 
     def check_fit(self):
         '''Check if the fit results and covariance make sens.
          0.0 terms or a negative term in the diagonal covariance matrix indicate the fit is not reliable.
@@ -221,7 +182,7 @@ class MLFits(object):
 
         for i in xrange(len(self.event.telescopes)):
 
-            if self.fit_results[self.number_of_parameters+2*i] < 0:
+            if self.fit_results[self.model.number_of_parameters+2*i] < 0:
 
                 print 'Your fit probably wrong. Cause ==> negative source flux for telescope '+self.event.telescopes[i].name+''
                 flag = 'Bad Fit'
@@ -300,7 +261,7 @@ class MLFits(object):
         uo = np.sqrt(-2+2*np.sqrt(1-1/(1-Amax**2)))
         #import pdb; pdb.set_trace()
     
-        if self.model[0] == 'FSPL':
+        if self.model.paczynski_model == 'FSPL':
 
             if np.abs(uo) > 0.05:
 
@@ -364,17 +325,33 @@ class MLFits(object):
             tE = 20.0
 
 
-        fluxes=self.find_fluxes([to, uo, tE], ['PSPL'])
+        fluxes=self.find_fluxes([to, uo, tE], 'PSPL')
         fluxes[0]=fs
         fluxes[1]=0.0
 
-        if self.model[0] == 'PSPL':
+        parameters = [to, uo, tE]
 
-            parameters = [to, uo, tE]+fluxes
+        if self.model.paczynski_model[0] == 'FSPL':
 
-        if self.model[0] == 'FSPL':
+            parameters = parameters+[1.5*uo]
 
-            parameters = [to, uo, tE,1.5*uo]+fluxes
+        if self.model.parallax_model[0] != 'None':
+
+            parameters = parameters+[0,0]
+
+        if self.model.xallarap_model[0] != 'None':
+
+            parameters = parameters+[0,0]
+
+        if self.model.orbital_motion_model[0] != 'None':
+
+            parameters = parameters+[0,0]
+
+        if self.model.source_spots_model != 'None':
+
+            parameters = parameters+[0]
+
+        parameters=parameters+fluxes
 
         return parameters
 
@@ -408,7 +385,7 @@ class MLFits(object):
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         ndata = 0.0
 
         for i in self.event.telescopes:
@@ -419,7 +396,7 @@ class MLFits(object):
 
             if lmarquardt_fit[1] is not None:
 
-                cov = lmarquardt_fit[1]*fit_res[self.number_of_parameters
+                cov = lmarquardt_fit[1]*fit_res[self.model.number_of_parameters
                                                            +2*len(self.event.telescopes)]/ndata
                 #import pdb; pdb.set_trace()
 
@@ -427,21 +404,21 @@ class MLFits(object):
 
                 print 'rough cov'
                 jacky = self.Jacobian(fit_res, self.model)
-                cov = np.linalg.inv(jacky*jacky.T)*fit_res[self.number_of_parameters
+                cov = np.linalg.inv(jacky*jacky.T)*fit_res[self.model.number_of_parameters
                                                            +2*len(self.event.telescopes)]/ndata
 
         except:
 
             print 'hoho'
-            cov = np.zeros((self.number_of_parameters+2*len(self.event.telescopes),
-                            self.number_of_parameters+2*len(self.event.telescopes)))
+            cov = np.zeros((self.model.number_of_parameters+2*len(self.event.telescopes),
+                            self.model.number_of_parameters+2*len(self.event.telescopes)))
 
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters, model):
         '''Return the analytical Jacobian matrix, requested by method 0.
         '''
-        if self.model[0] == 'PSPL':
+        if self.model.paczynski_model == 'PSPL':
 
             dresdto = np.array([])
             dresduo = np.array([])
@@ -464,21 +441,21 @@ class MLFits(object):
                 dUduo = parameters[1]/ampli[1]
                 dUdtE = -(Time-parameters[0])**2/(parameters[2]**3*ampli[1])
 
-                dresdto = np.append(dresdto, -parameters[self.number_of_parameters+2*count]*
+                dresdto = np.append(dresdto, -parameters[self.model.number_of_parameters+2*count]*
                                     dAdU*dUdto/errflux)
-                dresduo = np.append(dresduo, -parameters[self.number_of_parameters+2*count]*
+                dresduo = np.append(dresduo, -parameters[self.model.number_of_parameters+2*count]*
                                     dAdU*dUduo/errflux)
-                dresdtE = np.append(dresdtE, -parameters[self.number_of_parameters+2*count]*
+                dresdtE = np.append(dresdtE, -parameters[self.model.number_of_parameters+2*count]*
                                     dAdU*dUdtE/errflux)
-                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.number_of_parameters+
+                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.number_of_parameters+
                                                                    2*count+1])/errflux)
-                dresdeps = np.append(dresdeps, -parameters[self.number_of_parameters+2*count]/errflux)
+                dresdeps = np.append(dresdeps, -parameters[self.model.number_of_parameters+2*count]/errflux)
 
                 count = count+1
 
             jacobi = np.array([dresdto, dresduo, dresdtE])
 
-        if self.model[0] == 'FSPL':
+        if self.model.paczynski_model == 'FSPL':
 
             dresdto = np.array([])
             dresduo = np.array([])
@@ -487,16 +464,7 @@ class MLFits(object):
             dresdfs = np.array([])
             dresdeps = np.array([])
 
-            b0b1 = model[1]
-            zz = b0b1[:, 0]
-            b0 = b0b1[:, 1]
-            b1 = b0b1[:, 2]
-            db0 = b0b1[:, 3]
-            db1 = b0b1[:, 4]
-            interpol_b0 = interpolate.interp1d(zz, b0)
-            interpol_b1 = interpolate.interp1d(zz, b1)
-            interpol_db0 = interpolate.interp1d(zz, db0)
-            interpol_db1 = interpolate.interp1d(zz, db1)
+            
             count = 0
 
             for i in self.event.telescopes:
@@ -506,40 +474,39 @@ class MLFits(object):
                 errflux = lightcurve[:, 2]
                 gamma = i.gamma
 
-                ampli = self.amplification(parameters, Time,['PSPL'], gamma)
+                ampli = self.amplification(parameters, Time,'PSPL', gamma)
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**(1.5))
 
                 Z = ampli[1]/parameters[3]
 
                 dadu = np.zeros(len(ampli[0]))
                 dadrho = np.zeros(len(ampli[0]))
-                ind = np.where((Z > 10) | (Z <= 0.001))[0]
+                ind = np.where((Z > 10) | (Z <= self.model.yoo_table[0][0]))[0]
                 dadu[ind] = dAdU[ind]
                 dadrho[ind] = 0.0
 
-                ind = np.where((Z <= 10) & (Z > 0.001))[0]
-                dadu[ind] = (dAdU[ind]*(interpol_b0(Z[ind])-gamma*interpol_b1(Z[ind]))
-                             +ampli[0][ind]*(interpol_db0(Z[ind])-gamma*interpol_db1(Z[ind]))*1/parameters[3])
-                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[3]**2*(interpol_db0(Z[ind])-gamma*
-                                                                             interpol_db1(Z[ind]))
+                ind = np.where((Z <= 10) & (Z > self.model.yoo_table[0][0]))[0]
+                dadu[ind] = (dAdU[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](Z[ind]))
+                             +ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](Z[ind]))*1/parameters[3])
+                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[3]**2*(self.model.yoo_table[2](Z[ind])-gamma*self.model.yoo_table[3](Z[ind]))
 
                 dUdto = -(Time-parameters[0])/(parameters[2]**2*ampli[1])
                 dUduo = parameters[1]/ampli[1]
                 dUdtE = -(Time-parameters[0])**2/(parameters[2]**3*ampli[1])
 
-                dresdto = np.append(dresdto, -parameters[self.number_of_parameters+2*count]*dadu*
+                dresdto = np.append(dresdto, -parameters[self.model.number_of_parameters+2*count]*dadu*
                                     dUdto/errflux)
-                dresduo = np.append(dresduo, -parameters[self.number_of_parameters+2*count]*dadu*
+                dresduo = np.append(dresduo, -parameters[self.model.number_of_parameters+2*count]*dadu*
                                     dUduo/errflux)
-                dresdtE = np.append(dresdtE, -parameters[self.number_of_parameters+2*count]*dadu*
+                dresdtE = np.append(dresdtE, -parameters[self.model.number_of_parameters+2*count]*dadu*
                                     dUdtE/errflux)
-                dresdrho = np.append(dresdrho, -parameters[self.number_of_parameters+2*count]*
+                dresdrho = np.append(dresdrho, -parameters[self.model.number_of_parameters+2*count]*
                                      dadrho/errflux)
 
-                ampli = self.amplification(parameters, Time, self.model, gamma)
-                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.number_of_parameters+2*count+1])
+                ampli = self.amplification(parameters, Time, self.model.paczynski_model, gamma)
+                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.number_of_parameters+2*count+1])
                                     /errflux)
-                dresdeps = np.append(dresdeps, -parameters[self.number_of_parameters+2*count]/errflux)
+                dresdeps = np.append(dresdeps, -parameters[self.model.number_of_parameters+2*count]/errflux)
 
                 count = count+1
 
@@ -583,21 +550,16 @@ class MLFits(object):
         u2 = u**2
         ampli = (u2+2)/(u*(u2+4)**0.5)
 
-        if model[0] == 'FSPL':
+        if model == 'FSPL':
 
-            b0b1 = model[1]
-            zz = b0b1[:, 0]
-            b0 = b0b1[:, 1]
-            b1 = b0b1[:, 2]
-            interpol_b0 = interpolate.interp1d(zz, b0)
-            interpol_b1 = interpolate.interp1d(zz, b1)
+            
             Z = u/parameters[3]
 
             ampli_fspl = np.zeros(len(ampli))
-            ind = np.where((Z > 10) | (Z <= 0.001))[0]
+            ind = np.where((Z > 10) | (Z <= self.model.yoo_table[0][0]))[0]
             ampli_fspl[ind] = ampli[ind]
-            ind = np.where((Z <= 10) & (Z > 0.001))[0]
-            ampli_fspl[ind] = ampli[ind]*(interpol_b0(Z[ind])-gamma*interpol_b1(Z[ind]))
+            ind = np.where((Z <= 10) & (Z > self.model.yoo_table[0][0]))[0]
+            ampli_fspl[ind] = ampli[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](Z[ind]))
             ampli = ampli_fspl
 
         return ampli, u
@@ -618,9 +580,9 @@ class MLFits(object):
             errflux = lightcurve[:, 2]
             gamma = i.gamma
             ampli = self.amplification(parameters, Time, model, gamma)[0]
-            errors = np.append(errors, (flux-ampli*parameters[self.number_of_parameters+2*count]-
-                                        parameters[self.number_of_parameters+2*count+1]*
-                                        parameters[self.number_of_parameters+2*count])/errflux)
+            errors = np.append(errors, (flux-ampli*parameters[self.model.number_of_parameters+2*count]-
+                                        parameters[self.model.number_of_parameters+2*count+1]*
+                                        parameters[self.model.number_of_parameters+2*count])/errflux)
 
             count = count+1
     

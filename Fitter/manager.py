@@ -22,7 +22,7 @@ import telescopes
 
 # location = 'Space'
 # model = 'PSPL'
-second_order = [['None', 2457164.6365], ['None', 0], 'None']
+second_order = [['None', 2457164.6365], ['None', 0], ['None', 0], 'None']
 
 
 def main(command_line):
@@ -58,11 +58,10 @@ def main(command_line):
         # event_telescopes=['OGLE-2015-BLG-1577.phot','MOA-2015-BLG-363.phot']
         # event_telescopes=['MOA-2015-BLG-363.phot']
         for event_telescope in event_telescopes:
-            # import pdb; pdb.set_trace()
 
             k = event_telescope.partition(name)
             raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
-            telescope = telescopes.Telescope(name=k[-1], camera_filter='I', light_curve=raw_light_curve)
+            telescope = telescopes.Telescope(name=k[1], camera_filter='I', light_curve=raw_light_curve)
             # telescope.name=k[-1][:-4]
             # telescope.name=k[1]
             # telescope.name=event_telescope[:4]
@@ -75,8 +74,9 @@ def main(command_line):
         print 'Start;', current_event.name
         # import pdb; pdb.set_trace()
         # current_event.check_event()
-        current_event.find_survey('Survey')
+        current_event.find_survey()
         current_event.check_event()
+
         current_event.fit(command_line.model, 0, second_order)
         current_event.produce_outputs()
         current_event.output.student_errors()
@@ -143,9 +143,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory')
-    parser.add_argument('-o', '--output_directory')
-    parser.add_argument('-c', '--claret')
+    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')
+    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Ground/')
+    parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()
 
     model = arguments.model

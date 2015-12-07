@@ -136,6 +136,7 @@ class Event(object):
         available_models = ['PSPL', 'FSPL']
         available_methods = [0, 1]
         available_parallax = ['None', 'Annual']
+        available_xallarap = ['None']
         available_orbital_motion = ['None']
         available_source_spots = ['None']
 
@@ -155,22 +156,26 @@ class Event(object):
         if second_order[0][0] not in available_parallax:
             print 'ERROR : Wrong parallax request, has to be selected between ' + ' or '.join(available_parallax) + ''
             return
+            
+        if second_order[1][0] not in available_xallarap:
+            print 'ERROR : Wrong parallax request, has to be selected between ' + ' or '.join(available_xallarap) + ''
+            return
 
-        if second_order[1][0] not in available_orbital_motion:
+        if second_order[2][0] not in available_orbital_motion:
             print 'ERROR : Wrong orbital motion request, has to be selected between ' + \
                   ' or '.join(available_orbital_motion) + ''
             return
 
-        if second_order[2] not in available_source_spots:
+        if second_order[3] not in available_source_spots:
             print 'ERROR : Wrong source spots request, has to be selected between ' + \
                   ' or '.join(available_source_spots) + ''
             return
 
         fit = microlfits.MLFits(self, model, method, second_order)
 
-        self.fits_results.append([fit.model[0], fit.method, fit.fit_results])
-        self.fits_covariance.append([fit.model[0], fit.method, fit.fit_covariance])
-        self.fits_time.append([fit.model[0], fit.method, fit.fit_time])
+        self.fits_results.append([fit.model.paczynski_model, fit.method, fit.fit_results])
+        self.fits_covariance.append([fit.model.paczynski_model, fit.method, fit.fit_covariance])
+        self.fits_time.append([fit.modelpaczynski_model, fit.method, fit.fit_time])
 
     def telescopes_names(self):
         '''Function to list the telescope names for an event.
@@ -191,12 +196,13 @@ class Event(object):
             return
 
         if (self.ra > 360) or (self.ra < 0):
-            print 'ERROR : The event ra (' + str(self.name) + ') is not correct, it has to be between 0 and 360 degrees'
+            print 'ERROR : The event ra (' + str(
+                self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees'
             return
 
         if (self.dec > 90) or (self.dec < -90):
             print 'ERROR : The event ra (' + str(
-                self.name) + ') is not correct, it has to be between -90 and 90 degrees'
+                self.dec) + ') is not correct, it has to be between -90 and 90 degrees'
             return
 
         if len(self.telescopes) == 0:
@@ -205,10 +211,14 @@ class Event(object):
 
         print 'Everything is fine, this event can be treat'
 
-    def find_survey(self, choice):
-        '''Function to find the surveu telescope in the telescopes list,
+    def find_survey(self, choice = None):
+        '''Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
         '''
+        if choice is None:
+
+            choice = self.telescopes[0].name
+
 
         self.survey = choice
         names = [i.name for i in self.telescopes]
