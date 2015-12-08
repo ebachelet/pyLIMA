@@ -172,7 +172,8 @@ class Event(object):
             return
 
         fit = microlfits.MLFits(self, model, method, second_order)
-
+        fit.mlfit()
+        
         self.fits_results.append([fit.model.paczynski_model, fit.method, fit.fit_results])
         self.fits_covariance.append([fit.model.paczynski_model, fit.method, fit.fit_covariance])
         self.fits_time.append([fit.modelpaczynski_model, fit.method, fit.fit_time])

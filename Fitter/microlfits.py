@@ -134,6 +134,7 @@ class MLFits(object):
         self.method = method
         self.second_order = second_order
 
+    def mlfit(self):
 
         if self.method == 0:
 
