@@ -42,7 +42,7 @@ def main(command_line):
     models = []
     time_fit = []
 
-    for event_name in events_names[6:10]:
+    for event_name in events_names[44:100]:
         # event_name='OGLE-2015-BLG-3851.phot'
         # event_name='Lightcurve_3016.dat'
         name = event_name.replace('Survey.dat', '')
@@ -78,6 +78,7 @@ def main(command_line):
         current_event.check_event()
 
         current_event.fit(command_line.model, 0, second_order)
+        import pdb; pdb.set_trace()
         current_event.produce_outputs()
         current_event.output.student_errors()
         current_event.plot_data('Mag')

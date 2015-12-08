@@ -181,9 +181,9 @@ class MLFits(object):
             flag = 'Bad Fit'
             return flag
 
-        for i in xrange(len(self.event.telescopes)):
+        for i in self.event.telescopes:
 
-            if self.fit_results[self.model.number_of_parameters+2*i] < 0:
+            if self.fit_results[self.model.model_dictionnary['fs_'+i.name]] < 0:
 
                 print 'Your fit probably wrong. Cause ==> negative source flux for telescope '+self.event.telescopes[i].name+''
                 flag = 'Bad Fit'
@@ -377,9 +377,16 @@ class MLFits(object):
         '''
 
         start = time.time()
-        lmarquardt_fit = leastsq(self.residuals, self.guess, args=(self.model), maxfev=50000, Dfun=self.Jacobian,
+
+        if self.model.parallax_model[0] != 'None':
+
+            lmarquardt_fit=leastsq(self.residuals,self.guess,args=(self.model),maxfev=50000,full_output=1,ftol=0.00001)
+
+        else:
+
+            lmarquardt_fit = leastsq(self.residuals, self.guess, args=(self.model), maxfev=50000, Dfun=self.Jacobian,
                                  col_deriv=1, full_output=1, ftol=0.00001)
-       
+
         #lmarquardt_fit=leastsq(self.residuals,self.guess,args=(self.model),maxfev=50000,full_output=1,ftol=0.00001)
 
         computation_time = time.time()-start
@@ -397,22 +404,20 @@ class MLFits(object):
 
             if lmarquardt_fit[1] is not None:
 
-                cov = lmarquardt_fit[1]*fit_res[self.model.number_of_parameters
-                                                           +2*len(self.event.telescopes)]/ndata
+                cov = lmarquardt_fit[1]*fit_res[len(self.model.model_dictionnary)]/ndata
                 #import pdb; pdb.set_trace()
 
             else:
 
                 print 'rough cov'
                 jacky = self.Jacobian(fit_res, self.model)
-                cov = np.linalg.inv(jacky*jacky.T)*fit_res[self.model.number_of_parameters
-                                                           +2*len(self.event.telescopes)]/ndata
+                cov = np.linalg.inv(jacky*jacky.T)*fit_res[len(self.model.model_dictionnary)]/ndata
 
         except:
 
             print 'hoho'
-            cov = np.zeros((self.model.number_of_parameters+2*len(self.event.telescopes),
-                            self.model.number_of_parameters+2*len(self.event.telescopes)))
+            cov = np.zeros((len(self.model.model_dictionnary),
+                            len(self.model.model_dictionnary)))
 
         return fit_res, cov, computation_time
 
@@ -426,7 +431,7 @@ class MLFits(object):
             dresdtE = np.array([])
             dresdfs = np.array([])
             dresdeps = np.array([])
-            count = 0
+           
 
             for i in self.event.telescopes:
 
@@ -434,25 +439,24 @@ class MLFits(object):
                 Time = lightcurve[:, 0]
                 errflux = lightcurve[:, 2]
                 gamma = i.gamma
-
-                ampli = self.amplification(parameters, Time, self.model, gamma)
+                
+                ampli = self.amplification(Time, self.model.paczynski_model, parameters, gamma)
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**1.5)
 
-                dUdto = -(Time-parameters[0])/(parameters[2]**2*ampli[1])
-                dUduo = parameters[1]/ampli[1]
-                dUdtE = -(Time-parameters[0])**2/(parameters[2]**3*ampli[1])
+                dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
+                dUduo = parameters[self.model.model_dictionnary['uo']]/ampli[1]
+                dUdtE = -(Time-parameters[self.model.model_dictionnary['to']])**2/(parameters[self.model.model_dictionnary['tE']]**3*ampli[1])
 
-                dresdto = np.append(dresdto, -parameters[self.model.number_of_parameters+2*count]*
+                dresdto = np.append(dresdto, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                     dAdU*dUdto/errflux)
-                dresduo = np.append(dresduo, -parameters[self.model.number_of_parameters+2*count]*
+                dresduo = np.append(dresduo, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                     dAdU*dUduo/errflux)
-                dresdtE = np.append(dresdtE, -parameters[self.model.number_of_parameters+2*count]*
+                dresdtE = np.append(dresdtE, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                     dAdU*dUdtE/errflux)
-                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.number_of_parameters+
-                                                                   2*count+1])/errflux)
-                dresdeps = np.append(dresdeps, -parameters[self.model.number_of_parameters+2*count]/errflux)
+                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])/errflux)
+                dresdeps = np.append(dresdeps, -parameters[self.model.model_dictionnary['fs_'+i.name]]/errflux)
 
-                count = count+1
+                
 
             jacobi = np.array([dresdto, dresduo, dresdtE])
 
@@ -465,9 +469,6 @@ class MLFits(object):
             dresdfs = np.array([])
             dresdeps = np.array([])
 
-            
-            count = 0
-
             for i in self.event.telescopes:
 
                 lightcurve = i.lightcurve_flux
@@ -475,10 +476,10 @@ class MLFits(object):
                 errflux = lightcurve[:, 2]
                 gamma = i.gamma
 
-                ampli = self.amplification(parameters, Time,'PSPL', gamma)
+                ampli = self.amplification(Time, 'PSPL', parameters, gamma)[0]
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**(1.5))
 
-                Z = ampli[1]/parameters[3]
+                Z = ampli[1]/parameters[self.model.model_dictionnary['rho']]
 
                 dadu = np.zeros(len(ampli[0]))
                 dadrho = np.zeros(len(ampli[0]))
@@ -488,28 +489,34 @@ class MLFits(object):
 
                 ind = np.where((Z <= 10) & (Z > self.model.yoo_table[0][0]))[0]
                 dadu[ind] = (dAdU[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](Z[ind]))
-                             +ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](Z[ind]))*1/parameters[3])
-                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[3]**2*(self.model.yoo_table[2](Z[ind])-gamma*self.model.yoo_table[3](Z[ind]))
+                             +ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](
+                             Z[ind]))*1/parameters[self.model.model_dictionnary['rho']])
 
-                dUdto = -(Time-parameters[0])/(parameters[2]**2*ampli[1])
-                dUduo = parameters[1]/ampli[1]
-                dUdtE = -(Time-parameters[0])**2/(parameters[2]**3*ampli[1])
+                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*(
+                              self.model.yoo_table[2](Z[ind])-gamma*self.model.yoo_table[3](Z[ind]))
 
-                dresdto = np.append(dresdto, -parameters[self.model.number_of_parameters+2*count]*dadu*
+                dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(
+                        parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
+
+                dUduo = parameters[self.model.model_dictionnary['uo']]/ampli[1]
+                dUdtE = -(Time-parameters[self.model.model_dictionnary['to']])**2/(
+                        parameters[self.model.model_dictionnary['tE']]**3*ampli[1])
+
+                dresdto = np.append(dresdto, -parameters[self.model.model_dictionnary['fs_'+i.name]]*dadu*
                                     dUdto/errflux)
-                dresduo = np.append(dresduo, -parameters[self.model.number_of_parameters+2*count]*dadu*
+                dresduo = np.append(dresduo, -parameters[self.model.model_dictionnary['fs_'+i.name]]*dadu*
                                     dUduo/errflux)
-                dresdtE = np.append(dresdtE, -parameters[self.model.number_of_parameters+2*count]*dadu*
+                dresdtE = np.append(dresdtE, -parameters[self.model.model_dictionnary['fs_'+i.name]]*dadu*
                                     dUdtE/errflux)
-                dresdrho = np.append(dresdrho, -parameters[self.model.number_of_parameters+2*count]*
+                dresdrho = np.append(dresdrho, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                      dadrho/errflux)
 
-                ampli = self.amplification(parameters, Time, self.model.paczynski_model, gamma)
-                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.number_of_parameters+2*count+1])
+                ampli = self.amplification(Time, self.model.paczynski_model, parameters, gamma)[0]
+                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])
                                     /errflux)
-                dresdeps = np.append(dresdeps, -parameters[self.model.number_of_parameters+2*count]/errflux)
+                dresdeps = np.append(dresdeps, -parameters[self.model.model_dictionnary['fs_'+i.name]]/errflux)
 
-                count = count+1
+
 
             jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho])
 
@@ -525,11 +532,12 @@ class MLFits(object):
             dEPS[index] = dresdeps[index]
             jacobi = np.vstack([jacobi, dFS])
             jacobi = np.vstack([jacobi, dEPS])
+
             start = start+index[-1]+1
 
         return jacobi
 
-    def amplification(self, parameters, t, model, gamma):
+    def amplification(self, t, model, parameters, gamma):
         ''' The magnification associated to the model, at time t using parameters and gamma.
 
             The formula change regarding the requested model :
@@ -547,14 +555,16 @@ class MLFits(object):
             'Binary' --> not available now
             'Triple' --> not available now
         '''
-        u = (parameters[1]**2+(t-parameters[0])**2/parameters[2]**2)**0.5
+
+        u = (parameters[self.model.model_dictionnary['uo']]**2+(t-
+            parameters[self.model.model_dictionnary['to']])**2/parameters[self.model.model_dictionnary['tE']]**2)**0.5
         u2 = u**2
         ampli = (u2+2)/(u*(u2+4)**0.5)
 
         if model == 'FSPL':
 
             
-            Z = u/parameters[3]
+            Z = u/parameters[self.model.model_dictionnary['rho']]
 
             ampli_fspl = np.zeros(len(ampli))
             ind = np.where((Z > 10) | (Z <= self.model.yoo_table[0][0]))[0]
@@ -580,10 +590,10 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = self.amplification(parameters, Time, model, gamma)[0]
-            errors = np.append(errors, (flux-ampli*parameters[self.model.number_of_parameters+2*count]-
-                                        parameters[self.model.number_of_parameters+2*count+1]*
-                                        parameters[self.model.number_of_parameters+2*count])/errflux)
+            ampli = self.amplification(Time, model, parameters,  gamma)[0]
+            errors = np.append(errors, (flux-ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]-
+                                        parameters[self.model.model_dictionnary['g_'+i.name]]*
+                                        parameters[self.model.model_dictionnary['fs_'+i.name]])/errflux)
 
             count = count+1
     
@@ -627,7 +637,7 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = self.amplification(parameters, Time, model, gamma)[0]
+            ampli = self.amplification(Time, self.model, parameters, gamma)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0) :
 

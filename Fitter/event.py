@@ -158,7 +158,7 @@ class Event(object):
             return
             
         if second_order[1][0] not in available_xallarap:
-            print 'ERROR : Wrong parallax request, has to be selected between ' + ' or '.join(available_xallarap) + ''
+            print 'ERROR : Wrong xallarap request, has to be selected between ' + ' or '.join(available_xallarap) + ''
             return
 
         if second_order[2][0] not in available_orbital_motion:
@@ -174,9 +174,9 @@ class Event(object):
         fit = microlfits.MLFits(self, model, method, second_order)
         fit.mlfit()
         
-        self.fits_results.append([fit.model.paczynski_model, fit.method, fit.fit_results])
-        self.fits_covariance.append([fit.model.paczynski_model, fit.method, fit.fit_covariance])
-        self.fits_time.append([fit.modelpaczynski_model, fit.method, fit.fit_time])
+        self.fits_results.append([fit.model.paczynski_model, fit.method, fit.second_order, fit.fit_results])
+        self.fits_covariance.append([fit.model.paczynski_model, fit.method, fit.second_order, fit.fit_covariance])
+        self.fits_time.append([fit.model.paczynski_model, fit.method, fit.second_order, fit.fit_time])
 
     def telescopes_names(self):
         '''Function to list the telescope names for an event.
