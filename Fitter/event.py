@@ -49,10 +49,8 @@ class Event(object):
         self.fits_covariance = []
         self.fits_time = []
         self.outputs = []
-        self.plots_mag = microlplotter.MLPlotter(self)
-        self.plots_flux = microlplotter.MLPlotter(self)
-
-    def fit(self, model, method, second_order):
+      
+    def fit(self, model,  second_order, method,):
         """Function to fit the event.
 
         Keyword arguments:
@@ -171,12 +169,13 @@ class Event(object):
                   ' or '.join(available_source_spots) + ''
             return
 
-        fit = microlfits.MLFits(self, model, method, second_order)
+        self.lightcurves_in_flux('Yes')
+        fit = microlfits.MLFits(self, model, second_order, method)
         fit.mlfit()
         
-        self.fits_results.append([fit.model.paczynski_model, fit.method, fit.second_order, fit.fit_results])
-        self.fits_covariance.append([fit.model.paczynski_model, fit.method, fit.second_order, fit.fit_covariance])
-        self.fits_time.append([fit.model.paczynski_model, fit.method, fit.second_order, fit.fit_time])
+        self.fits_results.append([fit.model.paczynski_model, fit.second_order, fit.method,fit.fit_results])
+        self.fits_covariance.append([fit.model.paczynski_model, fit.second_order, fit.method, fit.fit_covariance])
+        self.fits_time.append([fit.model.paczynski_model, fit.second_order, fit.method, fit.fit_time])
 
     def telescopes_names(self):
         '''Function to list the telescope names for an event.
@@ -237,37 +236,46 @@ class Event(object):
             print 'ERROR : There is no telescope names containing ' + self.survey
             return
 
-    def plot_data(self, choice):
+    def plot_data(self, observe, split):
 
-        if choice == 'Mag':
+        if observe is 'Mag':
 
-            self.plots_mag.plot_lightcurves_mag()
+            microlplotter.plot_lightcurves_mag(self, split)
 
-        if choice == 'Flux':
+        if observe is 'Flux':
 
-            self.plots_flux.plot_lightcurves_flux()
+            self.lightcurves_in_flux('No')
 
-    def plot_model(self, model, second_order, choice):
+            microlplotter.plot_lightcurves_flux(self, split)
+
+    def plot_model(self, request, observe, split):
 
 
-        available_fits = [i[0] for i in self.fits_results]
+        available_fits = [i[:3] for i in self.fits_results]
 
-        if model not in available_fits:
+        if request not in available_fits:
 
-            print 'ERROR : The model '+model+' you want to plot is not fitted yet! You can articially add it with self.fit_results.append(your model) (Check conventions)'
+            print 'ERROR : The model '+str(request)+' you want to plot is not fitted yet! You can articially add it with self.fit_results.append(your model) (Check conventions)'
 
         else:
+        
+            index = np.where(request in available_fits)[0]
+            parameters = self.fits_results[index][3]
 
-            index = np.where(model in available_fits)[0]
-            parameters = self.fits_results[index][2]
+            if observe is 'Mag':
 
-            if choice == 'Mag':
+                microlplotter.plot_model_mag(self, request, parameters)
 
-                self.plots_mag.plot_model_mag(model, parameters, second_order)
-
-            if choice == 'Flux':
+            if observe is 'Flux':
 
                 microlplotter.plot_model_flux(self, model, parameters, second_order)
+
+    def lightcurves_in_flux(self, choice):
+
+            for i in self.telescopes:
+
+                i.lightcurve_in_flux(choice)
+
 
     def produce_outputs(self):
 

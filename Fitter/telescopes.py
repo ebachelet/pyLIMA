@@ -139,7 +139,7 @@ class Telescope(object):
 
         return lightcurve
 
-    def lightcurve_in_flux(self):
+    def lightcurve_in_flux(self,clean):
         """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar accordingly.
         Perform a clean_data call to avoid outliers.
@@ -148,7 +148,14 @@ class Telescope(object):
 
         lighhtcurve_flux : the lightcurve in flux.
         """
-        lightcurve = self.clean_data()
+        if clean is 'Yes':
+            
+            lightcurve = self.clean_data()
+        
+        else :
+
+            lightcurve = self.lightcurve
+            
         flux = 10 ** ((27.4 - lightcurve[:, 1]) / 2.5)
         errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
         self.lightcurve_flux = np.array([lightcurve[:, 0], flux, errflux]).T

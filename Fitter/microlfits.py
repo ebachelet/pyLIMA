@@ -128,7 +128,7 @@ class MLFits(object):
             '''
 
 
-    def __init__(self, event, model, method, second_order):
+    def __init__(self, event, model,  second_order, method):
 
         self.event = event
         self.model = microlmodels.MLModels(event, model, second_order)
@@ -381,16 +381,16 @@ class MLFits(object):
 
         start = time.time()
 
-#        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
-#                                 col_deriv=1, full_output=1, ftol=0.00001)
+        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
+                                 col_deriv=1, full_output=1, ftol=0.00001)
 
-        lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
+#        lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
 
         computation_time = time.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-        import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
         ndata = 0.0
 
         for i in self.event.telescopes:

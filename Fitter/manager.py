@@ -68,7 +68,6 @@ def main(command_line):
             # telescope.name=k[1]
             # telescope.name=event_telescope[:4]
             # telescope.name=k[0]
-            telescope.lightcurve_in_flux()
             telescope.find_gamma(5300.0, 4.5, command_line.claret)
             current_event.telescopes.append(telescope)
 
@@ -79,7 +78,7 @@ def main(command_line):
         current_event.find_survey('Survey')
         current_event.check_event()
 
-        current_event.fit(command_line.model, 0, second_order)
+        current_event.fit(command_line.model, second_order,0)
         import pdb; pdb.set_trace()
         current_event.produce_outputs()
         current_event.output.student_errors()
