@@ -9,15 +9,6 @@ import numpy as np
 import astropy.io.fits as fits
 
 
-def read_claret(file_name, filter='I'):
-    # TODO: Read columns into named tuple.
-    with open('tableu.dat', 'r') as file_socket:
-        for line in file_socket:
-            columns = line.strip().split()
-            if columns[5] == filter:
-                yield columns
-
-
 class Telescope(object):
     """
     ######## Telescope module ########
