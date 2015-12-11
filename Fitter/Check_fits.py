@@ -8,7 +8,7 @@ Created on Fri Aug 28 17:46:45 2015
 import numpy as np
 import matplotlib.pyplot as plt
 
-Location='FSPL'
+Location='Ground'
 
 Fits=np.loadtxt('./'+Location+'/Fits_'+Location+'.txt',dtype='string')
 Names=Fits[:,0]
@@ -86,8 +86,8 @@ for i in xrange(len(Fits)):
             SigmaBlend.append((Blend[i,0]-Model[i,4])/Blend_err[i])
             DChi2.append(Fits[i,4]-Model[i,6])
             print Names[i]
-            if Names[i]=='Lightcurve_215_':
-            #if 27.4-2.5*np.log10(model[i,3]*(model[i,4]))<16:
+            #if Names[i]=='Lightcurve_215_':
+            if Fits[i,5]>1:
                 print 27.4-2.5*np.log10(Model[i,3]*(Model[i,4]))
                 print Names[i]
                 print (Fits[i,4]-Model[i,6])

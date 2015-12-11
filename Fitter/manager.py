@@ -27,7 +27,7 @@ second_order = [['None', 2457164.6365], ['None', 0], ['None', 0], 'None']
 
 def main(command_line):
     events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.dat')]
-    print 'event_names = ', events_names
+    #print 'event_names = ', events_names
 
     # events_names=[event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
     # EEvents_names=[event_name for event_name in os.listdir(events_path) if '.phot' in event_name]
@@ -41,14 +41,15 @@ def main(command_line):
     blend_error = []
     models = []
     time_fit = []
-
-    for event_name in events_names[44:100]:
+    events_names=[i for i in events_names if 'Survey' in i]
+    for event_name in events_names[7958:10000]:
         # event_name='OGLE-2015-BLG-3851.phot'
         # event_name='Lightcurve_3016.dat'
         name = event_name.replace('Survey.dat', '')
         # name=event_name.replace('.dat','')
         # name='.phot'
         # name=event_name
+
         current_event = event.Event()
         current_event.name = name
         current_event.ra = 270.65404166666667
@@ -57,11 +58,12 @@ def main(command_line):
                             name in event_telescope]
         # event_telescopes=['OGLE-2015-BLG-1577.phot','MOA-2015-BLG-363.phot']
         # event_telescopes=['MOA-2015-BLG-363.phot']
+                    
         for event_telescope in event_telescopes:
 
             k = event_telescope.partition(name)
             raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
-            telescope = telescopes.Telescope(name=k[1], camera_filter='I', light_curve=raw_light_curve)
+            telescope = telescopes.Telescope(name=k[-1], camera_filter='I', light_curve=raw_light_curve)
             # telescope.name=k[-1][:-4]
             # telescope.name=k[1]
             # telescope.name=event_telescope[:4]
@@ -74,7 +76,7 @@ def main(command_line):
         print 'Start;', current_event.name
         # import pdb; pdb.set_trace()
         # current_event.check_event()
-        current_event.find_survey()
+        current_event.find_survey('Survey')
         current_event.check_event()
 
         current_event.fit(command_line.model, 0, second_order)
@@ -143,9 +145,9 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')
-    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Ground/')
+    parser.add_argument('-m', '--model', default='FSPL')
+    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_FSPL/Lightcurves/')
+    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()
 

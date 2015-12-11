@@ -9,10 +9,11 @@ import numpy as np
 from scipy.optimize import leastsq, differential_evolution
 from scipy import interpolate
 import time
+from scipy.integrate import dblquad,nquad
 
 import microlmodels
 import microlparallax
-
+import microlmagnification
 
 
 class MLFits(object):
@@ -142,13 +143,14 @@ class MLFits(object):
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
             
         if self.method == 1:
-
-            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=[0.1,0.2],recombination=0.8,polish='None')
+            start=time.time()
+            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=[0.9,1.1],recombination=1.0,polish='None')
             print AA['fun']
             #import pdb; pdb.set_trace()
-
-            self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
-            self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
+            computation_time = time.time()-start
+            import pdb; pdb.set_trace()
+#            self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
+#            self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
 
         fit_quality_flag = self.check_fit()
@@ -325,14 +327,15 @@ class MLFits(object):
 
             tE = 20.0
 
+        fake_model = microlmodels.MLModels(self.event, 'PSPL', self.second_order)
 
-        fluxes=self.find_fluxes([to, uo, tE], 'PSPL')
+        fluxes=self.find_fluxes([to, uo, tE], fake_model)
         fluxes[0]=fs
         fluxes[1]=0.0
 
         parameters = [to, uo, tE]
 
-        if self.model.paczynski_model[0] == 'FSPL':
+        if self.model.paczynski_model == 'FSPL':
 
             parameters = parameters+[1.5*uo]
 
@@ -378,16 +381,10 @@ class MLFits(object):
 
         start = time.time()
 
-        if self.model.parallax_model[0] != 'None':
+#        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
+#                                 col_deriv=1, full_output=1, ftol=0.00001)
 
-            lmarquardt_fit=leastsq(self.residuals,self.guess,args=(self.model),maxfev=50000,full_output=1,ftol=0.00001)
-
-        else:
-
-            lmarquardt_fit = leastsq(self.residuals, self.guess, args=(self.model), maxfev=50000, Dfun=self.Jacobian,
-                                 col_deriv=1, full_output=1, ftol=0.00001)
-
-        #lmarquardt_fit=leastsq(self.residuals,self.guess,args=(self.model),maxfev=50000,full_output=1,ftol=0.00001)
+        lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
 
         computation_time = time.time()-start
 
@@ -421,7 +418,7 @@ class MLFits(object):
 
         return fit_res, cov, computation_time
 
-    def Jacobian(self, parameters, model):
+    def Jacobian(self, parameters):
         '''Return the analytical Jacobian matrix, requested by method 0.
         '''
         if self.model.paczynski_model == 'PSPL':
@@ -440,7 +437,7 @@ class MLFits(object):
                 errflux = lightcurve[:, 2]
                 gamma = i.gamma
                 
-                ampli = self.amplification(Time, self.model.paczynski_model, parameters, gamma)
+                ampli = microlmagnification.amplification(self.model,Time, parameters, gamma)
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**1.5)
 
                 dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
@@ -456,7 +453,6 @@ class MLFits(object):
                 dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])/errflux)
                 dresdeps = np.append(dresdeps, -parameters[self.model.model_dictionnary['fs_'+i.name]]/errflux)
 
-                
 
             jacobi = np.array([dresdto, dresduo, dresdtE])
 
@@ -468,6 +464,9 @@ class MLFits(object):
             dresdrho = np.array([])
             dresdfs = np.array([])
             dresdeps = np.array([])
+            
+            fake_model = microlmodels.MLModels(self.event, 'PSPL', self.second_order)
+            fake_params = np.delete(parameters, self.model.model_dictionnary['rho'])
 
             for i in self.event.telescopes:
 
@@ -476,24 +475,26 @@ class MLFits(object):
                 errflux = lightcurve[:, 2]
                 gamma = i.gamma
 
-                ampli = self.amplification(Time, 'PSPL', parameters, gamma)[0]
+
+                ampli = microlmagnification.amplification(fake_model,Time, fake_params, gamma)
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**(1.5))
 
                 Z = ampli[1]/parameters[self.model.model_dictionnary['rho']]
 
                 dadu = np.zeros(len(ampli[0]))
                 dadrho = np.zeros(len(ampli[0]))
-                ind = np.where((Z > 10) | (Z <= self.model.yoo_table[0][0]))[0]
+                ind = np.where((Z > 10) | (Z < self.model.yoo_table[0][0]))[0]
                 dadu[ind] = dAdU[ind]
                 dadrho[ind] = 0.0
 
-                ind = np.where((Z <= 10) & (Z > self.model.yoo_table[0][0]))[0]
-                dadu[ind] = (dAdU[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](Z[ind]))
-                             +ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](
-                             Z[ind]))*1/parameters[self.model.model_dictionnary['rho']])
+                ind = np.where((Z <= 10) & (Z >= self.model.yoo_table[0][0]))[0]
+
+                dadu[ind] = dAdU[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](
+                            Z[ind]))+ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](
+                             Z[ind]))*1/parameters[self.model.model_dictionnary['rho']]
 
                 dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*(
-                              self.model.yoo_table[2](Z[ind])-gamma*self.model.yoo_table[3](Z[ind]))
+                              self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](Z[ind]))
 
                 dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(
                         parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
@@ -511,9 +512,8 @@ class MLFits(object):
                 dresdrho = np.append(dresdrho, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                      dadrho/errflux)
 
-                ampli = self.amplification(Time, self.model.paczynski_model, parameters, gamma)[0]
-                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])
-                                    /errflux)
+                ampli = microlmagnification.amplification(self.model,Time, parameters, gamma)
+                dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])/errflux)
                 dresdeps = np.append(dresdeps, -parameters[self.model.model_dictionnary['fs_'+i.name]]/errflux)
 
 
@@ -535,47 +535,11 @@ class MLFits(object):
 
             start = start+index[-1]+1
 
+        #import pdb; pdb.set_trace()
+
         return jacobi
 
-    def amplification(self, t, model, parameters, gamma):
-        ''' The magnification associated to the model, at time t using parameters and gamma.
-
-            The formula change regarding the requested model :
-
-            PSPL' --> Point Source Point Lens. The amplification is taken from :
-            "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
-            A=(u^2+2)/[u*(u^2+4)^0.5]
-
-            'FSPL' --> Finite Source Point Lens. The amplification is taken from :
-            "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,J. et al.2004ApJ...603..139Y
-            Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
-            to compute B0(z) and B1(z).
-
-            'DSPL'  --> not available now
-            'Binary' --> not available now
-            'Triple' --> not available now
-        '''
-
-        u = (parameters[self.model.model_dictionnary['uo']]**2+(t-
-            parameters[self.model.model_dictionnary['to']])**2/parameters[self.model.model_dictionnary['tE']]**2)**0.5
-        u2 = u**2
-        ampli = (u2+2)/(u*(u2+4)**0.5)
-
-        if model == 'FSPL':
-
-            
-            Z = u/parameters[self.model.model_dictionnary['rho']]
-
-            ampli_fspl = np.zeros(len(ampli))
-            ind = np.where((Z > 10) | (Z <= self.model.yoo_table[0][0]))[0]
-            ampli_fspl[ind] = ampli[ind]
-            ind = np.where((Z <= 10) & (Z > self.model.yoo_table[0][0]))[0]
-            ampli_fspl[ind] = ampli[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](Z[ind]))
-            ampli = ampli_fspl
-
-        return ampli, u
-
-    def residuals(self, parameters, model):
+    def residuals(self, parameters):
         ''' The normalized residuals associated to the model and parameters.
         residuals_i=(y_i-model_i)/sigma_i
         The sum of square residuals gives chi^2.
@@ -590,10 +554,10 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = self.amplification(Time, model, parameters,  gamma)[0]
+            ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
             errors = np.append(errors, (flux-ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]-
-                                        parameters[self.model.model_dictionnary['g_'+i.name]]*
-                                        parameters[self.model.model_dictionnary['fs_'+i.name]])/errflux)
+                                       (parameters[self.model.model_dictionnary['fs_'+i.name]]*parameters[
+                                       self.model.model_dictionnary['g_'+i.name]]))/errflux)
 
             count = count+1
     
@@ -602,7 +566,7 @@ class MLFits(object):
     def chichi(self, parameters):
         '''Return the chi^2.
         '''
-        errors = self.residuals(parameters, self.model)
+        errors = self.residuals(parameters)
         chichi = (errors**2).sum()
 
         return chichi
@@ -620,7 +584,7 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = self.amplification(parameters, Time, self.model, gamma)[0]
+            ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             errors = np.append(errors, (flux-ampli*fs-fb)/errflux)
 
@@ -637,7 +601,7 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = self.amplification(Time, self.model, parameters, gamma)[0]
+            ampli = microlmagnification.amplification(model, Time, parameters, gamma)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0) :
 
@@ -647,5 +611,4 @@ class MLFits(object):
                 fluxes.append(fs)
                 fluxes.append(fb/fs)
         return fluxes
-    
-  
+
