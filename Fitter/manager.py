@@ -14,6 +14,7 @@ Created on Fri Aug 28 10:17:30 2015
 import os
 import time
 import glob
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -42,7 +43,7 @@ def main(command_line):
     models = []
     time_fit = []
     events_names=[i for i in events_names if 'Survey' in i]
-    for event_name in events_names[7958:10000]:
+    for event_name in events_names[613:10000]:
         # event_name='OGLE-2015-BLG-3851.phot'
         # event_name='Lightcurve_3016.dat'
         name = event_name.replace('Survey.dat', '')
@@ -58,7 +59,8 @@ def main(command_line):
                             name in event_telescope]
         # event_telescopes=['OGLE-2015-BLG-1577.phot','MOA-2015-BLG-363.phot']
         # event_telescopes=['MOA-2015-BLG-363.phot']
-                    
+        filters = ['I','J']    
+        count=0
         for event_telescope in event_telescopes:
 
             k = event_telescope.partition(name)
@@ -68,9 +70,10 @@ def main(command_line):
             # telescope.name=k[1]
             # telescope.name=event_telescope[:4]
             # telescope.name=k[0]
+            telescope.filter = filters[count]            
             telescope.find_gamma(5300.0, 4.5, command_line.claret)
             current_event.telescopes.append(telescope)
-
+            count = count+1
         events.append(current_event)
         print 'Start;', current_event.name
         # import pdb; pdb.set_trace()
@@ -79,11 +82,22 @@ def main(command_line):
         current_event.check_event()
 
         current_event.fit(command_line.model, second_order,0)
-        import pdb; pdb.set_trace()
+        
+        #current_event.produce_outputs()
+        #current_event.output.student_errors()
+        current_event.lightcurves_in_flux('No')
+        current_event.initialize_plots(0,'Mag')
+        current_event.plot_data(0,'Mag','Yes')
+        current_event.plot_model(0, 'Mag')
+        plt.show()
         current_event.produce_outputs()
-        current_event.output.student_errors()
-        current_event.plot_data('Mag')
-        current_event.plot_model('PSPL', second_order, 'Mag')
+        results_header= [] 
+        results_header.append( '#'+current_event.fits_models[0][0])
+        for i in current_event.outputs.observables_dictionnary :
+            results_header.append(i)
+        data = np.array(current_event.outputs.observables[0][3])
+        DATA=np.array([results_header,data])
+        import pdb; pdb.set_trace()
         # tt=np.arange(min(current_event.telescopes[0].lightcurve[:,0]),max(current_event.telescopes[0].lightcurve[:,0]),0.01)
         # par=current_event.output.lower
         # uu=(par[1]**2+(tt-par[0])**2/par[2]**2)**0.5

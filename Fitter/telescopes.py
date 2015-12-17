@@ -57,6 +57,7 @@ class Telescope(object):
             self.lightcurve = np.array()
 
         self.lightcurve_flux = []
+        self.lightcurve_flux_aligned = []
         self.altitude = 0.0
         self.longitude = 0.0
         self.latitude = 0.0

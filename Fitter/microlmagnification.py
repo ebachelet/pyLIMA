@@ -7,7 +7,8 @@ Created on Tue Dec  8 14:37:33 2015
 
 from __future__ import division
 import numpy as np
-
+import time
+from scipy.integrate import nquad
 def amplification(model, t, parameters, gamma):
     ''' The magnification associated to the model, at time t using parameters and gamma.
         The formula change regarding the requested model :
@@ -39,26 +40,25 @@ def amplification(model, t, parameters, gamma):
         Z = u/parameters[model.model_dictionnary['rho']]
 
         ampli_fspl = np.zeros(len(ampli))
-        ind = np.where((Z > 10) | (Z < model.yoo_table[0][0]))[0]
+
+        ind = np.where((Z > 19.9999) | (Z < model.yoo_table[0][0]))[0]
         ampli_fspl[ind] = ampli[ind]
-        ind = np.where((Z <= 10) & (Z >= model.yoo_table[0][0]))[0]
+        ind = np.where((Z <=19.9999) & (Z >= model.yoo_table[0][0]))[0]
         ampli_fspl[ind] = ampli[ind]*(model.yoo_table[1](Z[ind])-gamma*model.yoo_table[2](Z[ind]))
         ampli = ampli_fspl
 
+    if model.paczynski_model == 'FSPL':
+            Ampli=[]
 
-#        if model.paczynski_model == 'FSPL':
-#            Ampli=[]
-#            start=time.time()
+            for j in u :
+                print j
+                start=time.time()
 
-#            for j in u :
-#                print j
-#                Ampli.append(2/(np.pi*parameters[model.model_dictionnary['rho']]**2)*nquad(
-#                self.function_LEE,[[0,np.pi],[lambda x : self.LEE_1(x,j,parameters[model.model_dictionnary['rho']],gamma),lambda x : self.LEE_2(
-#                x,j,parameters[model.model_dictionnary['rho']],gamma)]],args=(
-#                j,parameters[model.model_dictionnary['rho']],gamma),opts=[{'limit'=10}])[0])
-#            print start-time.time()
+                Ampli.append(2/(np.pi*parameters[model.model_dictionnary['rho']]**2)*nquad(function_LEE,[LEE_limit,[0,np.pi]],args=(j,parameters[model.model_dictionnary['rho']],gamma),opts=[{'limit':10,'epsrel' : 0.01,},{'limit':10,'epsrel' : 0.01,}])[0])
 
-#            import pdb; pdb.set_trace()
+                print start-time.time()
+
+            import pdb; pdb.set_trace()
 
 #            ampli=np.array(Ampli)
     return ampli, u
@@ -78,15 +78,15 @@ def source_trajectory(model, t, parameters):
     return x,y
 
 def function_LEE(r,v,u,rho,gamma):
-
     if r==0 :
-        LEE=0
+        LEE=1.0
     else :
         LEE = (r**2+2)/((r**2+4)**0.5)*(1-gamma*(1-1.5*(1-(r**2-2*u*r*np.cos(v)+u**2)/rho**2)**0.5))
+    
+    return LEE
 
-        return LEE
 
-def LEE_1(v,u,rho,gamma):
+def LEE_limit(v,u,rho,gamma):
 
     if u<=rho:
         limit_1=0.0
@@ -95,11 +95,7 @@ def LEE_1(v,u,rho,gamma):
 
             limit_1=u*np.cos(v)-(rho**2-u**2*np.sin(v)**2)**0.5
         else :
-            limit_1=0.00
-
-    return limit_1
-
-def LEE_2(v,u,rho,gamma):
+            limit_1=0.0
 
     if u<=rho:
         limit_2=u*np.cos(v)+(rho**2-u**2*np.sin(v)**2)**0.5
@@ -109,5 +105,6 @@ def LEE_2(v,u,rho,gamma):
             limit_2=u*np.cos(v)+(rho**2-u**2*np.sin(v)**2)**0.5
         else :
             limit_2=0.0
-
-    return limit_2
+            
+    return [limit_1,limit_2]
+    

@@ -10,6 +10,7 @@ from scipy.optimize import leastsq, differential_evolution
 from scipy import interpolate
 import time
 from scipy.integrate import dblquad,nquad
+import matplotlib.pyplot as plt
 
 import microlmodels
 import microlparallax
@@ -128,33 +129,33 @@ class MLFits(object):
             '''
 
 
-    def __init__(self, event, model,  second_order, method):
+    def __init__(self, event):
 
         self.event = event
-        self.model = microlmodels.MLModels(event, model, second_order)
-        self.method = method
-        self.second_order = second_order
 
-    def mlfit(self):
+
+    def mlfit(self, model, method):
+
+        self.model = model
+        self.method = method
 
         if self.method == 0:
 
             self.guess = self.initial_guess()
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
-            
+
         if self.method == 1:
+
             start=time.time()
-            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=[0.9,1.1],recombination=1.0,polish='None')
+            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=[1.8,1.9],recombination=0.5,polish='None')
             print AA['fun']
-            #import pdb; pdb.set_trace()
             computation_time = time.time()-start
-            import pdb; pdb.set_trace()
-#            self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
-#            self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
+            self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
+            self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
+
 
 
         fit_quality_flag = self.check_fit()
-        
 
 
         if fit_quality_flag == 'Bad Fit':
@@ -163,7 +164,7 @@ class MLFits(object):
                 
                 print 'We have to change method, this fit was unsuccessfull. We decided to switch method to 1'
                 self.method = 1
-                self.__init__(self.event,self.model.paczynski_model,self.method,self.model.second_order)
+                self.mlfit(self.model, 1)
 
             else :
                 
@@ -183,14 +184,22 @@ class MLFits(object):
             flag = 'Bad Fit'
             return flag
 
+
         for i in self.event.telescopes:
 
             if self.fit_results[self.model.model_dictionnary['fs_'+i.name]] < 0:
 
-                print 'Your fit probably wrong. Cause ==> negative source flux for telescope '+self.event.telescopes[i].name+''
+                print 'Your fit probably wrong. Cause ==> negative source flux for telescope '+i.name
                 flag = 'Bad Fit'
                 return flag
-
+                
+        if 'rho' in self.model.model_dictionnary:
+            
+                    if self.fit_results[self.model.model_dictionnary['rho']] < 0 :
+                        
+                                        print 'Your fit probably wrong. Cause ==> negative source flux for telescope '+i.name
+                                        flag = 'Bad Fit'
+                                        return flag
         return flag
 
     def initial_guess(self):
@@ -266,9 +275,7 @@ class MLFits(object):
     
         if self.model.paczynski_model == 'FSPL':
 
-            if np.abs(uo) > 0.05:
-
-                uo = 0.05
+            uo=uo/10.0
 
         flux_demi = 0.5*fs*(Amax+1)
         flux_tE = fs*(uo**2+3)/((uo**2+1)**0.5*np.sqrt(uo**2+5))
@@ -327,7 +334,7 @@ class MLFits(object):
 
             tE = 20.0
 
-        fake_model = microlmodels.MLModels(self.event, 'PSPL', self.second_order)
+        fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
 
         fluxes=self.find_fluxes([to, uo, tE], fake_model)
         fluxes[0]=fs
@@ -337,7 +344,7 @@ class MLFits(object):
 
         if self.model.paczynski_model == 'FSPL':
 
-            parameters = parameters+[1.5*uo]
+            parameters = parameters+[0.05]
 
         if self.model.parallax_model[0] != 'None':
 
@@ -381,16 +388,15 @@ class MLFits(object):
 
         start = time.time()
 
-        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
-                                 col_deriv=1, full_output=1, ftol=0.00001)
+#        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
+#                                 col_deriv=1, full_output=1, ftol=0.00001)
 
-#        lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
+        lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
 
         computation_time = time.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-#        import pdb; pdb.set_trace()
         ndata = 0.0
 
         for i in self.event.telescopes:
@@ -402,7 +408,7 @@ class MLFits(object):
             if lmarquardt_fit[1] is not None:
 
                 cov = lmarquardt_fit[1]*fit_res[len(self.model.model_dictionnary)]/ndata
-                #import pdb; pdb.set_trace()
+                import pdb; pdb.set_trace()
 
             else:
 
@@ -465,9 +471,8 @@ class MLFits(object):
             dresdfs = np.array([])
             dresdeps = np.array([])
             
-            fake_model = microlmodels.MLModels(self.event, 'PSPL', self.second_order)
+            fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
             fake_params = np.delete(parameters, self.model.model_dictionnary['rho'])
-
             for i in self.event.telescopes:
 
                 lightcurve = i.lightcurve_flux
@@ -483,12 +488,20 @@ class MLFits(object):
 
                 dadu = np.zeros(len(ampli[0]))
                 dadrho = np.zeros(len(ampli[0]))
-                ind = np.where((Z > 10) | (Z < self.model.yoo_table[0][0]))[0]
+                #ind = np.where((Z > 10) | (Z < self.model.yoo_table[0][0]))[0]
+                ind = np.where((Z > 19.9999) | (Z < self.model.yoo_table[0][0]))[0]
+                #dadu[ind] = dAdU[ind]-ampli[0][ind]*1/parameters[self.model.model_dictionnary['rho']]*3*10**-5
                 dadu[ind] = dAdU[ind]
-                dadrho[ind] = 0.0
 
-                ind = np.where((Z <= 10) & (Z >= self.model.yoo_table[0][0]))[0]
+                #dadrho[ind] = ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*3*10**-5
+                dadrho[ind] = ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*3.1*10**-5
+#                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*(
+#                                self.model.yoo_table[3](self.model.yoo_table[0][-1])-
+#                                gamma*self.model.yoo_table[4](self.model.yoo_table[0][-1]))
+#                dadrho[ind] = 0.0
 
+                #ind = np.where((Z <= 10) & (Z >= self.model.yoo_table[0][0]))[0]
+                ind = np.where((Z <= 19.9999) & (Z >= self.model.yoo_table[0][0]))[0]
                 dadu[ind] = dAdU[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](
                             Z[ind]))+ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](
                              Z[ind]))*1/parameters[self.model.model_dictionnary['rho']]
@@ -515,8 +528,6 @@ class MLFits(object):
                 ampli = microlmagnification.amplification(self.model,Time, parameters, gamma)
                 dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])/errflux)
                 dresdeps = np.append(dresdeps, -parameters[self.model.model_dictionnary['fs_'+i.name]]/errflux)
-
-
 
             jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho])
 
@@ -558,9 +569,11 @@ class MLFits(object):
             errors = np.append(errors, (flux-ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]-
                                        (parameters[self.model.model_dictionnary['fs_'+i.name]]*parameters[
                                        self.model.model_dictionnary['g_'+i.name]]))/errflux)
-
+#            if 'rho' in self.model.model_dictionnary:
+#                if parameters[self.model.model_dictionnary['rho']]<0 :
+#                    errors=errors*10**10
             count = count+1
-    
+
         return errors
 
     def chichi(self, parameters):

@@ -14,8 +14,8 @@ import microlparallax
 
 try :
 
-    yoo_table = np.loadtxt('b0b1.dat')
-
+    #yoo_table = np.loadtxt('b0b1.dat')
+    yoo_table = np.loadtxt('Yoo_B0B1.dat')
 except :
 
     print 'ERROR : No b0b1.dat file found, please check!'
@@ -29,6 +29,7 @@ class MLModels(object):
 
         self.event = event
         self.paczynski_model = model
+        self.second_order = second_order
         self.parallax_model = second_order[0]
         self.xallarap_model = second_order[1]
         self.orbital_motion_model = second_order[2]
@@ -38,8 +39,8 @@ class MLModels(object):
         zz = b0b1[:, 0]
         b0 = b0b1[:, 1]
         b1 = b0b1[:, 2]
-        db0 = b0b1[:, 3]
-        db1 = b0b1[:, 4]
+        db0 = b0b1[:, 4]
+        db1 = b0b1[:, 5]
         interpol_b0 = interpolate.interp1d(zz, b0)
         interpol_b1 = interpolate.interp1d(zz, b1)
         interpol_db0 = interpolate.interp1d(zz, db0)

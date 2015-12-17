@@ -6,9 +6,12 @@ Created on Mon Nov  9 16:38:14 2015
 """
 from __future__ import division
 import numpy as np
-import datetime
+from datetime import datetime
 from astropy.time import Time
 from scipy.stats.distributions import t as student
+from collections import OrderedDict
+
+import microlmagnification
 
 class MLOutputs(object):
     
@@ -26,42 +29,52 @@ class MLOutputs(object):
         
         for i in self.event.fits_covariance :
             
-            self.error_parameters.append([i[0],i[1],np.sqrt(i[2].diagonal)]) 
+            self.fits_errors.append([i[0],i[1],i[2],np.sqrt(i[3].diagonal())]) 
 
     def find_observables(self):
         
-        
+        count = 0
+        self.observables_dictionnary = {'to' : 0 , 'Ao' : 1, 'tE' : 2, 'Anow' : 3, 'Ibaseline' : 4, 'Ipeak' : 5, 'Inow' : 6 }
+        self.observables_dictionnary = OrderedDict(sorted(self.observables_dictionnary.items(), key=lambda x: x[1]))
         for i in self.event.fits_results :
             
             observables = []
-            parameters = i[2]
-            to = parameters[0]
-            uo = parameters[1]
-            tE = parameters[2]
-            
-            jd1,jd2=Time(datetime.datetime.utcnow())
-            tnow=jd1+jd2
-            Ao=(uo**2+2)/(uo*np.sqrt(uo**2+4))
-            unow=np.sqrt(uo**2+(tnow-to)**2/tE**2)
-            Anow=(unow**2+2)/(unow*np.sqrt(unow**2+4))       
+            parameters = i[3]
+            to = parameters[self.event.fits_models[count][2].model_dictionnary['to']]
+            uo = parameters[self.event.fits_models[count][2].model_dictionnary['uo']]
+            tE = parameters[self.event.fits_models[count][2].model_dictionnary['tE']]
+
+            t=Time(datetime.utcnow())
+            #tnow=t.jd1+t.jd2
+            tnow = 150     
+            Ao=microlmagnification.amplification(self.event.fits_models[count][2], np.array([to]), parameters,self.event.telescopes[0].gamma )[0][0]
+            Anow=microlmagnification.amplification(self.event.fits_models[count][2], np.array([tnow]), parameters,self.event.telescopes[0].gamma )[0][0] 
             
             observables.append(to)
             observables.append(Ao)
             observables.append(tE)
             observables.append(Anow)
             
-            start=len(parameters)-2*len(self.event.telescopes)-1
-            for j in xrange(len(self.event.telescopes)):
-                
-                Ibaseline=27.4-2.5*np.log10(parameters[start]*(1+parameters[start]))
-                Ipeak=27.4-2.5*np.log10(parameters[start]*(Ao+parameters[start]))
-                
-                observables.append(Ibaseline)
-                observables.append(Ipeak)
-                
-                start=start+2
-                
-            self.observables.append([i[0],i[1],observables])
+           
+         
+            Ibaseline=27.4-2.5*np.log10(parameters[self.event.fits_models[count][2].model_dictionnary[
+            'fs_'+self.event.telescopes[0].name]]*(1+parameters[self.event.fits_models[count][2].model_dictionnary[
+            'g_'+self.event.telescopes[0].name]]))
+
+            Ipeak=27.4-2.5*np.log10(parameters[self.event.fits_models[count][2].model_dictionnary[
+            'fs_'+self.event.telescopes[0].name]]*(Ao+parameters[self.event.fits_models[count][2].model_dictionnary[
+            'g_'+self.event.telescopes[0].name]]))
+            
+            Inow = 27.4-2.5*np.log10(parameters[self.event.fits_models[count][2].model_dictionnary[
+            'fs_'+self.event.telescopes[0].name]]*(Anow+parameters[self.event.fits_models[count][2].model_dictionnary[
+            'g_'+self.event.telescopes[0].name]]))        
+            
+            observables.append(Ibaseline)
+            observables.append(Ipeak)
+            observables.append(Inow)
+            
+               
+            self.observables.append([i[0],i[1],i[2],observables])
             
     def find_observables_errors(self):
         
@@ -117,11 +130,11 @@ class MLOutputs(object):
         self.correlations=[]
         for i in self.event.fits_covariance :
             
-            A=i[2]    
+            A=i[3]    
             d = np.sqrt(A.diagonal())
             B = ((A.T/d).T)/d
             
-            self.correlations.append([i[0],i[1],B])
+            self.correlations.append([i[0],i[1],i[2],B])
      
     def student_errors(self):
         
