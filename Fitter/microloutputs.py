@@ -24,12 +24,15 @@ class MLOutputs(object):
         self.observables_errors = []
         self.plots= []
     
-    def errors_on_fits(self):
+    def errors_on_fits(self,choice):
         
+        if self.event.fits[choice].fit_covariance == None :
+
+            print 'There is no way to produce errors without covariance at this stage'
         
-        for i in self.event.fits_covariance :
-            
-            self.fits_errors.append([i[0],i[1],i[2],np.sqrt(i[3].diagonal())]) 
+        else:
+                       
+           self.event.fits[choice].fit_errors = np.sqrt(self.event.fits[choice].fit_covariance.diagonal()) 
 
     def find_observables(self):
         

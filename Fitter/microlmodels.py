@@ -89,7 +89,7 @@ class MLModels(object):
 
         model_paczynski_boundaries = {'PSPL':[(min(self.event.telescopes[0].lightcurve[:,0])-300,
                                      max(self.event.telescopes[0].lightcurve[:,0])+300),
-                                     (0.000001,2.0), (0.1,300)],'FSPL':[
+                                     (-2.0,2.0), (-300,300)],'FSPL':[
                                      (min(self.event.telescopes[0].lightcurve[:,0])-300,
                                      max(self.event.telescopes[0].lightcurve[:,0])+300),
                                      (0.000001,2.0), (0.1,300), (0.00001,0.1)]}

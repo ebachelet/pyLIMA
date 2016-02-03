@@ -46,14 +46,11 @@ class Event(object):
         self.logg = 4.5
         self.telescopes = []
         self.survey = 'None'
-        self.fits_models = []
-        self.fits_results = []
-        self.fits_covariance = []
-        self.fits_time = []
+        self.fits = []
         self.outputs = []
 
 
-    def fit(self, model,  second_order, method,):
+    def fit(self, model,  second_order, method):
         """Function to fit the event.
 
         Keyword arguments:
@@ -135,7 +132,7 @@ class Event(object):
         """
         available_kind = ['Microlensing']
         available_models = ['PSPL', 'FSPL']
-        available_methods = [0, 1]
+        available_methods = [0, 1, 2]
         available_parallax = ['None', 'Annual']
         available_xallarap = ['None']
         available_orbital_motion = ['None']
@@ -176,17 +173,13 @@ class Event(object):
 
         Model=microlmodels.MLModels(self, model, second_order)
 
-        if [model, second_order] not in self.fits_models :
-
-            self.fits_models.append([model, second_order,Model])
-
+     
         fit = microlfits.MLFits(self)
         fit.mlfit( Model, method)
+        #import pdb; pdb.set_trace()
 
-        self.fits_results.append([fit.model.paczynski_model, fit.model.second_order, fit.method,fit.fit_results])
-        self.fits_covariance.append([fit.model.paczynski_model, fit.model.second_order, fit.method, fit.fit_covariance])
-        self.fits_time.append([fit.model.paczynski_model, fit.model.second_order, fit.method, fit.fit_time])
-
+        self.fits.append(fit)
+        
     def telescopes_names(self):
         '''Function to list the telescope names for an event.
         '''
@@ -293,9 +286,9 @@ class Event(object):
 
 
 
-    def produce_outputs(self):
+    def produce_outputs(self,choice):
 
         self.outputs = microloutputs.MLOutputs(self)
-        self.outputs.cov2corr()
-        self.outputs.errors_on_fits()
-        self.outputs.find_observables()
+        #self.outputs.cov2corr()
+        self.outputs.errors_on_fits(choice)
+        #self.outputs.find_observables()

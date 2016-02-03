@@ -11,6 +11,7 @@ from scipy import interpolate
 import time
 from scipy.integrate import dblquad,nquad
 import matplotlib.pyplot as plt
+import emcee
 
 import microlmodels
 import microlparallax
@@ -132,7 +133,7 @@ class MLFits(object):
     def __init__(self, event):
 
         self.event = event
-
+        self.fit_errors = []
 
     def mlfit(self, model, method):
 
@@ -147,13 +148,41 @@ class MLFits(object):
         if self.method == 1:
 
             start=time.time()
-            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=[1.8,1.9],recombination=0.5,polish='None')
-            print AA['fun']
-            computation_time = time.time()-start
+            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
+            print AA['fun'],AA['x']
+            
             self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
-
-
+            
+            computation_time = time.time()-start
+            self.fit_time = computation_time
+            
+        if self.method == 2:
+            
+            ndim = 3
+            nwalkers = 100
+            pp0=[]
+            for i in range(nwalkers):
+                p1=[]
+                for j in range(3) :
+                    p1.append(np.random.uniform(self.model.parameters_boundaries[j][0],self.model.parameters_boundaries[j][1]))
+                    #p1.append(0.1)
+                pp0.append(np.array(p1))
+            
+           
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC)
+            pos,prob,state =sampler.run_mcmc(pp0,200)
+            #sampler.reset()
+            #pos, prob, state = sampler.run_mcmc(pos, 1000)
+            barycenter = [sum(pos[:,0]/(np.abs(prob))),sum(pos[:,1]/(np.abs(prob))),sum(pos[:,2]/(np.abs(prob)))]
+            p1 = np.array([100,1,100])*np.random.randn(nwalkers,ndim)+np.array(barycenter)
+            p2=[i for i in p1]
+            sampler.reset()
+            pos,prob,state =sampler.run_mcmc(p2,1000)
+             
+            plt.plot(sampler.chain[:,:,2].T, '-', color='k', alpha=0.3)
+            
+            import pdb; pdb.set_trace()
 
         fit_quality_flag = self.check_fit()
 
@@ -387,41 +416,43 @@ class MLFits(object):
         '''
 
         start = time.time()
+        #self.guess = [0.0,1.0,2.0,10,0]
+        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
+                                 col_deriv=1, full_output=1, ftol=10**-5,xtol=10**-5, gtol=10**-5)
 
-#        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
-#                                 col_deriv=1, full_output=1, ftol=0.00001)
-
-        lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
+       # lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
 
         computation_time = time.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-        ndata = 0.0
-
+        n_data = 0.0
+       
+        print np.max(np.abs(2*np.sum(self.Jacobian(fit_res)*self.residuals(fit_res),axis=1)))  
         for i in self.event.telescopes:
 
-            ndata = ndata+i.n_data()
-
+            n_data = n_data+i.n_data()
+        n_parameters = len(self.model.model_dictionnary)
         try:
 
             if lmarquardt_fit[1] is not None:
 
-                cov = lmarquardt_fit[1]*fit_res[len(self.model.model_dictionnary)]/ndata
-                import pdb; pdb.set_trace()
+                cov = lmarquardt_fit[1]*fit_res[len(self.model.model_dictionnary)]/(n_data-n_parameters)
+                #import pdb; pdb.set_trace()
 
             else:
 
                 print 'rough cov'
                 jacky = self.Jacobian(fit_res, self.model)
-                cov = np.linalg.inv(jacky*jacky.T)*fit_res[len(self.model.model_dictionnary)]/ndata
+                cov = np.linalg.inv(jacky*jacky.T)*fit_res[len(self.model.model_dictionnary)]/(n_data-n_parameters)
 
         except:
 
             print 'hoho'
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
-
+        import pdb; pdb.set_trace()
+                        
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
@@ -603,6 +634,33 @@ class MLFits(object):
 
         chichi = (errors**2).sum()
         return chichi
+        
+    def chi_MCMC(self, parameters) :
+        
+        '''Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit.
+        '''
+        errors = np.array([])
+
+        for i in self.event.telescopes:
+
+            lightcurve = i.lightcurve_flux
+            Time = lightcurve[:, 0]
+            flux = lightcurve[:, 1]
+            errflux = lightcurve[:, 2]
+            gamma = i.gamma
+            ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
+            fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
+            
+            if fs<0 : 
+                
+                chichi=np.inf
+            else:
+                
+                errors = np.append(errors, (flux-ampli*fs-fb)/errflux)
+                
+                chichi = (errors**2).sum()
+        
+        return - chichi
 
     def find_fluxes(self, parameters, model):
 
@@ -617,7 +675,7 @@ class MLFits(object):
             ampli = microlmagnification.amplification(model, Time, parameters, gamma)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0) :
-
+               
                 fluxes.append(np.abs(fs*(1+fb/fs)))
                 fluxes.append(0.0)
             else:
