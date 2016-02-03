@@ -218,6 +218,7 @@ class Event(object):
         '''Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
         '''
+        
         if choice is None:
 
             choice = self.telescopes[0].name
@@ -227,8 +228,8 @@ class Event(object):
         names = [i.name for i in self.telescopes]
         if any(self.survey in i for i in names):
 
-            name = [i.name for i in self.telescopes if choice in i.name][0]
-            index = np.where(self.survey == names)[0]
+            
+            index = np.where(self.survey == np.array(names))[0]
             sorting = np.arange(0, len(self.telescopes))
             sorting = np.delete(sorting, index)
             sorting = np.insert(sorting, 0, index)

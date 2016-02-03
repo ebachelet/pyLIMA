@@ -27,7 +27,9 @@ second_order = [['None', 2457164.6365], ['None', 0], ['None', 0], 'None']
 
 
 def main(command_line):
-    events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.dat')]
+   #import pdb; pdb.set_trace()
+    events_names = np.loadtxt(command_line.input_directory+'OGLE_2015.txt',dtype='str')
+    #events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.dat')]
     #print 'event_names = ', events_names
 
     # events_names=[event_name for event_name in os.listdir(events_path) if '.dat' in event_name]
@@ -36,16 +38,10 @@ def main(command_line):
     start = time.time()
     results = []
     errors = []
-    source = []
-    blend = []
-    source_error = []
-    blend_error = []
-    models = []
-    time_fit = []
-    events_names=[i for i in events_names if '.dat' in i]
-    for event_name in events_names[8191:]:
+    #events_names=[i for i in events_names if '.dat' in i]
+    for event_name in events_names[:]:
        
-        name=event_name[:-4]
+        name=event_name
 
         current_event = event.Event()
         current_event.name = name
@@ -53,27 +49,30 @@ def main(command_line):
         current_event.dec = -27.721305555555553
         event_telescopes = [event_telescope for event_telescope in os.listdir(command_line.input_directory) if
                             name in event_telescope]
-      
-        filters = ['I','J']    
+        
+
+        #filters = ['I','J']    
         count=0
         for event_telescope in event_telescopes:
 
             
             raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
-            telescope = telescopes.Telescope(name=event_name[:-4], camera_filter='I', light_curve=raw_light_curve)
+            raw_light_curve=np.fliplr(raw_light_curve)
+            telescope = telescopes.Telescope(name=event_telescope[0], camera_filter=event_telescope[-4], light_curve=raw_light_curve)
             # telescope.name=k[-1][:-4]
             # telescope.name=k[1]
             # telescope.name=event_telescope[:4]
             # telescope.name=k[0]
-            telescope.filter = filters[count]            
-            telescope.find_gamma(5300.0, 4.5, command_line.claret)
+            #telescope.filter = filters[count]            
+            #telescope.find_gamma(5300.0, 4.5, command_line.claret)
             current_event.telescopes.append(telescope)
             count = count+1
         events.append(current_event)
         print 'Start;', current_event.name
         # import pdb; pdb.set_trace()
         # current_event.check_event()
-        current_event.find_survey(current_event.telescopes[0].name)
+        import pdb; pdb.set_trace()
+        current_event.find_survey('O')
         current_event.check_event()
 
         current_event.fit(command_line.model, second_order,2)
@@ -114,8 +113,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')
-    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Ground/')
+    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
+    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Artemis_2015/')
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()
 
