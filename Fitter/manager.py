@@ -27,9 +27,9 @@ second_order = [['None', 2457164.6365], ['None', 0], ['None', 0], 'None']
 
 
 def main(command_line):
-    import pdb; pdb.set_trace()
-    events_names = np.loadtxt(command_line.input_directory+'OGLE_2015.txt',dtype='str')
-    #events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.dat')]
+    #import pdb; pdb.set_trace()
+    #events_names = np.loadtxt(command_line.input_directory+'OGLE_2015.txt',dtype='str')
+    events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.txt')]
     #print 'event_names = ', events_names
 
     #events_names=[event_name for event_name in os.listdir(command_line.input_directory) if '.dat' in event_name]
@@ -59,7 +59,7 @@ def main(command_line):
         #filters = ['I','J']    
         count=0
         #event_telescopes = [event_telescopes[1]]
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         for event_telescope in event_telescopes:
             raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
             #plt.scatter(raw_light_curve[:,0],raw_light_curve[:,1])
@@ -70,7 +70,8 @@ def main(command_line):
             #current_event.telescopes.append(telescope)
             try :
                 
-                raw_light_curve=np.array([raw_light_curve[:,2],raw_light_curve[:,0],raw_light_curve[:,1]]).T
+                #raw_light_curve=np.array([raw_light_curve[:,2],raw_light_curve[:,0],raw_light_curve[:,1]]).T
+                raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
                 telescope = telescopes.Telescope(name=event_telescope[0]+event_telescope[-5], camera_filter=event_telescope[-4], light_curve=raw_light_curve)
                 #telescope.name=k[-1][:-4]
                 # telescope.name=k[1]
@@ -91,7 +92,7 @@ def main(command_line):
        
        
         current_event.fit(command_line.model, second_order,0)
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
     
         
         #Parameters,lightcurve_model,lightcurve_data = current_event.produce_outputs(0)
@@ -147,10 +148,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
- #   parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Short_tE/Lightcurves/')
-    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Artemis_2015/')
-    #parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Short_tE/')
+#    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
+    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/OB152093/Lightcurves/')
+#parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Artemis_2015/')
+    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/OB152093/')
 
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()

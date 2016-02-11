@@ -287,8 +287,8 @@ class MLFits(object):
                             #plt.scatter(gravity[0],gravity[1],c='g',s=100)
                             #plt.show()
                             ##import pdb; pdb.set_trace()
-                            index = distances.argsort()[:-1]
-                            good = good[index]
+                            #index = distances.argsort()[:-1]
+                            #good = good[index]
                     to = np.median(Time[good])
                     max_flux = max(flux[good])
                     
@@ -494,7 +494,7 @@ class MLFits(object):
                             len(self.model.model_dictionnary)))
         
         
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
