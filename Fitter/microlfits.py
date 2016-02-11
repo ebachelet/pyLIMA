@@ -8,6 +8,7 @@ from __future__ import division
 import numpy as np
 from scipy.optimize import leastsq, differential_evolution
 from scipy import interpolate
+import scipy.signal as ss
 import time
 from scipy.integrate import dblquad,nquad
 import matplotlib.pyplot as plt
@@ -141,6 +142,7 @@ class MLFits(object):
         self.method = method
 
         if self.method == 0:
+            
 
             self.guess = self.initial_guess()
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
@@ -152,6 +154,7 @@ class MLFits(object):
             print AA['fun'],AA['x']
             
             self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
+            #import pdb; pdb.set_trace()
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
             
             computation_time = time.time()-start
@@ -236,38 +239,72 @@ class MLFits(object):
         Guess are made using the survey telescope for the Paczynski parameters (to,uo,tE).
         This assumes no blending.
         '''
+
         To=[]
         Max_flux=[]
         for i in self.event.telescopes:
+            
+         
+                
+                try :
+
+                    lightcurve = i.lightcurve_flux
+                    #only the best photometry
+                    good = np.where(2.5*np.abs(lightcurve[:,2])/(np.log(10)*lightcurve[:,1])<0.1)[0]
+                    lightcurve_bis=lightcurve[good]
+                    lightcurve_bis = lightcurve_bis[lightcurve_bis[:, 0].argsort(), :]
+                    Time = lightcurve_bis[:, 0]
+                    flux = lightcurve_bis[:, 1]
+                    errflux = lightcurve_bis[:, 2]
+                    #clean the outliers
+                    exp=len(np.where(Time<Time[0]+1)[0])
+                    exp=2*exp+1
+                    #if exp %2 == 0 :
+                        #exp = exp+1
+                    flux_clean= ss.medfilt(flux,min(exp,3))
+                    flux_clean = ss.savgol_filter(flux_clean,max(exp,5),3)
+                    fs = min(flux_clean)
+                    index = np.where(flux_clean > fs)[0]
+                    good = index
+                    while len(good)>5:
+                       
+                        index = np.where((flux_clean[good] > np.median(flux_clean[good])))[0]
+                        good=good[index]
+                        if len(index) < 4:
+                        
+                            break
+
+                        else:
+                            #import pdb; pdb.set_trace()
+                            #good = good[index]
+                            #gravity = (np.mean(Time[good]), np.mean(flux[good]))
+                            
+                            gravity = (np.median(Time[good]), np.mean(flux_clean[good]))
+                            distances = np.sqrt((Time[good]-gravity[0])**2)
+                            #distances = np.sqrt((Time[good]-gravity[0])**2)
+                            #plt.scatter(Time,flux)
+                            #plt.scatter(Time,flux_clean,c='r')
+                            #plt.scatter(gravity[0],gravity[1],c='g',s=100)
+                            #plt.show()
+                            ##import pdb; pdb.set_trace()
+                            index = distances.argsort()[:-1]
+                            good = good[index]
+                    to = np.median(Time[good])
+                    max_flux = max(flux[good])
+                    
+                except :
 
 
-            lightcurve = i.lightcurve_flux
-            lightcurve = lightcurve[lightcurve[:, 0].argsort(), :]
-            Time = lightcurve[:, 0]
-            flux = lightcurve[:, 1]
-            errflux = lightcurve[:, 2]
-            fs = min(flux)
-            index = np.where(flux > fs)[0]
-            good = index
-            while len(good) > 5:
+                    to=np.median(i.lightcurve_flux[:,0])
+                    max_flux = max(i.lightcurve_flux[:,0])
 
-                index = np.where(flux[good] > np.median(flux[good]))[0]
+            #to = Time[good[np.where(flux[good] == np.max(flux[good]))[0]]][0]
+               
 
-                if len(index) < 4:
+                To.append(to)
+                Max_flux.append(max_flux)
 
-                    break
-
-                else:
-
-                    gravity = (np.median(Time[good[index]]), np.median(flux[good[index]]))
-                    distances = np.sqrt((Time[good[index]]-gravity[0])**2+(flux[good[index]]-gravity[1])**2)
-                    index = index[distances.argsort()[:-1]]
-                    good = good[index]
-
-            to = Time[good[np.where(flux[good] == np.max(flux[good]))[0]]][0]
-            To.append(to)
-            Max_flux.append(np.max(flux[good]))
-
+        #import pdb; pdb.set_trace()
         to=np.median(To)
         survey = self.event.telescopes[0]
         lightcurve = survey.lightcurve_flux
@@ -277,6 +314,7 @@ class MLFits(object):
         errflux = lightcurve[:, 2]
 
         #fs, no blend
+        #import pdb; pdb.set_trace()
 
         baseline_flux_0 = np.min(flux)
         baseline_flux = np.median(flux)
@@ -295,7 +333,7 @@ class MLFits(object):
                 baseline_flux = np.median(flux[flux.argsort()[:100]])
                 break
 
-        
+
         fs=baseline_flux
         max_flux = Max_flux[0]
         Amax = max_flux/fs
@@ -357,7 +395,8 @@ class MLFits(object):
 
         TE = np.array([tE1, tEplus, tEmoins, tEPlus, tEMoins])
         good = np.where(TE != 0.0)[0]
-        tE = np.sum(TE[good])/len(good)
+        tE = np.median(TE[good])
+        #import pdb; pdb.set_trace()
 
         if tE < 1:
 
@@ -392,7 +431,7 @@ class MLFits(object):
             parameters = parameters+[0]
 
         parameters=parameters+fluxes
-
+       
         return parameters
 
     def lmarquardt(self):
@@ -418,24 +457,23 @@ class MLFits(object):
         start = time.time()
         #self.guess = [0.0,1.0,2.0,10,0]
         lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
-                                 col_deriv=1, full_output=1, ftol=10**-5,xtol=10**-5, gtol=10**-5)
+                                col_deriv=1, full_output=1, ftol=10**-5,xtol=10**-8, gtol=10**-5)
 
-       # lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
+        #lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
 
         computation_time = time.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
         n_data = 0.0
-       
-        print np.max(np.abs(2*np.sum(self.Jacobian(fit_res)*self.residuals(fit_res),axis=1)))  
+
         for i in self.event.telescopes:
 
-            n_data = n_data+i.n_data()
+            n_data = n_data+i.n_data('Flux')
         n_parameters = len(self.model.model_dictionnary)
         try:
 
-            if lmarquardt_fit[1] is not None:
+            if (True not in (lmarquardt_fit[1].diagonal()<0)) & (lmarquardt_fit[1] is not None):
 
                 cov = lmarquardt_fit[1]*fit_res[len(self.model.model_dictionnary)]/(n_data-n_parameters)
                 #import pdb; pdb.set_trace()
@@ -443,21 +481,27 @@ class MLFits(object):
             else:
 
                 print 'rough cov'
-                jacky = self.Jacobian(fit_res, self.model)
-                cov = np.linalg.inv(jacky*jacky.T)*fit_res[len(self.model.model_dictionnary)]/(n_data-n_parameters)
-
+                jacky = self.Jacobian(fit_res)
+                cov = np.linalg.inv(np.dot(jacky,jacky.T))*fit_res[len(self.model.model_dictionnary)]/(n_data-n_parameters)
+                if True in (cov.diagonal()<0) :
+                    print 'Bad rough covariance'
+                    cov = np.zeros((len(self.model.model_dictionnary),
+                            len(self.model.model_dictionnary)))
         except:
 
             print 'hoho'
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
-        import pdb; pdb.set_trace()
-                        
+        
+        
+        #import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
         '''Return the analytical Jacobian matrix, requested by method 0.
         '''
+        
+
         if self.model.paczynski_model == 'PSPL':
 
             dresdto = np.array([])
@@ -563,20 +607,21 @@ class MLFits(object):
             jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho])
 
         start = 0
-
+       
+        
         for i in self.event.telescopes:
 
+           
             dFS = np.zeros((len(dresdto)))
             dEPS = np.zeros((len(dresdto)))
-
             index = np.arange(start, start+len(i.lightcurve_flux[:, 0]))
             dFS[index] = dresdfs[index]
             dEPS[index] = dresdeps[index]
             jacobi = np.vstack([jacobi, dFS])
             jacobi = np.vstack([jacobi, dEPS])
 
-            start = start+index[-1]+1
-
+            start = index[-1]+1
+           
         #import pdb; pdb.set_trace()
 
         return jacobi
@@ -588,7 +633,7 @@ class MLFits(object):
         '''
         errors = np.array([])
         count = 0
-
+        
         for i in self.event.telescopes:
 
             lightcurve = i.lightcurve_flux
@@ -604,7 +649,7 @@ class MLFits(object):
 #                if parameters[self.model.model_dictionnary['rho']]<0 :
 #                    errors=errors*10**10
             count = count+1
-
+          
         return errors
 
     def chichi(self, parameters):
@@ -612,6 +657,7 @@ class MLFits(object):
         '''
         errors = self.residuals(parameters)
         chichi = (errors**2).sum()
+        
 
         return chichi
 
@@ -630,6 +676,10 @@ class MLFits(object):
             gamma = i.gamma
             ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
+            if (fs<0): 
+                #print fs
+                fs=np.median(flux)
+                fb=0.0
             errors = np.append(errors, (flux-ampli*fs-fb)/errflux)
 
         chichi = (errors**2).sum()
@@ -676,7 +726,7 @@ class MLFits(object):
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0) :
                
-                fluxes.append(np.abs(fs*(1+fb/fs)))
+                fluxes.append(np.median(flux))
                 fluxes.append(0.0)
             else:
                 fluxes.append(fs)

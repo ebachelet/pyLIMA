@@ -63,9 +63,15 @@ class Telescope(object):
         self.latitude = 0.0
         self.gamma = 0.0
 
-    def n_data(self):
+    def n_data(self,choice):
         """ Return the number of data points in the lightcurve."""
-        return len(self.lightcurve[:, 0])
+        
+        if choice=='Flux':
+            
+            return len(self.lightcurve_flux[:, 0])
+        else:
+            
+            return len(self.lightcurve[:, 0])
 
     def find_gamma(self, Teff, log_g, path):
         """
@@ -114,18 +120,25 @@ class Telescope(object):
         the lightcurve without outliers.
         """
         # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
-
+        precision = 1.0
+        #index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
+        #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 5) | (
+        #                 np.abs(self.lightcurve[:, 2]) > precision))[
+        #    0]
         index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
-            np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 10) | (
-                         np.abs(self.lightcurve[:, 2]) > 1.0))[
-            0]
+                         np.abs(self.lightcurve[:, 2]) > precision))[
+                         0]
         for i in index:
             print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and will be ' + \
                   'rejected for the fit'
+        #index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
+        #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) < 5) & (
+        #                 np.abs(self.lightcurve[:, 2]) < precision))[
+        #    0]
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
-            np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) < 10) & (
-                         np.abs(self.lightcurve[:, 2]) < 1.0))[
-            0]
+                         np.abs(self.lightcurve[:, 2]) < precision))[
+                         0]
+
 
         lightcurve = self.lightcurve[index]
 

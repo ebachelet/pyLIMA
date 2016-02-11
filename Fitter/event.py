@@ -219,7 +219,7 @@ class Event(object):
         and put it on the first place (useful for some fits functions).
         '''
         
-        if choice is None:
+        if choice == None:
 
             choice = self.telescopes[0].name
 
@@ -293,3 +293,5 @@ class Event(object):
         #self.outputs.cov2corr()
         self.outputs.errors_on_fits(choice)
         #self.outputs.find_observables()
+        #Parameters,lightcurve_model,lightcurve_data = self.outputs.K2_C9_outputs()
+        #return Parameters,lightcurve_model,lightcurve_data

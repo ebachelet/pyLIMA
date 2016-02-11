@@ -158,3 +158,98 @@ class MLOutputs(object):
 
         self.upper=upper
         self.lower=lower
+        
+    def K2_C9_outputs(self):
+        import matplotlib.pyplot as plt
+        
+        #first produce aligned lightcurve#
+        
+        time = []
+        mag = []
+        err_mag = []
+        groups = []
+        
+        time = time + self.event.telescopes[0].lightcurve[:,0].tolist()
+        mag = mag + self.event.telescopes[0].lightcurve[:,1].tolist()
+        err_mag = err_mag + self.event.telescopes[0].lightcurve[:,2].tolist()
+        groups = groups + [self.event.telescopes[0].name]*len(self.event.telescopes[0].lightcurve)
+        
+        for i in self.event.telescopes[1:] :
+            
+            time = time + i.lightcurve[:,0].tolist()
+            Mag = i.lightcurve[:,1]
+            flux = 10**((27.4-Mag)/2.5)
+            err_flux = np.abs(-i.lightcurve[:, 2] * flux / (2.5) * np.log(10))            
+            flux_normalised = self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['fs_'+self.event.telescopes[0].name]]*((
+                              flux/self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['fs_'+i.name]]- 
+                                self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['g_'+i.name]])+
+                                self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['g_'+self.event.telescopes[0].name]])           
+            err_flux_norm = err_flux/flux*flux_normalised
+            mag_norm = 27.4-2.5*np.log10(flux_normalised)
+            err_mag_norm = 2.5*err_flux_norm/(flux_normalised*np.log(10))
+            
+            mag = mag + mag_norm.tolist()
+            err_mag = err_mag + err_mag_norm.tolist()
+            groups = groups + [i.name] * len(i.lightcurve)
+            
+       
+
+        lightcurve_data = np.array([time,mag,err_mag,groups]).T
+        
+        # produce model lightcurve
+        
+        time = np.arange(min(self.event.telescopes[0].lightcurve[:,0]),max(time)+100,0.01)
+        ampli = microlmagnification.amplification(self.event.fits[0].model,  time,self.event.fits[0].fit_results,0.5 )[0]
+        flux =  self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['fs_'+self.event.telescopes[0].name]]*(
+                ampli+ self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['g_'+self.event.telescopes[0].name]])
+        mag = (27.4-2.5*np.log10(flux)).tolist()
+        err_mag = [0.001]*len(time)
+        time = time.tolist()
+        lightcurve_model =  np.array([time,mag,err_mag]).T
+        
+
+        #produce parameters
+        Parameters = []
+        Names = []
+
+        Uo = self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['uo']]
+        Ao = (Uo**2+2)/(Uo*(Uo**2+4)**0.5)
+        err_Ao = (8)/(Uo**2*(Uo**2+4)**1.5)*(self.event.fits[0].fit_covariance.diagonal()**0.5)[1]
+        
+        Parameters.append(Ao)
+        Parameters.append(err_Ao)
+        
+        Names.append('PYLIMA.AO')
+        Names.append('PYLIMA.SIG_AO')
+
+        
+        names = ['TE','TO','UO']
+        Official = ['tE','to','uo']
+        
+        for i in xrange(len(Official)) :
+
+            index = self.event.fits[0].model.model_dictionnary[Official[i]]
+            Parameters.append(self.event.fits[0].fit_results[index])
+            Parameters.append((self.event.fits[0].fit_covariance.diagonal()**0.5)[index])
+            
+            
+            Names.append('PYLIMA.'+names[i])
+            Names.append('PYLIMA.SIG_'+names[i])
+        Parameters = np.array([Names,Parameters]).T
+        count=0
+        for i in self.event.telescopes :
+            index=np.where(lightcurve_data[:,3]==i.name)[0]
+            colors = np.random.uniform(0,10)
+            plt.scatter(lightcurve_data[index,0].astype(float),lightcurve_data[index,1].astype(float),c=(np.random.randint(0,float(len(self.event.telescopes))) / float(len(self.event.telescopes)), 
+                        np.random.randint(0,float(len(self.event.telescopes))) / float(len(self.event.telescopes)), 
+                        np.random.randint(0,float(len(self.event.telescopes))) / float(len(self.event.telescopes)), 1),label=i.name,s=25)
+            count+=1
+        plt.legend(scatterpoints=1)            
+        plt.plot(lightcurve_model[:,0],lightcurve_model[:,1],'g')
+        plt.show() 
+
+        
+        
+        
+        
+        return Parameters,lightcurve_model,lightcurve_data
