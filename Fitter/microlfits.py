@@ -242,70 +242,103 @@ class MLFits(object):
 
         To=[]
         Max_flux=[]
+        Std=[]
+        Errmag = []
         for i in self.event.telescopes:
             
-         
-                
+                #print i.name
+                #import pdb; pdb.set_trace()
                 try :
-
-                    lightcurve = i.lightcurve_flux
+                    #import pdb; pdb.set_trace()
+                    toto=np.histogram(i.lightcurve[:300,0])
+                    exp=int(2*np.round(sum(toto[0])/(toto[1][-1]-toto[1][0]))+1)
                     #only the best photometry
-                    good = np.where(2.5*np.abs(lightcurve[:,2])/(np.log(10)*lightcurve[:,1])<0.1)[0]
-                    lightcurve_bis=lightcurve[good]
+                    good = np.where((i.lightcurve[:,2]<max(0.1,np.mean(i.lightcurve[:,2]))))[0]
+                    lightcurve_bis = i.lightcurve[good]
+                    mag = lightcurve_bis[:,1]
+                    flux = 10**((27.4-mag)/2.5)
                     lightcurve_bis = lightcurve_bis[lightcurve_bis[:, 0].argsort(), :]
+                    mag_clean= ss.savgol_filter(mag,3,1)
                     Time = lightcurve_bis[:, 0]
-                    flux = lightcurve_bis[:, 1]
-                    errflux = lightcurve_bis[:, 2]
+                    flux_clean = 10**((27.4-mag_clean)/2.5)
+                   
+                    errmag = lightcurve_bis[:, 2]
                     #clean the outliers
-                    exp=len(np.where(Time<Time[0]+1)[0])
-                    exp=2*exp+1
+                    
                     #if exp %2 == 0 :
                         #exp = exp+1
-                    flux_clean= ss.medfilt(flux,min(exp,3))
-                    flux_clean = ss.savgol_filter(flux_clean,max(exp,5),3)
+                    #flux_clean = ss.savgol_filter(flux,3,1)
+                    #flux_clean= ss.medfilt(flux,5)
+
+                    #flux_clean = ss.savgol_filter(flux_clean,11,3)
+                  
                     fs = min(flux_clean)
                     index = np.where(flux_clean > fs)[0]
                     good = index
-                    while len(good)>5:
+                    
+                   # import pdb; pdb.set_trace() 
+                    while np.std(Time[good])>10:
                        
-                        index = np.where((flux_clean[good] > np.median(flux_clean[good])))[0]
-                        good=good[index]
-                        if len(index) < 4:
+                        index = np.where((flux_clean[good] > np.median(flux_clean[good])) & (errmag[good]<=max(0.1,2.0*np.mean(errmag[good]))))[0]
+                        
+                        if len(index) < 1:
                         
                             break
 
                         else:
+                            good=good[index]
                             #import pdb; pdb.set_trace()
                             #good = good[index]
-                            #gravity = (np.mean(Time[good]), np.mean(flux[good]))
+                            #gravity = (np.mean(Time[good]), np.mean(flux_clean[good]),np.mean(errmag[good]))
                             
-                            gravity = (np.median(Time[good]), np.mean(flux_clean[good]))
-                            distances = np.sqrt((Time[good]-gravity[0])**2)
-                            #distances = np.sqrt((Time[good]-gravity[0])**2)
+                            gravity = (np.median(Time[good]), np.median(flux_clean[good]),np.mean(errmag[good]))
+                            #distances = np.sqrt((Time[good]-gravity[0])**2+(flux_clean[good]-gravity[0])**2)
+                            distances = np.sqrt((Time[good]-gravity[0])**2/gravity[0]**2)
                             #plt.scatter(Time,flux)
                             #plt.scatter(Time,flux_clean,c='r')
                             #plt.scatter(gravity[0],gravity[1],c='g',s=100)
+                            #plt.title(i.name)
                             #plt.show()
-                            ##import pdb; pdb.set_trace()
+                            #print gravity
+                            #mport pdb; pdb.set_trace()
                             #index = distances.argsort()[:-1]
                             #good = good[index]
+                            
+                    #import pdb; pdb.set_trace() 
                     to = np.median(Time[good])
                     max_flux = max(flux[good])
-                    
+                    std = np.std(lightcurve_bis[good,0])
+                    To.append(to)
+                    Max_flux.append(max_flux)
+                    Errmag.append(np.mean(lightcurve_bis[good,2]))
+                    if std == 0 :
+                        
+                        std = 0.1
+                        
+                    Std.append(std)    
+                
                 except :
+                    
+                    
+                    Time = i.lightcurve[:,0]
+                    flux = 10**((27.4-i.lightcurve[:,1])/2.5)
+                    to = np.median(Time)
+                    max_flux = max(flux)
+                    To.append(to)
+                    Max_flux.append(max_flux)
+                    std = np.std(i.lightcurve[:,0])
+                    if std == 0 :
+                        
+                        std = 0.1
+                    Std.append(std)
+                    Errmag.append(np.mean(i.lightcurve[:,2]))
 
-
-                    to=np.median(i.lightcurve_flux[:,0])
-                    max_flux = max(i.lightcurve_flux[:,0])
-
-            #to = Time[good[np.where(flux[good] == np.max(flux[good]))[0]]][0]
-               
-
-                To.append(to)
-                Max_flux.append(max_flux)
-
-        #import pdb; pdb.set_trace()
-        to=np.median(To)
+           
+                
+                
+        import pdb; pdb.set_trace()
+        #to=np.median(To)
+        to = sum(np.array(To)/np.array(Errmag)**2)/sum(1/np.array(Errmag)**2)
         survey = self.event.telescopes[0]
         lightcurve = survey.lightcurve_flux
         lightcurve = lightcurve[lightcurve[:, 0].argsort(), :]
@@ -403,7 +436,8 @@ class MLFits(object):
             tE = 20.0
 
         fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
-
+        
+        #import pdb; pdb.set_trace()
         fluxes=self.find_fluxes([to, uo, tE], fake_model)
         fluxes[0]=fs
         fluxes[1]=0.0
@@ -494,7 +528,7 @@ class MLFits(object):
                             len(self.model.model_dictionnary)))
         
         
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):

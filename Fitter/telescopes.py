@@ -120,7 +120,7 @@ class Telescope(object):
         the lightcurve without outliers.
         """
         # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
-        precision = 1.0
+        precision = 0.3
         #index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
         #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 5) | (
         #                 np.abs(self.lightcurve[:, 2]) > precision))[
@@ -128,9 +128,9 @@ class Telescope(object):
         index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
                          np.abs(self.lightcurve[:, 2]) > precision))[
                          0]
-        for i in index:
-            print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and will be ' + \
-                  'rejected for the fit'
+        #for i in index:
+            #print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and will be ' + \
+                  #'rejected for the fit'
         #index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
         #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) < 5) & (
         #                 np.abs(self.lightcurve[:, 2]) < precision))[
@@ -139,9 +139,14 @@ class Telescope(object):
                          np.abs(self.lightcurve[:, 2]) < precision))[
                          0]
 
-
-        lightcurve = self.lightcurve[index]
-
+        if len(index)>2:
+            
+            lightcurve = self.lightcurve[index]
+        
+        else : 
+            
+            lightcurve = self.lightcurve
+            
         return lightcurve
 
     def lightcurve_in_flux(self,clean):
