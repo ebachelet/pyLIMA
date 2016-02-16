@@ -161,32 +161,91 @@ class MLFits(object):
             self.fit_time = computation_time
             
         if self.method == 2:
-            
+            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
             ndim = 3
-            nwalkers = 100
+            nwalkers = 200
             pp0=[]
+            #limits=[(AA['x'][0]*0.8,AA['x'][0]*1.2),(AA['x'][1]*0.8,AA['x'][1]*1.2),(AA['x'][2]*0.8,AA['x'][2]*1.2)]
+            limits=self.model.parameters_boundaries
             for i in range(nwalkers):
                 p1=[]
                 for j in range(3) :
-                    p1.append(np.random.uniform(self.model.parameters_boundaries[j][0],self.model.parameters_boundaries[j][1]))
+                    if j!=0 :
+                        
+                        sign = np.random.choice([-1,1])
+                    else :
+                        sign=1
+                    p1.append(AA['x'][j]*(1+np.random.uniform(0,0.01))*sign)
+                    #p1.append(np.random.uniform(limits[j][0],limits[j][1]))
                     #p1.append(0.1)
                 pp0.append(np.array(p1))
             
+            import pdb; pdb.set_trace()
            
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC)
-            pos,prob,state =sampler.run_mcmc(pp0,200)
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC,args=[limits])
+            
+            
+            pos,prob,state =sampler.run_mcmc(pp0,100)
             #sampler.reset()
             #pos, prob, state = sampler.run_mcmc(pos, 1000)
-            barycenter = [sum(pos[:,0]/(np.abs(prob))),sum(pos[:,1]/(np.abs(prob))),sum(pos[:,2]/(np.abs(prob)))]
-            p1 = np.array([100,1,100])*np.random.randn(nwalkers,ndim)+np.array(barycenter)
-            p2=[i for i in p1]
+            #AA=np.argsort(prob)[::-1][:33]
+            #barycenter = [sum(pos[AA,0]/(np.abs(prob[AA]))),sum(pos[AA,1]/(np.abs(prob[AA]))),sum(pos[AA,2]/(np.abs(prob[AA])))]
+            #p1 = np.array([1,1,1])*np.random.randn(nwalkers,ndim)+np.array(barycenter)
+            #p2=[i for i in p1]
+            #best= np.argmax(prob)
+            #limits = [(pos[best,0]-1,pos[best,0]+1),(pos[best,1]-0.1,pos[best,1]+0.1),(0,pos[best,0]+5)]
             sampler.reset()
-            pos,prob,state =sampler.run_mcmc(p2,1000)
+            #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC,args=[limits])
+            pos,prob,state =sampler.run_mcmc(pos,100)
              
             plt.plot(sampler.chain[:,:,2].T, '-', color='k', alpha=0.3)
-            
+            plt.show()
             import pdb; pdb.set_trace()
+               
+            time = np.arange(0,190,0.01)
+            good = np.where(np.abs(sampler.lnprobability-max(prob))<36)
+            mask = np.abs(sampler.lnprobability-max(prob))<36
+            AA=plt.scatter( sampler.chain[mask][:,0], sampler.chain[mask][:,2],c=np.abs(sampler.lnprobability[mask]))
+            cbar=plt.colorbar()
+            plt.show()            
+            plt.subplot(211)
+            plt.suptitle(self.event.name)
+            plt.scatter( sampler.chain[mask][:,0], sampler.chain[mask][:,2],c=np.abs(sampler.lnprobability[mask]))
+            plt.colorbar()
+            plt.xlabel('to')
+            plt.ylabel('tE')
+            index = []
+            for i in range(40):
+                ind=np.random.randint(0,len(good[0]))
+                if ind not in index :
+                    index.append(ind)
+           
+            plt.subplot(212)
+            for i in range(40) :
+                try :
+                    
+                    index2 = index[i]
+                    params = sampler.chain[good[0][index2],good[1][index2]]
+                    
+                    fs,fb = self.find_fluxes(params,self.model)
+                
+                    ampli = microlmagnification.amplification(self.model, time, params, 0.5)[0]
+                    plt.plot(time,27.4-2.5*np.log10(fs*(ampli+fb)),c=AA.get_facecolor()[index2],alpha=0.4)
 
+                except :
+                    import pdb; pdb.set_trace()
+                    
+            index = np.argmax(sampler.lnprobability[mask])
+            params = sampler.chain[good[0][index],good[1][index]]
+                    
+            fs,fb = self.find_fluxes(params,self.model)
+              
+            ampli = microlmagnification.amplification(self.model, time, params, 0.5)[0]
+            plt.plot(time,27.4-2.5*np.log10(fs*(ampli+fb)),c=AA.get_facecolor()[index],alpha=1.0,lw=2.0)
+            plt.errorbar(self.event.telescopes[0].lightcurve[:,0],self.event.telescopes[0].lightcurve[:,1],yerr=self.event.telescopes[0].lightcurve[:,2],linestyle='none',color='red',markersize='100')   
+            plt.gca().invert_yaxis()
+            plt.colorbar(AA)
+            plt.show()
         fit_quality_flag = self.check_fit()
 
 
@@ -700,7 +759,7 @@ class MLFits(object):
         '''Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit.
         '''
         errors = np.array([])
-
+        
         for i in self.event.telescopes:
 
             lightcurve = i.lightcurve_flux
@@ -719,12 +778,17 @@ class MLFits(object):
         chichi = (errors**2).sum()
         return chichi
         
-    def chi_MCMC(self, parameters) :
+    def chi_MCMC(self, parameters,limit) :
         
         '''Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit.
         '''
+        print parameters
         errors = np.array([])
-
+        #for i in xrange(len(parameters)) :
+         #   if (parameters[i]<limit[i][0]) | (parameters[i]>limit[i][1]) :
+                #import pdb; pdb.set_trace()
+          #      chichi=np.inf
+           #     return -chichi 
         for i in self.event.telescopes:
 
             lightcurve = i.lightcurve_flux
@@ -735,7 +799,8 @@ class MLFits(object):
             ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             
-            if fs<0 : 
+                
+            if (fs<0) | (fb<0) : 
                 
                 chichi=np.inf
             else:
