@@ -33,7 +33,7 @@ def main(command_line):
     #events_names = [os.path.split(x)[1] for x in glob.glob(command_line.input_directory + '/*.txt')]
     #print 'event_names = ', events_names
 
-    events_names=[event_name for event_name in os.listdir(command_line.input_directory) if '.dat' in event_name]
+    events_names=[event_name for event_name in os.listdir(command_line.input_directory) if 'Survey' in event_name]
     #events_names=sorted(os.listdir(command_line.input_directory))
     #for i in doublons.ravel() :
      #   if i[0]=='K' :
@@ -53,28 +53,31 @@ def main(command_line):
     for event_name in events_names[:]:
     #for j in xrange(10000):
         #j=j
-        name='Lightcurve_'+str(2)
-        #name = event_name
+        #name='Lightcurve_'+str(0)
+        #name = event_name[:-4]
         #name = 'OB151406'
+        name=event_name[:-11]
         current_event = event.Event()
         current_event.name = name
         current_event.ra = 270.65404166666667
         current_event.dec = -27.721305555555553
         event_telescopes = [event_telescope for event_telescope in os.listdir(command_line.input_directory) if
-                            name+'.dat' in event_telescope]
+                            name+'_' in event_telescope]
         
-
+        #import pdb; pdb.set_trace()
         #filters = ['I','J']    
         count=0
         #event_telescopes = [event_telescopes[1]]
         
         for event_telescope in event_telescopes:
+            #import pdb; pdb.set_trace()
+    
             raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
             #plt.scatter(raw_light_curve[:,0],raw_light_curve[:,1])
             #plt.gca().invert_yaxis()
             #lt.axis([min(raw_light_curve[:,0]),max(raw_light_curve[:,0]),max(raw_light_curve[:,1])+0.1,min(raw_light_curve[:,1])-0.5])
             #plt.show()
-            telescope = telescopes.Telescope(name=event_telescope, camera_filter='I', light_curve=raw_light_curve)
+            telescope = telescopes.Telescope(name=event_telescope[13:-4], camera_filter='I', light_curve=raw_light_curve)
             current_event.telescopes.append(telescope)
             #try :
                 
@@ -95,7 +98,7 @@ def main(command_line):
         print 'Start;', current_event.name
         #import pdb; pdb.set_trace()
         # current_event.check_event()
-        telescopes_names = [i.name for i in current_event.telescopes]
+        #telescopes_names = [i.name for i in current_event.telescopes]
        # if 'OI' in  telescopes_names:
             
             #current_event.find_survey('OI')
@@ -104,9 +107,9 @@ def main(command_line):
             #current_event.find_survey('KI')
 
         current_event.check_event()
+        current_event.find_survey('Survey')
        
-       
-        current_event.fit(command_line.model, second_order,2)
+        current_event.fit(command_line.model, second_order,0)
         #import pdb; pdb.set_trace()
     
         
@@ -138,9 +141,10 @@ def main(command_line):
         header_errors = header_model[:-2]
         Results = np.array(Results)
         Errors = np.array(Errors)
-        
-        np.savetxt(os.path.join(command_line.output_directory,name+'.model'),np.hstack((header_model,Results)).reshape(2,Results.shape[0]),newline='\r\n',fmt='%s')
-        np.savetxt(os.path.join(command_line.output_directory,name+'.errors'),np.hstack((header_errors,Errors)).reshape(2,Errors.shape[0]),newline='\r\n',fmt='%s')
+        results.append(Results)
+        errors.append(Errors)
+        #np.savetxt(os.path.join(command_line.output_directory,name+'.model'),np.hstack((header_model,Results)).reshape(2,Results.shape[0]),newline='\r\n',fmt='%s')
+        #np.savetxt(os.path.join(command_line.output_directory,name+'.errors'),np.hstack((header_errors,Errors)).reshape(2,Errors.shape[0]),newline='\r\n',fmt='%s')
         #import pdb; pdb.set_trace()   
         #Results.append(current_event.fits[0].fit_results[-1])
         #Results.append(current_event.fits[0].fit_time) 
@@ -162,11 +166,13 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='PSPL')
+    parser.add_argument('-m', '--model', default='FSPL')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
-    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Short_tE/Lightcurves/')
+    #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Short_tE/Lightcurves/')
+    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_FSPL/Lightcurves/')
     #parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Artemis_2015/')
-    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Short_tE/')
+    #parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/Short_tE/')
+    parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/FSPL/')
 
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()

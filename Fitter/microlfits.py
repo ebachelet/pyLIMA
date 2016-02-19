@@ -9,7 +9,7 @@ import numpy as np
 from scipy.optimize import leastsq, differential_evolution
 from scipy import interpolate
 import scipy.signal as ss
-import time
+import time as TIME
 from scipy.integrate import dblquad,nquad
 import matplotlib.pyplot as plt
 import emcee
@@ -149,15 +149,15 @@ class MLFits(object):
 
         if self.method == 1:
 
-            start=time.time()
-            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
+            start = TIME.time()
+            AA = differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
             print AA['fun'],AA['x']
             
-            self.guess=AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
+            self.guess = AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
             #import pdb; pdb.set_trace()
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
             
-            computation_time = time.time()-start
+            computation_time = TIME.time()-start
             self.fit_time = computation_time
             
         if self.method == 2:
@@ -246,6 +246,8 @@ class MLFits(object):
             plt.gca().invert_yaxis()
             plt.colorbar(AA)
             plt.show()
+            
+            
         fit_quality_flag = self.check_fit()
 
 
@@ -254,6 +256,7 @@ class MLFits(object):
             if self.method == 0 :
                 
                 print 'We have to change method, this fit was unsuccessfull. We decided to switch method to 1'
+                
                 self.method = 1
                 self.mlfit(self.model, 1)
 
@@ -375,7 +378,8 @@ class MLFits(object):
                         std = 0.1
                         
                     Std.append(std)    
-                
+                    #import pdb; pdb.set_trace()
+
                 except :
                     
                     
@@ -395,7 +399,7 @@ class MLFits(object):
            
                 
                 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         #to=np.median(To)
         to = sum(np.array(To)/np.array(Errmag)**2)/sum(1/np.array(Errmag)**2)
         survey = self.event.telescopes[0]
@@ -432,9 +436,7 @@ class MLFits(object):
         uo = np.sqrt(-2+2*np.sqrt(1-1/(1-Amax**2)))
         #import pdb; pdb.set_trace()
     
-        if self.model.paczynski_model == 'FSPL':
-
-            uo=uo/10.0
+      
 
         flux_demi = 0.5*fs*(Amax+1)
         flux_tE = fs*(uo**2+3)/((uo**2+1)**0.5*np.sqrt(uo**2+5))
@@ -500,7 +502,9 @@ class MLFits(object):
         fluxes=self.find_fluxes([to, uo, tE], fake_model)
         fluxes[0]=fs
         fluxes[1]=0.0
-
+        
+        
+            
         parameters = [to, uo, tE]
 
         if self.model.paczynski_model == 'FSPL':
@@ -547,14 +551,14 @@ class MLFits(object):
                   These limits can avoid the fit to properly converge (expected to be rare :))
         '''
 
-        start = time.time()
+        start = TIME.time()
         #self.guess = [0.0,1.0,2.0,10,0]
         lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
-                                col_deriv=1, full_output=1, ftol=10**-5,xtol=10**-8, gtol=10**-5)
+                            col_deriv=1, full_output=1, ftol=10**-5,xtol=10**-8, gtol=10**-5)
 
         #lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
 
-        computation_time = time.time()-start
+        computation_time = TIME.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
@@ -587,7 +591,7 @@ class MLFits(object):
                             len(self.model.model_dictionnary)))
         
         
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
@@ -656,40 +660,35 @@ class MLFits(object):
 
                 dadu = np.zeros(len(ampli[0]))
                 dadrho = np.zeros(len(ampli[0]))
-                #ind = np.where((Z > 10) | (Z < self.model.yoo_table[0][0]))[0]
-                ind = np.where((Z > 19.9999) | (Z < self.model.yoo_table[0][0]))[0]
-                #dadu[ind] = dAdU[ind]-ampli[0][ind]*1/parameters[self.model.model_dictionnary['rho']]*3*10**-5
+               
+                ind = np.where((Z > self.model.yoo_table[0][-1]))[0]
                 dadu[ind] = dAdU[ind]
-
-                #dadrho[ind] = ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*3*10**-5
-                dadrho[ind] = ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*3.1*10**-5
-#                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*(
-#                                self.model.yoo_table[3](self.model.yoo_table[0][-1])-
-#                                gamma*self.model.yoo_table[4](self.model.yoo_table[0][-1]))
-#                dadrho[ind] = 0.0
-
-                #ind = np.where((Z <= 10) & (Z >= self.model.yoo_table[0][0]))[0]
-                ind = np.where((Z <= 19.9999) & (Z >= self.model.yoo_table[0][0]))[0]
+                dadrho[ind] = -10**-10
+                
+                ind = np.where((Z < self.model.yoo_table[0][0]))[0]
+                
+                dadu[ind] = dAdU[ind]*(2*Z[ind]-gamma*(2-3*np.pi/4)*Z[ind])
+                dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*(2-gamma*(2-3*np.pi/4))
+                
+                ind = np.where((Z <=self.model.yoo_table[0][-1]) & (Z >= self.model.yoo_table[0][0]))[0]
+                
                 dadu[ind] = dAdU[ind]*(self.model.yoo_table[1](Z[ind])-gamma*self.model.yoo_table[2](
                             Z[ind]))+ampli[0][ind]*(self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](
                              Z[ind]))*1/parameters[self.model.model_dictionnary['rho']]
 
                 dadrho[ind] = -ampli[0][ind]*ampli[1][ind]/parameters[self.model.model_dictionnary['rho']]**2*(
                               self.model.yoo_table[3](Z[ind])-gamma*self.model.yoo_table[4](Z[ind]))
-
-                dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(
-                        parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
-
+              
+                dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
                 dUduo = parameters[self.model.model_dictionnary['uo']]/ampli[1]
-                dUdtE = -(Time-parameters[self.model.model_dictionnary['to']])**2/(
-                        parameters[self.model.model_dictionnary['tE']]**3*ampli[1])
-
+                dUdtE = -(Time-parameters[self.model.model_dictionnary['to']])**2/(parameters[self.model.model_dictionnary['tE']]**3*ampli[1])
                 dresdto = np.append(dresdto, -parameters[self.model.model_dictionnary['fs_'+i.name]]*dadu*
                                     dUdto/errflux)
                 dresduo = np.append(dresduo, -parameters[self.model.model_dictionnary['fs_'+i.name]]*dadu*
                                     dUduo/errflux)
                 dresdtE = np.append(dresdtE, -parameters[self.model.model_dictionnary['fs_'+i.name]]*dadu*
                                     dUdtE/errflux)
+                
                 dresdrho = np.append(dresdrho, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                      dadrho/errflux)
 
@@ -738,11 +737,18 @@ class MLFits(object):
             errors = np.append(errors, (flux-ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]-
                                        (parameters[self.model.model_dictionnary['fs_'+i.name]]*parameters[
                                        self.model.model_dictionnary['g_'+i.name]]))/errflux)
-#            if 'rho' in self.model.model_dictionnary:
-#                if parameters[self.model.model_dictionnary['rho']]<0 :
-#                    errors=errors*10**10
+            
+            #if 'rho' in self.model.model_dictionnary:
+             #   if (parameters[self.model.model_dictionnary['rho']]<0) :
+              #     errors=np.append(errors,np.array([np.inf]*len(Time)))
+            #plt.scatter(Time,flux)
+            #plt.plot(Time,ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]+
+                                       #(parameters[self.model.model_dictionnary['fs_'+i.name]]*parameters[
+                                       #self.model.model_dictionnary['g_'+i.name]]),'r')
+            #print parameters[0],parameters[1],parameters[3]
+                  
             count = count+1
-          
+       # plt.show()    
         return errors
 
     def chichi(self, parameters):
@@ -751,7 +757,6 @@ class MLFits(object):
         errors = self.residuals(parameters)
         chichi = (errors**2).sum()
         
-
         return chichi
 
     def chi_differential(self, parameters) :
@@ -825,7 +830,7 @@ class MLFits(object):
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0) :
                
-                fluxes.append(np.median(flux))
+                fluxes.append(np.min(flux))
                 fluxes.append(0.0)
             else:
                 fluxes.append(fs)

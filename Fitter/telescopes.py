@@ -61,7 +61,7 @@ class Telescope(object):
         self.altitude = 0.0
         self.longitude = 0.0
         self.latitude = 0.0
-        self.gamma = 0.0
+        self.gamma = 0.5
 
     def n_data(self,choice):
         """ Return the number of data points in the lightcurve."""

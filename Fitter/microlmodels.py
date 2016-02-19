@@ -7,15 +7,15 @@ Created on Mon Dec  7 10:32:13 2015
 
 from __future__ import division
 import numpy as np
-from scipy import interpolate
+from scipy import interpolate,misc
 from collections import OrderedDict
 
 import microlparallax
 
 try :
 
-    #yoo_table = np.loadtxt('b0b1.dat')
-    yoo_table = np.loadtxt('Yoo_B0B1.dat')
+     yoo_table = np.loadtxt('b0b1.dat')
+     #yoo_table = np.loadtxt('Yoo_B0B1.dat')
 except :
 
     print 'ERROR : No b0b1.dat file found, please check!'
@@ -39,13 +39,23 @@ class MLModels(object):
         zz = b0b1[:, 0]
         b0 = b0b1[:, 1]
         b1 = b0b1[:, 2]
-        db0 = b0b1[:, 4]
-        db1 = b0b1[:, 5]
+        #db0 = b0b1[:,4]
+        #db1 = b0b1[:, 5]
         interpol_b0 = interpolate.interp1d(zz, b0)
         interpol_b1 = interpolate.interp1d(zz, b1)
-        interpol_db0 = interpolate.interp1d(zz, db0)
-        interpol_db1 = interpolate.interp1d(zz, db1)
+        
+        dB0=misc.derivative(lambda x : interpol_b0(x),zz[1:-1],dx=10**-5,order=3)
+        dB1=misc.derivative(lambda x : interpol_b1(x),zz[1:-1],dx=10**-5,order=3)
+        
 
+        dB0 = np.append(2.0,dB0)
+        dB0 = np.concatenate([dB0,[dB0[-1]]])
+        dB1 = np.append((2.0-3*np.pi/4),dB1)
+        dB1 = np.concatenate([dB1,[dB1[-1]]])
+
+        interpol_db0 = interpolate.interp1d(zz, dB0)
+        interpol_db1 = interpolate.interp1d(zz, dB1)
+      
         self.yoo_table=[zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
         self.define_parameters()
 
@@ -57,7 +67,12 @@ class MLModels(object):
             self.parallax.parallax_combination()
             #parallax = self.parallax.parallax_outputs([0.2, 0.2])
             #import pdb; pdb.set_trace()
+    def f_derivative(x,function) :
+        import pdb; pdb.set_trace()
 
+            
+        return function(x)
+        
     def define_parameters(self):
         '''Provide the number of parameters on which depend the magnification computation.(Paczynski parameters+second_order)
         '''

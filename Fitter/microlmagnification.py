@@ -37,28 +37,34 @@ def amplification(model, t, parameters, gamma):
 #             pass
     if model.paczynski_model == 'FSPL':
 
-        Z = u/parameters[model.model_dictionnary['rho']]
-
+        Z =u/parameters[model.model_dictionnary['rho']]
+        #import pdb; pdb.set_trace()
         ampli_fspl = np.zeros(len(ampli))
 
-        ind = np.where((Z > 19.9999) | (Z < model.yoo_table[0][0]))[0]
+        ind = np.where((Z > model.yoo_table[0][-1]))[0]
         ampli_fspl[ind] = ampli[ind]
-        ind = np.where((Z <=19.9999) & (Z >= model.yoo_table[0][0]))[0]
+        
+        ind = np.where((Z < model.yoo_table[0][0]))[0]
+        ampli_fspl[ind] = ampli[ind]*(2*Z[ind]-gamma*(2-3*np.pi/4)*Z[ind])
+        
+       
+        ind = np.where((Z <=model.yoo_table[0][-1]) & (Z >= model.yoo_table[0][0]))[0]
         ampli_fspl[ind] = ampli[ind]*(model.yoo_table[1](Z[ind])-gamma*model.yoo_table[2](Z[ind]))
         ampli = ampli_fspl
+       
 
-    if model.paczynski_model == 'FSPL':
-            Ampli=[]
+    #if model.paczynski_model == 'FSPL':
+            #Ampli=[]
 
-            for j in u :
-                print j
-                start=time.time()
+            #for j in u :
+             #   print j
+              #  start=time.time()
 
-                Ampli.append(2/(np.pi*parameters[model.model_dictionnary['rho']]**2)*nquad(function_LEE,[LEE_limit,[0,np.pi]],args=(j,parameters[model.model_dictionnary['rho']],gamma),opts=[{'limit':10,'epsrel' : 0.01,},{'limit':10,'epsrel' : 0.01,}])[0])
+               # Ampli.append(2/(np.pi*parameters[model.model_dictionnary['rho']]**2)*nquad(function_LEE,[LEE_limit,[0,np.pi]],args=(j,parameters[model.model_dictionnary['rho']],gamma),opts=[{'limit':10,'epsrel' : 0.01,},{'limit':10,'epsrel' : 0.01,}])[0])
 
-                print start-time.time()
+                #print start-time.time()
 
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
 
 #            ampli=np.array(Ampli)
     return ampli, u
