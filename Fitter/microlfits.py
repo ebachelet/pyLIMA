@@ -531,6 +531,7 @@ class MLFits(object):
        
         return parameters
 
+   
     def lmarquardt(self):
         '''Method 0 of solver. This is based on the Levenberg-Marquardt algorithm:
 
@@ -590,7 +591,6 @@ class MLFits(object):
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
         
-        
         import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
@@ -607,6 +607,9 @@ class MLFits(object):
             dresdfs = np.array([])
             dresdeps = np.array([])
            
+            to = parameters[0]                
+            uo = parameters[1]
+            tE = parameters[2]
 
             for i in self.event.telescopes:
 
@@ -615,7 +618,9 @@ class MLFits(object):
                 errflux = lightcurve[:, 2]
                 gamma = i.gamma
                 
-                ampli = microlmagnification.amplification(self.model,Time, parameters, gamma)
+                tau = (Time-to)/tE
+            
+                ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model) 
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**1.5)
 
                 dUdto = -(Time-parameters[self.model.model_dictionnary['to']])/(parameters[self.model.model_dictionnary['tE']]**2*ampli[1])
@@ -645,6 +650,9 @@ class MLFits(object):
             
             fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
             fake_params = np.delete(parameters, self.model.model_dictionnary['rho'])
+            to = parameters[0]                
+            uo = parameters[1]
+            tE = parameters[2]
             for i in self.event.telescopes:
 
                 lightcurve = i.lightcurve_flux
@@ -653,7 +661,9 @@ class MLFits(object):
                 gamma = i.gamma
 
 
-                ampli = microlmagnification.amplification(fake_model,Time, fake_params, gamma)
+                tau = (Time-to)/tE
+            
+                ampli = microlmagnification.amplification(uo,tau,0.0,gamma,fake_model)
                 dAdU = (-8)/(ampli[1]**2*(ampli[1]**2+4)**(1.5))
 
                 Z = ampli[1]/parameters[self.model.model_dictionnary['rho']]
@@ -663,7 +673,7 @@ class MLFits(object):
                
                 ind = np.where((Z > self.model.yoo_table[0][-1]))[0]
                 dadu[ind] = dAdU[ind]
-                dadrho[ind] = -10**-10
+                dadrho[ind] =-0.0
                 
                 ind = np.where((Z < self.model.yoo_table[0][0]))[0]
                 
@@ -692,7 +702,9 @@ class MLFits(object):
                 dresdrho = np.append(dresdrho, -parameters[self.model.model_dictionnary['fs_'+i.name]]*
                                      dadrho/errflux)
 
-                ampli = microlmagnification.amplification(self.model,Time, parameters, gamma)
+                tau = (Time-to)/tE
+            
+                ampli = microlmagnification.amplification(uo,tau,parameters[self.model.model_dictionnary['rho']],gamma,self.model)
                 dresdfs = np.append(dresdfs, -(ampli[0]+parameters[self.model.model_dictionnary['g_'+i.name]])/errflux)
                 dresdeps = np.append(dresdeps, -parameters[self.model.model_dictionnary['fs_'+i.name]]/errflux)
 
@@ -725,6 +737,9 @@ class MLFits(object):
         '''
         errors = np.array([])
         count = 0
+        to = parameters[0]                
+        uo = parameters[1]
+        tE = parameters[2]
         
         for i in self.event.telescopes:
 
@@ -733,7 +748,31 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
+                
+            tau = (Time-to)/tE
+            rho = 0
+            if self.model.paczynski_model == 'FSPL' :
+                
+                rho = parameters[self.model.model_dictionnary['rho']]
+            
+            #import pdb; pdb.set_trace()
+
+            if self.model.parallax_model[0] != 'None' :
+                
+               
+                PiE = np.array([parameters[self.model.model_dictionnary['PiEN']],parameters[self.model.model_dictionnary['PiEE']]])
+                
+                delta_tau=np.dot(PiE,i.deltas_position)
+                delta_u=np.cross(PiE,i.deltas_position)
+                tau = tau+delta_tau                
+                uo = uo+delta_u
+                
+            ampli = microlmagnification.amplification(uo,tau,rho,gamma,self.model)[0] 
+
+                
+            
+                
+                
             errors = np.append(errors, (flux-ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]-
                                        (parameters[self.model.model_dictionnary['fs_'+i.name]]*parameters[
                                        self.model.model_dictionnary['g_'+i.name]]))/errflux)
@@ -764,6 +803,9 @@ class MLFits(object):
         '''Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit.
         '''
         errors = np.array([])
+        to = parameters[0]                
+        uo = parameters[1]
+        tE = parameters[2]
         
         for i in self.event.telescopes:
 
@@ -772,7 +814,10 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
+            tau = (Time-to)/tE
+            
+            ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model)[0] 
+           
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0): 
                 #print fs
@@ -794,6 +839,9 @@ class MLFits(object):
                 #import pdb; pdb.set_trace()
           #      chichi=np.inf
            #     return -chichi 
+        to = parameters[0]                
+        uo = parameters[1]
+        tE = parameters[2]
         for i in self.event.telescopes:
 
             lightcurve = i.lightcurve_flux
@@ -801,7 +849,9 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = microlmagnification.amplification(self.model, Time, parameters, gamma)[0]
+            tau = (Time-to)/tE
+            
+            ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model)[0] 
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             
                 
@@ -819,6 +869,9 @@ class MLFits(object):
     def find_fluxes(self, parameters, model):
 
         fluxes = []
+        to = parameters[0]                
+        uo = parameters[1]
+        tE = parameters[2]
         for i in self.event.telescopes:
 
             lightcurve = i.lightcurve_flux
@@ -826,7 +879,9 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            ampli = microlmagnification.amplification(model, Time, parameters, gamma)[0]
+            tau = (Time-to)/tE
+            
+            ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model)[0] 
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0) :
                

@@ -8,6 +8,7 @@ from __future__ import division
 import numpy as np
 import astropy.io.fits as fits
 
+import microlparallax
 
 class Telescope(object):
     """
@@ -62,7 +63,12 @@ class Telescope(object):
         self.longitude = 0.0
         self.latitude = 0.0
         self.gamma = 0.5
+        self.parallax_deltas_positions = []
+    
+    def compute_parallax(self, event, model) :
 
+        para = microlparallax.MLParallaxes(event, model, self) 
+        self.parallax_deltas_positions = para.parallax_combination()
     def n_data(self,choice):
         """ Return the number of data points in the lightcurve."""
         

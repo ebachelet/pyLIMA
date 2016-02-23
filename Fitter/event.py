@@ -170,7 +170,7 @@ class Event(object):
             return
 
         self.lightcurves_in_flux('Yes')
-
+        #self.compute_parallax(second_order)
         Model=microlmodels.MLModels(self, model, second_order)
 
      
@@ -295,3 +295,11 @@ class Event(object):
         #self.outputs.find_observables()
         #Parameters,lightcurve_model,lightcurve_data = self.outputs.K2_C9_outputs()
         #return Parameters,lightcurve_model,lightcurve_data
+        
+        
+    def compute_parallax(self, second_order) :
+        
+        for i in self.telescopes :
+            
+            i.compute_parallax(self, second_order[0])
+            import pdb; pdb.set_trace()

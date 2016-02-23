@@ -14,11 +14,30 @@ import microlparallax
 
 try :
 
-     yoo_table = np.loadtxt('b0b1.dat')
-     #yoo_table = np.loadtxt('Yoo_B0B1.dat')
+     #yoo_table = np.loadtxt('b0b1.dat')
+     yoo_table = np.loadtxt('Yoo_B0B1_3.dat')
 except :
 
     print 'ERROR : No b0b1.dat file found, please check!'
+
+
+b0b1 = yoo_table
+zz = b0b1[:, 0]
+b0 = b0b1[:, 1]
+b1 = b0b1[:, 2]
+#db0 = b0b1[:,4]
+#db1 = b0b1[:, 5]
+interpol_b0 = interpolate.interp1d(zz, b0,kind='linear')
+interpol_b1 = interpolate.interp1d(zz, b1,kind='linear')
+
+dB0=misc.derivative(lambda x : interpol_b0(x),zz[1:-1],dx=10**-3,order=3)
+dB1=misc.derivative(lambda x : interpol_b1(x),zz[1:-1],dx=10**-3,order=3)
+dB0 = np.append(2.0,dB0)
+dB0 = np.concatenate([dB0,[dB0[-1]]])
+dB1 = np.append((2.0-3*np.pi/4),dB1)
+dB1 = np.concatenate([dB1,[dB1[-1]]])
+interpol_db0 = interpolate.interp1d(zz, dB0,kind='linear')
+interpol_db1 = interpolate.interp1d(zz, dB1,kind='linear')
 
 
 class MLModels(object):
@@ -35,30 +54,9 @@ class MLModels(object):
         self.orbital_motion_model = second_order[2]
         self.source_spots_model = second_order[3]
 
-        b0b1 = yoo_table
-        zz = b0b1[:, 0]
-        b0 = b0b1[:, 1]
-        b1 = b0b1[:, 2]
-        #db0 = b0b1[:,4]
-        #db1 = b0b1[:, 5]
-        interpol_b0 = interpolate.interp1d(zz, b0)
-        interpol_b1 = interpolate.interp1d(zz, b1)
-        
-        dB0=misc.derivative(lambda x : interpol_b0(x),zz[1:-1],dx=10**-5,order=3)
-        dB1=misc.derivative(lambda x : interpol_b1(x),zz[1:-1],dx=10**-5,order=3)
-        
-
-        dB0 = np.append(2.0,dB0)
-        dB0 = np.concatenate([dB0,[dB0[-1]]])
-        dB1 = np.append((2.0-3*np.pi/4),dB1)
-        dB1 = np.concatenate([dB1,[dB1[-1]]])
-
-        interpol_db0 = interpolate.interp1d(zz, dB0)
-        interpol_db1 = interpolate.interp1d(zz, dB1)
-      
         self.yoo_table=[zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
         self.define_parameters()
-
+        #import pdb; pdb.set_trace()
 
         if self.parallax_model[0] != 'None':
             #import pdb; pdb.set_trace()

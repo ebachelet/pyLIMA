@@ -9,7 +9,8 @@ from __future__ import division
 import numpy as np
 import time
 from scipy.integrate import nquad
-def amplification(model, t, parameters, gamma):
+def amplification (x,y,rho,gamma,model) :
+
     ''' The magnification associated to the model, at time t using parameters and gamma.
         The formula change regarding the requested model :
         PSPL' --> Point Source Point Lens. The amplification is taken from :
@@ -25,19 +26,16 @@ def amplification(model, t, parameters, gamma):
         'Binary' --> not available now
         'Triple' --> not available now
         '''
-#        X,Y = self.source_trajectory(t, parameters)
-    u = (parameters[model.model_dictionnary['uo']]**2+(t-parameters[model.model_dictionnary['to']])**2/parameters[model.model_dictionnary['tE']]**2)**0.5
+    u = (x**2+y**2)**0.5
     u2 = u**2
     ampli = (u2+2)/(u*(u2+4)**0.5)
-#   if model.paczynski_model == 'PSPL' or model.paczynski_model == 'FSPL' :
-
-#            u = (X**2+Y**2)**0.5
-#            u2 = u**2
-#            ampli = (u2+2)/(u*(u2+4)**0.5)
-#             pass
+    
+    if model.paczynski_model == 'PSPL' :
+        
+        return ampli, u
     if model.paczynski_model == 'FSPL':
 
-        Z =u/parameters[model.model_dictionnary['rho']]
+        Z =u/rho
         #import pdb; pdb.set_trace()
         ampli_fspl = np.zeros(len(ampli))
 
@@ -51,23 +49,9 @@ def amplification(model, t, parameters, gamma):
         ind = np.where((Z <=model.yoo_table[0][-1]) & (Z >= model.yoo_table[0][0]))[0]
         ampli_fspl[ind] = ampli[ind]*(model.yoo_table[1](Z[ind])-gamma*model.yoo_table[2](Z[ind]))
         ampli = ampli_fspl
-       
-
-    #if model.paczynski_model == 'FSPL':
-            #Ampli=[]
-
-            #for j in u :
-             #   print j
-              #  start=time.time()
-
-               # Ampli.append(2/(np.pi*parameters[model.model_dictionnary['rho']]**2)*nquad(function_LEE,[LEE_limit,[0,np.pi]],args=(j,parameters[model.model_dictionnary['rho']],gamma),opts=[{'limit':10,'epsrel' : 0.01,},{'limit':10,'epsrel' : 0.01,}])[0])
-
-                #print start-time.time()
-
-            #import pdb; pdb.set_trace()
-
-#            ampli=np.array(Ampli)
-    return ampli, u
+        
+        return ampli, u
+   
 
 
 def source_trajectory(model, t, parameters):

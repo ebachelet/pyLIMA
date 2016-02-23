@@ -53,7 +53,7 @@ def main(command_line):
     for event_name in events_names[:]:
     #for j in xrange(10000):
         #j=j
-        #name='Lightcurve_'+str(0)
+        #name='Lightcurve_'+str(527)
         #name = event_name[:-4]
         #name = 'OB151406'
         name=event_name[:-11]
@@ -78,6 +78,11 @@ def main(command_line):
             #lt.axis([min(raw_light_curve[:,0]),max(raw_light_curve[:,0]),max(raw_light_curve[:,1])+0.1,min(raw_light_curve[:,1])-0.5])
             #plt.show()
             telescope = telescopes.Telescope(name=event_telescope[13:-4], camera_filter='I', light_curve=raw_light_curve)
+            if 'Follow' in event_telescope :
+                telescope.kind = 'Space'
+                telescope.name = 'SWIFT'
+
+           
             current_event.telescopes.append(telescope)
             #try :
                 
