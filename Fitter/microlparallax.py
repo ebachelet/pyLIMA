@@ -56,7 +56,7 @@ def optcallback(socket, command, option):
 
 class MLParallaxes(object):
 
-    def __init__(self, event, model, telescope):
+    def __init__(self, event, model):
         ''' Initialization of the attributes described above.
         '''
         self.AU = const.au.value
@@ -68,8 +68,7 @@ class MLParallaxes(object):
         self.delta_tau = []
         self.delta_u = []
         self.target_angles=[self.event.ra*np.pi/180,self.event.dec*np.pi/180]
-        self.telescope = telescope
-
+        
     def N_E_vectors_target(self):
 
         target_angles=self.target_angles
@@ -110,71 +109,85 @@ class MLParallaxes(object):
 
         return JD
 
-    def parallax_combination(self):
-
-        self.N_E_vectors_target()
-        delta_position_North = np.array([])
-        delta_position_East = np.array([])
+    def parallax_combination(self,telescopes):
 
 
-        kind = self.telescope.kind
-        t = self.HJD_to_JD(self.telescope.lightcurve_flux[:,0])
-        delta_North = np.array([])
-        delta_East = np.array([])
+        for i in telescopes:
 
-        if kind == 'Earth':
+            self.N_E_vectors_target()
+            delta_position_North = np.array([])
+            delta_position_East = np.array([])
 
-            if (self.model == 'Annual'):
 
+            kind =i.kind
+            #t = self.HJD_to_JD(i.lightcurve_flux[:,0])
+            t = i.lightcurve_flux[:,0]
+            delta_North = np.array([])
+            delta_East = np.array([])
+
+            if kind == 'Earth':
+
+                if (self.model == 'Annual'):
+                   
+    
+                    positions=self.annual_parallax(t)
+                    #import pdb; pdb.set_trace()
+                    delta_North = np.append(delta_North, positions[0])
+                    delta_East = np.append(delta_East, positions[1])
+                    
+                if (self.model == 'Terrestrial'):
+
+                    altitude=i.altitude
+                    longitude=i.longitude
+                    latitude=i.latitude
+
+                    positions=self.terrestrial_parallax(t, altitude, longitude, latitude)
+                    delta_North = np.append(delta_North, positions[0])
+                    delta_East = np.append(delta_East, positions[1])
+
+                if (self.model == 'Full'):
+
+                    positions=self.annual_parallax(t)
+                    delta_North = np.append(delta_North, positions[0])
+                    delta_East = np.append(delta_East, positions[1])
+
+
+                    altitude=i.altitude
+                    longitude=i.longitude
+                    latitude=i.latitude
+                    
+                    positions=self.terrestrial_parallax(t, altitude, longitude, latitude)
+                    delta_North = np.append(delta_North, positions[0])
+                    delta_East = np.append(delta_East, positions[1])
+
+
+            else:
                 positions=self.annual_parallax(t)
                 delta_North = np.append(delta_North, positions[0])
                 delta_East = np.append(delta_East, positions[1])
+                name=i.name
+                try :
+                    positions=self.space_parallax(t, name)
+                except :
+                    print 'TIME OUT CONNECTION TO JPL'
+                    import pdb; pdb.set_trace()
 
-            if (self.model == 'Terrestrial'):
-
-                altitude=self.telescope.altitude
-                longitude=self.telescope.longitude
-                latitude=self.telescope.latitude
-
-                positions=self.terrestrial_parallax(t, altitude, longitude, latitude)
-                delta_North = np.append(delta_North, positions[0])
-                delta_East = np.append(delta_East, positions[1])
-
-            if (self.model == 'Full'):
-
-                positions=self.annual_parallax(t)
-                delta_North = np.append(delta_North, positions[0])
-                delta_East = np.append(delta_East, positions[1])
+                    positions=self.space_parallax(t, name)
+                delta_North = delta_North + positions[0]
+                delta_East = delta_East + positions[1]
 
 
-                altitude=self.telescope.altitude
-                longitude=self.telescope.longitude
-                latitude=self.telescope.latitude
+            delta_position_North = np.append(delta_position_North, delta_North)
+            delta_position_East = np.append(delta_position_East, delta_East)
 
-                positions=self.terrestrial_parallax(t, altitude, longitude, latitude)
-                delta_North = np.append(delta_North, positions[0])
-                delta_East = np.append(delta_East, positions[1])
-
-
-        else:
-
-            name=self.telescope.name
-
-            positions=self.space_parallax(t, name)
-            delta_North = np.append(delta_North, positions[0])
-            delta_East = np.append(delta_East, positions[1])
-
-
-        delta_position_North = np.append(delta_position_North, delta_North)
-        delta_position_East = np.append(delta_position_East, delta_East)
-
-        deltas_position = -np.array([delta_position_North,delta_position_East])
-        return deltas_position
+            deltas_position = np.array([delta_position_North,delta_position_East])
+            i.deltas_positions = deltas_position
+            
 
     def annual_parallax(self, t):
 
-        topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
-
+        #topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
+        topar=self.topar-2400000.5
         Earth_position_ref=slalib.sla_epv(topar)
         Sun_position_ref=-Earth_position_ref[0]
         Sun_speed_ref=-Earth_position_ref[1]
@@ -187,6 +200,8 @@ class MLParallaxes(object):
             Earth_position=slalib.sla_epv(tt)
             Sun_position=-Earth_position[0]
             delta_sun= Sun_position-(tt-topar)*Sun_speed_ref-Sun_position_ref
+            #import pdb; pdb.set_trace()
+
             delta_Sun.append(delta_sun.tolist())
 
         delta_Sun=np.array(delta_Sun)
@@ -195,7 +210,7 @@ class MLParallaxes(object):
         return delta_Sun_proj
 
     def terrestrial_parallax(self, t, altitude, longitude, latitude):
-
+        
         radius = self.Earth_radius+altitude
         Longitude = longitude*np.pi/180.0
         Latitude = latitude*np.pi/180.0
@@ -215,41 +230,46 @@ class MLParallaxes(object):
         return delta_positions
 
     def space_parallax(self, t, name):
-        import pdb; pdb.set_trace()
-        tstart = self.HJD_to_JD(np.array([t[0]]))
-        tend = self.HJD_to_JD(np.array([t[-1]]))
+        #tstart = self.HJD_to_JD(np.array([t[0]]))
+        #tend = self.HJD_to_JD(np.array([t[-1]]))
+        #import pdb; pdb.set_trace()
 
-
-        positions = self.produce_horizons_ephem(name, 2457438.500000, 2457440.500000, observatory='Geocentric',step_size='10m', verbose=False)[1]
-        positions = np.array(positions)
+        tstart=t[0]-1
+        tend=t[-1]+1
+        tstart=2457027-210
+        tend=2457027+210
+        #positions = self.produce_horizons_ephem(name, tstart, tend, observatory='Geocentric',step_size='10m', verbose=False)[1]
+        positions = np.loadtxt('SWIFT.dat')        
+        positions = positions[:,:-1]
 
         dates = positions[:,0].astype(float)
         ra = positions[:,1].astype(float)
         dec = positions[:,2].astype(float)
-        distances = positions[:,3].astype(float)*60.0*self.speed_of_light
+        distances = positions[:,3].astype(float)
 
         interpol_ra = interpolate.interp1d(dates, ra)
         interpol_dec = interpolate.interp1d(dates, dec)
         interpol_dist = interpolate.interp1d(dates, distances)
-        times=self.HJD_to_JD(t)
+        #times=self.HJD_to_JD(t)
 
-        ra_interpolated = interpol_ra[times]
-        dec_interpolated = interpol_dec[times]
-        distance_interpolated = interpol_dist[times]
+        ra_interpolated = interpol_ra(t)
+        dec_interpolated = interpol_dec(t)
+        distance_interpolated = interpol_dist(t)
 
         delta_North = []
         delta_East = []
-        for i in xrange(len(times)):
+        for i in xrange(len(t)):
 
-            tt = i-2400000.5
             
+            tt=i
             delta_North.append( distance_interpolated[tt]*(np.sin(dec_interpolated[tt])*np.cos(
                                 self.target_angles[1])-np.cos(dec_interpolated[tt])*np.sin(
                                    self.target_angles[1])*np.cos(ra_interpolated[tt])))
             delta_East.append( distance_interpolated[tt]*np.cos(dec_interpolated[tt])*np.sin(ra_interpolated[tt]))
 
         delta_positions = np.array([delta_North, delta_East])
-       
+        #import pdb; pdb.set_trace()
+
         return delta_positions
 
         
@@ -295,7 +315,7 @@ class MLParallaxes(object):
             print "tstart = ", tstart
         #tstop = end_time.strftime('%Y-%m-%d %H:%M')
         tstop='JD'+str(end_time)
-        timeout =4 #seconds
+        timeout =60 #seconds
         t = telnetlib.Telnet('horizons.jpl.nasa.gov',6775)
         t.set_option_negotiation_callback(optcallback)
         data = t.read_until('Horizons> ')
@@ -453,7 +473,7 @@ class MLParallaxes(object):
             print data
         if (1==1):
             #t.write('n\n1,3,4,9,19,20,23,\nJ2000\n\n\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
-            t.write('n\n1,19,\nJ2000\n\n\JD\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
+            t.write('n\n1,20,\nJ2000\n\n\JD\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
         else:
             t.write('y\n') # accept default output?
             data = t.read_until(', ?] : ') #,timeout)
@@ -474,7 +494,7 @@ class MLParallaxes(object):
                 print "hor_line = ", hor_line
                 print len(hor_line.split())
             data_line = True
-            print hor_line
+            #print hor_line
             
     
             if (len(hor_line.split()) == 4):

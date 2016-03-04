@@ -63,12 +63,12 @@ class Telescope(object):
         self.longitude = 0.0
         self.latitude = 0.0
         self.gamma = 0.5
-        self.parallax_deltas_positions = []
+        self.deltas_positions = []
     
     def compute_parallax(self, event, model) :
 
-        para = microlparallax.MLParallaxes(event, model, self) 
-        self.parallax_deltas_positions = para.parallax_combination()
+        para = microlparallax.MLParallaxes(event, model) 
+        para.parallax_combination()
     def n_data(self,choice):
         """ Return the number of data points in the lightcurve."""
         
@@ -126,7 +126,7 @@ class Telescope(object):
         the lightcurve without outliers.
         """
         # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
-        precision = 0.3
+        precision = 50
         #index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
         #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 5) | (
         #                 np.abs(self.lightcurve[:, 2]) > precision))[

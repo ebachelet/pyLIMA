@@ -12,6 +12,8 @@ import microlfits
 import microlplotter
 import microloutputs
 import microlmodels
+import microlparallax
+import time
 
 class Event(object):
     """
@@ -170,7 +172,8 @@ class Event(object):
             return
 
         self.lightcurves_in_flux('Yes')
-        #self.compute_parallax(second_order)
+        if second_order[0][0]!='None':
+            self.compute_parallax(second_order)
         Model=microlmodels.MLModels(self, model, second_order)
 
      
@@ -298,8 +301,12 @@ class Event(object):
         
         
     def compute_parallax(self, second_order) :
-        
+        telescopes=[]
         for i in self.telescopes :
             
-            i.compute_parallax(self, second_order[0])
-            import pdb; pdb.set_trace()
+            if i.deltas_positions == [] :  
+                 telescopes.append(i)
+        
+        para = microlparallax.MLParallaxes(self,second_order[0]) 
+        para.parallax_combination(telescopes)
+      

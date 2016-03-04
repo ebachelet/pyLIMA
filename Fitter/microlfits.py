@@ -135,54 +135,60 @@ class MLFits(object):
 
         self.event = event
         self.fit_errors = []
-
+        self.guess = []
     def mlfit(self, model, method):
 
         self.model = model
         self.method = method
 
         if self.method == 0:
-            
-
             self.guess = self.initial_guess()
+            
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
         if self.method == 1:
 
             start = TIME.time()
-            AA = differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
-            print AA['fun'],AA['x']
             
-            self.guess = AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
+            
             #import pdb; pdb.set_trace()
+            #self.model.parameters_boundaries[0]=(2457027-1,2457027+1)
+            AA = differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1.0), popsize=15, tol=0.00001,recombination=0.7,polish='True',disp=False)
+            print AA['fun'],AA['x']
+            #import pdb; pdb.set_trace()
+            self.guess = AA['x'].tolist()+self.find_fluxes(AA['x'].tolist(), self.model)
+           
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
             
             computation_time = TIME.time()-start
+            print computation_time
             self.fit_time = computation_time
             
         if self.method == 2:
-            AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
-            ndim = 3
+            #AA=differential_evolution(self.chi_differential,bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30, recombination=0.7,polish='None')
+            res=np.array([  2.45702717e+06,   1.03945071e-02,   2.09768963e+01, 4.68542301e-03,  -2.33873059e-02,   3.95109011e-02])
+            ndim = 6
             nwalkers = 200
             pp0=[]
             #limits=[(AA['x'][0]*0.8,AA['x'][0]*1.2),(AA['x'][1]*0.8,AA['x'][1]*1.2),(AA['x'][2]*0.8,AA['x'][2]*1.2)]
             limits=self.model.parameters_boundaries
             for i in range(nwalkers):
                 p1=[]
-                for j in range(3) :
-                    if j!=0 :
+                for j in range(6) :
+                   
                         
-                        sign = np.random.choice([-1,1])
-                    else :
-                        sign=1
-                    p1.append(AA['x'][j]*(1+np.random.uniform(0,0.01))*sign)
+                        if j>=4:
+                             p1.append(res[j]+np.random.uniform(-1,1))
+                        else :
+                            p1.append(res[j]+np.random.uniform(0,0.01))
+                        
                     #p1.append(np.random.uniform(limits[j][0],limits[j][1]))
                     #p1.append(0.1)
                 pp0.append(np.array(p1))
             
             import pdb; pdb.set_trace()
            
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC,args=[limits])
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC,args=[self.model.parameters_boundaries])
             
             
             pos,prob,state =sampler.run_mcmc(pp0,100)
@@ -339,7 +345,7 @@ class MLFits(object):
                     good = index
                     
                    # import pdb; pdb.set_trace() 
-                    while np.std(Time[good])>10:
+                    while (np.std(Time[good])>5) | (len(good)>100) :
                        
                         index = np.where((flux_clean[good] > np.median(flux_clean[good])) & (errmag[good]<=max(0.1,2.0*np.mean(errmag[good]))))[0]
                         
@@ -492,11 +498,11 @@ class MLFits(object):
         tE = np.median(TE[good])
         #import pdb; pdb.set_trace()
 
-        if tE < 1:
+        if tE < 0.1:
 
             tE = 20.0
-
-        fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
+        fake_second_order = [['None', 0], ['None', 0], ['None', 0], 'None']
+        fake_model = microlmodels.MLModels(self.event, 'PSPL', fake_second_order)
         
         #import pdb; pdb.set_trace()
         fluxes=self.find_fluxes([to, uo, tE], fake_model)
@@ -509,11 +515,11 @@ class MLFits(object):
 
         if self.model.paczynski_model == 'FSPL':
 
-            parameters = parameters+[0.05]
+            parameters = parameters+[1.5*uo]
 
         if self.model.parallax_model[0] != 'None':
 
-            parameters = parameters+[0,0]
+            parameters = parameters+[0.0,0.0]
 
         if self.model.xallarap_model[0] != 'None':
 
@@ -547,26 +553,29 @@ class MLFits(object):
         the Jacobian is given by the Jacobian function
 
 
-        WARNING : ftol (relative error desired in the sum of square) is set to 10^-5
+        WARNING : ftol (relative error desired in the sum of square) is set to 10^-6
                   maxfev (maximum number of function call) is set to 50000
                   These limits can avoid the fit to properly converge (expected to be rare :))
         '''
-
+        #import pdb; pdb.set_trace()
         start = TIME.time()
         #self.guess = [0.0,1.0,2.0,10,0]
-        lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
-                            col_deriv=1, full_output=1, ftol=10**-5,xtol=10**-8, gtol=10**-5)
-
-        #lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1, ftol=0.00001)
+        if self.model.parallax_model[0]=='None' :        
+            lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
+                            col_deriv=1, full_output=1, ftol=10**-6,xtol=10**-10, gtol=10**-5)
+        else :
+            
+            lmarquardt_fit=leastsq(self.residuals, self.guess, maxfev=50000, full_output=1,ftol=10**-5,xtol=10**-5)
 
         computation_time = TIME.time()-start
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
+        #fit_res = fit_res+self.chichi_telescopes(fit_res)        
         n_data = 0.0
 
         for i in self.event.telescopes:
-
+            
             n_data = n_data+i.n_data('Flux')
         n_parameters = len(self.model.model_dictionnary)
         try:
@@ -586,12 +595,12 @@ class MLFits(object):
                     cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
         except:
-
+            #import pdb; pdb.set_trace()
             print 'hoho'
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
-        
-        import pdb; pdb.set_trace()
+      
+        #import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
@@ -737,12 +746,12 @@ class MLFits(object):
         '''
         errors = np.array([])
         count = 0
-        to = parameters[0]                
-        uo = parameters[1]
-        tE = parameters[2]
-        
+        #print parameters
+       
         for i in self.event.telescopes:
-
+            to = parameters[0]                
+            uo = parameters[1]
+            tE = parameters[2]
             lightcurve = i.lightcurve_flux
             Time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
@@ -760,10 +769,11 @@ class MLFits(object):
             if self.model.parallax_model[0] != 'None' :
                 
                
-                PiE = np.array([parameters[self.model.model_dictionnary['PiEN']],parameters[self.model.model_dictionnary['PiEE']]])
+                PiE = np.array([parameters[self.model.model_dictionnary['piEN']],parameters[self.model.model_dictionnary['piEE']]])
                 
-                delta_tau=np.dot(PiE,i.deltas_position)
-                delta_u=np.cross(PiE,i.deltas_position)
+                
+                delta_tau=-np.dot(PiE,i.deltas_positions)
+                delta_u=-np.cross(PiE,i.deltas_positions.T)
                 tau = tau+delta_tau                
                 uo = uo+delta_u
                 
@@ -797,38 +807,74 @@ class MLFits(object):
         chichi = (errors**2).sum()
         
         return chichi
+    
+    def chichi_telescopes(self, parameters):
+        '''Return the chi^2 for each telescopes
+        '''
+        errors = self.residuals(parameters)
+        CHICHI = []
+        start = 0
+        for i in self.event.telescopes :
+            
+            CHICHI.append((errors[start:start+len(i.lightcurve_flux)]**2).sum())
+            
+            start = start+len(i.lightcurve_flux)
+        
+        
+        return CHICHI
 
     def chi_differential(self, parameters) :
         
         '''Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit.
         '''
         errors = np.array([])
-        to = parameters[0]                
-        uo = parameters[1]
-        tE = parameters[2]
+        
         
         for i in self.event.telescopes:
-
+            to = parameters[0]                
+            uo = parameters[1]
+            tE = parameters[2]
             lightcurve = i.lightcurve_flux
             Time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            tau = (Time-to)/tE
             
-            ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model)[0] 
+            tau = (Time-to)/tE
+         
+            rho = 0
+           
+
+            if self.model.paczynski_model == 'FSPL' :
+                
+                rho = parameters[self.model.model_dictionnary['rho']]
+            
+            
+
+            if self.model.parallax_model[0] != 'None' :
+                
+                #import pdb; pdb.set_trace()
+                PiE = np.array([parameters[self.model.model_dictionnary['piEN']],parameters[self.model.model_dictionnary['piEE']]])
+                
+                delta_tau=-np.dot(PiE,i.deltas_positions)
+                delta_u=-np.cross(PiE,i.deltas_positions.T)
+                tau = tau+delta_tau                
+                uo = uo+delta_u
+                
+            ampli = microlmagnification.amplification(uo,tau,rho,gamma,self.model)[0] 
            
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             if (fs<0): 
                 #print fs
-                fs=np.median(flux)
+                fs=np.min(flux)
                 fb=0.0
+                
             errors = np.append(errors, (flux-ampli*fs-fb)/errflux)
-
+        #import pdb; pdb.set_trace()
         chichi = (errors**2).sum()
         return chichi
         
-    def chi_MCMC(self, parameters,limit) :
+    def chi_MCMC(self, parameters, limits) :
         
         '''Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit.
         '''
@@ -839,19 +885,46 @@ class MLFits(object):
                 #import pdb; pdb.set_trace()
           #      chichi=np.inf
            #     return -chichi 
-        to = parameters[0]                
-        uo = parameters[1]
-        tE = parameters[2]
+      
+        count = 0
+        for i in  xrange(len(parameters)) :
+            if (parameters[i]<limits[i][0]) |(parameters[i]>limits[i][1]) :
+                return -np.inf
+            count+=1
         for i in self.event.telescopes:
 
+            to = parameters[0]                
+            uo = parameters[1]
+            tE = parameters[2]
             lightcurve = i.lightcurve_flux
             Time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            tau = (Time-to)/tE
             
-            ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model)[0] 
+            tau = (Time-to)/tE
+         
+            rho = 0
+           
+
+            if self.model.paczynski_model == 'FSPL' :
+                
+                rho = parameters[self.model.model_dictionnary['rho']]
+            
+            
+
+            if self.model.parallax_model[0] != 'None' :
+                
+                #import pdb; pdb.set_trace()
+                PiE = np.array([parameters[self.model.model_dictionnary['piEN']],parameters[self.model.model_dictionnary['piEE']]])
+                
+                delta_tau=-np.dot(PiE,i.deltas_positions)
+                delta_u=-np.cross(PiE,i.deltas_positions.T)
+                tau = tau+delta_tau                
+                uo = uo+delta_u
+                
+            ampli = microlmagnification.amplification(uo,tau,rho,gamma,self.model)[0] 
+           
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
             
                 
@@ -869,21 +942,40 @@ class MLFits(object):
     def find_fluxes(self, parameters, model):
 
         fluxes = []
-        to = parameters[0]                
-        uo = parameters[1]
-        tE = parameters[2]
+        
         for i in self.event.telescopes:
-
+            to = parameters[0]                
+            uo = parameters[1]
+            tE = parameters[2]
+            
             lightcurve = i.lightcurve_flux
             Time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
             tau = (Time-to)/tE
+            rho = 0
+           
+
+            if model.paczynski_model == 'FSPL' :
+                
+                rho = parameters[model.model_dictionnary['rho']]
             
-            ampli = microlmagnification.amplification(uo,tau,0.0,gamma,self.model)[0] 
+            
+
+            if model.parallax_model[0] != 'None' :
+                
+               
+                PiE = np.array([parameters[model.model_dictionnary['piEN']],parameters[model.model_dictionnary['piEE']]])
+                
+                delta_tau=-np.dot(PiE,i.deltas_positions)
+                delta_u=-np.cross(PiE,i.deltas_positions.T)
+                tau = tau+delta_tau                
+                uo = uo+delta_u
+                
+            ampli = microlmagnification.amplification(uo,tau,rho,gamma,model)[0] 
             fs, fb = np.polyfit(ampli, flux, 1, w=1/errflux)
-            if (fs<0) :
+            if (fs<0) | (fb<0):
                
                 fluxes.append(np.min(flux))
                 fluxes.append(0.0)

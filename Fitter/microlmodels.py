@@ -29,9 +29,10 @@ b1 = b0b1[:, 2]
 #db1 = b0b1[:, 5]
 interpol_b0 = interpolate.interp1d(zz, b0,kind='linear')
 interpol_b1 = interpolate.interp1d(zz, b1,kind='linear')
+#import pdb; pdb.set_trace()
 
-dB0=misc.derivative(lambda x : interpol_b0(x),zz[1:-1],dx=10**-3,order=3)
-dB1=misc.derivative(lambda x : interpol_b1(x),zz[1:-1],dx=10**-3,order=3)
+dB0=misc.derivative(lambda x : interpol_b0(x),zz[1:-1],dx=10**-4,order=3)
+dB1=misc.derivative(lambda x : interpol_b1(x),zz[1:-1],dx=10**-4,order=3)
 dB0 = np.append(2.0,dB0)
 dB0 = np.concatenate([dB0,[dB0[-1]]])
 dB1 = np.append((2.0-3*np.pi/4),dB1)
@@ -58,11 +59,11 @@ class MLModels(object):
         self.define_parameters()
         #import pdb; pdb.set_trace()
 
-        if self.parallax_model[0] != 'None':
+        #if self.parallax_model[0] != 'None':
             #import pdb; pdb.set_trace()
 
-            self.parallax= microlparallax.MLParallaxes(self.event, self.parallax_model)
-            self.parallax.parallax_combination()
+         #   self.parallax= microlparallax.MLParallaxes(self.event, self.parallax_model)
+          #  self.parallax.parallax_combination()
             #parallax = self.parallax.parallax_outputs([0.2, 0.2])
             #import pdb; pdb.set_trace()
     def f_derivative(x,function) :
@@ -100,12 +101,12 @@ class MLModels(object):
 
             self.model_dictionnary['spot'] = len(self.model_dictionnary)+1
 
-        model_paczynski_boundaries = {'PSPL':[(min(self.event.telescopes[0].lightcurve[:,0])-300,
-                                     max(self.event.telescopes[0].lightcurve[:,0])+300),
+        model_paczynski_boundaries = {'PSPL':[(min(self.event.telescopes[0].lightcurve[:,0]),
+                                     max(self.event.telescopes[0].lightcurve[:,0])),
                                      (-2.0,2.0), (0.1,300)],'FSPL':[
-                                     (min(self.event.telescopes[0].lightcurve[:,0])-300,
-                                     max(self.event.telescopes[0].lightcurve[:,0])+300),
-                                     (0.000001,2.0), (0.1,300), (0.00001,0.1)]}
+                                     (min(self.event.telescopes[0].lightcurve[:,0]),
+                                     max(self.event.telescopes[0].lightcurve[:,0])),
+                                     (0.00001,2.0), (0.1,300), (0.0001,0.05)]}
 
         model_parallax_boundaries =  {'None':[], 'Annual':[(-2.0, 2.0), (-2.0, 2.0)],
                                 'Terrestrial':[(-2.0, 2.0), (-2.0, 2.0)], 'Full':
