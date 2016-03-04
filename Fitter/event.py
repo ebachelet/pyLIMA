@@ -11,9 +11,8 @@ import numpy as np
 import microlfits
 import microlplotter
 import microloutputs
-import microlmodels
 import microlparallax
-import time
+
 
 class Event(object):
     """
@@ -26,20 +25,22 @@ class Event(object):
 
     kind --> type of event. In general, should be 'Microlensing' (default)
     name --> name of the event. Should be a string. Default is 'Sagittarius A*'
-    ra --> Right ascension of the event (J2000). Should be a float in degree between 0.0 and 360.0. Default is
+    ra --> Right ascension of the event (J2000). Should be a float in degree between 0.0 and
+    360.0. Default is
            ra of Sagittarius A == 266.416792 from Baker & Sramek 1999ApJ...524..805B.
-    dec --> Declination of the event (J2000). Should be a float in degree between -90 and 90. Default is
+    dec --> Declination of the event (J2000). Should be a float in degree between -90 and 90.
+    Default is
             dec of Sagittarius A == -29.007806 from Baker & Sramek 1999ApJ...524..805B.
     Teff --> Effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K.
     logg --> Surface gravity in log10 cgs unit. Should be a float. Default is 4.5.
-    telescopes --> List of telescopes names (strings). Default is an empty list. Have to be fill with some
+    telescopes --> List of telescopes names (strings). Default is an empty list. Have to be fill
+    with some
                    telescopes class instances.
 
     """
 
     def __init__(self):
-        """ Initialization of the attributes described above.
-        """
+        """ Initialization of the attributes described above. """
         self.kind = 'Microlensing'
         self.name = 'Sagittarius A*'
         self.ra = 266.416792
@@ -51,13 +52,13 @@ class Event(object):
         self.fits = []
         self.outputs = []
 
-
-    def fit(self, model,  second_order, method):
+    def fit(self, Model, method):
         """Function to fit the event.
 
         Keyword arguments:
 
-        model --> The microlensing model you want to fit. Has to be a string in the available_models parameter:
+        model --> The microlensing model you want to fit. Has to be a string in the
+        available_models parameter:
 
             'PSPL' --> Point Source Point Lens
             'FSPL' --> Finite Source Point Lens
@@ -67,19 +68,22 @@ class Event(object):
 
             More details in the microlfits module
 
-        method --> The fitting method you want to use. Has to be a integer in the available_methods parameter:.
+        method --> The fitting method you want to use. Has to be a integer in the
+        available_methods parameter:.
 
             0 --> Levenberg-Marquardt algorithm.
 
             More details in the microlfits module
 
-        second_order --> Second order effect : parallax, orbital_motion and source_spots . A list of string as :
+        second_order --> Second order effect : parallax, orbital_motion and source_spots . A list
+        of string as :
 
             [parallax,orbital_motion,source_spots]
             Example : [['Annual',2456876.2],['2D',2456876.2],'None']
 
             parallax --> Parallax model you want to use for the Earth types telescopes.
-                         Has to be a list containing the model in the available_parallax parameter and
+                         Has to be a list containing the model in the available_parallax
+                         parameter and
                          the value of topar.
 
                          'Annual' --> Annual parallax
@@ -88,7 +92,8 @@ class Event(object):
 
                          topar --> a time in HJD choosed as the referenced time fot the parallax
 
-                         If you have some Spacecraft types telescopes, the space based parallax is computed
+                         If you have some Spacecraft types telescopes, the space based parallax
+                         is computed
 
                          More details in the microlparallax module
 
@@ -104,7 +109,8 @@ class Event(object):
 
                 More details in the microlomotion module
 
-            source_spots --> Consider spots on the source. Has to be a string in the available_source_spots parameter :
+            source_spots --> Consider spots on the source. Has to be a string in the
+            available_source_spots parameter :
 
                 'None' --> No source spots
 
@@ -120,32 +126,26 @@ class Event(object):
 
                             [[model1,method1,covariance1], [model2, method2, covariance2],...]
 
-            fits_time --> List of effective computational time (in seconds) of the requested fits in the form:
+            fits_time --> List of effective computational time (in seconds) of the requested fits
+            in the form:
 
                             [[model1,method1,time1], [model2, method2, time2],...]
 
             The number of parameters and row in the covariance matrix depends of the selected model,
-            the selected second_order effects choose and the number of telescopes selected for the fit.
+            the selected second_order effects choose and the number of telescopes selected for
+            the fit.
 
             More details in the microlfits module.
 
-            The function is incremental, which means that each .fit() function call will fill fits_results,
+            The function is incremental, which means that each .fit() function call will fill
+            fits_results,
             fits_covariance and fits_time.
         """
         available_kind = ['Microlensing']
-        available_models = ['PSPL', 'FSPL']
         available_methods = [0, 1, 2]
-        available_parallax = ['None', 'Annual']
-        available_xallarap = ['None']
-        available_orbital_motion = ['None']
-        available_source_spots = ['None']
 
         if self.kind not in available_kind:
             print 'ERROR : No possible fit yet for a non microlensing event, sorry :('
-            return
-
-        if model not in available_models:
-            print 'ERROR : Wrong model request, has to be selected between ' + ' or '.join(available_models) + ''
             return
 
         if method not in available_methods:
@@ -153,52 +153,29 @@ class Event(object):
                   ' or '.join(available_methods) + ''
             return
 
-        if second_order[0][0] not in available_parallax:
-            print 'ERROR : Wrong parallax request, has to be selected between ' + ' or '.join(available_parallax) + ''
-            return
-            
-        if second_order[1][0] not in available_xallarap:
-            print 'ERROR : Wrong xallarap request, has to be selected between ' + ' or '.join(available_xallarap) + ''
-            return
-
-        if second_order[2][0] not in available_orbital_motion:
-            print 'ERROR : Wrong orbital motion request, has to be selected between ' + \
-                  ' or '.join(available_orbital_motion) + ''
-            return
-
-        if second_order[3] not in available_source_spots:
-            print 'ERROR : Wrong source spots request, has to be selected between ' + \
-                  ' or '.join(available_source_spots) + ''
-            return
-
         self.lightcurves_in_flux('Yes')
-        if second_order[0][0]!='None':
-            self.compute_parallax(second_order)
-        Model=microlmodels.MLModels(self, model, second_order)
 
-     
         fit = microlfits.MLFits(self)
-        fit.mlfit( Model, method)
-        #import pdb; pdb.set_trace()
+        fit.mlfit(Model, method)
 
         self.fits.append(fit)
-        
+
     def telescopes_names(self):
-        '''Function to list the telescope names for an event.
-        '''
+        """Function to list the telescope names for an event. """
         print [self.telescopes[i].name for i in xrange(len(self.telescopes))]
 
     def check_event(self):
-        '''Function to check if everything is correctly set before the fit.
+        """Function to check if everything is correctly set before the fit.
         An ERROR is returned if the check is not successfull
         Should be used before any event_fit function calls
 
         First check if the event name is a string
         Then check if the right ascension (event.ra) is between 0 and 360 degrees
         Then check if the declination (event.dec) is between -90 and 90 degrees
-        '''
+        """
         if self.name == 'None':
-            print 'ERROR : The event name (' + str(self.name) + ') is not correct, it has to be a string'
+            print 'ERROR : The event name (' + str(
+                self.name) + ') is not correct, it has to be a string'
             return
 
         if (self.ra > 360) or (self.ra < 0):
@@ -212,26 +189,22 @@ class Event(object):
             return
 
         if len(self.telescopes) == 0:
-            print 'ERROR : There is no associated telescopes with this event, add some using self.telescopes.append'
+            print 'ERROR : There is no associated telescopes with this event, add some using ' \
+                  'self.telescopes.append'
             return
 
         print 'Everything is fine, this event can be treat'
 
-    def find_survey(self, choice = None):
-        '''Function to find the survey telescope in the telescopes list,
+    def find_survey(self, choice=None):
+        """Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
-        '''
-        
-        if choice == None:
+        """
 
-            choice = self.telescopes[0].name
+        self.survey = choice or self.telescopes[0].name
 
-
-        self.survey = choice
         names = [i.name for i in self.telescopes]
         if any(self.survey in i for i in names):
 
-            
             index = np.where(self.survey == np.array(names))[0]
             sorting = np.arange(0, len(self.telescopes))
             sorting = np.delete(sorting, index)
@@ -243,70 +216,46 @@ class Event(object):
             print 'ERROR : There is no telescope names containing ' + self.survey
             return
 
-    def plot_data(self,choice, observe, align):
+    def plot_data(self, choice, observe, align):
 
-
-        if align == 'Yes' :
+        if align == 'Yes':
 
             self.plotter.align_lightcurves(choice)
 
-
         if observe is 'Mag':
 
-            self.plotter.plot_lightcurves_mag( align)
+            self.plotter.plot_lightcurves_mag(align)
 
         if observe is 'Flux':
 
-            self.plotter.plot_lightcurves_flux( align)
-
-    def plot_model(self, choice, observe):
-
-
-        if choice > len(self.fits_models):
-
-            print 'ERROR : The model '+str(choice)+' you want to plot is not fitted yet! You can articially add it with self.fit_results.append(your model) (Check conventions)'
-
-        else:
-
-            if observe is 'Mag':
-
-                self.plotter.plot_model_mag(choice)
-                self.plotter.plot_model_mag_uncertainties(choice)
-                
-            if observe is 'Flux':
-
-                microlplotter.plot_model_flux(self, model, parameters, second_order)
+            self.plotter.plot_lightcurves_flux(align)
 
     def lightcurves_in_flux(self, choice):
 
-            for i in self.telescopes:
+        for i in self.telescopes:
 
-                i.lightcurve_in_flux(choice)
+            i.lightcurve_in_flux(choice)
 
     def initialize_plots(self, choice, observe):
 
         self.plotter = microlplotter.MLPlotter(self)
         self.plotter.initialize_plots(choice, observe)
 
-
-
-    def produce_outputs(self,choice):
+    def produce_outputs(self, choice):
 
         self.outputs = microloutputs.MLOutputs(self)
-        #self.outputs.cov2corr()
+        # self.outputs.cov2corr()
         self.outputs.errors_on_fits(choice)
-        #self.outputs.find_observables()
-        #Parameters,lightcurve_model,lightcurve_data = self.outputs.K2_C9_outputs()
-        #return Parameters,lightcurve_model,lightcurve_data
-        
-        
-    def compute_parallax(self, second_order) :
-        telescopes=[]
-        for i in self.telescopes :
-            
-            if i.deltas_positions == [] :  
-                 telescopes.append(i)
-        
-        para = microlparallax.MLParallaxes(self,second_order[0]) 
+        # self.outputs.find_observables()
+        # Parameters,lightcurve_model,lightcurve_data = self.outputs.K2_C9_outputs()
+        # return Parameters,lightcurve_model,lightcurve_data
+
+    def compute_parallax(self, second_order):
+        telescopes = []
+        for i in self.telescopes:
+
+            if not i.deltas_positions:
+                telescopes.append(i)
+
+        para = microlparallax.MLParallaxes(self, second_order[0])
         para.parallax_combination(telescopes)
-      
