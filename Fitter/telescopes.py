@@ -5,10 +5,12 @@ Created on Thu Aug 27 16:39:32 2015
 @author: ebachelet
 """
 from __future__ import division
+
 import numpy as np
 import astropy.io.fits as fits
 
 import microlparallax
+
 
 class Telescope(object):
     """
@@ -24,9 +26,11 @@ class Telescope(object):
     kind --> 'Earth' or 'Spacecraft'. Default is 'Earth'
 
     filter --> telescope filter used. Should be a string wich follows the convention of :
-               " Gravity and limb-darkening coefficients for the Kepler, CoRoT, Spitzer, uvby, UBVRIJHK,
+               " Gravity and limb-darkening coefficients for the Kepler, CoRoT, Spitzer, uvby,
+               UBVRIJHK,
                and Sloan photometric systems"
-               Claret, A. and Bloemen, S. 2011A&A...529A..75C. For example, 'I' (default) is Johnson_Cousins I filter
+               Claret, A. and Bloemen, S. 2011A&A...529A..75C. For example, 'I' (default) is
+               Johnson_Cousins I filter
                and 'i'' is the SDSS-i' Sloan filter.
 
     lightcurve --> List of time, magnitude, error in magnitude covention. Default is an empty list.
@@ -64,24 +68,26 @@ class Telescope(object):
         self.latitude = 0.0
         self.gamma = 0.5
         self.deltas_positions = []
-    
-    def compute_parallax(self, event, model) :
 
-        para = microlparallax.MLParallaxes(event, model) 
+    def compute_parallax(self, event, model):
+
+        para = microlparallax.MLParallaxes(event, model)
         para.parallax_combination()
-    def n_data(self,choice):
+
+    def n_data(self, choice):
         """ Return the number of data points in the lightcurve."""
-        
-        if choice=='Flux':
-            
+
+        if choice == 'Flux':
+
             return len(self.lightcurve_flux[:, 0])
         else:
-            
+
             return len(self.lightcurve[:, 0])
 
     def find_gamma(self, Teff, log_g, path):
         """
-        Return the associated gamma linear limb-darkening coefficient associated to the filter, the given effective
+        Return the associated gamma linear limb-darkening coefficient associated to the filter,
+        the given effective
         temperature and the given surface gravity in log10 cgs.
 
         Keyword arguments:
@@ -96,20 +102,23 @@ class Telescope(object):
 
         gamma
         """
-        # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011 convention
+        # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011
+        # convention
         vt = 2.0
         metal = 0.0
 
-        #TODO: Use read claret generator
+        # TODO: Use read claret generator
 
         claret = fits.open(path + 'Claret2011.fits')
-        claret = np.array([claret[1].data['log g'], claret[1].data['Teff (K)'], claret[1].data['Z (Sun)'],
-                           claret[1].data['Xi (km/s)'], claret[1].data['u'], claret[1].data['filter']]).T
+        claret = np.array(
+            [claret[1].data['log g'], claret[1].data['Teff (K)'], claret[1].data['Z (Sun)'],
+             claret[1].data['Xi (km/s)'], claret[1].data['u'], claret[1].data['filter']]).T
 
         index_filter = np.where(claret[:, 5] == self.filter)[0]
         claret_reduce = claret[index_filter, :-1].astype(float)
         coeff_index = np.sqrt(
-            (claret_reduce[:, 0] - log_g) ** 2 + (claret_reduce[:, 1] - Teff) ** 2 + (claret_reduce[:, 2] - metal) ** 2
+            (claret_reduce[:, 0] - log_g) ** 2 + (claret_reduce[:, 1] - Teff) ** 2 + (
+            claret_reduce[:, 2] - metal) ** 2
             + (claret_reduce[:, 3] - vt) ** 2).argmin()
         uu = claret_reduce[coeff_index, -1]
 
@@ -118,8 +127,10 @@ class Telescope(object):
 
     def clean_data(self):
         """
-        Clean outliers of the telescope for the fits. Points are considered as outliers if they are 10 mag brighter
-        or fainter than the lightcurve median or if nan appears in any columns or errobar higher than a 1 mag.
+        Clean outliers of the telescope for the fits. Points are considered as outliers if they
+        are 10 mag brighter
+        or fainter than the lightcurve median or if nan appears in any columns or errobar higher
+        than a 1 mag.
 
         Return :
 
@@ -127,37 +138,39 @@ class Telescope(object):
         """
         # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
         precision = 50
-        #index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
+        # index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
         #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 5) | (
         #                 np.abs(self.lightcurve[:, 2]) > precision))[
         #    0]
         index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
-                         np.abs(self.lightcurve[:, 2]) > precision))[
-                         0]
-        #for i in index:
-            #print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and will be ' + \
-                  #'rejected for the fit'
-        #index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
+            np.abs(self.lightcurve[:, 2]) > precision))[
+            0]
+        # for i in index:
+        # print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and
+        # will be ' + \
+        # 'rejected for the fit'
+        # index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
         #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) < 5) & (
         #                 np.abs(self.lightcurve[:, 2]) < precision))[
         #    0]
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
-                         np.abs(self.lightcurve[:, 2]) < precision))[
-                         0]
+            np.abs(self.lightcurve[:, 2]) < precision))[
+            0]
 
-        if len(index)>2:
-            
+        if len(index) > 2:
+
             lightcurve = self.lightcurve[index]
-        
-        else : 
-            
+
+        else:
+
             lightcurve = self.lightcurve
-            
+
         return lightcurve
 
-    def lightcurve_in_flux(self,clean):
+    def lightcurve_in_flux(self, clean):
         """
-        Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar accordingly.
+        Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
+        accordingly.
         Perform a clean_data call to avoid outliers.
 
         Return :
@@ -165,13 +178,13 @@ class Telescope(object):
         lighhtcurve_flux : the lightcurve in flux.
         """
         if clean is 'Yes':
-            
+
             lightcurve = self.clean_data()
-        
-        else :
+
+        else:
 
             lightcurve = self.lightcurve
-            
+
         flux = 10 ** ((27.4 - lightcurve[:, 1]) / 2.5)
         errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
         self.lightcurve_flux = np.array([lightcurve[:, 0], flux, errflux]).T

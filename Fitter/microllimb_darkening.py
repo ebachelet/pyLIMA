@@ -8,7 +8,8 @@ import collections
 import contextlib
 import StringIO
 
-_claret_columns = 'logg, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, filter, method, model'
+_claret_columns = 'logg, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, ' \
+                  'filter, method, model'
 _claret_type = collections.namedtuple('ClaretType', _claret_columns)
 
 
