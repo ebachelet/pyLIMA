@@ -91,12 +91,12 @@ class MLModels(object):
 
             self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
 
-        model_paczynski_boundaries = {'PSPL': [(min(self.event.telescopes[0].lightcurve[:, 0]),
-                                                max(self.event.telescopes[0].lightcurve[:, 0])),
-                                               (-2.0, 2.0), (0.1, 300)], 'FSPL': [
-            (min(self.event.telescopes[0].lightcurve[:, 0]),
-             max(self.event.telescopes[0].lightcurve[:, 0])),
-            (0.00001, 2.0), (0.1, 300), (0.0001, 0.05)]}
+        model_paczynski_boundaries = {'PSPL': [(min(self.event.telescopes[0].lightcurve[:, 0])-300,
+                                                max(self.event.telescopes[0].lightcurve[:, 0])+300),
+                                               (-2.0, 2.0), (1.0, 300)], 'FSPL': [
+            (min(self.event.telescopes[0].lightcurve[:, 0])-300,
+             max(self.event.telescopes[0].lightcurve[:, 0])+300),
+            (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
 
         model_parallax_boundaries = {'None': [], 'Annual': [(-2.0, 2.0), (-2.0, 2.0)],
                                      'Terrestrial': [(-2.0, 2.0), (-2.0, 2.0)], 'Full':

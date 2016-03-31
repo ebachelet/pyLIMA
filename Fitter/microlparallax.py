@@ -116,6 +116,7 @@ class MLParallaxes(object):
         return JD
 
     def parallax_combination(self, telescopes):
+       # import pdb; pdb.set_trace()
 
         for i in telescopes:
 
@@ -124,8 +125,8 @@ class MLParallaxes(object):
             delta_position_East = np.array([])
 
             kind = i.kind
-            # t = self.HJD_to_JD(i.lightcurve_flux[:,0])
-            t = i.lightcurve_flux[:, 0]
+            t = self.HJD_to_JD(i.lightcurve_flux[:,0])
+            #t = i.lightcurve_flux[:, 0]
             delta_North = np.array([])
             delta_East = np.array([])
 
@@ -187,8 +188,8 @@ class MLParallaxes(object):
 
     def annual_parallax(self, t):
 
-        # topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
-        topar = self.topar - 2400000.5
+        topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
+        #topar = self.topar - 2400000.5
         Earth_position_ref = slalib.sla_epv(topar)
         Sun_position_ref = -Earth_position_ref[0]
         Sun_speed_ref = -Earth_position_ref[1]
@@ -234,14 +235,13 @@ class MLParallaxes(object):
     def space_parallax(self, t, name):
         # tstart = self.HJD_to_JD(np.array([t[0]]))
         # tend = self.HJD_to_JD(np.array([t[-1]]))
-        # import pdb; pdb.set_trace()
+       # import pdb; pdb.set_trace()
 
         tstart = t[0] - 1
         tend = t[-1] + 1
-        tstart = 2457027 - 210
-        tend = 2457027 + 210
-        # positions = self.produce_horizons_ephem(name, tstart, tend, observatory='Geocentric',
-        # step_size='10m', verbose=False)[1]
+        tstart = 24577144.1666667-300
+        tend = 24577144.1666667-300
+        #positions = self.produce_horizons_ephem(name, tstart, tend, observatory='Geocentric',step_size='10m', verbose=False)[1]
         positions = np.loadtxt('SWIFT.dat')
         positions = positions[:, :-1]
 

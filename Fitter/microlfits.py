@@ -11,6 +11,7 @@ import numpy as np
 from scipy.optimize import leastsq, differential_evolution
 import scipy.signal as ss
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 import emcee
 import microlmodels
@@ -162,8 +163,8 @@ class MLFits(object):
 
             AA = differential_evolution(self.chi_differential,
                                         bounds=self.model.parameters_boundaries,
-                                        mutation=(0.5, 1.0), popsize=15, tol=0.00001,
-                                        recombination=0.7, polish='True', disp=False)
+                                        mutation=(0.5, 1.5), popsize=20, tol=0.000001,
+                                        recombination=0.6, polish='True', disp=True)
             print AA['fun'], AA['x']
             self.guess = AA['x'].tolist() + self.find_fluxes(AA['x'].tolist(), self.model)
 
@@ -174,116 +175,198 @@ class MLFits(object):
             self.fit_time = computation_time
 
         if self.method == 2:
-            # AA=differential_evolution(self.chi_differential,
-            # bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
-            # recombination=0.7,polish='None')
-            res = np.array(
-                [2.45702717e+06, 1.03945071e-02, 2.09768963e+01, 4.68542301e-03, -2.33873059e-02,
-                 3.95109011e-02])
-            ndim = 6
-            nwalkers = 200
+            AA=differential_evolution(self.chi_differential,
+            bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
+            recombination=0.7,polish='None')
+            #res = np.array(
+                #[2.45702717e+06, 1.03945071e-02, 2.09768963e+01, 4.68542301e-03, -2.33873059e-02,
+                 #3.95109011e-02])
+            res=AA['x']
+            fs,fb=self.find_fluxes(res,self.model)
+            
+            ndim = 3
+            nwalkers = 300
             pp0 = []
             # limits=[(AA['x'][0]*0.8,AA['x'][0]*1.2),(AA['x'][1]*0.8,AA['x'][1]*1.2),(AA['x'][
             # 2]*0.8,AA['x'][2]*1.2)]
-            limits = self.model.parameters_boundaries
-            for i in range(nwalkers):
+            i=0
+            while i < nwalkers:
                 p1 = []
-                for j in range(6):
-
-                    if j >= 4:
-                        p1.append(res[j] + np.random.uniform(-1, 1))
-                    else:
-                        p1.append(res[j] + np.random.uniform(0, 0.01))
-
-                        # p1.append(np.random.uniform(limits[j][0],limits[j][1]))
-                        # p1.append(0.1)
+                for j in range(3):
+                        if j==0:
+                            
+                            p1.append(res[j]+np.random.uniform(-5,5))
+                        if j==1:
+                            
+                            p1.append(res[j]*(np.random.uniform(-3,3)))
+                        if j==2:
+                           
+                            p1.append(res[j]*(np.random.uniform(-3,3)))
+               
+                       
+                
+            
+              
                 pp0.append(np.array(p1))
+                i+=1
+           
 
-            import pdb;
-            pdb.set_trace()
-
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC,
-                                            args=[self.model.parameters_boundaries])
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC)
 
             pos, prob, state = sampler.run_mcmc(pp0, 100)
-            # sampler.reset()
-            # pos, prob, state = sampler.run_mcmc(pos, 1000)
-            # AA=np.argsort(prob)[::-1][:33]
-            # barycenter = [sum(pos[AA,0]/(np.abs(prob[AA]))),sum(pos[AA,1]/(np.abs(prob[AA]))),
-            # sum(pos[AA,2]/(np.abs(prob[AA])))]
-            # p1 = np.array([1,1,1])*np.random.randn(nwalkers,ndim)+np.array(barycenter)
-            # p2=[i for i in p1]
-            # best= np.argmax(prob)
-            # limits = [(pos[best,0]-1,pos[best,0]+1),(pos[best,1]-0.1,pos[best,1]+0.1),(0,
-            # pos[best,0]+5)]
-
             sampler.reset()
-            # sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC,args=[limits])
-            pos, prob, state = sampler.run_mcmc(pos, 100)
-
+            pos, prob, state = sampler.run_mcmc(pos, 1000)
+            AA=np.argsort(prob)[::-1][:33]
+            barycenter = [sum(pos[AA,0]/(np.abs(prob[AA]))),sum(pos[AA,1]/(np.abs(prob[AA]))),
+            sum(pos[AA,2]/(np.abs(prob[AA])))]
+            p1 = np.array([1,1,1])*np.random.randn(nwalkers,ndim)+np.array(barycenter)
+            p2=[i for i in p1]
+            best= np.argmax(prob)
+            limits = [(pos[best,0]-1,pos[best,0]+1),(pos[best,1]-0.1,pos[best,1]+0.1),(0,
+            pos[best,0]+5)]
+            plt.subplot(311)
+            plt.plot(sampler.chain[:, :, 0].T, '-', color='k', alpha=0.3)
+            plt.ylabel(r't_o',fontsize=20)
+            plt.subplot(312)
+            plt.plot(sampler.chain[:, :, 1].T, '-', color='k', alpha=0.3)
+            plt.ylabel(r'u_o',fontsize=20)
+            plt.subplot(313)
             plt.plot(sampler.chain[:, :, 2].T, '-', color='k', alpha=0.3)
+            plt.xlabel(r'Iterations',fontsize=20)
+            plt.ylabel(r't_E',fontsize=20)
             plt.show()
-            import pdb;
-            pdb.set_trace()
+            import pdb; pdb.set_trace()
 
-            time = np.arange(0, 190, 0.01)
+           
+            
+            
+             #sampler.reset()
+           
+           
+
+            #time = np.arange(-100, 190, 0.01)
             good = np.where(np.abs(sampler.lnprobability - max(prob)) < 36)
             mask = np.abs(sampler.lnprobability - max(prob)) < 36
+           
+            good=np.where((sampler.chain[:,:,1]>0) & ((sampler.chain[:,:,2]>0)))
+            samples=sampler.chain[good]
+            FS=[]
+            FB=[]
+            CHI2=[]
+            #for i in samples :
+               # CHI2.append(self.chi_differential(i))
+                #f1,f2=self.find_fluxes(i,self.model)
+                ##FB.append(f2)
+                
+            #import pdb;
+            #pdb.set_trace()
+           ## samples=np.c_[samples,FS]
+           # samples=np.c_[samples,FB]
+           
+            self.chains=  sampler.chain
+            self.probability=sampler.lnprobability
+            self.samples=samples
+            #self.CHI2=[]
+            #return
             AA = plt.scatter(sampler.chain[mask][:, 0], sampler.chain[mask][:, 2],
                              c=np.abs(sampler.lnprobability[mask]))
             cbar = plt.colorbar()
             plt.show()
-            plt.subplot(211)
-            plt.suptitle(self.event.name)
-            plt.scatter(sampler.chain[mask][:, 0], sampler.chain[mask][:, 2],
+            CHI2=[] 
+            FS=[]
+            FB=[]
+            for i in sampler.chain[mask] :
+                #CHI2.append(self.chi_differential(i))
+                f1,f2=self.find_fluxes(i,self.model)
+                FS.append(f1)
+                FB.append(f2)
+            plt.subplot(221)
+            plt.suptitle(self.event.name,fontsize=50)
+            plt.scatter(sampler.chain[mask][:, 0], np.abs(sampler.chain[mask][:, 1]),
                         c=np.abs(sampler.lnprobability[mask]))
             plt.colorbar()
-            plt.xlabel('to')
-            plt.ylabel('tE')
+            plt.xlabel(r'$t_o$',fontsize=20)
+            plt.ylabel(r'$u_o$',fontsize=20)
+            plt.scatter(135.248,0.471697,s=200,c='r',marker='*')
+            plt.errorbar(135.257399177, 0.476185780199 ,xerr=0.03733228415,yerr=0.0292394736979,fmt='.m')
+            plt.subplot(222)
+          # 
+            plt.scatter(sampler.chain[mask][:, 0], np.abs(sampler.chain[mask][:, 2]),
+                        c=np.abs(sampler.lnprobability[mask]))
+            
+            plt.colorbar()
+            plt.xlabel(r'$t_o$',fontsize=20)
+            plt.ylabel(r'$t_E$',fontsize=20)
+            plt.scatter(135.248,15.78,s=200,c='r',marker='*')
+            plt.errorbar(135.257399177,15.6966026912,xerr=0.0373322841589,yerr=0.618166908868,fmt='.m')
+           
+            plt.subplot(223)
+           
+            plt.scatter(np.log10(FS), FB, c=np.abs(sampler.lnprobability[mask]))
+            
+            plt.colorbar()
+            plt.xlabel(r'$f_s$',fontsize=20)
+            plt.ylabel(r'$g$',fontsize=20)
+            plt.scatter(np.log10(3436.69989),3.4096,s=200,c='r',marker='*')
+            plt.errorbar(np.log10(3481.8350685 ),3.35158198956 ,xerr=313.092427858 /(np.log(10)*3481.8350685),yerr=0.390671949654,fmt='.m')
+            plt.subplot(224)
+            plt.xlabel(r'$Days$',fontsize=20)
+            plt.ylabel(r'$Mag$',fontsize=20)
             index = []
-            for i in range(40):
-                ind = np.random.randint(0, len(good[0]))
-                if ind not in index:
-                    index.append(ind)
-
-            plt.subplot(212)
-            for i in range(40):
+            
+            #import pdb; pdb.set_trace()
+            palier=np.min(np.abs(sampler.lnprobability[mask]))
+            index=[]
+            Step=(max(np.abs(sampler.lnprobability[mask]))-min(np.abs(sampler.lnprobability[mask])))/35
+            time=np.arange(110,160,0.01)
+            for i in range(35):
+               ddd=np.argmin(np.abs(np.abs(sampler.lnprobability[mask])-palier))
+               index.append(ddd)
+               palier+=Step
+            for i in range(35):
                 try:
 
-                    index2 = index[i]
-                    params = sampler.chain[good[0][index2], good[1][index2]]
+                   index2 = index[i]
+                   params = sampler.chain[mask][index2]
+                   to=params[0]
+                   uo=params[1]
+                   tE=params[2]
+                   fs, fb = self.find_fluxes(params, self.model)
+                   tau=(time-to)/tE
+                   ampli = microlmagnification.amplification(uo, tau, 0.0,0.0, self.model)[0]
 
-                    fs, fb = self.find_fluxes(params, self.model)
-
-                    ampli = microlmagnification.amplification(self.model, time, params, 0.5)[0]
-                    plt.plot(time, 27.4 - 2.5 * np.log10(fs * (ampli + fb)),
-                             c=AA.get_facecolor()[index2], alpha=0.4)
+                   plt.plot(time, 27.4 - 2.5 * np.log10(fs * (ampli + fb)),
+                           c=AA.get_facecolor()[index2], alpha=0.6)
 
                 except:
-                    import pdb;
-                    pdb.set_trace()
+                   import pdb;pdb.set_trace()
 
             index = np.argmax(sampler.lnprobability[mask])
-            params = sampler.chain[good[0][index], good[1][index]]
+            params = sampler.chain[mask][index]
 
             fs, fb = self.find_fluxes(params, self.model)
-
-            ampli = microlmagnification.amplification(self.model, time, params, 0.5)[0]
-            plt.plot(time, 27.4 - 2.5 * np.log10(fs * (ampli + fb)), c=AA.get_facecolor()[index],
-                     alpha=1.0, lw=2.0)
+            to=params[0]
+            uo=params[1]
+            tE=params[2]
+            fs, fb = self.find_fluxes(params, self.model)
+            tau=(time-to)/tE
+            ampli = microlmagnification.amplification(uo, tau, 0.0,0.0, self.model)[0]
+            plt.plot(time, 27.4 - 2.5 * np.log10(fs * (ampli + fb)), '--k',
+                     lw=2.0,)
             plt.errorbar(self.event.telescopes[0].lightcurve[:, 0],
                          self.event.telescopes[0].lightcurve[:, 1],
-                         yerr=self.event.telescopes[0].lightcurve[:, 2], linestyle='none',
-                         color='red', markersize='100')
+                         yerr=self.event.telescopes[0].lightcurve[:, 2], fmt='.k')
             plt.gca().invert_yaxis()
             plt.colorbar(AA)
+            plt.axis([120,150,16.9,16.6])
+            #plt.tight_layout()
             plt.show()
-
+           # import pdb;pdb.set_trace()
         fit_quality_flag = self.check_fit()
 
         if fit_quality_flag == 'Bad Fit':
 
-            if self.method == 0:
+           if self.method == 0:
 
                 print 'We have to change method, this fit was unsuccessfull. We decided to switch ' \
                       '' \
@@ -292,7 +375,7 @@ class MLFits(object):
                 self.method = 1
                 self.mlfit(self.model, 1)
 
-            else:
+           else:
 
                 print 'Unfortunately, this is too hard for pyLIMA :('
 
@@ -305,7 +388,7 @@ class MLFits(object):
         flag = 'Good Fit'
         diago = np.diag(self.fit_covariance) < 0
 
-        if (0.0 in self.fit_covariance) or (True in diago):
+        if (0.0 in self.fit_covariance) | (True in diago) | ( np.isnan(self.fit_covariance).any()) | (np.isinf(self.fit_covariance).any()):
 
             print 'Your fit probably wrong. Cause ==> bad covariance matrix'
             flag = 'Bad Fit'
@@ -322,10 +405,9 @@ class MLFits(object):
 
         if 'rho' in self.model.model_dictionnary:
 
-            if self.fit_results[self.model.model_dictionnary['rho']] < 0:
+            if (self.fit_results[self.model.model_dictionnary['rho']] >0.1) |(self.fit_results[self.model.model_dictionnary['rho']] <0.0) :
 
-                print 'Your fit probably wrong. Cause ==> negative source flux for telescope ' + \
-                      i.name
+                print 'Your fit probably wrong. Cause ==> bad rho ' 
                 flag = 'Bad Fit'
                 return flag
         return flag
@@ -535,7 +617,7 @@ class MLFits(object):
         fake_second_order = [['None', 0], ['None', 0], ['None', 0], 'None']
         fake_model = microlmodels.MLModels(self.event, 'PSPL', fake_second_order)
 
-        # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         fluxes = self.find_fluxes([to, uo, tE], fake_model)
         fluxes[0] = fs
         fluxes[1] = 0.0
@@ -544,7 +626,7 @@ class MLFits(object):
 
         if self.model.paczynski_model == 'FSPL':
 
-            parameters = parameters + [1.5 * uo]
+            parameters = parameters + [0.05]
 
         if self.model.parallax_model[0] != 'None':
 
@@ -602,7 +684,7 @@ class MLFits(object):
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-        # fit_res = fit_res+self.chichi_telescopes(fit_res)
+        #fit_res = fit_res+self.chichi_telescopes(fit_res)
         n_data = 0.0
 
         for i in self.event.telescopes:
@@ -633,7 +715,7 @@ class MLFits(object):
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
 
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
@@ -788,7 +870,7 @@ class MLFits(object):
 
             start = index[-1] + 1
 
-        # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         return jacobi
 
@@ -799,8 +881,7 @@ class MLFits(object):
         """
         errors = np.array([])
         count = 0
-        # print parameters
-
+        
         for i in self.event.telescopes:
             to = parameters[0]
             uo = parameters[1]
@@ -812,12 +893,12 @@ class MLFits(object):
             gamma = i.gamma
 
             tau = (Time - to) / tE
-            rho = 0
+            rho = 0.0
             if self.model.paczynski_model == 'FSPL':
 
                 rho = parameters[self.model.model_dictionnary['rho']]
 
-            # import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
 
             if self.model.parallax_model[0] != 'None':
 
@@ -902,22 +983,24 @@ class MLFits(object):
                 tau = tau + delta_tau
                 uo = uo + delta_u
 
-            ampli = microlmagnification.amplification(uo, tau, rho, gamma, self.model)[0]
-
-            fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
+            try :
+                ampli = microlmagnification.amplification(uo, tau, rho, gamma, self.model)[0]
+                fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
+            except :
+                return np.inf
+            #print i.name,fs
             if (fs < 0):
                 # print fs
-                fs = np.min(flux)
-                fb = 0.0
+                return np.inf
 
             errors = np.append(errors, (flux - ampli * fs - fb) / errflux)
         # import pdb; pdb.set_trace()
         chichi = (errors ** 2).sum()
         return chichi
 
-    def chi_MCMC(self, parameters, limits):
+    def chi_MCMC(self, parameters):
         """Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit. """
-        print parameters
+        ##print parameters
         errors = np.array([])
         # for i in xrange(len(parameters)) :
         #   if (parameters[i]<limit[i][0]) | (parameters[i]>limit[i][1]) :
@@ -926,10 +1009,7 @@ class MLFits(object):
         #     return -chichi
 
         count = 0
-        for i in xrange(len(parameters)):
-            if (parameters[i] < limits[i][0]) | (parameters[i] > limits[i][1]):
-                return -np.inf
-            count += 1
+        
         for i in self.event.telescopes:
 
             to = parameters[0]
@@ -963,17 +1043,22 @@ class MLFits(object):
             ampli = microlmagnification.amplification(uo, tau, rho, gamma, self.model)[0]
 
             fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
-
-            if (fs < 0) | (fb < 0):
-
+            #fs=parameters[3]
+            #fb=parameters[4]*parameters[3]
+            if (fs < 0) | (fb/fs<-1.0):
+                
                 chichi = np.inf
+                return -chichi
+            
             else:
 
                 errors = np.append(errors, (flux - ampli * fs - fb) / errflux)
-
+                
                 chichi = (errors ** 2).sum()
-
-        return - chichi
+               
+                chichi+=+np.log(len(Time))*1/(1+fb/fs)
+                 
+        return - (chichi)
 
     def find_fluxes(self, parameters, model):
 
@@ -1008,7 +1093,7 @@ class MLFits(object):
 
             ampli = microlmagnification.amplification(uo, tau, rho, gamma, model)[0]
             fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
-            if (fs < 0) | (fb < 0):
+            if (fs < 0) :
 
                 fluxes.append(np.min(flux))
                 fluxes.append(0.0)

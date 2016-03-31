@@ -152,7 +152,6 @@ class Event(object):
             print 'ERROR : Wrong method request, has to be an integer selected between ' + \
                   ' or '.join(available_methods) + ''
             return
-
         self.lightcurves_in_flux('Yes')
 
         fit = microlfits.MLFits(self)
@@ -252,9 +251,11 @@ class Event(object):
 
     def compute_parallax(self, second_order):
         telescopes = []
+        self.lightcurves_in_flux('Yes')
         for i in self.telescopes:
+            
 
-            if not i.deltas_positions:
+            if len(i.deltas_positions)==0:
                 telescopes.append(i)
 
         para = microlparallax.MLParallaxes(self, second_order[0])

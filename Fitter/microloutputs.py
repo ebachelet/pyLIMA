@@ -26,7 +26,7 @@ class MLOutputs(object):
 
     def errors_on_fits(self, choice):
 
-        if not self.event.fits[choice].fit_covariance:
+        if len(self.event.fits[choice].fit_covariance)==0:
 
             print 'There is no way to produce errors without covariance at this stage'
 

@@ -137,7 +137,7 @@ class Telescope(object):
         the lightcurve without outliers.
         """
         # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
-        precision = 50
+        precision = 10.0
         # index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
         #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 5) | (
         #                 np.abs(self.lightcurve[:, 2]) > precision))[
@@ -184,6 +184,7 @@ class Telescope(object):
         else:
 
             lightcurve = self.lightcurve
+        
 
         flux = 10 ** ((27.4 - lightcurve[:, 1]) / 2.5)
         errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
