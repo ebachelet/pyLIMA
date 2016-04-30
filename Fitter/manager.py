@@ -147,7 +147,7 @@ def main(command_line):
             #current_event.compute_parallax(second_order)
         Model = microlmodels.MLModels(current_event, command_line.model, second_order)
         
-        current_event.fit(Model,2)
+        current_event.fit(Model,'LM')
         #current_event.telescopes.append(telescope)
         #if second_order[0][0]!='None' :
             #current_event.compute_parallax(second_order)
@@ -262,7 +262,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Short_tE/Lightcurves/')
-    parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')
+    parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Qatar/SuperComputer/OB13446/RawData/DATA/')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/RSTREET_PLANET/Early/')
     #parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/OGLE_2000/')

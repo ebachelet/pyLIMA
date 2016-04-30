@@ -11,6 +11,8 @@ from collections import OrderedDict
 import numpy as np
 from scipy import interpolate, misc
 
+import microlmagnification
+
 try:
 
     # yoo_table = np.loadtxt('b0b1.dat')
@@ -123,3 +125,49 @@ class MLModels(object):
 
         self.model_dictionnary = OrderedDict(
             sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
+
+    def magnification(self, parameters , time, gamma = 0, delta_positions = 0) :
+        
+        to = parameters[self.model_dictionnary['to']]
+        uo = parameters[self.model_dictionnary['uo']]
+        tE = parameters[self.model_dictionnary['tE']]        
+        
+        tau = (time - to) / tE
+        
+        
+        
+        dtau = 0
+        duo = 0
+        
+        if self.parallax_model[0] != 'None' :
+            piE = np.array([parameters[self.model_dictionnary['piEN']],
+                                parameters[self.model_dictionnary['piEE']]])
+            dTau,dUo = self.compute_parallax_curvature(self, piE, delta_positions)
+            dtau += dtau
+            duo += dUo
+        
+                
+        tau += dtau
+        uo += duo
+        
+        if self.paczynski_model == 'PSPL':
+            
+            amplification, u = microlmagnification.amplification_PSPL(tau, uo)
+            return amplification, u
+            
+        if self.paczynski_model == 'FSPL':
+            
+            rho = parameters[self.model_dictionnary['rho']]
+            amplification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, self.yoo_table)
+            return amplification, u   
+            
+            
+            
+    def compute_parallax_curvature(self, piE, delta_positions) :
+         
+           delta_tau = -np.dot(piE, i.deltas_positions)
+           delta_u = -np.cross(piE, i.deltas_positions.T)
+           
+           return delta_tau,delta_u
+           

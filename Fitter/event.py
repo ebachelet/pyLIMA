@@ -142,7 +142,7 @@ class Event(object):
             fits_covariance and fits_time.
         """
         available_kind = ['Microlensing']
-        available_methods = [0, 1, 2]
+        available_methods = ['LM', 'DE', 'MCMC']
 
         if self.kind not in available_kind:
             print 'ERROR : No possible fit yet for a non microlensing event, sorry :('
