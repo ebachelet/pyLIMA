@@ -147,7 +147,7 @@ def main(command_line):
             #current_event.compute_parallax(second_order)
         Model = microlmodels.MLModels(current_event, command_line.model, second_order)
         
-        current_event.fit(Model,'LM')
+        current_event.fit(Model,'MCMC')
         #current_event.telescopes.append(telescope)
         #if second_order[0][0]!='None' :
             #current_event.compute_parallax(second_order)

@@ -160,197 +160,13 @@ class MLFits(object):
 
         if self.method == 'DE':
 
-             self.fit_results, self.fit_covariance, self.fit_time = self.diff_evolution()
+            self.fit_results, self.fit_covariance, self.fit_time = self.diff_evolution()
                        
 
         if self.method == 'MCMC':
-            AA=differential_evolution(self.chi_differential,
-            bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
-            recombination=0.7,polish='None')
-            #res = np.array(
-                #[2.45702717e+06, 1.03945071e-02, 2.09768963e+01, 4.68542301e-03, -2.33873059e-02,
-                 #3.95109011e-02])
-            res=AA['x']
-            fs,fb=self.find_fluxes(res,self.model)
             
-            ndim = 3
-            nwalkers = 300
-            pp0 = []
-            # limits=[(AA['x'][0]*0.8,AA['x'][0]*1.2),(AA['x'][1]*0.8,AA['x'][1]*1.2),(AA['x'][
-            # 2]*0.8,AA['x'][2]*1.2)]
-            i=0
-            while i < nwalkers:
-                p1 = []
-                for j in range(3):
-                        if j==0:
-                            
-                            p1.append(res[j]+np.random.uniform(-5,5))
-                        if j==1:
-                            
-                            p1.append(res[j]*(np.random.uniform(-3,3)))
-                        if j==2:
-                           
-                            p1.append(res[j]*(np.random.uniform(-3,3)))
-               
-                       
-                
+            self.MCMC()
             
-              
-                pp0.append(np.array(p1))
-                i+=1
-           
-
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chi_MCMC)
-
-            pos, prob, state = sampler.run_mcmc(pp0, 100)
-            sampler.reset()
-            pos, prob, state = sampler.run_mcmc(pos, 1000)
-            AA=np.argsort(prob)[::-1][:33]
-            barycenter = [sum(pos[AA,0]/(np.abs(prob[AA]))),sum(pos[AA,1]/(np.abs(prob[AA]))),
-            sum(pos[AA,2]/(np.abs(prob[AA])))]
-            p1 = np.array([1,1,1])*np.random.randn(nwalkers,ndim)+np.array(barycenter)
-            p2=[i for i in p1]
-            best= np.argmax(prob)
-            limits = [(pos[best,0]-1,pos[best,0]+1),(pos[best,1]-0.1,pos[best,1]+0.1),(0,
-            pos[best,0]+5)]
-            plt.subplot(311)
-            plt.plot(sampler.chain[:, :, 0].T, '-', color='k', alpha=0.3)
-            plt.ylabel(r't_o',fontsize=20)
-            plt.subplot(312)
-            plt.plot(sampler.chain[:, :, 1].T, '-', color='k', alpha=0.3)
-            plt.ylabel(r'u_o',fontsize=20)
-            plt.subplot(313)
-            plt.plot(sampler.chain[:, :, 2].T, '-', color='k', alpha=0.3)
-            plt.xlabel(r'Iterations',fontsize=20)
-            plt.ylabel(r't_E',fontsize=20)
-            plt.show()
-            import pdb; pdb.set_trace()
-
-           
-            
-            
-             #sampler.reset()
-           
-           
-
-            #time = np.arange(-100, 190, 0.01)
-            good = np.where(np.abs(sampler.lnprobability - max(prob)) < 36)
-            mask = np.abs(sampler.lnprobability - max(prob)) < 36
-           
-            good=np.where((sampler.chain[:,:,1]>0) & ((sampler.chain[:,:,2]>0)))
-            samples=sampler.chain[good]
-            FS=[]
-            FB=[]
-            CHI2=[]
-            #for i in samples :
-               # CHI2.append(self.chi_differential(i))
-                #f1,f2=self.find_fluxes(i,self.model)
-                ##FB.append(f2)
-                
-            #import pdb;
-            #pdb.set_trace()
-           ## samples=np.c_[samples,FS]
-           # samples=np.c_[samples,FB]
-           
-            self.chains=  sampler.chain
-            self.probability=sampler.lnprobability
-            self.samples=samples
-            #self.CHI2=[]
-            #return
-            AA = plt.scatter(sampler.chain[mask][:, 0], sampler.chain[mask][:, 2],
-                             c=np.abs(sampler.lnprobability[mask]))
-            cbar = plt.colorbar()
-            plt.show()
-            CHI2=[] 
-            FS=[]
-            FB=[]
-            for i in sampler.chain[mask] :
-                #CHI2.append(self.chi_differential(i))
-                f1,f2=self.find_fluxes(i,self.model)
-                FS.append(f1)
-                FB.append(f2)
-            plt.subplot(221)
-            plt.suptitle(self.event.name,fontsize=50)
-            plt.scatter(sampler.chain[mask][:, 0], np.abs(sampler.chain[mask][:, 1]),
-                        c=np.abs(sampler.lnprobability[mask]))
-            plt.colorbar()
-            plt.xlabel(r'$t_o$',fontsize=20)
-            plt.ylabel(r'$u_o$',fontsize=20)
-            plt.scatter(135.248,0.471697,s=200,c='r',marker='*')
-            plt.errorbar(135.257399177, 0.476185780199 ,xerr=0.03733228415,yerr=0.0292394736979,fmt='.m')
-            plt.subplot(222)
-          # 
-            plt.scatter(sampler.chain[mask][:, 0], np.abs(sampler.chain[mask][:, 2]),
-                        c=np.abs(sampler.lnprobability[mask]))
-            
-            plt.colorbar()
-            plt.xlabel(r'$t_o$',fontsize=20)
-            plt.ylabel(r'$t_E$',fontsize=20)
-            plt.scatter(135.248,15.78,s=200,c='r',marker='*')
-            plt.errorbar(135.257399177,15.6966026912,xerr=0.0373322841589,yerr=0.618166908868,fmt='.m')
-           
-            plt.subplot(223)
-           
-            plt.scatter(np.log10(FS), FB, c=np.abs(sampler.lnprobability[mask]))
-            
-            plt.colorbar()
-            plt.xlabel(r'$f_s$',fontsize=20)
-            plt.ylabel(r'$g$',fontsize=20)
-            plt.scatter(np.log10(3436.69989),3.4096,s=200,c='r',marker='*')
-            plt.errorbar(np.log10(3481.8350685 ),3.35158198956 ,xerr=313.092427858 /(np.log(10)*3481.8350685),yerr=0.390671949654,fmt='.m')
-            plt.subplot(224)
-            plt.xlabel(r'$Days$',fontsize=20)
-            plt.ylabel(r'$Mag$',fontsize=20)
-            index = []
-            
-            #import pdb; pdb.set_trace()
-            palier=np.min(np.abs(sampler.lnprobability[mask]))
-            index=[]
-            Step=(max(np.abs(sampler.lnprobability[mask]))-min(np.abs(sampler.lnprobability[mask])))/35
-            time=np.arange(110,160,0.01)
-            for i in range(35):
-               ddd=np.argmin(np.abs(np.abs(sampler.lnprobability[mask])-palier))
-               index.append(ddd)
-               palier+=Step
-            for i in range(35):
-                try:
-
-                   index2 = index[i]
-                   params = sampler.chain[mask][index2]
-                   to=params[0]
-                   uo=params[1]
-                   tE=params[2]
-                   fs, fb = self.find_fluxes(params, self.model)
-                   tau=(time-to)/tE
-                   ampli = microlmagnification.amplification(uo, tau, 0.0,0.0, self.model)[0]
-
-                   plt.plot(time, 27.4 - 2.5 * np.log10(fs * (ampli + fb)),
-                           c=AA.get_facecolor()[index2], alpha=0.6)
-
-                except:
-                   import pdb;pdb.set_trace()
-
-            index = np.argmax(sampler.lnprobability[mask])
-            params = sampler.chain[mask][index]
-
-            fs, fb = self.find_fluxes(params, self.model)
-            to=params[0]
-            uo=params[1]
-            tE=params[2]
-            fs, fb = self.find_fluxes(params, self.model)
-            tau=(time-to)/tE
-            ampli = microlmagnification.amplification(uo, tau, 0.0,0.0, self.model)[0]
-            plt.plot(time, 27.4 - 2.5 * np.log10(fs * (ampli + fb)), '--k',
-                     lw=2.0,)
-            plt.errorbar(self.event.telescopes[0].lightcurve[:, 0],
-                         self.event.telescopes[0].lightcurve[:, 1],
-                         yerr=self.event.telescopes[0].lightcurve[:, 2], fmt='.k')
-            plt.gca().invert_yaxis()
-            plt.colorbar(AA)
-            plt.axis([120,150,16.9,16.6])
-            #plt.tight_layout()
-            plt.show()
-           # import pdb;pdb.set_trace()
         fit_quality_flag = self.check_fit()
 
         if fit_quality_flag == 'Bad Fit':
@@ -636,6 +452,46 @@ class MLFits(object):
         parameters = parameters + fluxes
 
         return parameters
+
+    def MCMC(self) :
+           #'Not fonctionnal'
+            AA=differential_evolution(self.chichi_differential,
+                                   bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
+                                   recombination=0.7,polish='None')
+            res=AA['x']
+            ndim = len(res)
+            nwalkers = 300
+            pp0 = []
+
+            i=0
+            while i < nwalkers:
+                p1 = []
+                for j in range(ndim):
+                        if j==0:
+                            
+                            p1.append(res[j]+np.random.uniform(-5,5))
+                        if j==1:
+                            
+                            p1.append(res[j]*(np.random.uniform(-3,3)))
+                        if j==2:
+                           
+                            p1.append(res[j]*(np.random.uniform(-3,3)))
+
+                pp0.append(np.array(p1))
+                i+=1
+           
+            import pdb; pdb.set_trace()
+
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chichi_MCMC)
+
+            pos, prob, state = sampler.run_mcmc(pp0, 100)
+            sampler.reset()
+            pos, prob, state = sampler.run_mcmc(pos, 1000)
+
+
+            self.chains = sampler.chain
+            self.probability = sampler.lnprobability
+
 
     def diff_evolution(self) :
         
