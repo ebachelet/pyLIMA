@@ -8,23 +8,228 @@ from __future__ import division
 from datetime import datetime
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
+from matplotlib import cm
 import numpy as np
 from astropy.time import Time
 from scipy.stats.distributions import t as student
+import collections
 
-import microlmagnification
+def LM_outputs(fit) :
+
+     results = LM_parameters_result(fit)
+     covariance_matrix = fit.fit_covariance
+     errors = LM_fit_errors(fit)
+     correlation_matrix = cov2corr(covariance_matrix)
+     figure_lightcurve = LM_plot_lightcurves(fit)
+     #figure_parameters = LM_plot_parameters(fit)
+     
+     outputs=collections.namedtuple('Fit_outputs',[])        
+     
+     key_outputs = ['fit_parameters','fit_errors','fit_correlation_matrix','figure_lightcurve']
+     values_outputs = [results,errors,correlation_matrix,figure_lightcurve]
+     
+     count = 0
+     for i in key_outputs :
+         
+         setattr(outputs,i,values_outputs[count])
+         count += 1
+     
+ 
+     return outputs
+def MCMC_outputs(fit) :  
+    
+     import pdb; pdb.set_trace()
+
+     chains = fit.MCMC_chains
+     probabilities = fit.MCMC_probabilities
+     CHAINS = np.c_[chains[:,:,0].ravel(),chains[:,:,1].ravel(),chains[:,:,2].ravel(),probabilities.ravel()]
+     
+     best_proba = np.argmax(CHAINS[:,-1])
+     
+     #cut to 6 sigma 
+     index=np.where(CHAINS[:,-1]<CHAINS[best_proba,-1]-36)[0]
+     BEST = CHAINS[index]
+     
+     key_outputs = ['fit_parameters','fit_errors','fit_correlation_matrix','figure_lightcurve']
+     values_outputs = [results,errors,correlation_matrix,figure_lightcurve]
+     
+     count = 0
+     for i in key_outputs :
+         
+         setattr(outputs,i,values_outputs[count])
+         count += 1
+     
+ 
+    
+     return 'hi'
+ 
+def LM_parameters_result(fit) :
+    
+    
+    parameters = collections.namedtuple('Parameters',fit.model.model_dictionnary.keys())
+    
+    for i in  fit.model.model_dictionnary.keys():
+        
+        setattr(parameters,i,fit.fit_results[fit.model.model_dictionnary[i]])
+    
+    return parameters
+    
+def LM_fit_errors(fit) :
+    
+    
+   
+    parameters_errors = collections.namedtuple('Errors_Parameters',[])
+    errors = fit.fit_covariance.diagonal()**0.5
+    for i in  fit.model.model_dictionnary.keys():
+        
+        setattr(parameters_errors,'err_'+i,errors[fit.model.model_dictionnary[i]])
+    
+    return parameters_errors
+
+def cov2corr(A):
+    """
+    covariance matrix to correlation matrix.
+    """
+
+    d = np.sqrt(A.diagonal())
+    correlation = ((A.T / d).T) / d
+
+    return correlation
+
+def LM_plot_lightcurves(fit) :
+    
+    figure,axes = initialize_plot_figure(fit)
+    plot_align_data(fit,axes[0])
+    plot_model(fit,axes[0])
+    plot_residuals(fit,axes[1])
+    
+    return figure
+
+def LM_plot_parameters(fit) :
+    
+    figure,axes = initialize_plot_parameters()
+   
+    
+    return figure
+    
+    
+def initialize_plot_figure(fit):
+    
+    figure, axes = plt.subplots(2,1,sharex=True)
+    axes[0].grid()
+    axes[1].grid()
+    figure.suptitle(fit.event.name,fontsize=30)
+    
+    return figure, axes
+
+def initialize_plot_parameters(fit):
+
+    dimension_y = np.floor(len(fit.fits_result)/3)
+    dimension_x = len(fit.fits_result)-3*dimension_y
+    
+    figure, axes = plt.subplots(dimension_x,dimension_y)
+    
+    
+    return figure, axes  
+    
+    
+def plot_model(fit, ax) :
+
+    min_time = min([min(i.lightcurve[:,0]) for i in fit.event.telescopes])
+    max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
+
+    time = np.arange(min_time, max_time + 100, 0.01)
+    
+    reference_telescope = fit.event.telescopes[0]
+    gamma = reference_telescope.gamma
+    fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope.name]]
+    g_reference = fit.fit_results[fit.model.model_dictionnary['g_'+reference_telescope.name]]
+    
+    ampli = fit.model.magnification(fit.fit_results, time, gamma)[0]
+    
+    flux = fs_reference*(ampli+g_reference)
+    mag = 27.4-2.5*np.log10(flux)
+    
+    ax.plot(time,mag,'r',lw=2)
+    ax.set_ylim([min(mag)-0.1,max(mag)+0.1])
+    ax.invert_yaxis()
+    ax.text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=ax.transAxes)
+    
+def plot_residuals(fit,ax):
+    
+   
+
+    for i in fit.event.telescopes :
+        
+        fs_telescope = fit.fit_results[fit.model.model_dictionnary['fs_'+i.name]]
+        g_telescope = fit.fit_results[fit.model.model_dictionnary['g_'+i.name]]
+        
+        gamma = i.gamma
+        
+        time = i.lightcurve[:,0]
+        mag = i.lightcurve[:,1]
+        flux = 10**((27.4-mag)/2.5)
+        err_mag = i.lightcurve[:,2]
+
+        ampli = fit.model.magnification(fit.fit_results, time, gamma)[0]
+        
+        flux_model = fs_telescope*(ampli+g_telescope)
+        
+        residuals = 2.5*np.log10(flux_model/flux)
+        ax.errorbar(time, residuals, yerr=err_mag,fmt='.')
+    ax.set_ylim([-0.1,0.1])
+    
+    
+
+        
+    
+    
+def plot_align_data(fit,ax) :
+    
+    reference_telescope = fit.event.telescopes[0].name
+    fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope]]
+    g_reference = fit.fit_results[fit.model.model_dictionnary['g_'+reference_telescope]]
+
+    for i in fit.event.telescopes :
+        
+        if i.name == reference_telescope :
+            
+            lightcurve = i.lightcurve
+        
+        else :
+             
+            fs_telescope = fit.fit_results[fit.model.model_dictionnary['fs_'+i.name]]
+            g_telescope = fit.fit_results[fit.model.model_dictionnary['g_'+i.name]]
+            
+            lightcurve = align_telescope_lightcurve(i.lightcurve,fs_reference,g_reference,fs_telescope,g_telescope)
+
+        ax.errorbar(lightcurve[:,0], lightcurve[:,1], yerr=lightcurve[:,2],fmt='.',label=i.name)
+        
+    ax.legend(numpoints=1)
+    
+    
+    
+def align_telescope_lightcurve(lightcurve_telescope_mag,fs_reference,g_reference,fs_telescope,g_telescope) :
+    
+    time = lightcurve_telescope_mag[:,0]
+    mag = lightcurve_telescope_mag[:,1]
+    err_mag = lightcurve_telescope_mag[:,2]
+    
+    flux = 10**((27.4-lightcurve_telescope_mag[:,1])/2.5)
+    
+    flux_normalised = (flux-(fs_telescope*g_telescope))/(fs_telescope)*fs_reference+fs_reference*g_reference
+    
+    mag_normalised = 27.4-2.5*np.log10(flux_normalised)
+    
+    lightcurve_normalised = [time,mag_normalised]
+    
+    lightcurve_mag_normalised = np.array(lightcurve_normalised)
+    
+    return lightcurve_mag_normalised
 
 
-class MLOutputs(object):
-    def __init__(self, event):
-
-        self.event = event
-        self.fits_errors = []
-        self.observables = []
-        self.observables_errors = []
-        self.plots = []
-
-    def errors_on_fits(self, choice):
+def errors_on_fits(self, choice):
 
         if len(self.event.fits[choice].fit_covariance)==0:
 
@@ -35,7 +240,7 @@ class MLOutputs(object):
             self.event.fits[choice].fit_errors = np.sqrt(
                 self.event.fits[choice].fit_covariance.diagonal())
 
-    def find_observables(self):
+def find_observables(self):
 
         count = 0
         self.observables_dictionnary = {'to': 0, 'Ao': 1, 'tE': 2, 'Anow': 3, 'Ibaseline': 4,
@@ -88,7 +293,7 @@ class MLOutputs(object):
 
             self.observables.append([i[0], i[1], i[2], observables])
 
-    def find_observables_errors(self):
+def find_observables_errors(self):
 
         for i in xrange(len(self.event.fits_results)):
 
@@ -128,26 +333,15 @@ class MLOutputs(object):
 
             self.observables.append([i[0], i[1], observables])
 
-    def errors_on_observables(self):
+def errors_on_observables(self):
 
         for i in self.event.fits_covariance:
 
             self.error_parameters.append([i[0], i[1], np.sqrt(i[2].diagonal)])
 
-    def cov2corr(self):
-        """
-        covariance matrix to correlation matrix.
-        """
-        self.correlations = []
-        for i in self.event.fits_covariance:
 
-            A = i[3]
-            d = np.sqrt(A.diagonal())
-            B = ((A.T / d).T) / d
 
-            self.correlations.append([i[0], i[1], i[2], B])
-
-    def student_errors(self):
+def student_errors(self):
 
         alpha = 0.05
         ndata = len(self.event.telescopes[0].lightcurve_flux)
@@ -167,7 +361,7 @@ class MLOutputs(object):
         self.upper = upper
         self.lower = lower
 
-    def K2_C9_outputs(self):
+def K2_C9_outputs(self):
         import matplotlib.pyplot as plt
 
         # first produce aligned lightcurve#

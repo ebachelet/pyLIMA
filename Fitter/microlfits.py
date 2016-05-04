@@ -10,12 +10,11 @@ import time as TIME
 import numpy as np
 from scipy.optimize import leastsq, differential_evolution
 import scipy.signal as ss
-import matplotlib.pyplot as plt
-from matplotlib import cm
-
 import emcee
+
 import microlmodels
 import microlmagnification
+import microloutputs
 
 
 class MLFits(object):
@@ -165,9 +164,13 @@ class MLFits(object):
 
         if self.method == 'MCMC':
             
-            self.MCMC()
+            self.MCMC_chains,self.MCMC_probabilities=self.MCMC()
+        
+        fit_quality_flag = 'Good Fit'
+        
+        if self.method != 'MCMC' :
             
-        fit_quality_flag = self.check_fit()
+            fit_quality_flag = self.check_fit()
 
         if fit_quality_flag == 'Bad Fit':
 
@@ -480,18 +483,18 @@ class MLFits(object):
                 pp0.append(np.array(p1))
                 i+=1
            
-            import pdb; pdb.set_trace()
 
             sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chichi_MCMC)
 
             pos, prob, state = sampler.run_mcmc(pp0, 100)
             sampler.reset()
-            pos, prob, state = sampler.run_mcmc(pos, 1000)
+            pos, prob, state = sampler.run_mcmc(pos, 100)
 
 
-            self.chains = sampler.chain
-            self.probability = sampler.lnprobability
-
+            chains = sampler.chain
+            probability = sampler.lnprobability
+            
+            return chains,probability
 
     def diff_evolution(self) :
         
@@ -576,7 +579,6 @@ class MLFits(object):
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
 
-        import pdb; pdb.set_trace()
         return fit_res, cov, computation_time
 
     def Jacobian(self, parameters):
@@ -880,3 +882,16 @@ class MLFits(object):
                 fluxes.append(fs)
                 fluxes.append(fb / fs)
         return fluxes
+
+
+    def produce_outputs(self) :
+        
+        if self.method != 'MCMC' :
+            
+            outputs = microloutputs.LM_outputs(self)
+            
+        else :
+            
+            outputs = microloutputs.MCMC_outputs(self)
+        
+        self.outputs=outputs

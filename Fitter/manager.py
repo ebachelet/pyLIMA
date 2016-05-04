@@ -78,7 +78,6 @@ def main(command_line):
         count=0
         #event_telescopes = [event_telescopes[1]]
         #second_order = [['Annual', 2457027], ['None', 0], ['None', 0], 'None']
-        import pdb; pdb.set_trace()
         start=time.time()
         for event_telescope in event_telescopes:
             try :
@@ -148,6 +147,8 @@ def main(command_line):
         Model = microlmodels.MLModels(current_event, command_line.model, second_order)
         
         current_event.fit(Model,'MCMC')
+        import pdb; pdb.set_trace()
+
         #current_event.telescopes.append(telescope)
         #if second_order[0][0]!='None' :
             #current_event.compute_parallax(second_order)
@@ -167,6 +168,7 @@ def main(command_line):
         
        # np.savetxt(name+'.param',Parameters,fmt='%s')
         #current_event.produce_outputs(0)
+        current_event.fits[0].produce_outputs()
         Results = []
         Errors = []
         
