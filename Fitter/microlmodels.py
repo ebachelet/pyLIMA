@@ -12,7 +12,10 @@ import numpy as np
 from scipy import interpolate, misc
 
 import microlmagnification
+import microlparallax
 
+
+### THIS NEED TO BE SORTED ####
 try:
 
     # yoo_table = np.loadtxt('b0b1.dat')
@@ -42,6 +45,103 @@ interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
 
 
 class MLModels(object):
+    
+    """
+    ######## MLModels module ########
+    @author: Etienne Bachelet
+
+
+    Keyword arguments:
+    
+    event --> A event class which describe your event that you want to model. See the event module.
+
+    model --> The microlensing model you want. Has to be a string :
+
+             'PSPL' --> Point Source Point Lens. The amplification is taken from :
+             "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
+
+             'FSPL' --> Finite Source Point Lens. The amplification is taken from :
+             "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,
+             J. et al.2004ApJ...603..139Y
+              Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
+              to compute B0(z) and B1(z).
+
+             'DSPL'  --> not available now
+             'Binary' --> not available now
+             'Triple' --> not available now
+             
+    
+                          
+    
+    second_order --> Second order effect : parallax, orbital_motion and source_spots . A list
+        of string as :
+
+            [parallax,orbital_motion,source_spots]
+            Example : [['Annual',2456876.2],['2D',2456876.2],'None']
+
+            parallax --> Parallax model you want to use for the Earth types telescopes.
+                         Has to be a list containing the model in the available_parallax
+                         parameter and
+                         the value of topar.
+
+                         'Annual' --> Annual parallax
+                         'Terrestrial' --> Terrestrial parallax
+                         'Full' --> combination of previous
+
+                         topar --> a time in HJD choosed as the referenced time fot the parallax
+
+                         If you have some Spacecraft types telescopes, the space based parallax
+                         is computed.
+
+                         More details in the microlparallax module
+
+            orbital_motion --> Orbital motion you want to use. Has to be a list containing the model
+                               in the available_orbital_motion parameter and the value of toom:
+
+                'None' --> No orbital motion
+                '2D' --> Classical orbital motion
+                '3D' --> Full Keplerian orbital motion
+
+                toom --> a time in HJD choosed as the referenced time fot the orbital motion
+                        (Often choose equal to topar)
+
+                More details in the microlomotion module
+
+            source_spots --> Consider spots on the source. Has to be a string in the
+            available_source_spots parameter :
+
+                'None' --> No source spots
+
+                More details in the microlsspots module
+                
+     Parameters description. The PARAMETERS RULE is (quantity in brackets are optional):
+
+            [to,uo,tE,(rho),(s),(q),(alpha),(PiEN),(PiEE),(dsdt),(dalphadt),(source_spots)]+Sum_i[fsi,fbi/fsi]
+
+            to --> time of maximum amplification in HJD
+            uo --> minimum impact parameter (for the time to)
+            tE --> angular Einstein ring crossing time in days
+            rho --> normalized angular source radius = theta_*/theta_E
+            s --> normalized projected angular speration between the two bodies
+            q --> mass ratio
+            alpha --> counterclockwise angle (in radians) between the source
+            trajectory and the lenses axes
+            PiEN --> composant North (in the sky plane) of the parallax vector
+            PiEE --> composant East (in the sky plane) of the parallax vector
+            ds/dt --> s variations due to the lens movement
+            dalpha/dt --> angle variations due to the lens movement
+            source_spots --> ?????
+            fsi --> source flux in unit : m=27.4-2.5*np.log10(flux)
+            fbi/fsi --> blending flux ratio
+
+            As an example , if you choose an FSPL model with 'Annual' parallax and two telescopes 1 and 2
+            to fit, the parameters will look like :
+                             
+            [to,uo,tE,rho,PiEN,PiEE,fs1,fb1/fs1,fs2,fb2/fs2]
+        
+             """
+             
+             
     def __init__(self, event, model='PSPL',
                  second_order=[['None', 0.0], ['None', 0.0], ['None', 0.0], 'None']):
         """ Initialization of the attributes described above. """
@@ -64,8 +164,9 @@ class MLModels(object):
         return function(x)
 
     def define_parameters(self):
-        """Provide the number of parameters on which depend the magnification computation.(
-        Paczynski parameters+second_order)
+        """ Create the model_dictionnary which explain to the different modules which parameter is what (
+        Paczynski parameters+second_order+fluxes)
+        Also defines the parameters_boundaries requested by method 'DE' and 'MCMC'
         """
 
         self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
@@ -129,6 +230,8 @@ class MLModels(object):
 
     def magnification(self, parameters , time, gamma = 0, delta_positions = 0) :
         
+        """ Compute the according magnification """
+        
         to = parameters[self.model_dictionnary['to']]
         uo = parameters[self.model_dictionnary['uo']]
         tE = parameters[self.model_dictionnary['tE']]        
@@ -162,14 +265,27 @@ class MLModels(object):
             amplification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, self.yoo_table)
             return amplification, u   
             
-            
+    
+    def compute_parallax(self, second_order):
+         """ Compute the parallax for all the telescopes, if this is desired in
+         the second order parameter."""
+         telescopes = []
+         for i in self.event.telescopes:
+  
+            if len(i.deltas_positions) == 0:
+                telescopes.append(i)
+
+         para = microlparallax.MLParallaxes(self.event, second_order[0])
+         para.parallax_combination(telescopes)        
             
     def compute_parallax_curvature(self, piE, delta_positions) :
-         
-           delta_tau = -np.dot(piE, i.deltas_positions)
-           delta_u = -np.cross(piE, i.deltas_positions.T)
+        """ Compute the curvature induce by the parallax of from
+        deltas_positions of a telescope """
+                     
+        delta_tau = -np.dot(piE, delta_positions)
+        delta_u = -np.cross(piE, delta_positions.T)
            
-           return delta_tau,delta_u
+        return delta_tau,delta_u
     
     
         

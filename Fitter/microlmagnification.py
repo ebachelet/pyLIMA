@@ -10,6 +10,7 @@ import numpy as np
 
 
 def amplification_PSPL(tau, uo):
+    """ The Pacziynski magnification """
     
     U = (tau ** 2 + uo ** 2) ** 0.5
     U2 = U ** 2
@@ -19,6 +20,7 @@ def amplification_PSPL(tau, uo):
 
 
 def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
+    """ The Yoo et al.(2004) magnification """
     
     U = (tau ** 2 + uo ** 2) ** 0.5
     U2 = U ** 2
@@ -41,7 +43,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     return ampli, U
     
 
-
+#### TO DO : the following probably depreciated ####
 def amplification(x, y, rho, gamma, model):
     """ The magnification associated to the model, at time t using parameters and gamma.
         The formula change regarding the requested model :

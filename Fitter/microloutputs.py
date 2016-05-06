@@ -16,66 +16,86 @@ from astropy.time import Time
 from scipy.stats.distributions import t as student
 import collections
 
+
+
+
+
 def LM_outputs(fit) :
-
-     results = LM_parameters_result(fit)
-     covariance_matrix = fit.fit_covariance
-     errors = LM_fit_errors(fit)
-     correlation_matrix = cov2corr(covariance_matrix)
-     figure_lightcurve = LM_plot_lightcurves(fit)
-     #figure_parameters = LM_plot_parameters(fit)
+    """ Standard 'LM' and 'DE' outputs (a named tuple python object) :
+    
+        - fit_parameters : a named tuple python object containing the fitted parameters. See microlmodels module for details.
+        - fit_errors : a named tuple python object containing the error on fitted parameters. Square root of the variance from the covariance matrice.
+        - fit_correlation_matrix : return a numpy array containing the correlation matrix.
+        - figure_lightcurve : a data+model matplotlib.pyplot plot.
+    """
+    
+    results = LM_parameters_result(fit)
+    covariance_matrix = fit.fit_covariance
+    errors = LM_fit_errors(fit)
+    correlation_matrix = cov2corr(covariance_matrix)
+    figure_lightcurve = LM_plot_lightcurves(fit)
+    #figure_parameters = LM_plot_parameters(fit)
+    key_outputs = ['fit_parameters','fit_errors','fit_correlation_matrix','figure_lightcurve']
+    outputs=collections.namedtuple('Fit_outputs', key_outputs)        
      
-     outputs=collections.namedtuple('Fit_outputs',[])        
+    
+    values_outputs = [results,errors,correlation_matrix,figure_lightcurve]
      
-     key_outputs = ['fit_parameters','fit_errors','fit_correlation_matrix','figure_lightcurve']
-     values_outputs = [results,errors,correlation_matrix,figure_lightcurve]
-     
-     count = 0
-     for i in key_outputs :
+    count = 0
+    for i in key_outputs :
          
          setattr(outputs,i,values_outputs[count])
          count += 1
      
  
-     return outputs
+    return outputs
 def MCMC_outputs(fit) :  
+    """ Standard 'MCMC' outputs (a named tuple python object) :
     
+        - MCMC_chains : a numpy array containing the MCMC chains.
+        - figure_lightcurve : a data+model matplotlib.pyplot plot. 35 models selected in the the MCMC chains, within 6 sigma lower than the maximum
+          likelihood, are plotted.
+        - figure_distributions : 6-sigma distributions of the MCMC_chains.
+    """
 
-     chains = fit.MCMC_chains
-     probabilities = fit.MCMC_probabilities
+    chains = fit.MCMC_chains
+    probabilities = fit.MCMC_probabilities
 
-     CHAINS = chains[:,:,0].ravel()
-     for i in xrange(len(fit.model.parameters_boundaries)-1):
-         i += 1
-         CHAINS = np.c_[CHAINS,chains[:,:,i].ravel()]
-     fluxes = MCMC_compute_fs_g(fit, CHAINS)
+    CHAINS = chains[:,:,0].ravel()
+    for i in xrange(len(fit.model.parameters_boundaries)-1):
+        i += 1
+        CHAINS = np.c_[CHAINS,chains[:,:,i].ravel()]
+    fluxes = MCMC_compute_fs_g(fit, CHAINS)
      
-     CHAINS = np.c_[CHAINS,fluxes,probabilities.ravel()]
+    CHAINS = np.c_[CHAINS,fluxes,probabilities.ravel()]
      
-     best_proba = np.argmax(CHAINS[:,-1])
+    best_proba = np.argmax(CHAINS[:,-1])
      
-     #cut to 6 sigma for plots
-     index=np.where(CHAINS[:,-1]>CHAINS[best_proba,-1]-36)[0]
-     BEST = CHAINS[index]
-     BEST=BEST[BEST[:,-1].argsort(),]
+    #cut to 6 sigma for plots
+    index=np.where(CHAINS[:,-1]>CHAINS[best_proba,-1]-36)[0]
+    BEST = CHAINS[index]
+    BEST=BEST[BEST[:,-1].argsort(),]
      
-     figure_lightcurve = MCMC_plot_lightcurves(fit,BEST)
-     figure_distributions = MCMC_plot_parameters_distribution(fit,BEST)
-     
-     outputs=collections.namedtuple('Fit_outputs',[]) 
-     key_outputs = ['chains','figure_lightcurve','figure_distributions']
-     values_outputs = [CHAINS, figure_lightcurve, figure_distributions]
-     
-     count = 0
-     for i in key_outputs :
+    figure_lightcurve = MCMC_plot_lightcurves(fit,BEST)
+    figure_distributions = MCMC_plot_parameters_distribution(fit,BEST)
+    
+    
+    key_outputs = ['MCMC_chains','figure_lightcurve','figure_distributions']
+    outputs=collections.namedtuple('Fit_outputs', key_outputs) 
+   
+    values_outputs = [CHAINS, figure_lightcurve, figure_distributions]
+    
+    count = 0
+    for i in key_outputs :
          
-         setattr(outputs,i,values_outputs[count])
-         count += 1
+        setattr(outputs,i,values_outputs[count])
+        count += 1
      
  
     
-     return outputs
-
+    return outputs
+    
+    
 def MCMC_compute_fs_g(fit,CHAINS) :
     
     Fluxes=[]
@@ -245,13 +265,13 @@ def LM_parameters_result(fit) :
         
         setattr(parameters,i,fit.fit_results[fit.model.model_dictionnary[i]])
     
+    setattr(parameters,'chichi',fit.fit_results[-1])
     return parameters
     
 def LM_fit_errors(fit) :
     
-    
-   
-    parameters_errors = collections.namedtuple('Errors_Parameters',[])
+    keys = ['err_'+i for i in fit.model.model_dictionnary.keys() ]
+    parameters_errors = collections.namedtuple('Errors_Parameters',keys)
     errors = fit.fit_covariance.diagonal()**0.5
     for i in  fit.model.model_dictionnary.keys():
         
@@ -351,7 +371,7 @@ def LM_plot_residuals(fit,ax):
         residuals = 2.5*np.log10(flux_model/flux)
         ax.errorbar(time, residuals, yerr=err_mag,fmt='.')
     ax.set_ylim([-0.1,0.1])
-    
+    ax.invert_yaxis()
     
 
         
@@ -400,6 +420,12 @@ def align_telescope_lightcurve(lightcurve_telescope_mag,fs_reference,g_reference
     
     return lightcurve_mag_normalised
 
+
+
+
+
+
+### TO DO : some parts depreciated ####
 
 def errors_on_fits(self, choice):
 

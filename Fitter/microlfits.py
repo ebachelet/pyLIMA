@@ -27,127 +27,46 @@ class MLFits(object):
 
     Keyword arguments:
 
-    model --> The microlensing model you want to fit. Has to be a string in the available_models
-    parameter:
+    model --> The microlensing model you want to fit. Has to be an object define in microlmodels module.
+              More details on the microlmodels module.
 
-             'PSPL' --> Point Source Point Lens. The amplification is taken from :
-             "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
+    method --> The fitting method you want to use. Has to be a string :
 
-             'FSPL' --> Finite Source Point Lens. The amplification is taken from :
-             "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,
-             J. et al.2004ApJ...603..139Y
-              Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
-              to compute B0(z) and B1(z).
-
-             'DSPL'  --> not available now
-             'Binary' --> not available now
-             'Triple' --> not available now
-
-
-    method --> The fitting method you want to use. Has to be a integer in the available_methods
-    parameter:.
-
-              0 --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
+              'LM' --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
               WARNING : the parameter maxfev (number of maximum iterations) is set to 50000
                         the parameter ftol (relative precision on the chi^2) is set to 0.00001
-                        your fit may not converge because of these limits
+                        your fit may not converge because of these limits.
+                        The starting points of this method are found using the initial_guess method.
+                        Obviously, this can fail. In this case, switch to method 'DE'.
+                        
+              'DE' --> Differential evolution algoritm. Based on the scipy.optimize.differential_evolution.
+                       Look Storn & Price (1997) : "Differential Evolution – A Simple and Efficient Heuristic for global Optimization over Continuous Spaces"
+                       Because this method is heuristic, it is not 100% sure a satisfying solution is found. Just relaunch :)
+                       The result is then use as a starting point for the 'LM' method.
+                       
+                       
+              'MCMC' --> Monte-Carlo Markov Chain algorithm. Based on the emcee python package :  
+                         " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
+                         The inital population is computed around the best solution return by
+                         the 'DE' method.
 
-    second_order --> Second order effect : parallax, orbital_motion and source_spots . A list of
-    list as :
-
-                    [parallax,orbital_motion,source_spots]
-
-                    parallax --> Parallax model you want to use. Has to be a list [parallax
-                    model, topar].
-                    Parallax models are :
-
-                    'Annual' --> Annual parallax
-                    'Terrestrial' --> Terrestrial parallax
-                    'Space' --> Space based parallax
-                    'Full' --> combination of all previous.
-
-                    topar --> time in HJD selected
-
-                     More details in the microlparallax module
-
-                    orbital_motion --> Orbital motion you want to use. Has to be a list [orbital
-                    model, toom].
-                    Orbital models are:
-
-                    'None' --> No orbital motion
-                    '2D' --> Classical orbital motion
-                    '3D' --> Full Keplerian orbital motion
-
-                    toom --> a time in HJD choosed as the referenced time fot the orbital motion
-                            (Often choose equal to topar)
-
-                    More details in the microlomotion module
-
-                    source_spots --> Consider spots on the source. Has to be a list in the
-                                     available source_spots parameter :
-
-                    'None' --> No source spots
-
-                    More details in the microlsspots module
-
-    survey --> Survey telescope linked to your event. Can be found using the find_survey function.
-
-    number_of_parameters --> Number of parameters which are used for the magnification computation:
-                             it is varying as an addition of model parameter and second_order
-                             parameter.
-
-                             The PARAMETERS RULE is (quantity in brackets are optional):
-
-                             [to,uo,tE,(rho),(s),(q),(alpha),(PiEN),(PiEE),(dsdt),(dalphadt),
-                             (source_spots)]
-                             +Sum_i[fsi,fbi/fsi]
-
-                             to --> time of maximum amplification in HJD
-                             uo --> minimum impact parameter (for the time to)
-                             tE --> angular Einstein ring crossing time in days
-                             rho --> normalized angular source radius = theta_*/theta_E
-                             s --> normalized projected angular speration between the two bodies
-                             q --> mass ratio
-                             alpha --> counterclockwise angle (in radians) between the source
-                             trajectory and the lenses axes
-                             PiEN --> composant North (in the sky plane) of the parallax vector
-                             PiEE --> composant East (in the sky plane) of the parallax vector
-                             ds/dt --> s variations due to the lens movement
-                             dalpha/dt --> angle variations due to the lens movement
-                             source_spots --> ?????
-                             fsi --> source flux in unit : m=27.4-2.5*np.log10(flux)
-                             fbi/fsi --> blending flux ratio
-
-                             As an example , if you choose an FSPL model with 'Annual' parallax
-                             and two telescopes 1 and 2
-                             to fit, the parameters will look like :
-                             [to,uo,tE,rho,PiEN,PiEE,fs1,fb1/fs1,fs2,fb2/fs2]
-                             For this case, number_of_parameters will be 6.
-
+    
     Return :
 
-    fit_results --> A list containing the results of the fit:
-
-                    [model, method, parameters,chi^2], parameters following the PARAMETERS RULE.
-
-    fit_covariance --> A list containg the covariance matric of the fit:
-
-                      [model, method, covariance]. The covariance matrix is a
-                      number_of_parameters*number_of_parameters square matrix.
-
-    fit_time --> List of effective computational time (in seconds) of the requested fits in the
-    form :
-                            [model,method,time]
+    Outputs depends on the method :
+    
+            'LM' and 'DE' --> the fit will have the new attributes fit_results, fit_covariance and fit_time results.
+            'MCMC' -->  the fit will have the new attibutes MCMC_chains and MCMC_probabilities 
+            
             """
 
     def __init__(self, event):
-
+        """The fit class has to be intialized with an event. """
         self.event = event
-        self.fit_errors = []
-        self.guess = []
 
     def mlfit(self, model, method):
-
+        """This function realize the requested fit, and produce outputs accordingly.
+            Note that a sanity check is done post-fit to assess the fit quality with the check_fit function."""
         self.model = model
         self.method = method
 
@@ -174,14 +93,14 @@ class MLFits(object):
 
         if fit_quality_flag == 'Bad Fit':
 
-           if self.method == 0:
+           if self.method == 'LM':
 
                 print 'We have to change method, this fit was unsuccessfull. We decided to switch ' \
                       '' \
                       'method to 1'
 
-                self.method = 1
-                self.mlfit(self.model, 1)
+                self.method = 'LM'
+                self.mlfit(self.model, self.method)
 
            else:
 
@@ -192,6 +111,7 @@ class MLFits(object):
          0.0 terms or a negative term in the diagonal covariance matrix indicate the fit is not
          reliable.
          A negative source flux is also counted as a bad fit.
+         A negative rho or rho> 0.1 is also consider as a bad fit
         """
         flag = 'Good Fit'
         diago = np.diag(self.fit_covariance) < 0
@@ -221,23 +141,20 @@ class MLFits(object):
         return flag
 
     def initial_guess(self):
-        """Function to find initial guess for Levenberg-Marquardt solver (method==0).
+        """Function to find initial guess for Levenberg-Marquardt solver (method=='LM').
         Guess are made using the survey telescope for the Paczynski parameters (to,uo,tE).
         This assumes no blending.
         """
 
+        # to estimation
         To = []
         Max_flux = []
         Std = []
         Errmag = []
         for i in self.event.telescopes:
 
-            # print i.name
-            # import pdb; pdb.set_trace()
             try:
-                # import pdb; pdb.set_trace()
-                toto = np.histogram(i.lightcurve[:300, 0])
-                exp = int(2 * np.round(sum(toto[0]) / (toto[1][-1] - toto[1][0])) + 1)
+                
                 # only the best photometry
                 good = np.where((i.lightcurve[:, 2] < max(0.1, np.mean(i.lightcurve[:, 2]))))[0]
                 lightcurve_bis = i.lightcurve[good]
@@ -249,20 +166,13 @@ class MLFits(object):
                 flux_clean = 10 ** ((27.4 - mag_clean) / 2.5)
 
                 errmag = lightcurve_bis[:, 2]
-                # clean the outliers
 
-                # if exp %2 == 0 :
-                # exp = exp+1
-                # flux_clean = ss.savgol_filter(flux,3,1)
-                # flux_clean= ss.medfilt(flux,5)
-
-                # flux_clean = ss.savgol_filter(flux_clean,11,3)
+               
 
                 fs = min(flux_clean)
                 index = np.where(flux_clean > fs)[0]
                 good = index
 
-                # import pdb; pdb.set_trace()
                 while (np.std(Time[good]) > 5) | (len(good) > 100):
 
                     index = np.where((flux_clean[good] > np.median(flux_clean[good])) & (
@@ -274,28 +184,14 @@ class MLFits(object):
 
                     else:
                         good = good[index]
-                        # import pdb; pdb.set_trace()
-                        # good = good[index]
-                        # gravity = (np.mean(Time[good]), np.mean(flux_clean[good]),
-                        # np.mean(errmag[good]))
+                       
 
                         gravity = (
                             np.median(Time[good]), np.median(flux_clean[good]),
                             np.mean(errmag[good]))
-                        # distances = np.sqrt((Time[good]-gravity[0])**2+(flux_clean[
-                        # good]-gravity[0])**2)
+                       
                         distances = np.sqrt((Time[good] - gravity[0]) ** 2 / gravity[0] ** 2)
-                        # plt.scatter(Time,flux)
-                        # plt.scatter(Time,flux_clean,c='r')
-                        # plt.scatter(gravity[0],gravity[1],c='g',s=100)
-                        # plt.title(i.name)
-                        # plt.show()
-                        # print gravity
-                        # mport pdb; pdb.set_trace()
-                        # index = distances.argsort()[:-1]
-                        # good = good[index]
-
-                # import pdb; pdb.set_trace()
+                      
                 to = np.median(Time[good])
                 max_flux = max(flux[good])
                 std = np.std(lightcurve_bis[good, 0])
@@ -307,7 +203,6 @@ class MLFits(object):
                     std = 0.1
 
                 Std.append(std)
-                # import pdb; pdb.set_trace()
 
             except:
 
@@ -327,8 +222,6 @@ class MLFits(object):
 
 
 
-        # import pdb; pdb.set_trace()
-        # to=np.median(To)
         to = sum(np.array(To) / np.array(Errmag) ** 2) / sum(1 / np.array(Errmag) ** 2)
         survey = self.event.telescopes[0]
         lightcurve = survey.lightcurve_flux
@@ -338,7 +231,6 @@ class MLFits(object):
         errflux = lightcurve[:, 2]
 
         # fs, no blend
-        # import pdb; pdb.set_trace()
 
         baseline_flux_0 = np.min(flux)
         baseline_flux = np.median(flux)
@@ -361,10 +253,9 @@ class MLFits(object):
         max_flux = Max_flux[0]
         Amax = max_flux / fs
         uo = np.sqrt(-2 + 2 * np.sqrt(1 - 1 / (1 - Amax ** 2)))
-        # import pdb; pdb.set_trace()
 
 
-
+        # tE estimations
         flux_demi = 0.5 * fs * (Amax + 1)
         flux_tE = fs * (uo ** 2 + 3) / ((uo ** 2 + 1) ** 0.5 * np.sqrt(uo ** 2 + 5))
         index_plus = np.where((Time > to) & (flux < flux_demi))[0]
@@ -417,11 +308,11 @@ class MLFits(object):
         TE = np.array([tE1, tEplus, tEmoins, tEPlus, tEMoins])
         good = np.where(TE != 0.0)[0]
         tE = np.median(TE[good])
-        # import pdb; pdb.set_trace()
 
         if tE < 0.1:
 
             tE = 20.0
+            
         fake_second_order = [['None', 0], ['None', 0], ['None', 0], 'None']
         fake_model = microlmodels.MLModels(self.event, 'PSPL', fake_second_order)
 
@@ -457,48 +348,64 @@ class MLFits(object):
         return parameters
 
     def MCMC(self) :
-           #'Not fonctionnal'
-            AA=differential_evolution(self.chichi_differential,
+        """ The MCMC method. Construc starting points of the chains around
+            the best solution found by the 'DE' method.
+            The objective function is chichi_MCMC. Optimization
+            is made on Paczynski parameters, fs and g are found using a linear fit.
+            Launch nwalkers chains with 100 links
+            
+            """
+        
+        
+        AA=differential_evolution(self.chichi_differential,
                                    bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
                                    recombination=0.7,polish='None')
-            res=AA['x']
-            ndim = len(res)
-            nwalkers = 300
-            pp0 = []
+        res=AA['x']
+        ndim = len(res)
+        nwalkers = 300
+        pp0 = []
 
-            i=0
-            while i < nwalkers:
-                p1 = []
-                for j in range(ndim):
-                        if j==0:
-                            
-                            p1.append(res[j]+np.random.uniform(-5,5))
-                        if j==1:
-                            
-                            p1.append(res[j]*(np.random.uniform(0,3)))
-                        if j==2:
-                           
-                            p1.append(res[j]*(np.random.uniform(0,3)))
-                        if j==3:
-                            p1.append(res[j]*(np.random.uniform(0,1)))
+        i=0
+        while i < nwalkers:
+            p1 = []
+            for j in range(ndim):
+
+                if j==0:
+                    
+                    p1.append(res[j]+np.random.uniform(-5,5))
+                if j==1:
+                    
+                    p1.append(res[j]*(np.random.uniform(0,3)))
+                if j==2:
+            
+                    p1.append(res[j]*(np.random.uniform(0,3)))
+                
+                if j==3:
+                    
+                    p1.append(res[j]*(np.random.uniform(0,1)))
+
                 pp0.append(np.array(p1))
                 i+=1
            
 
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chichi_MCMC)
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chichi_MCMC)
 
-            pos, prob, state = sampler.run_mcmc(pp0, 100)
-            sampler.reset()
-            pos, prob, state = sampler.run_mcmc(pos, 100)
+        pos, prob, state = sampler.run_mcmc(pp0, 100)
+        sampler.reset()
+        pos, prob, state = sampler.run_mcmc(pos, 100)
 
 
-            chains = sampler.chain
-            probability = sampler.lnprobability
+        chains = sampler.chain
+        probability = sampler.lnprobability
             
-            return chains,probability
+        return chains,probability
 
     def diff_evolution(self) :
-        
+        """ The DE method. Heuristic global optimizer. Optimization
+             is made on Paczynski parameters inside self.model.parameters_boundaries,
+             fs and g are found using a linear fit.
+            
+        """
         start = TIME.time()
         AA = differential_evolution(self.chichi_differential,
                                     bounds=self.model.parameters_boundaries,
@@ -528,14 +435,16 @@ class MLFits(object):
         The starting point is found using the initial_guess function
         the Jacobian is given by the Jacobian function
 
-
+        The fit is performed on all parameters : Paczynski parameters, second_order and telescopes fluxes.
+        
         WARNING : ftol (relative error desired in the sum of square) is set to 10^-6
                   maxfev (maximum number of function call) is set to 50000
                   These limits can avoid the fit to properly converge (expected to be rare :))
         """
-        # import pdb; pdb.set_trace()
         start = TIME.time()
-        # self.guess = [0.0,1.0,2.0,10,0]
+        
+        #use the analytical Jacobian (faster) if no second order are present, else let the algorithm find it.
+        ### NEED CHANGE ###
         if self.model.parallax_model[0] == 'None':
             lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
                                      col_deriv=1, full_output=1, ftol=10 ** -6, xtol=10 ** -10,
@@ -549,7 +458,6 @@ class MLFits(object):
 
         fit_res = lmarquardt_fit[0].tolist()
         fit_res.append(self.chichi(lmarquardt_fit[0]))
-        #fit_res = fit_res+self.chichi_telescopes(fit_res)
         n_data = 0.0
 
         for i in self.event.telescopes:
@@ -575,7 +483,6 @@ class MLFits(object):
                     cov = np.zeros((len(self.model.model_dictionnary),
                                     len(self.model.model_dictionnary)))
         except:
-            # import pdb; pdb.set_trace()
             print 'hoho'
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
@@ -584,7 +491,7 @@ class MLFits(object):
 
     def Jacobian(self, parameters):
         
-        """Return the analytical Jacobian matrix, requested by method 0. """
+        """Return the analytical Jacobian matrix, if requested by method LM. """
 
         if self.model.paczynski_model == 'PSPL':
 
@@ -750,7 +657,7 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            #import pdb; pdb.set_trace()
+           
             ampli = self.model.magnification(parameters, Time, gamma)[0]
            
 
@@ -759,15 +666,7 @@ class MLFits(object):
                 (parameters[self.model.model_dictionnary['fs_' + i.name]] * parameters[
                     self.model.model_dictionnary['g_' + i.name]])) / errflux)
 
-            # if 'rho' in self.model.model_dictionnary:
-            #   if (parameters[self.model.model_dictionnary['rho']]<0) :
-            #     errors=np.append(errors,np.array([np.inf]*len(Time)))
-            # plt.scatter(Time,flux)
-            # plt.plot(Time,ampli*parameters[self.model.model_dictionnary['fs_'+i.name]]+
-            # (parameters[self.model.model_dictionnary['fs_'+i.name]]*parameters[
-            # self.model.model_dictionnary['g_'+i.name]]),'r')
-            # print parameters[0],parameters[1],parameters[3]
-
+            
             count = count + 1
             # plt.show()
         return errors
@@ -822,13 +721,8 @@ class MLFits(object):
 
     def chichi_MCMC(self, parameters):
         """Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit. """
-        ##print parameters
         errors = np.array([])
-        # for i in xrange(len(parameters)) :
-        #   if (parameters[i]<limit[i][0]) | (parameters[i]>limit[i][1]) :
-        # import pdb; pdb.set_trace()
-        #      chichi=np.inf
-        #     return -chichi
+       
 
        
         
@@ -843,8 +737,8 @@ class MLFits(object):
             ampli = self.model.magnification(parameters, Time, gamma)[0]
 
             fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
-            #fs=parameters[3]
-            #fb=parameters[4]*parameters[3]
+
+            # Little prior here
             if (fs < 0) | (fb/fs<-1.0):
                 
                 chichi = np.inf
@@ -855,13 +749,15 @@ class MLFits(object):
                 errors = np.append(errors, (flux - ampli * fs - fb) / errflux)
                 
                 chichi = (errors ** 2).sum()
-               
+                # Little prior here
                 chichi+=+np.log(len(Time))*1/(1+fb/fs)
                  
         return - (chichi)
 
     def find_fluxes(self, parameters, model):
-
+        """ Find telescopes flux associated to the model. Note
+        that in some case model differ from self.model (the requested model to fit)
+        """
         fluxes = []
 
         for i in self.event.telescopes:
@@ -884,6 +780,7 @@ class MLFits(object):
 
 
     def produce_outputs(self) :
+        """ Produce the standard outputs for a fit """
         
         if self.method != 'MCMC' :
             
