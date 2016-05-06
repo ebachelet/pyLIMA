@@ -384,9 +384,10 @@ class MLFits(object):
                     
                     p1.append(res[j]*(np.random.uniform(0,1)))
 
-                pp0.append(np.array(p1))
-                i+=1
+            pp0.append(np.array(p1))
+            i+=1
            
+     
 
         sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chichi_MCMC)
 

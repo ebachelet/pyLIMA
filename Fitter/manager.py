@@ -76,7 +76,7 @@ def main(command_line):
        
         Model = microlmodels.MLModels(current_event, command_line.model, second_order)
         
-        current_event.fit(Model,'LM')
+        current_event.fit(Model,'MCMC')
         import pdb; pdb.set_trace()
 
        
