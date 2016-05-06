@@ -16,7 +16,7 @@ Contents:
 
    installation
    example
-	
+   modules	
 
 Indices and tables
 ==================

@@ -13,7 +13,6 @@ import scipy.signal as ss
 import emcee
 
 import microlmodels
-import microlmagnification
 import microloutputs
 
 

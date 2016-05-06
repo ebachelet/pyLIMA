@@ -14,18 +14,15 @@ import microlparallax
 
 class Telescope(object):
     """
-    ######## Telescope module ########
-    @author : Etienne Bachelet
+    
+    @author : ebachelet
 
     This module create a telescope object with the informations (attributes) needed for the fits.
 
-    Keyword arguments:
 
-    name --> name of the telescope. Should be a string. Default is 'None'
+    :param name: name of the telescope. Should be a string. Default is 'None'
 
-    kind --> 'Earth' or 'Spacecraft'. Default is 'Earth'
-
-    filter --> telescope filter used. Should be a string wich follows the convention of :
+    :param filter: telescope filter used. Should be a string wich follows the convention of :
                " Gravity and limb-darkening coefficients for the Kepler, CoRoT, Spitzer, uvby,
                UBVRIJHK,
                and Sloan photometric systems"
@@ -33,26 +30,30 @@ class Telescope(object):
                Johnson_Cousins I filter
                and 'i'' is the SDSS-i' Sloan filter.
 
-    lightcurve --> List of time, magnitude, error in magnitude covention. Default is an empty list.
+    :param light_curve:  List of time, magnitude, error in magnitude covention. Default is an empty list.
                    WARNING : Have to exactly follow this convention.
 
-    lightcurve_flux --> List of time, flux, error in flux. Default is an empty list.
-                        WARNING : has to be set before any fits.
 
-    altitude --> Altitude in meter of the given observatory. Default is 0.0 (sea level).
+    Attributes :
+    
+        lightcurve_flux : List of time, flux, error in flux. Default is an empty list.
+                          WARNING : has to be set before any fits.
 
-    longitude --> Longitude in degrees. Default is 0.0.
+        altitude : Altitude in meter of the telescope. Default is 0.0 (sea level).
 
-    latitude --> Latitude in degrees. Default is 0.0.
+        longitude : Longitude of the telescope in degrees. Default is 0.0.
 
-    gamma.--> (Microlensing covention) Limb darkening coefficient associated to the filter
-              The classical (Milne definition) linear limb darkening coefficient can be found using:
-              u=(3*gamma)/(2+gamma).
-              Default is 0.5.
+        latitude : Latitude in degrees. Default is 0.0.
+
+        gamma :  (Microlensing covention) Limb darkening coefficient associated to the filter
+                 The classical (Milne definition) linear limb darkening coefficient can be found using:
+                 u=(3*gamma)/(2+gamma).
+                 Default is 0.5.
     """
 
     def __init__(self, name='None', camera_filter='I', light_curve=None):
         """ Initialization of the attributes described above."""
+        
         self.name = name
         self.kind = 'Earth'
         self.filter = camera_filter  # Claret2011 convention
@@ -69,18 +70,20 @@ class Telescope(object):
         self.gamma = 0.5
         self.deltas_positions = []
 
-    def compute_parallax(self, event, model):
+    
 
-        para = microlparallax.MLParallaxes(event, model)
-        para.parallax_combination()
-
-    def n_data(self, choice):
-        """ Return the number of data points in the lightcurve."""
+    def n_data(self, choice='Mag'):
+        """ Return the number of data points in the lightcurve.
+        
+        :param choice: ['Flux' or 'Mag'] The unit you want to check data for. Lightcurve_flux and Lightcurve (in mag, initial input can diverge depending on the clean_data() function).        
+        
+        """
 
         if choice == 'Flux':
 
             return len(self.lightcurve_flux[:, 0])
-        else:
+            
+        if choice == 'Mag':
 
             return len(self.lightcurve[:, 0])
 
@@ -89,18 +92,14 @@ class Telescope(object):
         Return the associated gamma linear limb-darkening coefficient associated to the filter,
         the given effective
         temperature and the given surface gravity in log10 cgs.
-
-        Keyword arguments:
-
-        Teff --> The effective temperature of the source in Kelvin.
-        log_g --> The log10 surface gravity in cgs.
-                 WARNING : Two strong assomption are made :
-                 the microturbulent velocity vt is fixed to 2 km/s
-            -    the metallicity is fixed equal to the Sun : metal=0.0
-
-        Return :
-
-        gamma
+        WARNING : Two strong assomption are made :
+                  the microturbulent velocity vt is fixed to 2 km/s
+                  the metallicity is fixed equal to the Sun : metal=0.0
+        :param Teff: The effective temperature of the source in Kelvin.
+        :param log_g: The log10 surface gravity in cgs.
+        :param path: path to Claret table. MODIFY THIS PLEASE!      
+        :return: the microlensing linear limb-darkening coefficient gamma.       
+        
         """
         # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011
         # convention
@@ -131,10 +130,8 @@ class Telescope(object):
         are 10 mag brighter
         or fainter than the lightcurve median or if nan appears in any columns or errobar higher
         than a 1 mag.
-
-        Return :
-
-        the lightcurve without outliers.
+        
+        :return: the microlensing linear limb-darkening coefficient gamma. 
         """
         # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
         precision = 10.0
@@ -167,15 +164,14 @@ class Telescope(object):
 
         return lightcurve
 
-    def lightcurve_in_flux(self, clean):
+    def lightcurve_in_flux(self, clean='Yes'):
         """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
         accordingly.
-        Perform a clean_data call to avoid outliers.
-
-        Return :
-
-        lighhtcurve_flux : the lightcurve in flux.
+        
+        :param clean: ['Yes' or 'No']. Perform or not a clean_data call to avoid outliers.
+        
+        :return : the lightcurve in flux, lightcurve_flux.
         """
         if clean is 'Yes':
 
