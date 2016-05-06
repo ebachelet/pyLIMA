@@ -8,8 +8,9 @@ from __future__ import division
 from datetime import datetime
 from collections import OrderedDict
 
+import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib import cm
+
 import numpy as np
 from astropy.time import Time
 from scipy.stats.distributions import t as student
@@ -39,20 +40,31 @@ def LM_outputs(fit) :
      return outputs
 def MCMC_outputs(fit) :  
     
-     import pdb; pdb.set_trace()
 
      chains = fit.MCMC_chains
      probabilities = fit.MCMC_probabilities
-     CHAINS = np.c_[chains[:,:,0].ravel(),chains[:,:,1].ravel(),chains[:,:,2].ravel(),probabilities.ravel()]
+
+     CHAINS = chains[:,:,0].ravel()
+     for i in xrange(len(fit.model.parameters_boundaries)-1):
+         i += 1
+         CHAINS = np.c_[CHAINS,chains[:,:,i].ravel()]
+     fluxes = MCMC_compute_fs_g(fit, CHAINS)
+     
+     CHAINS = np.c_[CHAINS,fluxes,probabilities.ravel()]
      
      best_proba = np.argmax(CHAINS[:,-1])
      
-     #cut to 6 sigma 
-     index=np.where(CHAINS[:,-1]<CHAINS[best_proba,-1]-36)[0]
+     #cut to 6 sigma for plots
+     index=np.where(CHAINS[:,-1]>CHAINS[best_proba,-1]-36)[0]
      BEST = CHAINS[index]
+     BEST=BEST[BEST[:,-1].argsort(),]
      
-     key_outputs = ['fit_parameters','fit_errors','fit_correlation_matrix','figure_lightcurve']
-     values_outputs = [results,errors,correlation_matrix,figure_lightcurve]
+     figure_lightcurve = MCMC_plot_lightcurves(fit,BEST)
+     figure_distributions = MCMC_plot_parameters_distribution(fit,BEST)
+     
+     outputs=collections.namedtuple('Fit_outputs',[]) 
+     key_outputs = ['chains','figure_lightcurve','figure_distributions']
+     values_outputs = [CHAINS, figure_lightcurve, figure_distributions]
      
      count = 0
      for i in key_outputs :
@@ -62,8 +74,168 @@ def MCMC_outputs(fit) :
      
  
     
-     return 'hi'
- 
+     return outputs
+
+def MCMC_compute_fs_g(fit,CHAINS) :
+    
+    Fluxes=[]
+    for i in CHAINS :
+        
+        fluxes = fit.find_fluxes(i, fit.model)
+        Fluxes.append(fluxes)
+    
+    return np.array(Fluxes)
+
+
+def  MCMC_plot_parameters_distribution(fit,BEST):
+    
+    dimensions = len(fit.model.parameters_boundaries)
+    
+    figure_distributions, axes2 = plt.subplots(dimensions, dimensions)
+    #import pdb; pdb.set_trace()
+
+    count_i = 0
+
+    for i in fit.model.model_dictionnary.keys()[: dimensions] :
+        axes2[count_i,0].set_ylabel(i)
+        axes2[-1,count_i].set_xlabel(i)
+        
+        
+        count_j = 0         
+        for j in fit.model.model_dictionnary.keys()[: dimensions] :
+            
+            
+            axes2[count_i,count_j].ticklabel_format(useOffset=False, style='plain')
+            
+            if count_i!=dimensions-1:
+                
+                plt.setp(axes2[count_i,count_j].get_xticklabels() , visible=False)
+                
+            if count_j!=0 :
+
+                plt.setp(axes2[count_i,count_j].get_yticklabels() , visible=False)
+            
+            if count_i==count_j :
+                
+                axes2[count_i,count_j].hist(BEST[:,fit.model.model_dictionnary[i]], 100)
+            
+            else :
+                
+                if count_j<count_i :
+                
+                    axes2[count_i,count_j].scatter(BEST[:,fit.model.model_dictionnary[j]],BEST[:,fit.model.model_dictionnary[i]],c=BEST[:,-1],edgecolor='None')
+                    
+                else :
+                    axes2[count_i,count_j].axis('off')     
+                
+            count_j += 1  
+            
+        count_i += 1
+        
+        
+   
+    return figure_distributions
+
+def  MCMC_plot_lightcurves(fit,BEST):
+    
+     figure_lightcurves, axes = initialize_plot_figure(fit)  
+
+     MCMC_plot_align_data(fit,BEST[0,len(fit.model.parameters_boundaries):-1], axes[0])
+     
+     
+     index=np.linspace(0,len(BEST)-1,35).astype(int)
+     norm=matplotlib.colors.Normalize(vmin=np.min(BEST[:,-1]),vmax=np.max(BEST[:,-1]))
+     c_m = matplotlib.cm.jet
+
+     s_m = matplotlib.cm.ScalarMappable(cmap=c_m, norm=norm)
+     s_m.set_array([])
+     for i in index :
+         MCMC_plot_model(fit, BEST[i], BEST[i,-1],axes[0], s_m)
+
+     
+     plt.colorbar(s_m,ax=axes[0])
+     axes[0].text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=axes[0].transAxes)
+     axes[0].invert_yaxis()   
+     MCMC_plot_residuals(fit, BEST[0], axes[1])
+     
+     
+     return figure_lightcurves
+
+def MCMC_plot_model(fit, parameters, couleur, ax, s_m) :
+
+
+    min_time = min([min(i.lightcurve[:,0]) for i in fit.event.telescopes])
+    max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
+
+    time = np.arange(min_time, max_time + 100, 0.01)
+    
+    reference_telescope = fit.event.telescopes[0]
+    gamma = reference_telescope.gamma
+    fs_reference = parameters[fit.model.model_dictionnary['fs_'+reference_telescope.name]]
+    g_reference = parameters[fit.model.model_dictionnary['g_'+reference_telescope.name]]
+    
+    ampli = fit.model.magnification(parameters, time, gamma)[0]
+    
+    flux = fs_reference*(ampli+g_reference)
+    mag = 27.4-2.5*np.log10(flux)
+   
+
+    ax.plot(time,mag,color=s_m.to_rgba(couleur), alpha=0.5)
+    
+    
+  
+    
+    
+def MCMC_plot_align_data(fit, fluxes, ax) :
+    
+    reference_telescope = fit.event.telescopes[0].name
+    fs_reference = fluxes[0]
+    g_reference = fluxes[1]
+
+    count = 0
+    for i in fit.event.telescopes :
+        
+        if i.name == reference_telescope :
+            
+            lightcurve = i.lightcurve
+            
+        else :
+             
+            fs_telescope = fluxes[count]
+            g_telescope = fluxes[count+1]
+            
+            lightcurve = align_telescope_lightcurve(i.lightcurve,fs_reference,g_reference,fs_telescope,g_telescope)
+        
+        ax.errorbar(lightcurve[:,0], lightcurve[:,1], yerr=lightcurve[:,2],fmt='.',label=i.name)
+        count += 2        
+    ax.legend(numpoints=1)
+
+
+def MCMC_plot_residuals(fit, parameters, ax):
+    
+   
+
+    for i in fit.event.telescopes :
+        
+        fs_telescope = parameters[fit.model.model_dictionnary['fs_'+i.name]]
+        g_telescope = parameters[fit.model.model_dictionnary['g_'+i.name]]
+        
+        gamma = i.gamma
+        
+        time = i.lightcurve[:,0]
+        mag = i.lightcurve[:,1]
+        flux = 10**((27.4-mag)/2.5)
+        err_mag = i.lightcurve[:,2]
+
+        ampli = fit.model.magnification(parameters, time, gamma)[0]
+        
+        flux_model = fs_telescope*(ampli+g_telescope)
+        
+        residuals = 2.5*np.log10(flux_model/flux)
+        ax.errorbar(time, residuals, yerr=err_mag,fmt='.')
+    ax.set_ylim([-0.1,0.1])
+
+
 def LM_parameters_result(fit) :
     
     
@@ -100,9 +272,9 @@ def cov2corr(A):
 def LM_plot_lightcurves(fit) :
     
     figure,axes = initialize_plot_figure(fit)
-    plot_align_data(fit,axes[0])
-    plot_model(fit,axes[0])
-    plot_residuals(fit,axes[1])
+    LM_plot_align_data(fit,axes[0])
+    LM_plot_model(fit,axes[0])
+    LM_plot_residuals(fit,axes[1])
     
     return figure
 
@@ -134,7 +306,7 @@ def initialize_plot_parameters(fit):
     return figure, axes  
     
     
-def plot_model(fit, ax) :
+def LM_plot_model(fit, ax) :
 
     min_time = min([min(i.lightcurve[:,0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
@@ -156,7 +328,7 @@ def plot_model(fit, ax) :
     ax.invert_yaxis()
     ax.text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=ax.transAxes)
     
-def plot_residuals(fit,ax):
+def LM_plot_residuals(fit,ax):
     
    
 
@@ -185,7 +357,7 @@ def plot_residuals(fit,ax):
         
     
     
-def plot_align_data(fit,ax) :
+def LM_plot_align_data(fit,ax) :
     
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope]]

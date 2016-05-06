@@ -58,7 +58,7 @@ def main(command_line):
     #for j in xrange(10000):
         #j=j
         #event_name='bul-74'
-        name='Lightcurve_'+str(5931)
+        name='Lightcurve_'+str(5930)
         ##name = event_name[:-10]
         #name = 'OB150034'
         #name=event_name
@@ -261,7 +261,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='PSPL')
+    parser.add_argument('-m', '--model', default='FSPL')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
     #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Short_tE/Lightcurves/')
     parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')

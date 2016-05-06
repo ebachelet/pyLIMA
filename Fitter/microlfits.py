@@ -475,11 +475,12 @@ class MLFits(object):
                             p1.append(res[j]+np.random.uniform(-5,5))
                         if j==1:
                             
-                            p1.append(res[j]*(np.random.uniform(-3,3)))
+                            p1.append(res[j]*(np.random.uniform(0,3)))
                         if j==2:
                            
-                            p1.append(res[j]*(np.random.uniform(-3,3)))
-
+                            p1.append(res[j]*(np.random.uniform(0,3)))
+                        if j==3:
+                            p1.append(res[j]*(np.random.uniform(0,1)))
                 pp0.append(np.array(p1))
                 i+=1
            
@@ -513,7 +514,7 @@ class MLFits(object):
         
         
     def lmarquardt(self):
-        """Method 0 of solver. This is based on the Levenberg-Marquardt algorithm:
+        """Method LM of solver. This is based on the Levenberg-Marquardt algorithm:
 
         "A Method for the Solution of Certain Problems in Least Squares"
         Levenberg, K. Quart. Appl. Math. 2, 1944, p. 164-168
@@ -641,9 +642,7 @@ class MLFits(object):
 
             fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
             fake_params = np.delete(parameters, self.model.model_dictionnary['rho'])
-            to = parameters[0]
-            uo = parameters[1]
-            tE = parameters[2]
+            
             for i in self.event.telescopes:
 
                 lightcurve = i.lightcurve_flux
@@ -653,7 +652,7 @@ class MLFits(object):
 
                
 
-                ampli = fake_model.magnification(parameters, Time, gamma)
+                ampli = fake_model.magnification(fake_params, Time, gamma)
                 dAdU = (-8) / (ampli[1] ** 2 * (ampli[1] ** 2 + 4) ** (1.5))
 
                 Z = ampli[1] / parameters[self.model.model_dictionnary['rho']]
