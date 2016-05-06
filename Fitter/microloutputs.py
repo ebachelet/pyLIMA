@@ -91,7 +91,7 @@ def  MCMC_plot_parameters_distribution(fit,BEST):
     
     dimensions = len(fit.model.parameters_boundaries)
     
-    figure_distributions, axes2 = plt.subplots(dimensions, dimensions)
+    figure_distributions, axes2 = plt.subplots(dimensions, dimensions,sharex='col')
     #import pdb; pdb.set_trace()
 
     count_i = 0
@@ -111,7 +111,7 @@ def  MCMC_plot_parameters_distribution(fit,BEST):
                 
                 plt.setp(axes2[count_i,count_j].get_xticklabels() , visible=False)
                 
-            if count_j!=0 :
+            if (count_j!=0) and (count_j!=count_i) :
 
                 plt.setp(axes2[count_i,count_j].get_yticklabels() , visible=False)
             

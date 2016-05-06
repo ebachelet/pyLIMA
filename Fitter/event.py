@@ -253,8 +253,7 @@ class Event(object):
         telescopes = []
         self.lightcurves_in_flux('Yes')
         for i in self.telescopes:
-            
-
+  
             if len(i.deltas_positions)==0:
                 telescopes.append(i)
 
