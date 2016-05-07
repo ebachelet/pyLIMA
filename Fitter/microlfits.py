@@ -96,9 +96,9 @@ class MLFits(object):
 
                 print 'We have to change method, this fit was unsuccessfull. We decided to switch ' \
                       '' \
-                      'method to 1'
+                      'method to "DE"'
 
-                self.method = 'LM'
+                self.method = 'DE'
                 self.mlfit(self.model, self.method)
 
            else:
@@ -694,7 +694,7 @@ class MLFits(object):
     def chichi_differential(self, parameters):
         """Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit. """
         errors = np.array([])
-
+        
         for i in self.event.telescopes:
             lightcurve = i.lightcurve_flux
             Time = lightcurve[:, 0]
@@ -768,6 +768,7 @@ class MLFits(object):
             gamma = i.gamma
 
             ampli = model.magnification(parameters, Time, gamma)[0]
+           
             fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
             if (fs < 0) :
 

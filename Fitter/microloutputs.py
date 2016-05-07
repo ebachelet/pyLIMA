@@ -331,7 +331,7 @@ def LM_plot_model(fit, ax) :
     min_time = min([min(i.lightcurve[:,0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
 
-    time = np.arange(min_time, max_time + 100, 0.01)
+    time = np.arange(min_time, max_time + 100, 0.001)
     
     reference_telescope = fit.event.telescopes[0]
     gamma = reference_telescope.gamma
@@ -408,15 +408,16 @@ def align_telescope_lightcurve(lightcurve_telescope_mag,fs_reference,g_reference
     mag = lightcurve_telescope_mag[:,1]
     err_mag = lightcurve_telescope_mag[:,2]
     
-    flux = 10**((27.4-lightcurve_telescope_mag[:,1])/2.5)
+    flux = 10**((27.4-mag)/2.5)
     
     flux_normalised = (flux-(fs_telescope*g_telescope))/(fs_telescope)*fs_reference+fs_reference*g_reference
     
     mag_normalised = 27.4-2.5*np.log10(flux_normalised)
     
-    lightcurve_normalised = [time,mag_normalised]
+
+    lightcurve_normalised = [time,mag_normalised,err_mag]
     
-    lightcurve_mag_normalised = np.array(lightcurve_normalised)
+    lightcurve_mag_normalised = np.array(lightcurve_normalised).T
     
     return lightcurve_mag_normalised
 

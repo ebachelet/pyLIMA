@@ -21,14 +21,12 @@ import numpy as np
 import event
 import telescopes
 import microlmodels
-# location = 'Space'
-# model = 'PSPL'
-second_order = [['None', 2457027.16667], ['None', 0], ['None', 0], 'None']
+
 
 
 def main(command_line):
    
-    events_names=[event_name for event_name in os.listdir(command_line.input_directory) if '.dat'  in event_name]
+    events_names=[event_name for event_name in os.listdir(command_line.input_directory) if ('.dat'  in event_name) and ('Follow' not in event_name)]
    
     events = []
     start = time.time()
@@ -38,13 +36,13 @@ def main(command_line):
     
     for event_name in events_names[0:]:
 
-        name='Lightcurve_'+str(5930)
+        name='Lightcurve_'+str(8366)+'_'
       
         current_event = event.Event()
         current_event.name = name
         current_event.ra = 269.39166666666665 
         current_event.dec = -29.22083333333333
-        event_telescopes = [i for i in events_names if name  in i]
+        event_telescopes = [i for i in os.listdir(command_line.input_directory) if name  in i]
         #import pdb; pdb.set_trace()
 
         count=0
@@ -59,27 +57,23 @@ def main(command_line):
                    lightcurve[:,0] = lightcurve[:,0]-2450000
             except :
                 pass
-            telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter=event_telescope[-5], light_curve=lightcurve)
+            telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter='I', light_curve=lightcurve)
             telescope.gamma=0.5
-            if 'TG' in event_telescope :
-                telescope.gamma = 0.22
-                  
-            else :
-                pass
+            
             current_event.telescopes.append(telescope)
             count+=1
            
         print 'Start;', current_event.name
        
-
+        current_event.find_survey('Survey')
+   
         current_event.check_event()
        
-        Model = microlmodels.MLModels(current_event, command_line.model, second_order)
+        Model = microlmodels.MLModels(current_event, command_line.model, command_line.second_order)
         
         current_event.fit(Model,'MCMC')
         import pdb; pdb.set_trace()
 
-       
         current_event.fits[0].produce_outputs()
        
         print time.time()-start
@@ -99,17 +93,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='FSPL')
-    #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Artemis_2015/PSPL_2015/ProcessedData/2015/')
-    #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Short_tE/Lightcurves/')
-    parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_Ground/Lightcurves/')
-    #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Qatar/SuperComputer/OB13446/RawData/DATA/')
-    #parser.add_argument('-i', '--input_directory', default='/home/ebachelet/Desktop/nethome/Desktop/RSTREET_PLANET/Early/')
-    #parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/OGLE_2000/')
-    #parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/MOA-2007-400/')
+    parser.add_argument('-m', '--model', default='PSPL')
+    parser.add_argument('-so', '--second_order', default=[['None', 0], ['None', 0], ['None', 0], 'None'])
+    parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_FSPL/Lightcurves/') 
     parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/FSPL/')
-   # parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/RSTREET_PLANET/Fits_Early/')
-
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()
 
