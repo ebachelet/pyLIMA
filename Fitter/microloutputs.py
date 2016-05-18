@@ -75,15 +75,19 @@ def MCMC_outputs(fit) :
     index=np.where(CHAINS[:,-1]>CHAINS[best_proba,-1]-36)[0]
     BEST = CHAINS[index]
     BEST=BEST[BEST[:,-1].argsort(),]
-     
+    
+    covariance_matrix = MCMC_covariance(CHAINS)
+    correlation_matrix = cov2corr(covariance_matrix)
+    import pdb; pdb.set_trace()
+
     figure_lightcurve = MCMC_plot_lightcurves(fit,BEST)
     figure_distributions = MCMC_plot_parameters_distribution(fit,BEST)
     
     
-    key_outputs = ['MCMC_chains','figure_lightcurve','figure_distributions']
+    key_outputs = ['MCMC_chains','MCMC_correlations','figure_lightcurve','figure_distributions']
     outputs=collections.namedtuple('Fit_outputs', key_outputs) 
    
-    values_outputs = [CHAINS, figure_lightcurve, figure_distributions]
+    values_outputs = [CHAINS, correlation_matrix, figure_lightcurve, figure_distributions]
     
     count = 0
     for i in key_outputs :
@@ -267,7 +271,25 @@ def LM_parameters_result(fit) :
     
     setattr(parameters,'chichi',fit.fit_results[-1])
     return parameters
+
+def MCMC_covariance(chains):
     
+    esperances = []   
+    for i in xrange(chains.shape[1]-1):
+        
+        esperances.append(chains[:,i]-np.median(chains[:,i]))   
+       
+    cov = np.zeros((chains.shape[1]-1,chains.shape[1]-1))
+  
+   
+    for i in xrange(chains.shape[1]-1):
+         for j in np.arange(i,chains.shape[1]-1):
+
+            cov[i,j] = 1/(len(chains)-1)*np.sum(esperances[i]*esperances[j])
+            cov[j,i] = 1/(len(chains)-1)*np.sum(esperances[i]*esperances[j])
+
+
+    return cov
 def LM_fit_errors(fit) :
     
     keys = ['err_'+i for i in fit.model.model_dictionnary.keys() ]

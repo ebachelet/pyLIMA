@@ -71,7 +71,7 @@ def main(command_line):
        
         Model = microlmodels.MLModels(current_event, command_line.model, command_line.second_order)
         
-        current_event.fit(Model,'MCMC')
+        current_event.fit(Model,'LM')
         import pdb; pdb.set_trace()
 
         current_event.fits[0].produce_outputs()
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='PSPL')
+    parser.add_argument('-m', '--model', default='FSPL')
     parser.add_argument('-so', '--second_order', default=[['None', 0], ['None', 0], ['None', 0], 'None'])
     parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_FSPL/Lightcurves/') 
     parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/FSPL/')
