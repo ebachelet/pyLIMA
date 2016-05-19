@@ -48,7 +48,7 @@ class MLModels(object):
     
     """
     ######## MLModels module ########
-    @author: Etienne Bachelet
+  
 
 
     Keyword arguments:

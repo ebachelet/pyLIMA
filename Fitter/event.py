@@ -70,16 +70,12 @@ class Event(object):
             
             More details in the microlfits module
 
-        
-
-        Return :
-
-            A microlfits object is added in the event.fits list. For example, if you request two fits,
-            you will obtain :
+        A microlfits object is added in the event.fits list. For example, if you request two fits,
+        you will obtain :
             
-            event.fits=[fit1,fit2]
+        event.fits=[fit1,fit2]
 
-            More details in the microlfits module.
+        More details in the microlfits module.
 
         """
         available_kind = ['Microlensing']
@@ -176,13 +172,8 @@ class Event(object):
         """ Transform for all telescope ingested the input magnitude lightcurve in flux unit.
             
 
-               :param choice : choice to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'
-
-                More details in the telescope module
-                
-            Return :
-            
-                telescope.lightcurve_flux : the lightcurve in flux
+            :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'. More details in the telescope module
+            :return:  the lightcurve in flux
         """
         for i in self.telescopes:
 

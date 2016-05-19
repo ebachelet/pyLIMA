@@ -6,7 +6,10 @@
 Welcome to pyLIMA's documentation!
 ==================================
 
-Contents:
+.. figure:: _static/OB2005390.jpg
+    :align: center
+
+(you can cheat `here <http://adsabs.harvard.edu/abs/2006Natur.439..437B>`_)
 
 .. toctree::
    :maxdepth: 2

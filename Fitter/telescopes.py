@@ -87,9 +87,11 @@ class Telescope(object):
         Return the associated gamma linear limb-darkening coefficient associated to the filter,
         the given effective
         temperature and the given surface gravity in log10 cgs.
-        WARNING : Two strong assomption are made :
-                  the microturbulent velocity vt is fixed to 2 km/s
-                  the metallicity is fixed equal to the Sun : metal=0.0
+        
+        WARNING. Two strong assomption are made :
+                  - the microturbulent velocity vt is fixed to 2 km/s
+                  
+                  - the metallicity is fixed equal to the Sun : metal=0.0
         :param Teff: The effective temperature of the source in Kelvin.
         :param log_g: The log10 surface gravity in cgs.
         :param path: path to Claret table. MODIFY THIS PLEASE!      
