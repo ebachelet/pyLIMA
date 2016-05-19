@@ -14,9 +14,8 @@ import microlparallax
 
 class Telescope(object):
     """
+    ######## Telescope module ########
     
-    @author : ebachelet
-
     This module create a telescope object with the informations (attributes) needed for the fits.
 
 
@@ -30,7 +29,7 @@ class Telescope(object):
                Johnson_Cousins I filter
                and 'i'' is the SDSS-i' Sloan filter.
 
-    :param light_curve:  List of time, magnitude, error in magnitude covention. Default is an empty list.
+    :param light_curve:  list of time, magnitude, error in magnitude covention. Default is an empty list.
                    WARNING : Have to exactly follow this convention.
 
 
@@ -51,22 +50,18 @@ class Telescope(object):
                  Default is 0.5.
     """
 
-    def __init__(self, name='None', camera_filter='I', light_curve=None):
+    def __init__(self, name='NDG', camera_filter='I', light_curve=[]):
         """ Initialization of the attributes described above."""
         
-        self.name = name
-        self.kind = 'Earth'
+        self.name = name      
         self.filter = camera_filter  # Claret2011 convention
-
         self.lightcurve = light_curve
-        if self.lightcurve is None:
-            self.lightcurve = np.array()
-
+        
+        self.kind = 'Earth'
         self.lightcurve_flux = []
-        self.lightcurve_flux_aligned = []
         self.altitude = 0.0
-        self.longitude = 0.0
-        self.latitude = 0.0
+        self.longitude = 0.57
+        self.latitude = 49.49
         self.gamma = 0.5
         self.deltas_positions = []
 
@@ -122,7 +117,7 @@ class Telescope(object):
         uu = claret_reduce[coeff_index, -1]
 
         self.gamma = 2 * uu / (3 - uu)
-        self.gamma = 0.5
+       
 
     def clean_data(self):
         """
@@ -133,26 +128,13 @@ class Telescope(object):
         
         :return: the microlensing linear limb-darkening coefficient gamma. 
         """
-        # self.lightcurve=self.lightcurve[~np.isnan(self.lightcurve).any(axis=1)]
-        precision = 10.0
-        # index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
-        #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) > 5) | (
-        #                 np.abs(self.lightcurve[:, 2]) > precision))[
-        #    0]
-        index = np.where((np.isnan(self.lightcurve).any(axis=1)) | (
-            np.abs(self.lightcurve[:, 2]) > precision))[
-            0]
-        # for i in index:
-        # print self.name + ' point ' + str(self.lightcurve[i]) + ' is consider as outlier and
-        # will be ' + \
-        # 'rejected for the fit'
-        # index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
-        #    np.abs(self.lightcurve[:, 1] - np.median(self.lightcurve[:, 1])) < 5) & (
-        #                 np.abs(self.lightcurve[:, 2]) < precision))[
-        #    0]
+        
+        precision = 1.0
+     
+        
+      
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
-            np.abs(self.lightcurve[:, 2]) < precision))[
-            0]
+            np.abs(self.lightcurve[:, 2]) < precision))[0]
 
         if len(index) > 2:
 

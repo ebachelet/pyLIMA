@@ -17,26 +17,28 @@ import microlparallax
 class Event(object):
     """
     ######## Event module ########
-    @author: Etienne Bachelet
-
+    
     This module create an event class with the informations (attributes) needed for the fits.
 
-    Keyword arguments:
+    Attributes :
 
-    kind --> type of event. In general, should be 'Microlensing' (default)
-    name --> name of the event. Should be a string. Default is 'Sagittarius A*'
-    ra --> Right ascension of the event (J2000). Should be a float in degree between 0.0 and
-    360.0. Default is
-           ra of Sagittarius A == 266.416792 from Baker & Sramek 1999ApJ...524..805B.
-    dec --> Declination of the event (J2000). Should be a float in degree between -90 and 90.
-    Default is
-            dec of Sagittarius A == -29.007806 from Baker & Sramek 1999ApJ...524..805B.
-    Teff --> Effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K.
-    logg --> Surface gravity in log10 cgs unit. Should be a float. Default is 4.5.
-    telescopes --> List of telescopes names (strings). Default is an empty list. Have to be fill
-    with some
-                   telescopes class instances.
-
+         kind : type of event. In general, should be 'Microlensing' (default)
+         
+         name : name of the event. Should be a string. Default is 'Sagittarius A*'
+         
+         ra : right ascension of the event (J2000). Should be a float in degree between 0.0 and 360.0. Default is ra of Sagittarius A = 266.416792 from Baker & Sramek 1999ApJ...524..805B
+    
+         dec : declination of the event (J2000). Should be a float in degree between -90 and 90. Default is dec of Sagittarius A = -29.007806 from Baker & Sramek 1999ApJ...524..805B
+    
+         Teff : effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K
+         
+         logg : surface gravity in log10 cgs unit. Should be a float. Default is 4.5
+         
+         telescopes : list of telescopes names (strings). Default is an empty list. Have to be fill with some telescopes class instances.
+         
+         survey : the reference telescope. Has to be a string, default is 'None'.
+         
+         fits : list of microlfits objects.
     """
 
     def __init__(self):
@@ -50,23 +52,21 @@ class Event(object):
         self.telescopes = []
         self.survey = 'None'
         self.fits = []
-        self.outputs = []
+        
 
     def fit(self, Model, method):
         """Function to fit the event with a Model and a method.
+        
 
-        Keyword arguments:
+        :param Model: the Model you want to fit. More details in the microlfits module
 
-        Model --> The Model you want to fit.
-
-            More details in the microlfits module
-
-        method --> The fitting method you want to use. Has to be a string in the
-        available_methods parameter:.
-
-            'LM' --> Levenberg-Marquardt algorithm.
-            'DE' --> Differential Evolution algorithm.
-            'MCMC' --> Monte-Carlo Markov Chain algorithm.
+        :param method: the fitting method you want to use. Has to be a string in the available_methods parameter:
+        
+            'LM' : Levenberg-Marquardt algorithm
+            
+            'DE' : Differential Evolution algorithm
+            
+            'MCMC' : Monte-Carlo Markov Chain algorithm
             
             More details in the microlfits module
 
@@ -74,7 +74,7 @@ class Event(object):
 
         Return :
 
-            A fit class is added in the event.fits list. For example, if you request two fits,
+            A microlfits object is added in the event.fits list. For example, if you request two fits,
             you will obtain :
             
             event.fits=[fit1,fit2]
@@ -101,8 +101,8 @@ class Event(object):
         self.fits.append(fit)
 
     def telescopes_names(self):
-        
-        """Function to list the telescope names for an event. """
+        """Print the the telescope's names contain in the event. 
+        """
         print [self.telescopes[i].name for i in xrange(len(self.telescopes))]
 
     def check_event(self):
@@ -140,6 +140,7 @@ class Event(object):
         """Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
         """
+           
 
         self.survey = choice or self.telescopes[0].name
 
@@ -150,7 +151,7 @@ class Event(object):
             sorting = np.arange(0, len(self.telescopes))
             sorting = np.delete(sorting, index)
             sorting = np.insert(sorting, 0, index)
-            self.telescopes = np.array(self.telescopes)[sorting.tolist()].tolist()
+            self.telescopes = [self.telescopes[i] for i in sorting]
 
         else:
 
@@ -174,10 +175,8 @@ class Event(object):
     def lightcurves_in_flux(self, choice='Yes'):
         """ Transform for all telescope ingested the input magnitude lightcurve in flux unit.
             
-            Keyword arguments:
 
-               choice --> choice to clean your lightcurve or not. Has to be
-               a string 'Yes' or 'No'. Defaul is 'Yes'
+               :param choice : choice to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'
 
                 More details in the telescope module
                 

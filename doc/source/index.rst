@@ -1,8 +1,7 @@
-.. pyLIMA documentation master file, created by
-   sphinx-quickstart on Fri Apr 29 14:12:38 2016.
+.. Fitter documentation master file, created by
+   sphinx-quickstart on Wed May 18 18:28:58 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-
 
 Welcome to pyLIMA's documentation!
 ==================================
@@ -10,13 +9,12 @@ Welcome to pyLIMA's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth:2
-  
-
+   :maxdepth: 4
 
    installation
-   example
-   modules	
+   example 
+   Fitter
+
 
 Indices and tables
 ==================

@@ -19,7 +19,7 @@ import microlparallax
 try:
 
     # yoo_table = np.loadtxt('b0b1.dat')
-    yoo_table = np.loadtxt('Yoo_B0B1_3.dat')
+    yoo_table = np.loadtxt('/nethome/Desktop/Microlensing/OpenSourceProject/GitHub/Fitter/Yoo_B0B1_3.dat')
 except:
 
     print 'ERROR : No b0b1.dat file found, please check!'
