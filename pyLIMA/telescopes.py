@@ -82,7 +82,7 @@ class Telescope(object):
 
             return len(self.lightcurve[:, 0])
 
-    def find_gamma(self, Teff, log_g, path):
+    def find_gamma(self, Teff, log_g, path='./data/'):
         """
         Return the associated gamma linear limb-darkening coefficient associated to the filter,
         the given effective

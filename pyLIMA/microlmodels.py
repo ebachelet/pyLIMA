@@ -10,16 +10,20 @@ from collections import OrderedDict
 
 import numpy as np
 from scipy import interpolate, misc
+import os.path 
 
 import microlmagnification
 import microlparallax
+
+full_path = os.path.abspath(__file__)
+directory, filename = os.path.split(full_path)
 
 
 ### THIS NEED TO BE SORTED ####
 try:
 
     # yoo_table = np.loadtxt('b0b1.dat')
-    yoo_table = np.loadtxt('/nethome/Desktop/Microlensing/OpenSourceProject/GitHub/Fitter/Yoo_B0B1_3.dat')
+    yoo_table = np.loadtxt(os.path.join(directory, 'data/Yoo_B0B1.dat'))
 except:
 
     print 'ERROR : No b0b1.dat file found, please check!'
