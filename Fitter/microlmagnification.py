@@ -8,12 +8,16 @@ Created on Tue Dec  8 14:37:33 2015
 from __future__ import division
 import numpy as np
 
+
+
+
 def amplification_PSPL(tau, uo):
     """ The Pacziynski magnification """
     
     U = (tau ** 2 + uo ** 2) ** 0.5
     U2 = U ** 2
     ampli = (U2 + 2) / (U * (U2 + 4) ** 0.5)
+    
     
     return ampli, U
 
@@ -26,7 +30,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     ampli = (U2 + 2) / (U * (U2 + 4) ** 0.5)
    
     Z = U / rho
-        
+    
     ampli_fspl = np.zeros(len(ampli))
 
     ind = np.where((Z > yoo_table[0][-1]))[0]
@@ -34,6 +38,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
 
     ind = np.where((Z < yoo_table[0][0]))[0]
     ampli_fspl[ind] = ampli[ind] * (2 * Z[ind] - gamma * (2 - 3 * np.pi / 4) * Z[ind])
+   
 
     ind = np.where((Z <= yoo_table[0][-1]) & (Z >= yoo_table[0][0]))[0]
     ampli_fspl[ind] = ampli[ind] * (yoo_table[1](Z[ind]) - gamma * yoo_table[2](Z[ind]))

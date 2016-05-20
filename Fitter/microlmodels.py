@@ -42,7 +42,7 @@ dB1 = np.append((2.0 - 3 * np.pi / 4), dB1)
 dB1 = np.concatenate([dB1, [dB1[-1]]])
 interpol_db0 = interpolate.interp1d(zz, dB0, kind='linear')
 interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
-
+yoo_table = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
 
 class MLModels(object):
     
@@ -154,7 +154,7 @@ class MLModels(object):
         self.orbital_motion_model = second_order[2]
         self.source_spots_model = second_order[3]
 
-        self.yoo_table = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
+        self.yoo_table = yoo_table
         self.define_parameters()
 
     def f_derivative(x, function):
