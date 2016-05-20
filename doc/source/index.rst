@@ -16,7 +16,7 @@ Welcome to pyLIMA's documentation!
 
    Installation
    Example
-   Fitter
+   pyLIMA
 
 
 
