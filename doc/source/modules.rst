@@ -1,4 +1,4 @@
-pyLIMA
+GitHub
 ======
 
 .. toctree::
