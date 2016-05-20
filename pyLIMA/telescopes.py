@@ -50,12 +50,19 @@ class Telescope(object):
                  Default is 0.5.
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve=[]):
+    def __init__(self, name='NDG', camera_filter='I', light_curve=None):
         """ Initialization of the attributes described above."""
         
         self.name = name      
         self.filter = camera_filter  # Claret2011 convention
-        self.lightcurve = light_curve
+        
+        if light_curve is None :
+                
+            self.lightcurve = []
+                
+        else :
+        
+            self.lightcurve = light_curve 
         
         self.kind = 'Earth'
         self.lightcurve_flux = []

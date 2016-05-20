@@ -5,9 +5,10 @@ Created on Wed May 18 15:25:12 2016
 @author: ebachelet
 """
 import numpy as np
+import os.path 
 
 
-import telescopes
+from pyLIMA import telescopes
 
 
 def test_init():
@@ -45,20 +46,22 @@ def test_init():
     assert telescope2.latitude == 35.0
     assert telescope2.gamma == 0.6
     
-def test_clean_data():
+def test_clean_data_already_clean():
     
      telescope = telescopes.Telescope(light_curve=np.array([[0,1,0.1],[3,4,0.1],[5,6,0.1]]))
      
-     assert telescope.name == 'NDG'
-     assert telescope.filter == 'I'
      
      clean_lightcurve = telescope.clean_data()
      assert np.allclose(clean_lightcurve,np.array([[0,1,0.1],[3,4,0.1],[5,6,0.1]]))
+
+def test_clean_data_not_clean():
      
      telescope = telescopes.Telescope(light_curve=np.array([[0,1,0.1],[3,np.nan,0.1],[5,6,0.1],[7,np.nan,np.nan],[8,1,27.0],[9,2,0.03]]))  
      clean_lightcurve = telescope.clean_data()
      assert np.allclose(clean_lightcurve,np.array([[0,1,0.1],[5,6,0.1],[9,2,0.03]]))
-        
+
+def test_clean_data_not_clean_but_2_points():   
+    
      telescope = telescopes.Telescope(light_curve=np.array([[0,1,0.1],[2,3,-28.0]]))
      clean_lightcurve = telescope.clean_data()
      assert np.alltrue(clean_lightcurve==np.array([[0,1,0.1],[2,3,-28.0]]))
@@ -76,9 +79,10 @@ def test_lightcurve_in_flux():
 def test_find_gamma():
     
     telescope = telescopes.Telescope(camera_filter="z'")
-    path = '/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/'
+    full_path = os.path.abspath(__file__)
+    directory, filename = os.path.split(full_path)
 
-    telescope.find_gamma(32000.0,4.5, path)
+    telescope.find_gamma(32000.0,4.5, os.path.join(directory, '../data/'))
     EPSILON = 0.001
 
     assert np.abs(telescope.gamma-0.127056)<=EPSILON
