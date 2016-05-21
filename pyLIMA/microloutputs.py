@@ -78,7 +78,7 @@ def MCMC_outputs(fit) :
     
     covariance_matrix = MCMC_covariance(CHAINS)
     correlation_matrix = cov2corr(covariance_matrix)
-    import pdb; pdb.set_trace()
+    
 
     figure_lightcurve = MCMC_plot_lightcurves(fit,BEST)
     figure_distributions = MCMC_plot_parameters_distribution(fit,BEST)

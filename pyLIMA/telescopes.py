@@ -64,7 +64,7 @@ class Telescope(object):
         
             self.lightcurve = light_curve 
         
-        self.kind = 'Earth'
+        self.location = 'Earth'
         self.lightcurve_flux = []
         self.altitude = 0.0
         self.longitude = 0.57
