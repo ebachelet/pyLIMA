@@ -36,7 +36,7 @@ def main(command_line):
     
     for event_name in events_names[0:]:
 
-        name='Lightcurve_'+str(8366)+'_'
+        name='Lightcurve_'+str(19)+'_'
       
         current_event = event.Event()
         current_event.name = name
@@ -71,7 +71,7 @@ def main(command_line):
        
         Model = microlmodels.MLModels(current_event, command_line.model, command_line.second_order)
         
-        current_event.fit(Model,'MCMC')
+        current_event.fit(Model,'LM')
         import pdb; pdb.set_trace()
 
         current_event.fits[0].produce_outputs()

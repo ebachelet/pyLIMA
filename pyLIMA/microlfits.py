@@ -361,7 +361,7 @@ class MLFits(object):
                                    recombination=0.7,polish='None')
         res=AA['x']
         ndim = len(res)
-        nwalkers = 300
+        nwalkers = 100*ndim
         pp0 = []
 
         i=0
@@ -371,20 +371,23 @@ class MLFits(object):
 
                 if j==0:
                     
-                    p1.append(res[j]+np.random.uniform(-5,5))
+                    p1.append(res[j]+np.random.uniform(-1,1))
                 if j==1:
                     
-                    p1.append(res[j]*(np.random.uniform(0,3)))
+                    p1.append(res[j]*(np.random.uniform(0.1,3)))
                 if j==2:
             
-                    p1.append(res[j]*(np.random.uniform(0,3)))
+                    p1.append(res[j]*(np.random.uniform(0.1,3)))
                 
                 if j==3:
                     
-                    p1.append(res[j]*(np.random.uniform(0,1)))
+                    p1.append(res[j]*(np.random.uniform(0.1,3)))
 
-            pp0.append(np.array(p1))
-            i+=1
+            chichi = self.chichi_MCMC(p1)
+            if chichi != -np.inf :
+                
+                pp0.append(np.array(p1))
+                i+=1
            
      
 
@@ -410,7 +413,7 @@ class MLFits(object):
         AA = differential_evolution(self.chichi_differential,
                                     bounds=self.model.parameters_boundaries,
                                     mutation=(0.5, 1.5), popsize=20, tol=0.000001,
-                                    recombination=0.6, polish='True', disp=True)
+                                    recombination=0.6, polish='True', disp=False)
         
         self.guess = AA['x'].tolist() + self.find_fluxes(AA['x'].tolist(), self.model)
 
@@ -724,7 +727,6 @@ class MLFits(object):
         errors = np.array([])
        
 
-       
         
         for i in self.event.telescopes:
 
