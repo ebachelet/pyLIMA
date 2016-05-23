@@ -146,17 +146,16 @@ class MLModels(object):
              """
              
              
-    def __init__(self, event, model='PSPL',
-                 second_order=[['None', 0.0], ['None', 0.0], ['None', 0.0], 'None']):
+    def __init__(self, event, model='PSPL', parallax = ['None', 0.0], xallarap = ['None', 0.0], orbital_motion = ['None', 0.0],
+                 source_spots = 'None'):
         """ Initialization of the attributes described above. """
 
         self.event = event
         self.paczynski_model = model
-        self.second_order = second_order
-        self.parallax_model = second_order[0]
-        self.xallarap_model = second_order[1]
-        self.orbital_motion_model = second_order[2]
-        self.source_spots_model = second_order[3]
+        self.parallax_model = parallax
+        self.xallarap_model = xallarap
+        self.orbital_motion_model = orbital_motion
+        self.source_spots_model =  source_spots
 
         self.yoo_table = yoo_table
         self.define_parameters()
@@ -214,7 +213,7 @@ class MLModels(object):
         model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
 
         model_source_spots_boundaries = {'None': []}
-
+       
         self.parameters_boundaries = model_paczynski_boundaries[self.paczynski_model] + \
                                      model_parallax_boundaries[
                                          self.parallax_model[0]] + model_xallarap_boundaries[

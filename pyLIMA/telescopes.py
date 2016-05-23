@@ -69,7 +69,7 @@ class Telescope(object):
         self.altitude = 0.0
         self.longitude = 0.57
         self.latitude = 49.49
-        self.gamma = 0.0
+        self.gamma = 0.0 # This mean you will fit uniform source brightness
         self.deltas_positions = []
 
     

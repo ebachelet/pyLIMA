@@ -36,7 +36,7 @@ def main(command_line):
     
     for event_name in events_names[0:]:
 
-        name='Lightcurve_'+str(19)+'_'
+        name='Lightcurve_'+str(7043)+'_'
       
         current_event = event.Event()
         current_event.name = name
@@ -69,7 +69,7 @@ def main(command_line):
    
         current_event.check_event()
        
-        Model = microlmodels.MLModels(current_event, command_line.model, command_line.second_order)
+        Model = microlmodels.MLModels(current_event, command_line.model)
         
         current_event.fit(Model,'LM')
         import pdb; pdb.set_trace()
@@ -94,7 +94,6 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='FSPL')
-    parser.add_argument('-so', '--second_order', default=[['None', 0], ['None', 0], ['None', 0], 'None'])
     parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_FSPL/Lightcurves/') 
     parser.add_argument('-o', '--output_directory', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')

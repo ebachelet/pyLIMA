@@ -311,9 +311,8 @@ class MLFits(object):
         if tE < 0.1:
 
             tE = 20.0
-            
-        fake_second_order = [['None', 0], ['None', 0], ['None', 0], 'None']
-        fake_model = microlmodels.MLModels(self.event, 'PSPL', fake_second_order)
+      
+        fake_model = microlmodels.MLModels(self.event, 'PSPL')
 
         #import pdb; pdb.set_trace()
         fluxes = self.find_fluxes([to, uo, tE], fake_model)
@@ -550,7 +549,7 @@ class MLFits(object):
             dresdfs = np.array([])
             dresdeps = np.array([])
 
-            fake_model = microlmodels.MLModels(self.event, 'PSPL', self.model.second_order)
+            fake_model = microlmodels.MLModels(self.event, 'PSPL')
             fake_params = np.delete(parameters, self.model.model_dictionnary['rho'])
             
             for i in self.event.telescopes:
