@@ -22,3 +22,4 @@ def flux_to_magnitude(flux):
     mag = magnitude_constant-2.5*np.log10(flux)
     
     return mag
+    

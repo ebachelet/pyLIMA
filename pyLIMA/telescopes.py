@@ -50,7 +50,7 @@ class Telescope(object):
                  Default is 0.5.
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve=None):
+    def __init__(self, name='NDG', camera_filter='I', light_curve=None, light_curve_dictionnary = {'time': 0, 'mag' : 1, 'err_mag' : 2 }):
         """ Initialization of the attributes described above."""
         
         self.name = name      
@@ -63,7 +63,8 @@ class Telescope(object):
         else :
         
             self.lightcurve = light_curve 
-        
+            
+        self.lightcurve_dictionnary = light_curve_dictionnary
         self.location = 'Earth'
         self.lightcurve_flux = []
         self.altitude = 0.0
@@ -73,6 +74,17 @@ class Telescope(object):
         self.deltas_positions = []
 
     
+        self.lightcurve = self.arrange_the_lightcurve()
+    
+    def arrange_the_lightcurve(self):
+        
+        lightcurve = []
+        pyLIMA_order = ['time','mag','err_mag']
+        for i in pyLIMA_order :
+            
+            lightcurve.append(self.lightcurve[:,self.lightcurve_dictionnary[i]])
+        
+        return np.array(lightcurve).T
 
     def n_data(self, choice='Mag'):
         """ Return the number of data points in the lightcurve.
