@@ -57,6 +57,7 @@ def main(command_line):
                    lightcurve[:,0] = lightcurve[:,0]-2450000
             except :
                 pass
+            
             telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter='I', light_curve=lightcurve)
             telescope.gamma=0.5
             
