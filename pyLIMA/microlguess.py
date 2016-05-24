@@ -53,6 +53,7 @@ def initial_guess_PSPL(event):
                     break
 
                 else:
+                    
                     good = good[index]
                        
 
@@ -61,18 +62,20 @@ def initial_guess_PSPL(event):
                             np.mean(errmag[good]))
                        
                     distances = np.sqrt((Time[good] - gravity[0]) ** 2 / gravity[0] ** 2)
-                      
-                to = np.median(Time[good])
-                max_flux = max(flux[good])
-                std = np.std(lightcurve_bis[good, 0])
-                To.append(to)
-                Max_flux.append(max_flux)
-                Errmag.append(np.mean(lightcurve_bis[good, 2]))
-                if std == 0:
+                  
+            
+    
+            to = np.median(Time[good])
+            max_flux = max(flux[good])
+            std = np.std(lightcurve_bis[good, 0])
+            To.append(to)
+            Max_flux.append(max_flux)
+            Errmag.append(np.mean(lightcurve_bis[good, 2]))
+            if std == 0:
 
-                    std = 0.1
+                std = 0.1
 
-                Std.append(std)
+            Std.append(std)
 
         except:
 

@@ -276,6 +276,8 @@ class MLFits(object):
         
         #use the analytical Jacobian (faster) if no second order are present, else let the algorithm find it.
         ### NEED CHANGE ###
+        #import pdb; pdb.set_trace()
+
         if self.model.parallax_model[0] == 'None':
             lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
                                      col_deriv=1, full_output=1, ftol=10 ** -6, xtol=10 ** -10,

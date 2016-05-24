@@ -27,23 +27,24 @@ import microlmodels
 def main(command_line):
    
     events_names=[event_name for event_name in os.listdir(command_line.input_directory) if ('.dat'  in event_name) and ('Follow' not in event_name)]
-   
+    #nimport pdb; pdb.set_trace()
+
     events = []
     start = time.time()
     results = []
     errors = []
    
     
-    for event_name in events_names[0:]:
+    for event_name in events_names[0:20]:
 
-        name='Lightcurve_'+str(7042)+'_'
-      
+        name='Lightcurve_'+str(9994)+'_'
+        #name = event_name[:-10]
         current_event = event.Event()
         current_event.name = name
         current_event.ra = 269.39166666666665 
         current_event.dec = -29.22083333333333
         event_telescopes = [i for i in os.listdir(command_line.input_directory) if name  in i]
-        #import pdb; pdb.set_trace()
+        #
 
         count=0
      
@@ -58,7 +59,7 @@ def main(command_line):
             except :
                 pass
             
-            telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter='I', light_curve=lightcurve)
+            telescope = telescopes.Telescope(name=event_telescope[-10:-4], camera_filter='I', light_curve=lightcurve)
             telescope.gamma=0.5
             
             current_event.telescopes.append(telescope)
@@ -73,14 +74,13 @@ def main(command_line):
         Model = microlmodels.MLModels(current_event, command_line.model)
         
         current_event.fit(Model,'LM')
-        import pdb; pdb.set_trace()
+        
 
         current_event.fits[0].produce_outputs()
-       
-        print time.time()-start
-
+        import pdb; pdb.set_trace()
+        
     end = time.time()
-
+   
     print end - start
 
     all_results = [('Fits.txt', results),
