@@ -36,7 +36,7 @@ def main(command_line):
     
     for event_name in events_names[0:]:
 
-        name='Lightcurve_'+str(7043)+'_'
+        name='Lightcurve_'+str(7042)+'_'
       
         current_event = event.Event()
         current_event.name = name

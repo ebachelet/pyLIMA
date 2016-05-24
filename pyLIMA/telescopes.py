@@ -10,7 +10,7 @@ import numpy as np
 import astropy.io.fits as fits
 
 import microlparallax
-
+import microltoolbox
 
 class Telescope(object):
     """
@@ -138,12 +138,12 @@ class Telescope(object):
         :return: the microlensing linear limb-darkening coefficient gamma. 
         """
         
-        precision = 1.0
+        maximum_accepted_precision = 1.0
      
         
       
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
-            np.abs(self.lightcurve[:, 2]) < precision))[0]
+            np.abs(self.lightcurve[:, 2]) < maximum_accepted_precision))[0]
 
         if len(index) > 2:
 
@@ -173,6 +173,6 @@ class Telescope(object):
             lightcurve = self.lightcurve
         
 
-        flux = 10 ** ((27.4 - lightcurve[:, 1]) / 2.5)
+        flux = microltoolbox.magnitude_to_flux(lightcurve[:,1])
         errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
         self.lightcurve_flux = np.array([lightcurve[:, 0], flux, errflux]).T

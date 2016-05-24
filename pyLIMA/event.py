@@ -4,6 +4,7 @@ Created on Thu Aug 27 16:39:32 2015
 
 @author: ebachelet
 """
+
 from __future__ import division
 
 import numpy as np

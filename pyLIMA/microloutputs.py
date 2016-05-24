@@ -16,6 +16,8 @@ from astropy.time import Time
 from scipy.stats.distributions import t as student
 import collections
 
+import microltoolbox
+
 
 
 
@@ -201,7 +203,7 @@ def MCMC_plot_model(fit, parameters, couleur, ax, s_m) :
     ampli = fit.model.magnification(parameters, time, gamma)[0]
     
     flux = fs_reference*(ampli+g_reference)
-    mag = 27.4-2.5*np.log10(flux)
+    mag = microltoolbox.flux_to_magnitude(flux)
    
 
     ax.plot(time,mag,color=s_m.to_rgba(couleur), alpha=0.5)
@@ -248,7 +250,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         
         time = i.lightcurve[:,0]
         mag = i.lightcurve[:,1]
-        flux = 10**((27.4-mag)/2.5)
+        flux = microltoolbox.magnitude_to_flux(mag)
         err_mag = i.lightcurve[:,2]
 
         ampli = fit.model.magnification(parameters, time, gamma)[0]
@@ -363,7 +365,7 @@ def LM_plot_model(fit, ax) :
     ampli = fit.model.magnification(fit.fit_results, time, gamma)[0]
     
     flux = fs_reference*(ampli+g_reference)
-    mag = 27.4-2.5*np.log10(flux)
+    mag = microltoolbox.flux_to_magnitude(flux)
     
     ax.plot(time,mag,'r',lw=2)
     ax.set_ylim([min(mag)-0.1,max(mag)+0.1])
@@ -383,7 +385,7 @@ def LM_plot_residuals(fit,ax):
         
         time = i.lightcurve[:,0]
         mag = i.lightcurve[:,1]
-        flux = 10**((27.4-mag)/2.5)
+        flux = microltoolbox.magnitude_to_flux(mag)
         err_mag = i.lightcurve[:,2]
 
         ampli = fit.model.magnification(fit.fit_results, time, gamma)[0]
@@ -429,12 +431,12 @@ def align_telescope_lightcurve(lightcurve_telescope_mag,fs_reference,g_reference
     time = lightcurve_telescope_mag[:,0]
     mag = lightcurve_telescope_mag[:,1]
     err_mag = lightcurve_telescope_mag[:,2]
-    
-    flux = 10**((27.4-mag)/2.5)
+
+    flux = microltoolbox.magnitude_to_flux(mag)
     
     flux_normalised = (flux-(fs_telescope*g_telescope))/(fs_telescope)*fs_reference+fs_reference*g_reference
     
-    mag_normalised = 27.4-2.5*np.log10(flux_normalised)
+    mag_normalised = microltoolbox.flux_to_magnitude(flux_normalised)
     
 
     lightcurve_normalised = [time,mag_normalised,err_mag]
