@@ -101,7 +101,7 @@ class Event(object):
         """Print the the telescope's names contain in the event. 
         """
         print [self.telescopes[i].name for i in xrange(len(self.telescopes))]
-
+   
     def check_event(self):
         """Function to check if everything is correctly set before the fit.
         An ERROR is returned if the check is not successfull
@@ -110,6 +110,8 @@ class Event(object):
         First check if the event name is a string
         Then check if the right ascension (event.ra) is between 0 and 360 degrees
         Then check if the declination (event.dec) is between -90 and 90 degrees
+        Then check if you have any telescopes ingested.
+        Finally check if your telescopes have a lightcurve attributes different from None.
         """
         if self.name == 'None':
             print 'ERROR : The event name (' + str(
@@ -131,6 +133,16 @@ class Event(object):
                   'self.telescopes.append'
             return
 
+        else :
+            
+            for telescope in self.telescope :
+                
+                if len(telescope.lightcurve) == 0 :
+                    
+                     print 'ERROR : There is no associated lightcurve with this telescopes : '\
+                            +telescope.name+', add one with telescope.lightcurve = your_data'
+                     return
+        
         print 'Everything is fine, this event can be treat'
 
     def find_survey(self, choice=None):
@@ -176,9 +188,9 @@ class Event(object):
             :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'. More details in the telescope module
             :return:  the lightcurve in flux
         """
-        for i in self.telescopes:
+        for telescope in self.telescopes:
 
-            i.lightcurve_in_flux(choice)
+           telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
 
     def initialize_plots(self, choice, observe):
         """ Not working and probably depreciated"""

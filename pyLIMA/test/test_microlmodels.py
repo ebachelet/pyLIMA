@@ -11,6 +11,6 @@ import microlmodels
 def test_define_parameters():
     
     event = mock.MagicMock()
-    Model = microlmodels.MLModels(event,model='FSPL', second_order=[['None', 0.0], ['None', 0.0], ['None', 0.0], 'None'])
+    Model = microlmodels.MLModels(event,model='FSPL')
 
    

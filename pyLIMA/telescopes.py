@@ -9,8 +9,8 @@ from __future__ import division
 import numpy as np
 import astropy.io.fits as fits
 
-import microlparallax
-import microltoolbox
+
+from pyLIMA import microltoolbox
 
 class Telescope(object):
     """
@@ -29,12 +29,15 @@ class Telescope(object):
                Johnson_Cousins I filter
                and 'i'' is the SDSS-i' Sloan filter.
 
-    :param light_curve:  list of time, magnitude, error in magnitude covention. Default is an empty list.
-                   WARNING : Have to exactly follow this convention.
+    :param light_curve:  a numpy array with time, magnitude in column error in magnitude. Default is an empty list.
 
+    :param lightcurve_dictionnary: a python dictionnary that informs your columns convention. Used to translate to pyLIMA
+                                convention [time,mag,err_mag]
 
     Attributes :
     
+        location : The location of your observatory. Should be "Earth" (default) or "Space".
+        
         lightcurve_flux : List of time, flux, error in flux. Default is an empty list.
                           WARNING : has to be set before any fits.
 
@@ -55,7 +58,7 @@ class Telescope(object):
         
         self.name = name      
         self.filter = camera_filter  # Claret2011 convention
-        
+        self.lightcurve_dictionnary = light_curve_dictionnary
         if light_curve is None :
                 
             self.lightcurve = []
@@ -63,8 +66,9 @@ class Telescope(object):
         else :
         
             self.lightcurve = light_curve 
-            
-        self.lightcurve_dictionnary = light_curve_dictionnary
+            self.lightcurve = self.arrange_the_lightcurve_columns()
+    
+       
         self.location = 'Earth'
         self.lightcurve_flux = []
         self.altitude = 0.0
@@ -74,13 +78,13 @@ class Telescope(object):
         self.deltas_positions = []
 
     
-        self.lightcurve = self.arrange_the_lightcurve()
-    
-    def arrange_the_lightcurve(self):
-        
+       
+    def arrange_the_lightcurve_columns(self):
+        """ Rearange the lightcurve in magnitude in the pyLIMA convention"
+        """
         lightcurve = []
-        pyLIMA_order = ['time','mag','err_mag']
-        for i in pyLIMA_order :
+        pyLIMA_convention = ['time','mag','err_mag']
+        for i in pyLIMA_convention :
             
             lightcurve.append(self.lightcurve[:,self.lightcurve_dictionnary[i]])
         
@@ -157,6 +161,7 @@ class Telescope(object):
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
             np.abs(self.lightcurve[:, 2]) < maximum_accepted_precision))[0]
 
+        #Should return at least 2 points
         if len(index) > 2:
 
             lightcurve = self.lightcurve[index]
@@ -187,4 +192,5 @@ class Telescope(object):
 
         flux = microltoolbox.magnitude_to_flux(lightcurve[:,1])
         errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
-        self.lightcurve_flux = np.array([lightcurve[:, 0], flux, errflux]).T
+        
+        return np.array([lightcurve[:, 0], flux, errflux]).T
