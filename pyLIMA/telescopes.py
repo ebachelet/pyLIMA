@@ -84,9 +84,9 @@ class Telescope(object):
         """
         lightcurve = []
         pyLIMA_convention = ['time','mag','err_mag']
-        for i in pyLIMA_convention :
+        for good_column in pyLIMA_convention :
             
-            lightcurve.append(self.lightcurve[:,self.lightcurve_dictionnary[i]])
+            lightcurve.append(self.lightcurve[:,self.lightcurve_dictionnary[good_column]])
         
         return np.array(lightcurve).T
 
@@ -155,7 +155,7 @@ class Telescope(object):
         """
         
         maximum_accepted_precision = 1.0
-     
+        outliers = 5.0
         
       
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (

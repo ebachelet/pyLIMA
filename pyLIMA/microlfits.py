@@ -319,6 +319,7 @@ class MLFits(object):
             print 'hoho'
             cov = np.zeros((len(self.model.model_dictionnary),
                             len(self.model.model_dictionnary)))
+        
 
         return fit_res, cov, computation_time
 

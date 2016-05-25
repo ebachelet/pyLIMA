@@ -273,10 +273,10 @@ class MLModels(object):
          """ Compute the parallax for all the telescopes, if this is desired in
          the second order parameter."""
          telescopes = []
-         for i in self.event.telescopes:
+         for telescope in self.event.telescopes:
   
-            if len(i.deltas_positions) == 0:
-                telescopes.append(i)
+            if len(telescope.deltas_positions) == 0:
+                telescopes.append(telescope)
 
          para = microlparallax.MLParallaxes(self.event, second_order[0])
          para.parallax_combination(telescopes)        

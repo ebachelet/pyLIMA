@@ -44,9 +44,9 @@ def LM_outputs(fit) :
     values_outputs = [results,errors,correlation_matrix,figure_lightcurve]
      
     count = 0
-    for i in key_outputs :
+    for key in key_outputs :
          
-         setattr(outputs,i,values_outputs[count])
+         setattr(outputs,key,values_outputs[count])
          count += 1
      
  
@@ -92,9 +92,9 @@ def MCMC_outputs(fit) :
     values_outputs = [CHAINS, correlation_matrix, figure_lightcurve, figure_distributions]
     
     count = 0
-    for i in key_outputs :
+    for key in key_outputs :
          
-        setattr(outputs,i,values_outputs[count])
+        setattr(outputs,key,values_outputs[count])
         count += 1
      
  
@@ -105,9 +105,9 @@ def MCMC_outputs(fit) :
 def MCMC_compute_fs_g(fit,CHAINS) :
     
     Fluxes=[]
-    for i in CHAINS :
+    for chain in CHAINS :
         
-        fluxes = fit.find_fluxes(i, fit.model)
+        fluxes = fit.find_fluxes(chain, fit.model)
         Fluxes.append(fluxes)
     
     return np.array(Fluxes)
@@ -122,13 +122,13 @@ def  MCMC_plot_parameters_distribution(fit,BEST):
 
     count_i = 0
 
-    for i in fit.model.model_dictionnary.keys()[: dimensions] :
-        axes2[count_i,0].set_ylabel(i)
-        axes2[-1,count_i].set_xlabel(i)
+    for key_i in fit.model.model_dictionnary.keys()[: dimensions] :
+        axes2[count_i,0].set_ylabel(key_i)
+        axes2[-1,count_i].set_xlabel(key_i)
         
         
         count_j = 0         
-        for j in fit.model.model_dictionnary.keys()[: dimensions] :
+        for key_j in fit.model.model_dictionnary.keys()[: dimensions] :
             
             
             axes2[count_i,count_j].ticklabel_format(useOffset=False, style='plain')
@@ -143,13 +143,13 @@ def  MCMC_plot_parameters_distribution(fit,BEST):
             
             if count_i==count_j :
                 
-                axes2[count_i,count_j].hist(BEST[:,fit.model.model_dictionnary[i]], 100)
+                axes2[count_i,count_j].hist(BEST[:,fit.model.model_dictionnary[key_i]], 100)
             
             else :
                 
                 if count_j<count_i :
                 
-                    axes2[count_i,count_j].scatter(BEST[:,fit.model.model_dictionnary[j]],BEST[:,fit.model.model_dictionnary[i]],c=BEST[:,-1],edgecolor='None')
+                    axes2[count_i,count_j].scatter(BEST[:,fit.model.model_dictionnary[key_j]],BEST[:,fit.model.model_dictionnary[key_i]],c=BEST[:,-1],edgecolor='None')
                     
                 else :
                     axes2[count_i,count_j].axis('off')     
@@ -175,8 +175,8 @@ def  MCMC_plot_lightcurves(fit,BEST):
 
      s_m = matplotlib.cm.ScalarMappable(cmap=c_m, norm=norm)
      s_m.set_array([])
-     for i in index :
-         MCMC_plot_model(fit, BEST[i], BEST[i,-1],axes[0], s_m)
+     for indice in index :
+         MCMC_plot_model(fit, BEST[indice], BEST[indice,-1],axes[0], s_m)
 
      
      plt.colorbar(s_m,ax=axes[0])

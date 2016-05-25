@@ -153,8 +153,8 @@ class Event(object):
 
         self.survey = choice or self.telescopes[0].name
 
-        names = [i.name for i in self.telescopes]
-        if any(self.survey in i for i in names):
+        names = [telescope.name for telescope in self.telescopes]
+        if any(self.survey in name for name in names):
 
             index = np.where(self.survey == np.array(names))[0]
             sorting = np.arange(0, len(self.telescopes))
