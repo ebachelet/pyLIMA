@@ -135,7 +135,7 @@ class Event(object):
 
         else :
             
-            for telescope in self.telescope :
+            for telescope in self.telescopes :
                 
                 if len(telescope.lightcurve) == 0 :
                     

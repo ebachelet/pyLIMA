@@ -222,10 +222,10 @@ class MLModels(object):
                                      model_source_spots_boundaries[
                                          self.source_spots_model]
 
-        for i in self.event.telescopes:
+        for telescope in self.event.telescopes:
 
-            self.model_dictionnary['fs_' + i.name] = len(self.model_dictionnary)
-            self.model_dictionnary['g_' + i.name] = len(self.model_dictionnary)
+            self.model_dictionnary['fs_' + telescope.name] = len(self.model_dictionnary)
+            self.model_dictionnary['g_' + telescope.name] = len(self.model_dictionnary)
 
         self.model_dictionnary = OrderedDict(
             sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
