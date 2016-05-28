@@ -15,7 +15,7 @@ def initial_guess_PSPL(event):
     Guess are made using the survey telescope for the Paczynski parameters (to,uo,tE).
     This assumes no blending.
     """
-
+    
     # to estimation
     To = []
     Max_flux = []
@@ -122,71 +122,68 @@ def initial_guess_PSPL(event):
                 baseline_flux = np.median(flux[flux.argsort()[:100]])
                 break
 
-        fs = baseline_flux
-        max_flux = Max_flux[0]
-        Amax = max_flux / fs
-        uo = np.sqrt(-2 + 2 * np.sqrt(1 - 1 / (1 - Amax ** 2)))
+    fs = baseline_flux
+    max_flux = Max_flux[0]
+    Amax = max_flux / fs
+    uo = np.sqrt(-2 + 2 * np.sqrt(1 - 1 / (1 - Amax ** 2)))
 
-
-        # tE estimations
-        flux_demi = 0.5 * fs * (Amax + 1)
-        flux_tE = fs * (uo ** 2 + 3) / ((uo ** 2 + 1) ** 0.5 * np.sqrt(uo ** 2 + 5))
-        index_plus = np.where((Time > to) & (flux < flux_demi))[0]
-        index_moins = np.where((Time < to) & (flux < flux_demi))[0]
-        B = 0.5 * (Amax + 1)
-        if len(index_plus) != 0:
-
-            if len(index_moins) != 0:
-
-                ttE = (Time[index_plus[0]] - Time[index_moins[-1]])
+    # tE estimations
+    flux_demi = 0.5 * fs * (Amax + 1)
+    flux_tE = fs * (uo ** 2 + 3) / ((uo ** 2 + 1) ** 0.5 * np.sqrt(uo ** 2 + 5))
+    index_plus = np.where((Time > to) & (flux < flux_demi))[0]
+    index_moins = np.where((Time < to) & (flux < flux_demi))[0]
+    B = 0.5 * (Amax + 1)
+    if len(index_plus) != 0:
+	if len(index_moins) != 0:
+		ttE = (Time[index_plus[0]] - Time[index_moins[-1]])
                 tE1 = ttE / (2 * np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo ** 2))
 
-            else:
+        else:
 
                 ttE = Time[index_plus[0]] - to
                 tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo ** 2)
-        else:
+    else:
 
-            ttE = to - Time[index_moins[-1]]
-            tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo ** 2)
+        ttE = to - Time[index_moins[-1]]
+    tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo ** 2)
 
-        indextEplus = np.where((flux < flux_tE) & (Time > to))[0]
-        indextEmoins = np.where((flux < flux_tE) & (Time < to))[0]
-        tEmoins = 0.0
-        tEplus = 0.0
+    indextEplus = np.where((flux < flux_tE) & (Time > to))[0]
+    indextEmoins = np.where((flux < flux_tE) & (Time < to))[0]
+    tEmoins = 0.0
+    tEplus = 0.0
 
-        if len(indextEmoins) != 0:
+    if len(indextEmoins) != 0:
 
-            indextEmoins = indextEmoins[-1]
-            tEmoins = to - Time[indextEmoins]
+	indextEmoins = indextEmoins[-1]
+        tEmoins = to - Time[indextEmoins]
 
-        if len(indextEplus) != 0:
+    if len(indextEplus) != 0:
+	
+	indextEplus = indextEplus[0]
+        tEplus = Time[indextEplus] - to
 
-            indextEplus = indextEplus[0]
-            tEplus = Time[indextEplus] - to
+    indextEPlus = np.where((Time > to) & (np.abs(flux - fs) < np.abs(errflux)))[0]
+    indextEMoins = np.where((Time < to) & (np.abs(flux - fs) < np.abs(errflux)))[0]
+    tEPlus = 0.0
+    tEMoins = 0.0
 
-        indextEPlus = np.where((Time > to) & (np.abs(flux - fs) < np.abs(errflux)))[0]
-        indextEMoins = np.where((Time < to) & (np.abs(flux - fs) < np.abs(errflux)))[0]
-        tEPlus = 0.0
-        tEMoins = 0.0
+    if len(indextEPlus) != 0:
 
-        if len(indextEPlus) != 0:
+	tEPlus = Time[indextEPlus[0]] - to
 
-            tEPlus = Time[indextEPlus[0]] - to
+    if len(indextEMoins) != 0:
 
-        if len(indextEMoins) != 0:
+	tEMoins = to - Time[indextEMoins[-1]]
 
-            tEMoins = to - Time[indextEMoins[-1]]
+    TE = np.array([tE1, tEplus, tEmoins, tEPlus, tEMoins])
+    good = np.where(TE != 0.0)[0]
+    tE = np.median(TE[good])
 
-        TE = np.array([tE1, tEplus, tEmoins, tEPlus, tEMoins])
-        good = np.where(TE != 0.0)[0]
-        tE = np.median(TE[good])
-
-        if tE < 0.1:
-
-            tE = 20.0
+    if tE < 0.1:
+	
+	tE = 20.0
       
-        return [to,uo,tE],fs
+    return [to,uo,tE],fs
 
 def initial_guess_FSPL(event): 
 
