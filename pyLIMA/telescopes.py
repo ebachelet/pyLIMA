@@ -11,6 +11,7 @@ import astropy.io.fits as fits
 
 
 import microltoolbox
+import microlparallax
 
 class Telescope(object):
     """
@@ -142,8 +143,10 @@ class Telescope(object):
         uu = claret_reduce[coeff_index, -1]
 
         self.gamma = 2 * uu / (3 - uu)
-       
-
+    def compute_parallax(self,event,parallax):   
+	
+	para = microlparallax.MLParallaxes(event, parallax)
+	para.parallax_combination([self])
     def clean_data(self):
         """
         Clean outliers of the telescope for the fits. Points are considered as outliers if they

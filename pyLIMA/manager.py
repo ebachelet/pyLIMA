@@ -26,8 +26,8 @@ import microlmodels
 
 def main(command_line):
    
-    events_names=[event_name for event_name in os.listdir('../../Dun_lightcurves/') if ('OGLE2016BLG0676.dat'  in event_name) and ('~' not in event_name)]
-    import pdb; pdb.set_trace()
+    events_names=[event_name for event_name in os.listdir('../../Dun_lightcurves/') if ('OGLE2016BLG0813.dat'  in event_name) and ('~' not in event_name)]
+
 
     events = []
     start = time.time()
@@ -41,13 +41,14 @@ def main(command_line):
         name = event_name[:-4]
         current_event = event.Event()
         current_event.name = name
-        current_event.ra = 269.39166666666665 
-        current_event.dec = -29.22083333333333
+        current_event.ra = 269.8865416666667
+        current_event.dec = -28.407416666666666
         event_telescopes = [i for i in events_names if name  in i]
         #event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat','MOA-2016-BLG-215_transformed.dat']
         #event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
-        #Names = ['OGLE','MOA','K2']
-        event_telescopes = [event_name]
+        Names = ['OGLE','Kepler']
+	Locations = ['Earth','Space']
+        event_telescopes = ['OGLE2016BLG0813.dat']
         count=0
 
         start=time.time()
@@ -58,23 +59,23 @@ def main(command_line):
                raw_light_curve=raw_light_curve[good]
                lightcurve=np.array([raw_light_curve[:,0],raw_light_curve[:,1],raw_light_curve[:,2]]).T
                if lightcurve[0,0]>2450000 :
-                   lightcurve[:,0] = lightcurve[:,0]-2450000
+                   lightcurve[:,0] = lightcurve[:,0]
             except :
                 pass
             
-            telescope = telescopes.Telescope(name='K2', camera_filter='I', light_curve=lightcurve)
+            telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve=lightcurve)
             telescope.gamma=0.5
-            
+            telescope.location=Locations[count]
             current_event.telescopes.append(telescope)
             count+=1
            
         print 'Start;', current_event.name
        
-        current_event.find_survey('K2')
+        current_event.find_survey('OGLE')
    
         current_event.check_event()
        
-        Model = microlmodels.MLModels(current_event, command_line.model)
+        Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['Annual', 2457510.0])
         #import pdb; pdb.set_trace()
         #import pdb; pdb.set_trace()
 

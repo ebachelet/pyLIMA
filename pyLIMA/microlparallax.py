@@ -10,7 +10,7 @@ import telnetlib
 import numpy as np
 from astropy import constants as const
 from scipy import interpolate
-
+from astropy.time import Time
 from pyslalib import slalib
 
 
@@ -34,7 +34,8 @@ def horizons_obscodes(observatory):
                        'K91': 'K91',
                        'K92': 'K92',
                        'K93': 'K93',
-                       'Geocentric': '500'
+                       'Geocentric': '500',
+		       'Kepler':'-227'
                        }
 
     # Check if we were passed the JPL site code directly
@@ -116,17 +117,18 @@ class MLParallaxes(object):
         return JD
 
     def parallax_combination(self, telescopes):
-       # import pdb; pdb.set_trace()
-
+       
+	
         for i in telescopes:
 
             self.N_E_vectors_target()
             delta_position_North = np.array([])
             delta_position_East = np.array([])
 
-            kind = i.kind
-            t = self.HJD_to_JD(i.lightcurve_flux[:,0])
+            kind = i.location
+            #t = self.HJD_to_JD(i.lightcurve_flux[:,0])
             #t = i.lightcurve_flux[:, 0]
+	    t = i.lightcurve[:,0]
             delta_North = np.array([])
             delta_East = np.array([])
 
@@ -158,7 +160,7 @@ class MLParallaxes(object):
                     altitude = i.altitude
                     longitude = i.longitude
                     latitude = i.latitude
-
+		    import pdb; pdb.set_trace()
                     positions = self.terrestrial_parallax(t, altitude, longitude, latitude)
                     delta_North = np.append(delta_North, positions[0])
                     delta_East = np.append(delta_East, positions[1])
@@ -187,10 +189,11 @@ class MLParallaxes(object):
             i.deltas_positions = deltas_position
 
     def annual_parallax(self, t):
-
-        topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
+        
+        #topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
         #topar = self.topar - 2400000.5
-        Earth_position_ref = slalib.sla_epv(topar)
+	topar = self.topar - 2400000.5   
+	Earth_position_ref = slalib.sla_epv(topar)
         Sun_position_ref = -Earth_position_ref[0]
         Sun_speed_ref = -Earth_position_ref[1]
         delta_Sun = []
@@ -216,17 +219,17 @@ class MLParallaxes(object):
         radius = self.Earth_radius + altitude
         Longitude = longitude * np.pi / 180.0
         Latitude = latitude * np.pi / 180.0
-
+	import pdb; pdb.set_trace()
         delta_North = []
         delta_East = []
         for i in t:
 
             tt = i - 2400000.5
             sideral_time = slalib.sla_gmst(tt)
-            telescope_longitude = - Longitude - self.target_angles[0] + sideral_time
+            telescope_longitude = - Longitude - self.target_angles[0]*np.pi/180 + sideral_time
             delta_North.append(radius * (
-            np.sin(Latitude) * np.cos(self.target_angles[1]) - np.cos(Latitude) * np.sin(
-                self.target_angles[1]) * np.cos(telescope_longitude)))
+            np.sin(Latitude) * np.cos(self.target_angles[1]*np.pi/180) - np.cos(Latitude) * np.sin(
+                self.target_angles[1]*np.pi/180) * np.cos(telescope_longitude)))
             delta_East.append(radius * np.cos(Latitude) * np.sin(telescope_longitude))
 
         delta_positions = np.array([delta_North, delta_East])
@@ -235,16 +238,15 @@ class MLParallaxes(object):
     def space_parallax(self, t, name):
         # tstart = self.HJD_to_JD(np.array([t[0]]))
         # tend = self.HJD_to_JD(np.array([t[-1]]))
-       # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         tstart = t[0] - 1
         tend = t[-1] + 1
-        tstart = 24577144.1666667-300
-        tend = 24577144.1666667-300
-        #positions = self.produce_horizons_ephem(name, tstart, tend, observatory='Geocentric',step_size='10m', verbose=False)[1]
-        positions = np.loadtxt('SWIFT.dat')
-        positions = positions[:, :-1]
-
+        
+        positions = self.produce_horizons_ephem(name, tstart, tend, observatory='Geocentric',step_size='60m', verbose=False)[1]
+        #positions = np.loadtxt('SWIFT.dat')
+        #positions = positions[:, :-1]
+	positions = np.array(positions)
         dates = positions[:, 0].astype(float)
         ra = positions[:, 1].astype(float)
         dec = positions[:, 2].astype(float)
@@ -271,7 +273,7 @@ class MLParallaxes(object):
                 ra_interpolated[tt]))
 
         delta_positions = np.array([delta_North, delta_East])
-        # import pdb; pdb.set_trace()
+      
 
         return delta_positions
 
@@ -283,7 +285,7 @@ class MLParallaxes(object):
 
         return delta_tau, delta_u
 
-    def produce_horizons_ephem(self, body, start_time, end_time, observatory='ELP', step_size='10m',
+    def produce_horizons_ephem(self, body, start_time, end_time, observatory='ELP', step_size='60m',
                                verbose=False):
         """
         Write by Tim Lister.
@@ -303,19 +305,27 @@ class MLParallaxes(object):
         space  # to get to next prompt
         q   # quit
         """
-
+	body = str(-227)
         # Lookup observatory name
         OBSERVATORY_ID = horizons_obscodes(observatory)
         if (verbose):
             print "Observatory ID= ", OBSERVATORY_ID
+	#import pdb; pdb.set_trace()
+        tstart = Time(start_time,format='jd')
 
-        # tstart = start_time.strftime('%Y-%m-%d %H:%M')
-        tstart = 'JD' + str(start_time)
+        tstart = 'JD' + str(tstart.isot)
+	tstart = tstart[:12]+' '+tstart[13:-7]
+	tstart ='JD' + str(start_time)
+
+
         if (verbose):
             print "tstart = ", tstart
         # tstop = end_time.strftime('%Y-%m-%d %H:%M')
+        #tstop = Time(end_time,format='jd')
+
         tstop = 'JD' + str(end_time)
-        timeout = 60  # seconds
+	#tstop = tstop[:12]+' '+tstop[13:-7]
+        timeout = 5  # seconds
         t = telnetlib.Telnet('horizons.jpl.nasa.gov', 6775)
         t.set_option_negotiation_callback(optcallback)
         data = t.read_until('Horizons> ')
@@ -501,7 +511,7 @@ class MLParallaxes(object):
             data_line = True
             # print hor_line
 
-
+	   
             if (len(hor_line.split()) == 4):
 
                 (time, raDegrees, decDegrees, light_dist) = hor_line.split()

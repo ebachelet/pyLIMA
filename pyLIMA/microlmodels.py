@@ -182,7 +182,7 @@ class MLModels(object):
 
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
-
+	    self.compute_parallax(self.parallax_model)
         if self.xallarap_model[0] != 'None':
 
             self.model_dictionnary['XiEN'] = len(self.model_dictionnary)
@@ -249,7 +249,8 @@ class MLModels(object):
         if self.parallax_model[0] != 'None' :
             piE = np.array([parameters[self.model_dictionnary['piEN']],
                                 parameters[self.model_dictionnary['piEE']]])
-            dTau,dUo = self.compute_parallax_curvature(self, piE, delta_positions)
+	    
+            dTau,dUo = self.compute_parallax_curvature(piE, delta_positions)
             dtau += dtau
             duo += dUo
         
@@ -277,8 +278,8 @@ class MLModels(object):
   
             if len(telescope.deltas_positions) == 0:
                 telescopes.append(telescope)
-
-         para = microlparallax.MLParallaxes(self.event, second_order[0])
+	
+         para = microlparallax.MLParallaxes(self.event, second_order)
          para.parallax_combination(telescopes)        
             
     def compute_parallax_curvature(self, piE, delta_positions) :

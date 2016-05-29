@@ -18,6 +18,7 @@ import collections
 
 import microltoolbox
 
+import copy
 
 
 
@@ -195,12 +196,12 @@ def MCMC_plot_model(fit, parameters, couleur, ax, s_m) :
 
     time = np.arange(min_time, max_time + 100, 0.01)
     
-    reference_telescope = fit.event.telescopes[0]
+   
     gamma = reference_telescope.gamma
     fs_reference = parameters[fit.model.model_dictionnary['fs_'+reference_telescope.name]]
     g_reference = parameters[fit.model.model_dictionnary['g_'+reference_telescope.name]]
     
-    ampli = fit.model.magnification(parameters, time, gamma)[0]
+    ampli = fit.model.magnification(parameters, time, gamma,reference_telescope.deltas_positions)[0]
     
     flux = fs_reference*(ampli+g_reference)
     mag = microltoolbox.flux_to_magnitude(flux)
@@ -253,7 +254,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         flux = microltoolbox.magnitude_to_flux(mag)
         err_mag = i.lightcurve[:,2]
 
-        ampli = fit.model.magnification(parameters, time, gamma)[0]
+        ampli = fit.model.magnification(parameters, time, gamma,reference_telescope)[0]
         
         flux_model = fs_telescope*(ampli+g_telescope)
         
@@ -314,7 +315,7 @@ def cov2corr(A):
     return correlation
 
 def LM_plot_lightcurves(fit) :
-    
+   
     figure,axes = initialize_plot_figure(fit)
     LM_plot_align_data(fit,axes[0])
     LM_plot_model(fit,axes[0])
@@ -351,18 +352,26 @@ def initialize_plot_parameters(fit):
     
     
 def LM_plot_model(fit, ax) :
+    
+
 
     min_time = min([min(i.lightcurve[:,0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
+	
+    time = np.arange(min_time, max_time + 100, 0.01) 
+    if fit.model.parallax_model !='None' :
 
-    time = np.arange(min_time, max_time + 100, 0.001)
-    
-    reference_telescope = fit.event.telescopes[0]
+	    reference_telescope = copy.copy(fit.event.telescopes[0])
+	    reference_telescope.lightcurve = np.array([time,[0]*len(time),[0]*len(time)]).T
+	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+    else :
+
+	  reference_telescope = fit.event.telescopes[0] 
     gamma = reference_telescope.gamma
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope.name]]
     g_reference = fit.fit_results[fit.model.model_dictionnary['g_'+reference_telescope.name]]
     
-    ampli = fit.model.magnification(fit.fit_results, time, gamma)[0]
+    ampli = fit.model.magnification(fit.fit_results, time, gamma,reference_telescope.deltas_positions)[0]
     
     flux = fs_reference*(ampli+g_reference)
     mag = microltoolbox.flux_to_magnitude(flux)
@@ -388,7 +397,7 @@ def LM_plot_residuals(fit,ax):
         flux = microltoolbox.magnitude_to_flux(mag)
         err_mag = i.lightcurve[:,2]
 
-        ampli = fit.model.magnification(fit.fit_results, time, gamma)[0]
+        ampli = fit.model.magnification(fit.fit_results, time, gamma,i.deltas_positions)[0]
         
         flux_model = fs_telescope*(ampli+g_telescope)
         

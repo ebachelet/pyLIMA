@@ -242,7 +242,7 @@ class MLFits(object):
                                     bounds=self.model.parameters_boundaries,
                                     mutation=(0.5, 1.5), popsize=20, tol=0.000001,
                                     recombination=0.6, polish='True', disp=False)
-        
+        import pdb; pdb.set_trace()
         self.guess = AA['x'].tolist() + self.find_fluxes(AA['x'].tolist(), self.model)
 
         fit_res, cov,fit_time = self.lmarquardt()
@@ -492,7 +492,7 @@ class MLFits(object):
             errflux = lightcurve[:, 2]
             gamma = i.gamma
            
-            ampli = self.model.magnification(parameters, Time, gamma)[0]
+            ampli = self.model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
            
 
             errors = np.append(errors, (
@@ -535,11 +535,11 @@ class MLFits(object):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             gamma = i.gamma
-            #import pdb; pdb.set_trace()
+            
             
 
             try :
-                ampli = self.model.magnification(parameters, Time, gamma)[0]
+                ampli = self.model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
                 fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
             except :
                 return np.inf
@@ -600,7 +600,7 @@ class MLFits(object):
             errflux = lightcurve[:, 2]
             gamma = i.gamma
 
-            ampli = model.magnification(parameters, Time, gamma)[0]
+            ampli = model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
            
             fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
             if (fs < 0) :
