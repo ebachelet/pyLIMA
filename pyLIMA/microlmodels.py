@@ -249,14 +249,13 @@ class MLModels(object):
         if self.parallax_model[0] != 'None' :
             piE = np.array([parameters[self.model_dictionnary['piEN']],
                                 parameters[self.model_dictionnary['piEE']]])
-	    
+	    #import pdb; pdb.set_trace()
             dTau,dUo = self.compute_parallax_curvature(piE, delta_positions)
-            dtau += dtau
+            dtau += dTau
             duo += dUo
         
                 
-        tau += dtau
-        uo += duo
+       
         
         if self.paczynski_model == 'PSPL':
             

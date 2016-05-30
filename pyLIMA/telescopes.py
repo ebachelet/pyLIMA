@@ -68,10 +68,10 @@ class Telescope(object):
         
             self.lightcurve = light_curve 
             self.lightcurve = self.arrange_the_lightcurve_columns()
-    
+    	    self.lightcurve_flux  = self.lightcurve_in_flux()
        
         self.location = 'Earth'
-        self.lightcurve_flux = []
+        #self.lightcurve_flux = []
         self.altitude = 0.0
         self.longitude = 0.57
         self.latitude = 49.49
@@ -157,7 +157,7 @@ class Telescope(object):
         :return: the microlensing linear limb-darkening coefficient gamma. 
         """
         
-        maximum_accepted_precision = 1.0
+        maximum_accepted_precision = 10.0
         outliers = 5.0
         
       

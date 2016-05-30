@@ -241,7 +241,7 @@ class MLFits(object):
         AA = differential_evolution(self.chichi_differential,
                                     bounds=self.model.parameters_boundaries,
                                     mutation=(0.5, 1.5), popsize=20, tol=0.000001,
-                                    recombination=0.6, polish='True', disp=False)
+                                    recombination=0.6, polish='True', disp=True)
         import pdb; pdb.set_trace()
         self.guess = AA['x'].tolist() + self.find_fluxes(AA['x'].tolist(), self.model)
 
@@ -539,6 +539,7 @@ class MLFits(object):
             
 
             try :
+	       
                 ampli = self.model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
                 fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
             except :

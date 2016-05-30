@@ -26,7 +26,7 @@ import microlmodels
 
 def main(command_line):
    
-    events_names=[event_name for event_name in os.listdir('../../Dun_lightcurves/') if ('OGLE2016BLG0813.dat'  in event_name) and ('~' not in event_name)]
+    events_names=[event_name for event_name in os.listdir('../../Dun_lightcurves/') if ('MOA2016BLG0221.dat'  in event_name) and ('~' not in event_name)]
 
 
     events = []
@@ -41,21 +41,27 @@ def main(command_line):
         name = event_name[:-4]
         current_event = event.Event()
         current_event.name = name
-        current_event.ra = 269.8865416666667
-        current_event.dec = -28.407416666666666
-        event_telescopes = [i for i in events_names if name  in i]
+        #current_event.ra = 269.8865416666667
+        #current_event.dec = -28.407416666666666
+	current_event.ra = 267.909875  
+        current_event.dec = -28.494130555555557
+
+	event_telescopes = [i for i in events_names if name  in i]
         #event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat','MOA-2016-BLG-215_transformed.dat']
         #event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
-        Names = ['OGLE','Kepler']
+        #Names = ['OGLE','Kepler']
+	#Locations = ['Earth','Space']
+        #event_telescopes = ['OGLE2016BLG0813.dat','OGLE2016BLG0813_K2.dat']
+        Names = ['MOA','Kepler']
 	Locations = ['Earth','Space']
-        event_telescopes = ['OGLE2016BLG0813.dat']
-        count=0
+        event_telescopes = ['MOA2016BLG0221.dat','MOA2016BLG0221_K2.dat']
+	count=0
 
         start=time.time()
         for event_telescope in event_telescopes:
             try :
                raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
-               good = np.where(raw_light_curve[:,1]<20)[0]
+               good = np.where(raw_light_curve[:,1]<24)[0]
                raw_light_curve=raw_light_curve[good]
                lightcurve=np.array([raw_light_curve[:,0],raw_light_curve[:,1],raw_light_curve[:,2]]).T
                if lightcurve[0,0]>2450000 :
@@ -71,21 +77,21 @@ def main(command_line):
            
         print 'Start;', current_event.name
        
-        current_event.find_survey('OGLE')
+        current_event.find_survey('MOA')
    
         current_event.check_event()
        
         Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['Annual', 2457510.0])
         #import pdb; pdb.set_trace()
-        #import pdb; pdb.set_trace()
+        #
 
         current_event.fit(Model,'DE')
         
-        import pdb; pdb.set_trace()
+        
         current_event.fits[0].produce_outputs()
         
         plt.show()
-        
+        import pdb; pdb.set_trace()
     end = time.time()
    
     print end - start

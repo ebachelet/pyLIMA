@@ -90,7 +90,7 @@ class Event(object):
             print 'ERROR : Wrong method request, has to be an integer selected between ' + \
                   ' or '.join(available_methods) + ''
             return
-        self.lightcurves_in_flux('Yes')
+        #self.lightcurves_in_flux('Yes')
 
         fit = microlfits.MLFits(self)
         fit.mlfit(Model, method)

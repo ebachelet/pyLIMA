@@ -128,7 +128,7 @@ class MLParallaxes(object):
             kind = i.location
             #t = self.HJD_to_JD(i.lightcurve_flux[:,0])
             #t = i.lightcurve_flux[:, 0]
-	    t = i.lightcurve[:,0]
+	    t = i.lightcurve_flux[:,0]
             delta_North = np.array([])
             delta_East = np.array([])
 
@@ -179,9 +179,10 @@ class MLParallaxes(object):
                     pdb.set_trace()
 
                     positions = self.space_parallax(t, name)
-                delta_North = delta_North + positions[0]
+		            
+		delta_North = delta_North + positions[0]
                 delta_East = delta_East + positions[1]
-
+	    
             delta_position_North = np.append(delta_position_North, delta_North)
             delta_position_East = np.append(delta_position_East, delta_East)
 
@@ -205,7 +206,7 @@ class MLParallaxes(object):
             Earth_position = slalib.sla_epv(tt)
             Sun_position = -Earth_position[0]
             delta_sun = Sun_position - (tt - topar) * Sun_speed_ref - Sun_position_ref
-            # import pdb; pdb.set_trace()
+            
 
             delta_Sun.append(delta_sun.tolist())
 
@@ -219,7 +220,7 @@ class MLParallaxes(object):
         radius = self.Earth_radius + altitude
         Longitude = longitude * np.pi / 180.0
         Latitude = latitude * np.pi / 180.0
-	import pdb; pdb.set_trace()
+	
         delta_North = []
         delta_East = []
         for i in t:
@@ -251,7 +252,7 @@ class MLParallaxes(object):
         ra = positions[:, 1].astype(float)
         dec = positions[:, 2].astype(float)
         distances = positions[:, 3].astype(float)
-
+	
         interpol_ra = interpolate.interp1d(dates, ra)
         interpol_dec = interpolate.interp1d(dates, dec)
         interpol_dist = interpolate.interp1d(dates, distances)
@@ -263,19 +264,24 @@ class MLParallaxes(object):
 
         delta_North = []
         delta_East = []
+	delta_sat = []
         for i in xrange(len(t)):
 
             tt = i
-            delta_North.append(distance_interpolated[tt] * (np.sin(dec_interpolated[tt]) * np.cos(
-                self.target_angles[1]) - np.cos(dec_interpolated[tt]) * np.sin(
-                self.target_angles[1]) * np.cos(ra_interpolated[tt])))
-            delta_East.append(distance_interpolated[tt] * np.cos(dec_interpolated[tt]) * np.sin(
-                ra_interpolated[tt]))
+            #delta_North.append(distance_interpolated[tt] * (np.sin(dec_interpolated[tt]*np.pi/180) * np.cos(
+            #    self.target_angles[1]) - np.cos(dec_interpolated[tt]*np.pi/180) * np.sin(
+            #    self.target_angles[1]) * np.cos(ra_interpolated[tt]*np.pi/180-self.target_angles[0])))
+            #delta_East.append(distance_interpolated[tt] * np.cos(dec_interpolated[tt]*np.pi/180) * np.sin(
+            #    ra_interpolated[tt]*np.pi/180-self.target_angles[0]))
+	    
+       	    
+	    delta_sat.append(distance_interpolated[tt]*slalib.sla_dcs2c(ra_interpolated[tt]*np.pi/180,dec_interpolated[tt]*np.pi/180))
+	
+	delta_sat=np.array(delta_sat)
+	delta_sat_proj = np.array([np.dot(delta_sat, self.North), np.dot(delta_sat, self.East)])
 
-        delta_positions = np.array([delta_North, delta_East])
-      
 
-        return delta_positions
+        return delta_sat_proj
 
     def parallax_outputs(self, PiE):
 

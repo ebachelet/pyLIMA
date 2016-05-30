@@ -363,6 +363,7 @@ def LM_plot_model(fit, ax) :
 
 	    reference_telescope = copy.copy(fit.event.telescopes[0])
 	    reference_telescope.lightcurve = np.array([time,[0]*len(time),[0]*len(time)]).T
+	    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
     else :
 
