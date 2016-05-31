@@ -24,49 +24,68 @@ class MLFits(object):
     This module fits the event with the selected attributes.
     WARNING: All fits (and so results) are made using data in flux.
 
-    Keyword arguments:
+    Attributes :
 
-    model --> The microlensing model you want to fit. Has to be an object define in microlmodels module.
-              More details on the microlmodels module.
+         event : the event object on which you perform the fit on. More details on the event module.
+ 
+	 model : The microlensing model you want to fit. Has to be an object define in microlmodels module.
+                 More details on the microlmodels module.
 
-    method --> The fitting method you want to use. Has to be a string :
+	 method : The fitting method you want to use for the fit.
+                 
+	 guess : The guess you can give to the fit or the guess return by the initial_guess function.
 
-              'LM' --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
-              WARNING : the parameter maxfev (number of maximum iterations) is set to 50000
-                        the parameter ftol (relative precision on the chi^2) is set to 0.00001
-                        your fit may not converge because of these limits.
-                        The starting points of this method are found using the initial_guess method.
-                        Obviously, this can fail. In this case, switch to method 'DE'.
-                        
-              'DE' --> Differential evolution algoritm. Based on the scipy.optimize.differential_evolution.
-                       Look Storn & Price (1997) : "Differential Evolution – A Simple and Efficient Heuristic for global Optimization over Continuous Spaces"
-                       Because this method is heuristic, it is not 100% sure a satisfying solution is found. Just relaunch :)
-                       The result is then use as a starting point for the 'LM' method.
-                       
-                       
-              'MCMC' --> Monte-Carlo Markov Chain algorithm. Based on the emcee python package :  
-                         " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
-                         The inital population is computed around the best solution return by
-                         the 'DE' method.
+	 fit_results : the fit parameters returned by method LM and DE. 
 
-    
-    Return :
+	 fit_covariance : the fit parameters covariance matrix returned by method LM and DE.
+	
+	 fit_time : the time needed to fit.
+	
+	 MCMC_chains : the MCMC chains returns by the MCMC method
+	 
+	 MCMC_probabilities : the objective function computed for each chains of the MCMC method
 
-    Outputs depends on the method :
-    
-            'LM' and 'DE' --> the fit will have the new attributes fit_results, fit_covariance and fit_time results.
-            'MCMC' -->  the fit will have the new attibutes MCMC_chains and MCMC_probabilities 
-            
-            """
+    """
 
     def __init__(self, event):
         """The fit class has to be intialized with an event. """
+
         self.event = event
 
     def mlfit(self, model, method):
-        """This function realize the requested fit, and produce outputs accordingly.
-            Note that a sanity check is done post-fit to assess the fit quality with the check_fit function."""
-        self.model = model
+        """This function realize the requested microlensin fit, and set the according results attributes.
+	
+
+		:param model: The microlensing model you want to fit. Has to be an object define in microlmodels module.
+	                      More details on the microlmodels module.
+
+    		:param method: The fitting method you want to use. Has to be a string  in :
+
+              		       'LM' --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
+                       	        WARNING : the parameter maxfev (number of maximum iterations) is set to 50000
+                       		the parameter ftol (relative precision on the chi^2) is set to 0.00001
+                       		your fit may not converge because of these limits.
+                       		The starting points of this method are found using the initial_guess method.
+                       		Obviously, this can fail. In this case, switch to method 'DE'.
+                        
+              			'DE' --> Differential evolution algoritm. Based on the scipy.optimize.differential_evolution.
+                       		Look Storn & Price (1997) : "Differential Evolution – A Simple and Efficient Heuristic for 		               		global Optimization over Continuous Spaces"
+                       		Because this method is heuristic, it is not 100% sure a satisfying solution is found. Just 					relaunch :)
+                       		The result is then use as a starting point for the 'LM' method.
+                       
+                       
+              			'MCMC' --> Monte-Carlo Markov Chain algorithm. Based on the emcee python package :  
+                         	" emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
+                         	The inital population is computed around the best solution return by
+                         	the 'DE' method.
+       				
+	Note that a sanity check is done post-fit to assess the fit quality with the check_fit 
+	function.
+
+	"""
+        
+
+	self.model = model
         self.method = method
 
         if self.method == 'LM':
@@ -112,14 +131,15 @@ class MLFits(object):
          A negative source flux is also counted as a bad fit.
          A negative rho or rho> 0.1 is also consider as a bad fit
         """
-        flag = 'Good Fit'
+
+        flag_quality = 'Good Fit'
         diago = np.diag(self.fit_covariance) < 0
 
         if (0.0 in self.fit_covariance) | (True in diago) | ( np.isnan(self.fit_covariance).any()) | (np.isinf(self.fit_covariance).any()):
 
             print 'Your fit probably wrong. Cause ==> bad covariance matrix'
-            flag = 'Bad Fit'
-            return flag
+            flag_quality = 'Bad Fit'
+            return flag_quality
 
         for i in self.event.telescopes:
 
@@ -127,20 +147,25 @@ class MLFits(object):
 
                 print 'Your fit probably wrong. Cause ==> negative source flux for telescope ' + \
                       i.name
-                flag = 'Bad Fit'
-                return flag
+                flag_quality = 'Bad Fit'
+                return flag_quality
 
         if 'rho' in self.model.model_dictionnary:
 
             if (self.fit_results[self.model.model_dictionnary['rho']] >0.1) |(self.fit_results[self.model.model_dictionnary['rho']] <0.0) :
 
                 print 'Your fit probably wrong. Cause ==> bad rho ' 
-                flag = 'Bad Fit'
-                return flag
-        return flag
+                flag_quality = 'Bad Fit'
+                return flag_quality
+
+        return flag_quality
 
     def initial_guess(self):
-        
+        """Try to estimate the microlensing parameters. Only use for PSPL and FSPL
+	models. More details on microlguess module.
+        """
+	#Estimate  the Paczynski parameters
+
         if self.model.paczynski_model == 'PSPL':
 
             parameters,fs = microlguess.initial_guess_PSPL(self.event)        
@@ -148,7 +173,9 @@ class MLFits(object):
         if self.model.paczynski_model == 'FSPL':
 
             parameters,fs = microlguess.initial_guess_FSPL(self.event)
-        
+
+        #Estimate  the telescopes fluxes (flux_source + g_blending) parameters  
+
         fake_model = microlmodels.MLModels(self.event, 'PSPL')
         fluxes = self.find_fluxes(parameters, fake_model)
         fluxes[0] = fs
@@ -178,156 +205,200 @@ class MLFits(object):
         """ The MCMC method. Construc starting points of the chains around
             the best solution found by the 'DE' method.
             The objective function is chichi_MCMC. Optimization
-            is made on Paczynski parameters, fs and g are found using a linear fit.
-            Launch nwalkers chains with 100 links
-            
-            """
-        
-        
-        AA=differential_evolution(self.chichi_differential,
+            is made on Paczynski parameters, fs and g are found using a linear fit (np.polyfit).
+	    Based on the emcee python package :  
+            " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
+	    Have a look here : http://dan.iel.fm/emcee/current/
+            Launch nwalkers = 100*number_of_paczynski_parameters chains with 100 links
+        """
+        differential_evolution_estimation = differential_evolution(self.chichi_differential,
                                    bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
                                    recombination=0.7,polish='None')
-        res=AA['x']
-        ndim = len(res)
-        nwalkers = 100*ndim
-        pp0 = []
+	# Best solution
+        res=differential_evolution_estimation['x']
+        
+	number_of_paczynski_parameters = len(res)
+        nwalkers = 100*number_of_paczynski_parameters
+	
+	# Initialize the population of MCMC        
+	population = []
 
         i=0
         while i < nwalkers:
-            p1 = []
-            for j in range(ndim):
+	    # Construct an individual of the population around the best solution. THIS NEED A REWORK 
+	    # TO TAKE ACCOUNT SECOND ORDER!
+	
+            individual = []
+            for j in range(number_of_paczynski_parameters):
 
                 if j==0:
                     
-                    p1.append(res[j]+np.random.uniform(-1,1))
+                    individual.append(res[j]+np.random.uniform(-1,1))
                 if j==1:
                     
-                    p1.append(res[j]*(np.random.uniform(0.1,3)))
+                    individual.append(res[j]*(np.random.uniform(0.1,3)))
                 if j==2:
             
-                    p1.append(res[j]*(np.random.uniform(0.1,3)))
+                    individual.append(res[j]*(np.random.uniform(0.1,3)))
                 
                 if j==3:
                     
-                    p1.append(res[j]*(np.random.uniform(0.1,3)))
+                    individual.append(res[j]*(np.random.uniform(0.1,3)))
 
-            chichi = self.chichi_MCMC(p1)
+            chichi = self.chichi_MCMC(individual)
             if chichi != -np.inf :
                 
-                pp0.append(np.array(p1))
+                population.append(np.array(individual))
                 i+=1
            
      
 
-        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.chichi_MCMC)
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_paczynski_parameters, self.chichi_MCMC)
 
-        pos, prob, state = sampler.run_mcmc(pp0, 100)
+	# First estimation using population as a starting points.
+
+        final_positions, final_probabilities, state = sampler.run_mcmc(population, 100)
         sampler.reset()
-        pos, prob, state = sampler.run_mcmc(pos, 100)
+	
+	# Final estimation using the previous output.
 
+        final_positions, final_probabilities, state = sampler.run_mcmc(final_positions, 100)
 
-        chains = sampler.chain
-        probability = sampler.lnprobability
+	
+        MCMC_chains = sampler.chain
+        MCMC_probabilities = sampler.lnprobability
             
-        return chains,probability
+        return MCMC_chains, MCMC_probabilities
 
     def diff_evolution(self) :
-        """ The DE method. Heuristic global optimizer. Optimization
-             is made on Paczynski parameters inside self.model.parameters_boundaries,
-             fs and g are found using a linear fit.
-            
+        """  The DE method. Differential evolution algoritm. 
+	     Based on the scipy.optimize.differential_evolution.
+             Look Storn & Price (1997) : 
+	     "Differential Evolution – A Simple and Efficient Heuristic for 
+	     global Optimization over Continuous Spaces"
+	     WARNING : tol (relative standard deviation of the objective function) is set to 10^-6
+                       popsize (the total number of individuals is : popsize*number_of_paczynski_parameters)
+		       is set to 20
+                       mutation is set to (0.5, 1.5) 
+		       recombination is set to 0.6
+                       These parameters can avoid the fit to properly converge (expected to be rare :)).
+		       Just relaunch should be fine.
+
         """
-        start = TIME.time()
-        AA = differential_evolution(self.chichi_differential,
+
+        starting_time = TIME.time()
+        differential_evolution_estimation = differential_evolution(self.chichi_differential,
                                     bounds=self.model.parameters_boundaries,
-                                    mutation=(0.5, 1.5), popsize=20, tol=0.000001,
+                                    mutation=0.6, popsize=20, tol=0.000001,
                                     recombination=0.6, polish='True', disp=True)
-        import pdb; pdb.set_trace()
-        self.guess = AA['x'].tolist() + self.find_fluxes(AA['x'].tolist(), self.model)
-
-        fit_res, cov,fit_time = self.lmarquardt()
-
-        computation_time = TIME.time() - start
-        return fit_res, cov, computation_time
         
-        
+	paczynski_parameters = differential_evolution_estimation['x'].tolist()
+
+	# Construct the guess for the LM method. In principle, guess and outputs of the LM 
+	# method should be very close.
+
+        self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
+
+        fit_results, fit_covariance, fit_time = self.lmarquardt()
+
+        computation_time = TIME.time() - starting_time
+
+        return fit_results, fit_covariance, computation_time
+              
     def lmarquardt(self):
-        """Method LM of solver. This is based on the Levenberg-Marquardt algorithm:
+        """The LM method. This is based on the Levenberg-Marquardt algorithm:
 
-        "A Method for the Solution of Certain Problems in Least Squares"
-        Levenberg, K. Quart. Appl. Math. 2, 1944, p. 164-168
-        "An Algorithm for Least-Squares Estimation of Nonlinear Parameters"
-        Marquardt, D. SIAM J. Appl. Math. 11, 1963, p. 431-441
+           "A Method for the Solution of Certain Problems in Least Squares"
+            Levenberg, K. Quart. Appl. Math. 2, 1944, p. 164-168
+           "An Algorithm for Least-Squares Estimation of Nonlinear Parameters"
+            Marquardt, D. SIAM J. Appl. Math. 11, 1963, p. 431-441
 
-        Based scipy.optimize.leastsq python routine, which is based on MINPACK's lmdif and lmder
-        algorithms (fortran based).
+           Based on scipy.optimize.leastsq python routine, which is based on MINPACK's lmdif and lmder
+           algorithms (fortran based).
 
-        The objective function (function to minimize) is residuals
-        The starting point is found using the initial_guess function
-        the Jacobian is given by the Jacobian function
+           The objective function (function to minimize) is LM_residuals
+           The starting point parameters are self.guess.
+           the Jacobian is given by the LM_Jacobian function
 
-        The fit is performed on all parameters : Paczynski parameters, second_order and telescopes fluxes.
+           The fit is performed on all parameters : Paczynski parameters and telescopes fluxes.
         
-        WARNING : ftol (relative error desired in the sum of square) is set to 10^-6
-                  maxfev (maximum number of function call) is set to 50000
-                  These limits can avoid the fit to properly converge (expected to be rare :))
+           WARNING : ftol (relative error desired in the sum of square) is set to 10^-6
+                     maxfev (maximum number of function call) is set to 50000
+                     These limits can avoid the fit to properly converge (expected to be rare :))
         """
-        start = TIME.time()
+        starting_time = TIME.time()
         
         #use the analytical Jacobian (faster) if no second order are present, else let the algorithm find it.
         ### NEED CHANGE ###
         #import pdb; pdb.set_trace()
 
         if self.model.parallax_model[0] == 'None':
-            lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, Dfun=self.Jacobian,
+            lmarquardt_fit = leastsq(self.LM_residuals, self.guess, maxfev=50000, Dfun=self.LM_Jacobian,
                                      col_deriv=1, full_output=1, ftol=10 ** -6, xtol=10 ** -10,
                                      gtol=10 ** -5)
         else:
 
-            lmarquardt_fit = leastsq(self.residuals, self.guess, maxfev=50000, full_output=1,
+            lmarquardt_fit = leastsq(self.LM_residuals, self.guess, maxfev=50000, full_output=1,
                                      ftol=10 ** -5, xtol=10 ** -5)
 
-        computation_time = TIME.time() - start
+        computation_time = TIME.time() - starting_time
 
-        fit_res = lmarquardt_fit[0].tolist()
-        fit_res.append(self.chichi(lmarquardt_fit[0]))
-        n_data = 0.0
+        fit_result = lmarquardt_fit[0].tolist()
+        fit_result.append(self.chichi(lmarquardt_fit[0]))
+        
+	n_data = 0.0
 
-        for i in self.event.telescopes:
+        for telescope in self.event.telescopes:
 
-            n_data = n_data + i.n_data('Flux')
+            n_data = n_data + telescope.n_data('Flux')
+
         n_parameters = len(self.model.model_dictionnary)
-        try:
+        
+	try:
+	    # Try to extract the covariance matrix from the lmarquard_fit output
 
             if (True not in (lmarquardt_fit[1].diagonal() < 0)) & (lmarquardt_fit[1] is not None):
-
-                cov = lmarquardt_fit[1] * fit_res[len(self.model.model_dictionnary)] / (
-                    n_data - n_parameters)
-                # import pdb; pdb.set_trace()
-
+		
+		# Normalise the output by the reduced chichi
+                covariance_matrix = lmarquardt_fit[1] * fit_result[len(self.model.model_dictionnary)] / (
+                    		    n_data - n_parameters)
+            
+	    # Try to do it "manually"
             else:
 
-                print 'rough cov'
-                jacky = self.Jacobian(fit_res)
-                cov = np.linalg.inv(np.dot(jacky, jacky.T)) * fit_res[
-                    len(self.model.model_dictionnary)] / (n_data - n_parameters)
-                if True in (cov.diagonal() < 0):
-                    print 'Bad rough covariance'
-                    cov = np.zeros((len(self.model.model_dictionnary),
-                                    len(self.model.model_dictionnary)))
-        except:
-            print 'hoho'
-            cov = np.zeros((len(self.model.model_dictionnary),
-                            len(self.model.model_dictionnary)))
+                print ' Attempt to construct a rough covariance matrix'
+                jacobian = self.LM_Jacobian(fit_result)
+		
+		covariance_matrix = np.linalg.inv(np.dot( jacobian,  jacobian.T))
+		# Normalise the output by the reduced chichi
+                covariance_matrix = covariance_matrix * fit_res[
+                    		    len(self.model.model_dictionnary)] / (n_data - n_parameters)
+
+		# Construct a dummy covariance matrix
+                if True in (covariance_matrix.diagonal() < 0):
+                    print 'Bad covariance covariance matrix'
+                    covariance_matrix = np.zeros((len(self.model.model_dictionnary),
+                                       len(self.model.model_dictionnary)))
+	
+	# Construct a dummy covariance matrix        
+	except:
+            print 'Bad covariance covariance matrix'
+            covariance_matrix = np.zeros((len(self.model.model_dictionnary),
+                                len(self.model.model_dictionnary)))
         
 
-        return fit_res, cov, computation_time
+        return fit_result, covariance_matrix, computation_time
 
-    def Jacobian(self, parameters):
+    def LM_Jacobian(self, fit_process_parameters):
         
-        """Return the analytical Jacobian matrix, if requested by method LM. """
+        """Return the analytical Jacobian matrix, if requested by method LM.
+	   Available only for PSPL and FSPL without second_order. 
+	   PROBABLY NEED REWORK
+	"""
 
         if self.model.paczynski_model == 'PSPL':
+
+	    # Derivatives of the LM_residuals objective function, PSPL version
 
             dresdto = np.array([])
             dresduo = np.array([])
@@ -335,45 +406,48 @@ class MLFits(object):
             dresdfs = np.array([])
             dresdeps = np.array([])
 
-            to = parameters[0]
-            uo = parameters[1]
-            tE = parameters[2]
 
-            for i in self.event.telescopes:
+            for telescope in self.event.telescopes:
 
-                lightcurve = i.lightcurve_flux
-                Time = lightcurve[:, 0]
+                lightcurve = telescope.lightcurve_flux
+
+                time = lightcurve[:, 0]
                 errflux = lightcurve[:, 2]
-                gamma = i.gamma
+                gamma = telescope.gamma
+
+		# Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t). Amplification[1] is U(t).
+		
+                Amplification = self.model.magnification(fit_process_parameters, time, gamma)
+                dAmplificationdU = (-8) / (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
+
+		# Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
+                dUdto = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) / (
+                    fit_process_parameters[self.model.model_dictionnary['tE']] ** 2 * Amplification[1])
+                dUduo = fit_process_parameters[self.model.model_dictionnary['uo']] / Amplification[1]
+                dUdtE = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) ** 2 / (
+                    fit_process_parameters[self.model.model_dictionnary['tE']] ** 3 * Amplification[1])
 
 
-                ampli = self.model.magnification(parameters, Time, gamma)
-                dAdU = (-8) / (ampli[1] ** 2 * (ampli[1] ** 2 + 4) ** 1.5)
-
-                dUdto = -(Time - parameters[self.model.model_dictionnary['to']]) / (
-                    parameters[self.model.model_dictionnary['tE']] ** 2 * ampli[1])
-                dUduo = parameters[self.model.model_dictionnary['uo']] / ampli[1]
-                dUdtE = -(Time - parameters[self.model.model_dictionnary['to']]) ** 2 / (
-                    parameters[self.model.model_dictionnary['tE']] ** 3 * ampli[1])
-
+		# Derivative of the objective function
                 dresdto = np.append(dresdto,
-                                    -parameters[self.model.model_dictionnary['fs_' + i.name]] *
-                                    dAdU * dUdto / errflux)
+                                    -fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]] *
+                                    dAmplificationdU * dUdto / errflux)
                 dresduo = np.append(dresduo,
-                                    -parameters[self.model.model_dictionnary['fs_' + i.name]] *
-                                    dAdU * dUduo / errflux)
+                                    -fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]] *
+                                    dAmplificationdU * dUduo / errflux)
                 dresdtE = np.append(dresdtE,
-                                    -parameters[self.model.model_dictionnary['fs_' + i.name]] *
-                                    dAdU * dUdtE / errflux)
+                                    -fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]] *
+                                    dAmplificationdU * dUdtE / errflux)
                 dresdfs = np.append(dresdfs, -(
-                    ampli[0] + parameters[self.model.model_dictionnary['g_' + i.name]]) / errflux)
-                dresdeps = np.append(dresdeps, -parameters[
-                    self.model.model_dictionnary['fs_' + i.name]] / errflux)
+                    Amplification[0] + fit_process_parameters[self.model.model_dictionnary['g_' + telescope.name]]) / errflux)
+                dresdeps = np.append(dresdeps, -fit_process_parameters[
+                    self.model.model_dictionnary['fs_' + telescope.name]] / errflux)
 
             jacobi = np.array([dresdto, dresduo, dresdtE])
 
         if self.model.paczynski_model == 'FSPL':
 
+	    # Derivatives of the LM_residuals objective function, FSPL version
             dresdto = np.array([])
             dresduo = np.array([])
             dresdtE = np.array([])
@@ -382,166 +456,178 @@ class MLFits(object):
             dresdeps = np.array([])
 
             fake_model = microlmodels.MLModels(self.event, 'PSPL')
-            fake_params = np.delete(parameters, self.model.model_dictionnary['rho'])
+            fake_params = np.delete(fit_process_parameters, self.model.model_dictionnary['rho'])
             
-            for i in self.event.telescopes:
+            for telescope in self.event.telescopes:
 
-                lightcurve = i.lightcurve_flux
-                Time = lightcurve[:, 0]
+                lightcurve = telescope.lightcurve_flux
+                time = lightcurve[:, 0]
                 errflux = lightcurve[:, 2]
-                gamma = i.gamma
+                gamma = telescope.gamma
 
                
+		# Derivative of A = Yoo et al (2004) method.
+                Amplification_PSPL = fake_model.magnification(fake_params, time, gamma)
+                dAmplification_PSPLdU = (-8) / (Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
 
-                ampli = fake_model.magnification(fake_params, Time, gamma)
-                dAdU = (-8) / (ampli[1] ** 2 * (ampli[1] ** 2 + 4) ** (1.5))
+		# Z=U/rho
+                Z = Amplification_PSPL[1] / fit_process_parameters[self.model.model_dictionnary['rho']]
 
-                Z = ampli[1] / parameters[self.model.model_dictionnary['rho']]
-
-                dadu = np.zeros(len(ampli[0]))
-                dadrho = np.zeros(len(ampli[0]))
-
+		
+                dadu = np.zeros(len(Amplification_PSPL[0]))
+                dadrho = np.zeros(len(Amplification_PSPL[0]))
+		
+		# Far from the lens (Z>>1), then PSPL.	
                 ind = np.where((Z > self.model.yoo_table[0][-1]))[0]
-                dadu[ind] = dAdU[ind]
+                dadu[ind] = dAmplification_PSPLdU[ind]
                 dadrho[ind] = -0.0
 
+		# Very close to the lens (Z<<1), then Witt&Mao limit.
                 ind = np.where((Z < self.model.yoo_table[0][0]))[0]
-
-                dadu[ind] = dAdU[ind] * (2 * Z[ind] - gamma * (2 - 3 * np.pi / 4) * Z[ind])
-                dadrho[ind] = -ampli[0][ind] * ampli[1][ind] / parameters[
+                dadu[ind] = dAmplification_PSPLdU[ind] * (2 * Z[ind] - gamma * (2 - 3 * np.pi / 4) * Z[ind])
+                dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / fit_process_parameters[
                                                                    self.model.model_dictionnary[
                                                                        'rho']] ** 2 * (
                                   2 - gamma * (2 - 3 * np.pi / 4))
 
-                ind = \
-                    np.where(
+		# FSPL regime (Z~1), then Yoo et al derivatives
+                ind = np.where(
                         (Z <= self.model.yoo_table[0][-1]) & (Z >= self.model.yoo_table[0][0]))[0]
-
-                dadu[ind] = dAdU[ind] * (
+                dadu[ind] = dAmplification_PSPLdU[ind] * (
                     self.model.yoo_table[1](Z[ind]) - gamma * self.model.yoo_table[2](
-                        Z[ind])) + ampli[0][ind] * (
+                        Z[ind])) + Amplification_PSPL[0][ind] * (
                     self.model.yoo_table[3](Z[ind]) - gamma * self.model.yoo_table[4](
-                        Z[ind])) * 1 / parameters[self.model.model_dictionnary['rho']]
+                        Z[ind])) * 1 / fit_process_parameters[self.model.model_dictionnary['rho']]
 
-                dadrho[ind] = -ampli[0][ind] * ampli[1][ind] / parameters[
+                dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / fit_process_parameters[
                                                                    self.model.model_dictionnary[
                                                                        'rho']] ** 2 * (
                                   self.model.yoo_table[3](Z[ind]) - gamma * self.model.yoo_table[4](
                                       Z[ind]))
 
-                dUdto = -(Time - parameters[self.model.model_dictionnary['to']]) / (
-                    parameters[self.model.model_dictionnary['tE']] ** 2 * ampli[1])
-                dUduo = parameters[self.model.model_dictionnary['uo']] / ampli[1]
-                dUdtE = -(Time - parameters[self.model.model_dictionnary['to']]) ** 2 / (
-                    parameters[self.model.model_dictionnary['tE']] ** 3 * ampli[1])
-                dresdto = np.append(dresdto, -parameters[
-                    self.model.model_dictionnary['fs_' + i.name]] * dadu *
+                dUdto = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) / (
+                    fit_process_parameters[self.model.model_dictionnary['tE']] ** 2 * Amplification_PSPL[1])
+                dUduo = fit_process_parameters[self.model.model_dictionnary['uo']] / Amplification_PSPL[1]
+                dUdtE = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) ** 2 / (
+                    fit_process_parameters[self.model.model_dictionnary['tE']] ** 3 * Amplification_PSPL[1])
+                
+
+		# Derivative of the objective function
+		dresdto = np.append(dresdto, -fit_process_parameters[
+                    self.model.model_dictionnary['fs_' + telescope.name]] * dadu *
                                     dUdto / errflux)
-                dresduo = np.append(dresduo, -parameters[
-                    self.model.model_dictionnary['fs_' + i.name]] * dadu *
+                dresduo = np.append(dresduo, -fit_process_parameters[
+                    self.model.model_dictionnary['fs_' + telescope.name]] * dadu *
                                     dUduo / errflux)
-                dresdtE = np.append(dresdtE, -parameters[
-                    self.model.model_dictionnary['fs_' + i.name]] * dadu *
+                dresdtE = np.append(dresdtE, -fit_process_parameters[
+                    self.model.model_dictionnary['fs_' + telescope.name]] * dadu *
                                     dUdtE / errflux)
 
                 dresdrho = np.append(dresdrho,
-                                     -parameters[self.model.model_dictionnary['fs_' + i.name]] *
+                                     -fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]] *
                                      dadrho / errflux)
 
                 
 
-                ampli = self.model.magnification(parameters, Time, gamma)
+                Amplification_FSPL = self.model.magnification(fit_process_parameters, time, gamma)
                 dresdfs = np.append(dresdfs, -(
-                    ampli[0] + parameters[self.model.model_dictionnary['g_' + i.name]]) / errflux)
-                dresdeps = np.append(dresdeps, -parameters[
-                    self.model.model_dictionnary['fs_' + i.name]] / errflux)
+                    Amplification_FSPL[0] + fit_process_parameters[self.model.model_dictionnary['g_' + telescope.name]]) / errflux)
+                dresdeps = np.append(dresdeps, -fit_process_parameters[
+                    self.model.model_dictionnary['fs_' + telescope.name]] / errflux)
 
             jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho])
 
-        start = 0
-
-        for i in self.event.telescopes:
+	# Split the fs and g derivatives in several columns correpsonding to 
+	# each observatories 
+        start_index = 0
+	
+        for telescope in self.event.telescopes:
 
             dFS = np.zeros((len(dresdto)))
-            dEPS = np.zeros((len(dresdto)))
-            index = np.arange(start, start + len(i.lightcurve_flux[:, 0]))
+            dG = np.zeros((len(dresdto)))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))
             dFS[index] = dresdfs[index]
-            dEPS[index] = dresdeps[index]
+            dG[index] = dresdeps[index]
             jacobi = np.vstack([jacobi, dFS])
-            jacobi = np.vstack([jacobi, dEPS])
+            jacobi = np.vstack([jacobi, dG])
 
-            start = index[-1] + 1
+            start_index = index[-1] + 1
 
-        #import pdb; pdb.set_trace()
+        
 
         return jacobi
 
-    def residuals(self, parameters):
+    def LM_residuals(self, fit_process_parameters):
         """ The normalized residuals associated to the model and parameters.
         residuals_i=(y_i-model_i)/sigma_i
         The sum of square residuals gives chi^2.
         """
-        errors = np.array([])
-        count = 0
-        
-        for i in self.event.telescopes:
+	
+	# Construct an np.array with each telescope residuals
+        residuals = np.array([])
+       
+        for telescope in self.event.telescopes:
            
-            lightcurve = i.lightcurve_flux
-            Time = lightcurve[:, 0]
+            lightcurve = telescope.lightcurve_flux
+            time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            gamma = i.gamma
+            gamma = telescope.gamma
            
-            ampli = self.model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
+	    # magnification according to the model. amplification[0] is A(t), amplification[1] is u(t)
+            amplification = self.model.magnification(fit_process_parameters, time, gamma, telescope.deltas_positions)[0]
            
 
-            errors = np.append(errors, (
-                flux - ampli * parameters[self.model.model_dictionnary['fs_' + i.name]] -
-                (parameters[self.model.model_dictionnary['fs_' + i.name]] * parameters[
-                    self.model.model_dictionnary['g_' + i.name]])) / errflux)
+            residuals = np.append(residuals, (
+                flux - amplification * fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]] -
+                (fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]] * fit_process_parameters[
+                    self.model.model_dictionnary['g_' +  telescope.name]])) / errflux)
 
             
-            count = count + 1
-            # plt.show()
-        return errors
+            
+        return residuals
 
-    def chichi(self, parameters):
+    def chichi(self, fit_process_parameters):
         """Return the chi^2. """
-        errors = self.residuals(parameters)
-        chichi = (errors ** 2).sum()
+
+        residuals = self.LM_residuals(fit_process_parameters)
+        chichi = (residuals ** 2).sum()
 
         return chichi
 
-    def chichi_telescopes(self, parameters):
+    def chichi_telescopes(self, fit_process_parameters):
         """Return the chi^2 for each telescopes """
-        errors = self.residuals(parameters)
+
+        residuals = self.LM_residuals(fit_process_parameters)
         CHICHI = []
-        start = 0
-        for i in self.event.telescopes:
+        start_index = 0
+        for telescope in self.event.telescopes:
 
-            CHICHI.append((errors[start:start + len(i.lightcurve_flux)] ** 2).sum())
+            CHICHI.append((residuals[start:start + len(telescope.lightcurve_flux)] ** 2).sum())
 
-            start = start + len(i.lightcurve_flux)
+            start_index += len(telescope.lightcurve_flux)
 
         return CHICHI
 
-    def chichi_differential(self, parameters):
+    def chichi_differential(self, fit_process_parameters):
         """Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit. """
-        errors = np.array([])
+
+        residuals = np.array([])
         
-        for i in self.event.telescopes:
-            lightcurve = i.lightcurve_flux
-            Time = lightcurve[:, 0]
+        for telescope in self.event.telescopes:
+            lightcurve = telescope.lightcurve_flux
+            time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            gamma = i.gamma
+            gamma = telescope.gamma
             
             
 
             try :
 	       
-                ampli = self.model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
-                fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
+		# magnification according to the model. amplification[0] is A(t), amplification[1] is u(t)
+                amplification = self.model.magnification(fit_process_parameters, time, gamma,telescope.deltas_positions)[0]
+                fs, fb = np.polyfit(amplification, flux, 1, w=1 / errflux)
             except :
                 return np.inf
             #print i.name,fs
@@ -549,28 +635,27 @@ class MLFits(object):
                 # print fs
                 return np.inf
 
-            errors = np.append(errors, (flux - ampli * fs - fb) / errflux)
+            residuals = np.append(residuals, (flux - amplification * fs - fb) / errflux)
         # import pdb; pdb.set_trace()
-        chichi = (errors ** 2).sum()
+        chichi = (residuals ** 2).sum()
         return chichi
 
-    def chichi_MCMC(self, parameters):
-        """Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit. """
-        errors = np.array([])
+    def chichi_MCMC(self, fit_process_parameters):
+        """Return the chi^2 for MCMC. fsi,fbi evaluated trough polyfit. """
+
+        residuals = np.array([])
        
+        for telescope in self.event.telescopes:
 
-        
-        for i in self.event.telescopes:
-
-            lightcurve = i.lightcurve_flux
-            Time = lightcurve[:, 0]
+            lightcurve = telescope.lightcurve_flux
+            time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            gamma = i.gamma
+            gamma = telescope.gamma
 
-            ampli = self.model.magnification(parameters, Time, gamma)[0]
+            amplification = self.model.magnification(fit_process_parameters, time, gamma)[0]
 
-            fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
+            fs, fb = np.polyfit(amplification, flux, 1, w=1 / errflux)
 
             # Little prior here
             if (fs < 0) | (fb/fs<-1.0):
@@ -580,42 +665,44 @@ class MLFits(object):
             
             else:
 
-                errors = np.append(errors, (flux - ampli * fs - fb) / errflux)
+                residuals = np.append(residuals, (flux - amplification * fs - fb) / errflux)
                 
-                chichi = (errors ** 2).sum()
+                chichi = (residuals ** 2).sum()
                 # Little prior here
-                chichi+=+np.log(len(Time))*1/(1+fb/fs)
+                chichi += np.log(len(time))*1/(1+fb/fs)
                  
         return - (chichi)
 
-    def find_fluxes(self, parameters, model):
-        """ Find telescopes flux associated to the model. Note
-        that in some case model differ from self.model (the requested model to fit)
+    def find_fluxes(self, fit_process_parameters, model):
+        """ Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM method.
         """
-        fluxes = []
+        telescopes_fluxes = []
 
-        for i in self.event.telescopes:
-            lightcurve = i.lightcurve_flux
-            Time = lightcurve[:, 0]
+        for telescope in self.event.telescopes:
+            lightcurve = telescope.lightcurve_flux
+            time = lightcurve[:, 0]
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            gamma = i.gamma
+            gamma = telescope.gamma
 
-            ampli = model.magnification(parameters, Time, gamma,i.deltas_positions)[0]
+            amplification = model.magnification(fit_process_parameters, time, gamma,telescope.deltas_positions)[0]
            
-            fs, fb = np.polyfit(ampli, flux, 1, w=1 / errflux)
+            fs, fb = np.polyfit(amplification, flux, 1, w=1 / errflux)
+	    #Prior here
             if (fs < 0) :
 
-                fluxes.append(np.min(flux))
-                fluxes.append(0.0)
+                telescopes_fluxes.append(np.min(flux))
+                telescopes_fluxes.append(0.0)
             else:
-                fluxes.append(fs)
-                fluxes.append(fb / fs)
-        return fluxes
+                telescopes_fluxes.append(fs)
+                telescopes_fluxes.append(fb / fs)
+        return telescopes_fluxes
 
 
     def produce_outputs(self) :
-        """ Produce the standard outputs for a fit """
+        """ Produce the standard outputs for a fit.
+	    More details in microloutputs module.	
+	"""
         
         if self.method != 'MCMC' :
             
@@ -625,4 +712,4 @@ class MLFits(object):
             
             outputs = microloutputs.MCMC_outputs(self)
         
-        self.outputs=outputs
+        self.outputs = outputs

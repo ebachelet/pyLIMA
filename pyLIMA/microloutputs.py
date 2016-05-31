@@ -359,14 +359,14 @@ def LM_plot_model(fit, ax) :
     max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
 	
     time = np.arange(min_time, max_time + 100, 0.01) 
-    if fit.model.parallax_model !='None' :
-
+    if fit.model.parallax_model[0] !='None' :
+	    #import pdb; pdb.set_trace()
 	    reference_telescope = copy.copy(fit.event.telescopes[0])
 	    reference_telescope.lightcurve = np.array([time,[0]*len(time),[0]*len(time)]).T
 	    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
     else :
-
+ 	  #import pdb; pdb.set_trace()
 	  reference_telescope = fit.event.telescopes[0] 
     gamma = reference_telescope.gamma
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope.name]]

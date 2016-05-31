@@ -8,9 +8,6 @@ Created on Tue Dec  8 14:37:33 2015
 from __future__ import division
 import numpy as np
 
-
-
-
 def amplification_PSPL(tau, uo):
     """ The Pacziynski magnification """
     

@@ -81,10 +81,11 @@ class Telescope(object):
     
        
     def arrange_the_lightcurve_columns(self):
-        """ Rearange the lightcurve in magnitude in the pyLIMA convention"
-        """
-        lightcurve = []
+        """ Rearange the lightcurve in magnitude in the pyLIMA convention."""
+        
+	lightcurve = []
         pyLIMA_convention = ['time','mag','err_mag']
+
         for good_column in pyLIMA_convention :
             
             lightcurve.append(self.lightcurve[:,self.lightcurve_dictionnary[good_column]])
@@ -113,9 +114,9 @@ class Telescope(object):
         temperature and the given surface gravity in log10 cgs.
         
         WARNING. Two strong assomption are made :
-                  - the microturbulent velocity vt is fixed to 2 km/s
+                  - the microturbulent velocity turbulent_velocity is fixed to 2 km/s
                   
-                  - the metallicity is fixed equal to the Sun : metal=0.0
+                  - the metallicity is fixed equal to the Sun : metallicity=0.0
         :param Teff: The effective temperature of the source in Kelvin.
         :param log_g: The log10 surface gravity in cgs.
         :param path: path to Claret table. MODIFY THIS PLEASE!      
@@ -124,29 +125,41 @@ class Telescope(object):
         """
         # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011
         # convention
-        vt = 2.0
-        metal = 0.0
+        turbulent_velocity = 2.0
+        metallicity = 0.0
 
         # TODO: Use read claret generator
 
-        claret = fits.open(path + 'Claret2011.fits')
-        claret = np.array(
-            [claret[1].data['log g'], claret[1].data['Teff (K)'], claret[1].data['Z (Sun)'],
-             claret[1].data['Xi (km/s)'], claret[1].data['u'], claret[1].data['filter']]).T
-
-        index_filter = np.where(claret[:, 5] == self.filter)[0]
-        claret_reduce = claret[index_filter, :-1].astype(float)
-        coeff_index = np.sqrt(
-            (claret_reduce[:, 0] - log_g) ** 2 + (claret_reduce[:, 1] - Teff) ** 2 + (
-            claret_reduce[:, 2] - metal) ** 2
-            + (claret_reduce[:, 3] - vt) ** 2).argmin()
-        uu = claret_reduce[coeff_index, -1]
-
-        self.gamma = 2 * uu / (3 - uu)
-    def compute_parallax(self,event,parallax):   
+        claret_table = fits.open(path + 'Claret2011.fits')
+        claret_table = np.array(
+            [claret_table[1].data['log g'], claret_table[1].data['Teff (K)'], claret_table[1].data['Z (Sun)'],
+             claret_table[1].data['Xi (km/s)'], claret_table[1].data['u'], claret_table[1].data['filter']]).T
 	
+	# Find the raw corresponding to the requested filter.
+
+        indexes_filter = np.where(claret_table[:, 5] == self.filter)[0]
+        claret_table_reduce = claret_table[indexes_filter, :-1].astype(float)
+
+	# Find the raw by computing distance of all raw and coefficient
+
+        limb_darkening_coefficient_raw_index = np.sqrt(
+            (claret_table_reduce[:, 0] - log_g) ** 2 + (claret_table_reduce[:, 1] - Teff) ** 2 + (
+            claret_table_reduce[:, 2] - metallicity) ** 2
+            + (claret_table_reduce[:, 3] - turbulent_velocity) ** 2).argmin()
+
+        linear_limb_darkening_coefficient = claret_table_reduce[limb_darkening_coefficient_raw_index , -1]
+
+        self.gamma = 2 * linear_limb_darkening_coefficient / (3 - linear_limb_darkening_coefficient)
+    
+    def compute_parallax(self,event,parallax):   
+	"""
+        Need to be rethink for parallax.
+
+        """
 	para = microlparallax.MLParallaxes(event, parallax)
 	para.parallax_combination([self])
+
+
     def clean_data(self):
         """
         Clean outliers of the telescope for the fits. Points are considered as outliers if they
@@ -158,7 +171,7 @@ class Telescope(object):
         """
         
         maximum_accepted_precision = 10.0
-        outliers = 5.0
+        outliers_in_mag = 5.0
         
       
         index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
@@ -191,9 +204,12 @@ class Telescope(object):
         else:
 
             lightcurve = self.lightcurve
-        
+	
+	time = lightcurve[:,0]        
+	mag = lightcurve[:,1]
+	err_mag = lightcurve[:,2]
 
-        flux = microltoolbox.magnitude_to_flux(lightcurve[:,1])
-        errflux = -lightcurve[:, 2] * flux / (2.5) * np.log(10)
+        flux = microltoolbox.magnitude_to_flux(mag)
+        error_flux = microltoolbox.error_magnitude_to_error_flux(err_mag, flux)
         
-        return np.array([lightcurve[:, 0], flux, errflux]).T
+        return np.array([time, flux, error_flux]).T

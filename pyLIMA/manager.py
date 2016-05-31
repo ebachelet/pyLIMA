@@ -54,7 +54,7 @@ def main(command_line):
         #event_telescopes = ['OGLE2016BLG0813.dat','OGLE2016BLG0813_K2.dat']
         Names = ['MOA','Kepler']
 	Locations = ['Earth','Space']
-        event_telescopes = ['MOA2016BLG0221.dat','MOA2016BLG0221_K2.dat']
+        event_telescopes = ['OGLE2016BLG0813.dat']
 	count=0
 
         start=time.time()
@@ -81,11 +81,11 @@ def main(command_line):
    
         current_event.check_event()
        
-        Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['Annual', 2457510.0])
+        Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['None', 2457510.0])
         #import pdb; pdb.set_trace()
         #
 
-        current_event.fit(Model,'DE')
+        current_event.fit(Model,'LM')
         
         
         current_event.fits[0].produce_outputs()

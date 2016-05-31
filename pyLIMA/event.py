@@ -44,6 +44,7 @@ class Event(object):
 
     def __init__(self):
         """ Initialization of the attributes described above. """
+
         self.kind = 'Microlensing'
         self.name = 'Sagittarius A*'
         self.ra = 266.416792
@@ -149,8 +150,6 @@ class Event(object):
         """Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
         """
-           
-
         self.survey = choice or self.telescopes[0].name
 
         names = [telescope.name for telescope in self.telescopes]
@@ -186,7 +185,7 @@ class Event(object):
             
 
             :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'. More details in the telescope module
-            :return:  the lightcurve in flux
+            :return:  the lightcurve in flux for all telescopes.
         """
         for telescope in self.telescopes:
 

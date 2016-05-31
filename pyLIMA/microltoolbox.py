@@ -22,4 +22,9 @@ def flux_to_magnitude(flux):
     mag = magnitude_constant-2.5*np.log10(flux)
     
     return mag
+
+def error_magnitude_to_error_flux(error_mag, flux):
     
+    error_flux = error_mag * flux / (2.5) * np.log(10)
+    
+    return error_flux
