@@ -49,7 +49,7 @@ class Event(object):
         self.name = 'Sagittarius A*'
         self.ra = 266.416792
         self.dec = -29.007806
-        self.Teff = 5000
+        self.Teff = 5000 # Kelvins
         self.logg = 4.5
         self.telescopes = []
         self.survey = 'None'

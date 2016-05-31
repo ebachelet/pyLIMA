@@ -96,7 +96,7 @@ class Telescope(object):
         """ Return the number of data points in the lightcurve.
         
         :param choice: ['Flux' or 'Mag'] The unit you want to check data for. Lightcurve_flux and Lightcurve (in mag, initial input can diverge depending on the clean_data() function).        
-        
+        :return: the size of the corresponding lightcurve
         """
 
         if choice == 'Flux':

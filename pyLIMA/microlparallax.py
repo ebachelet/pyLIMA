@@ -217,24 +217,22 @@ class MLParallaxes(object):
 
     def terrestrial_parallax(self, t, altitude, longitude, latitude):
 
-        radius = self.Earth_radius + altitude
+        radius = (self.Earth_radius + altitude)/self.AU
         Longitude = longitude * np.pi / 180.0
         Latitude = latitude * np.pi / 180.0
 	
-        delta_North = []
-        delta_East = []
+        delta_telescope = []
         for i in t:
 
             tt = i - 2400000.5
             sideral_time = slalib.sla_gmst(tt)
-            telescope_longitude = - Longitude - self.target_angles[0]*np.pi/180 + sideral_time
-            delta_North.append(radius * (
-            np.sin(Latitude) * np.cos(self.target_angles[1]*np.pi/180) - np.cos(Latitude) * np.sin(
-                self.target_angles[1]*np.pi/180) * np.cos(telescope_longitude)))
-            delta_East.append(radius * np.cos(Latitude) * np.sin(telescope_longitude))
+            telescope_longitude = - Longitude - self.target_angles[0]*np.pi/180 + sideral_time/24.0*np.pi
+	    delta_telescope.append(radius*slalib.sla_dcs2c(telescope_longitude,Latitude))            
 
-        delta_positions = np.array([delta_North, delta_East])
-        return delta_positions
+
+        delta_telescope = np.array(delta_telescope)
+	delta_telescope_projected = np.array([np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])
+        return delta_telescope_projected
 
     def space_parallax(self, t, name):
         # tstart = self.HJD_to_JD(np.array([t[0]]))
@@ -262,9 +260,8 @@ class MLParallaxes(object):
         dec_interpolated = interpol_dec(t)
         distance_interpolated = interpol_dist(t)
 
-        delta_North = []
-        delta_East = []
-	delta_sat = []
+        
+	delta_satellite = []
         for i in xrange(len(t)):
 
             tt = i
@@ -275,13 +272,13 @@ class MLParallaxes(object):
             #    ra_interpolated[tt]*np.pi/180-self.target_angles[0]))
 	    
        	    
-	    delta_sat.append(distance_interpolated[tt]*slalib.sla_dcs2c(ra_interpolated[tt]*np.pi/180,dec_interpolated[tt]*np.pi/180))
+	    delta_satellite.append(distance_interpolated[tt]*slalib.sla_dcs2c(ra_interpolated[tt]*np.pi/180,dec_interpolated[tt]*np.pi/180))
 	
-	delta_sat=np.array(delta_sat)
-	delta_sat_proj = np.array([np.dot(delta_sat, self.North), np.dot(delta_sat, self.East)])
+	delta_satellite=np.array(delta_satellite)
+	delta_satellite_projected = np.array([np.dot(delta_satellite, self.North), np.dot(delta_satellite, self.East)])
 
 
-        return delta_sat_proj
+        return delta_satellite_projected
 
     def parallax_outputs(self, PiE):
 

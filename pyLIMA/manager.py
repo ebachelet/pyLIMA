@@ -54,7 +54,7 @@ def main(command_line):
         #event_telescopes = ['OGLE2016BLG0813.dat','OGLE2016BLG0813_K2.dat']
         Names = ['MOA','Kepler']
 	Locations = ['Earth','Space']
-        event_telescopes = ['OGLE2016BLG0813.dat']
+        event_telescopes = ['MOA2016BLG0221.dat']
 	count=0
 
         start=time.time()
@@ -85,7 +85,7 @@ def main(command_line):
         #import pdb; pdb.set_trace()
         #
 
-        current_event.fit(Model,'LM')
+        current_event.fit(Model,'DE')
         
         
         current_event.fits[0].produce_outputs()

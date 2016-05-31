@@ -9,39 +9,49 @@ from __future__ import division
 import numpy as np
 
 def amplification_PSPL(tau, uo):
-    """ The Pacziynski magnification """
-    
+    """ The Paczynski magnification.
+	"Gravitational microlensing by the galactic halo", 	
+	Paczynski, B. 1986
+	http://adsabs.harvard.edu/abs/1986ApJ...304....1P
+    """
+    # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
     U = (tau ** 2 + uo ** 2) ** 0.5
     U2 = U ** 2
-    ampli = (U2 + 2) / (U * (U2 + 4) ** 0.5)
+    amplification = (U2 + 2) / (U * (U2 + 4) ** 0.5)
     
-    
-    return ampli, U
+    #return both magnification and U, required by some methods
+    return amplification, U
 
 
 def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
-    """ The Yoo et al.(2004) magnification """
-    
+    """ The Yoo FSPL magnification.
+	"OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens", 	
+	Yoo, J. et al 2004
+	http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
+    """
     U = (tau ** 2 + uo ** 2) ** 0.5
     U2 = U ** 2
-    ampli = (U2 + 2) / (U * (U2 + 4) ** 0.5)
+    amplification_PSPL = (U2 + 2) / (U * (U2 + 4) ** 0.5)
    
     Z = U / rho
     
-    ampli_fspl = np.zeros(len(ampli))
+    amplification_FSPL = np.zeros(len(ampli))
 
-    ind = np.where((Z > yoo_table[0][-1]))[0]
-    ampli_fspl[ind] = ampli[ind]
+    # Far from the lens (Z>>1), then PSPL.	
+    indexes_PSPL = np.where((Z > yoo_table[0][-1]))[0]
+    amplification_FSPL[indexes_PSPL] = amplification_PSPL[indexes_PSPL]
 
-    ind = np.where((Z < yoo_table[0][0]))[0]
-    ampli_fspl[ind] = ampli[ind] * (2 * Z[ind] - gamma * (2 - 3 * np.pi / 4) * Z[ind])
+    # Very close to the lens (Z<<1), then Witt&Mao limit.
+    indexes_WM = np.where((Z < yoo_table[0][0]))[0]
+    amplification_FSPL[indexes_WM] = amplification_PSPL[indexes_WM] * (2 * Z[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * Z[indexes_WM])
    
-
-    ind = np.where((Z <= yoo_table[0][-1]) & (Z >= yoo_table[0][0]))[0]
-    ampli_fspl[ind] = ampli[ind] * (yoo_table[1](Z[ind]) - gamma * yoo_table[2](Z[ind]))
-    ampli = ampli_fspl
+    # FSPL regime (Z~1), then Yoo et al derivatives
+    indexes_FSPL = np.where((Z <= yoo_table[0][-1]) & (Z >= yoo_table[0][0]))[0]
+    amplification_FSPL[indexes_FSPL] = amplification_PSPL[indexes_FSPL] * (yoo_table[1](Z[indexes_FSPL]) - gamma * yoo_table[2](Z[indexes_FSPL]))
+    
+    amplification = amplification_FSPL
    
-    return ampli, U
+    return amplification, U
     
 
 #### TO DO : the following probably depreciated ####
