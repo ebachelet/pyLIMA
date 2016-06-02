@@ -35,7 +35,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
    
     Z = U / rho
     
-    amplification_FSPL = np.zeros(len(ampli))
+    amplification_FSPL = np.zeros(len(amplification_PSPL))
 
     # Far from the lens (Z>>1), then PSPL.	
     indexes_PSPL = np.where((Z > yoo_table[0][-1]))[0]

@@ -197,11 +197,11 @@ class MLModels(object):
 
             self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
 
-        model_paczynski_boundaries = {'PSPL': [(min(self.event.telescopes[0].lightcurve[:, 0])-300,
-                                                max(self.event.telescopes[0].lightcurve[:, 0])+300),
+        model_paczynski_boundaries = {'PSPL': [(min(self.event.telescopes[0].lightcurve_flux[:, 0])-300,
+                                                max(self.event.telescopes[0].lightcurve_flux[:, 0])+300),
                                                (-2.0, 2.0), (1.0, 300)], 'FSPL': [
-            (min(self.event.telescopes[0].lightcurve[:, 0])-300,
-             max(self.event.telescopes[0].lightcurve[:, 0])+300),
+            (min(self.event.telescopes[0].lightcurve_flux[:, 0])-300,
+             max(self.event.telescopes[0].lightcurve_flux[:, 0])+300),
             (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
 
         model_parallax_boundaries = {'None': [], 'Annual': [(-2.0, 2.0), (-2.0, 2.0)],
@@ -254,8 +254,8 @@ class MLModels(object):
             dtau += dTau
             duo += dUo
         
-                
-       
+        tau += dtau     
+        uo = duo+uo
         
         if self.paczynski_model == 'PSPL':
             
@@ -284,7 +284,7 @@ class MLModels(object):
     def compute_parallax_curvature(self, piE, delta_positions) :
         """ Compute the curvature induce by the parallax of from
         deltas_positions of a telescope """
-                     
+                  
         delta_tau = -np.dot(piE, delta_positions)
         delta_u = -np.cross(piE, delta_positions.T)
            

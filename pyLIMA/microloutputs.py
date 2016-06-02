@@ -20,7 +20,8 @@ import microltoolbox
 
 import copy
 
-
+plot_lightcurve_windows = 0.2
+plot_residuals_windows = 0.2
 
 
 def LM_outputs(fit) :
@@ -106,12 +107,12 @@ def MCMC_outputs(fit) :
     
     
 def MCMC_compute_fs_g(fit,mcmc_chains) :
-     """ Compute the corresponding source flux fs and blending factor g corresponding to each mcmc chain.
+    """ Compute the corresponding source flux fs and blending factor g corresponding to each mcmc chain.
     :param fit: a fit object. See the microlfits for more details.
     :param mcmc_chains: a numpy array representing the mcmc chains.
     :return: a numpy array containing the corresponding fluxes parameters
     """
-    Fluxes=[]
+    Fluxes = []
     for chain in mcmc_chains :
         
         fluxes = fit.find_fluxes(chain, fit.model)
@@ -181,28 +182,28 @@ def  MCMC_plot_lightcurves(fit,mcmc_best):
     	:param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
     	:return: a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.
     """
-     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)  
+    figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)  
 
-     MCMC_plot_align_data(fit,mcmc_best[0], axes[0])
+    MCMC_plot_align_data(fit,mcmc_best[0], figure_axes[0])
      
      
-     index = np.linspace(0,len(mcmc_best)-1,35).astype(int)
-     color_normalization = matplotlib.colors.Normalize(vmin=np.min(mcmc_best[:,-1]),vmax=np.max(mcmc_best[:,-1]))
-     color_map = matplotlib.cm.jet
+    index = np.linspace(0,len(mcmc_best)-1,35).astype(int)
+    color_normalization = matplotlib.colors.Normalize(vmin=np.min(mcmc_best[:,-1]),vmax=np.max(mcmc_best[:,-1]))
+    color_map = matplotlib.cm.jet
 
-     scalar_couleur_map = matplotlib.cm.ScalarMappable(cmap=color_map, norm= color_normalization)
-     scalar_couleur_map.set_array([])
-     for indice in index :
-         MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice,-1],figure_axes[0], scalar_couleur_map)
+    scalar_couleur_map = matplotlib.cm.ScalarMappable(cmap=color_map, norm= color_normalization)
+    scalar_couleur_map.set_array([])
+    for indice in index :
+        MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice,-1],figure_axes[0], scalar_couleur_map)
 
      
-     plt.colorbar(s_m,ax=axes[0])
-     figure_axes[0].text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=figure_axes[0].transAxes)
-     figure_axes[0].invert_yaxis()   
-     MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
+    plt.colorbar(scalar_couleur_map,ax=figure_axes[0])
+    figure_axes[0].text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=figure_axes[0].transAxes)
+    figure_axes[0].invert_yaxis()   
+    MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
      
      
-     return figure_lightcurves
+    return figure_lightcurves
 
 def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map) :
     """ Plot a  model to a given figure, with the color corresponding to the objective function of the model. 
@@ -212,9 +213,20 @@ def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map) 
 	:param figure_axes: the axes where the plot are draw
 	:param scalar_couleur_map: a matplotlib table that return a color given a scalar value (the objective function here)
     """
-
-    min_time = min([min(telescope.lightcurve[:,0]) for telescope in fit.event.telescopes])
-    max_time = max([max(telescope.lightcurve[:,0]) for telescope in fit.event.telescopes])
+    min_time = min([min(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
+    max_time = max([max(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
+	
+    time_of_model = np.arange(min_time, max_time + 100, 0.01)
+    if fit.model.parallax_model[0] !='None' :
+	    #import pdb; pdb.set_trace()
+	    reference_telescope = copy.copy(fit.event.telescopes[0])
+	    reference_telescope.lightcurve_magnitude = np.array([time_of_model,[0]*len(time_of_model),[0]*len(time_of_model)]).T
+	    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
+	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+    else :
+ 	  #import pdb; pdb.set_trace()
+	  reference_telescope = fit.event.telescopes[0]
+    
 
 
     time_of_model = np.arange(min_time, max_time + 100, 0.01)
@@ -227,10 +239,10 @@ def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map) 
     amplification_model = fit.model.magnification(parameters, time_of_model, gamma,reference_telescope.deltas_positions)[0]
     
     flux_model = fs_reference*( amplification_model+g_reference)
-    magnitude_model = microltoolbox.flux_to_magnitude(flux)
+    magnitude_model = microltoolbox.flux_to_magnitude(flux_model)
    
 
-    ax.plot(time_of_model,magnitude_model, color=scalar_couleur_map.to_rgba(couleurs), alpha=0.5)
+    figure_axes.plot(time_of_model,magnitude_model, color=scalar_couleur_map.to_rgba(couleurs), alpha=0.5)
     
     
   
@@ -243,22 +255,22 @@ def MCMC_plot_align_data(fit, parameters, ax) :
 	:param ax: the matplotlib axes where you plot the data
     """
     reference_telescope = fit.event.telescopes[0].name
-    fs_reference = telescopes_fluxes[0]
-    g_reference = telescopes_fluxes[1]
+    fs_reference = parameters[fit.model.model_dictionnary['fs_'+ reference_telescope]]
+    g_reference = parameters[fit.model.model_dictionnary['g_'+ reference_telescope]]
 
     
     for telescope in fit.event.telescopes :
         
         if telescope.name == reference_telescope :
             
-            lightcurve = telescope.lightcurve
+            lightcurve = telescope.lightcurve_magnitude
             
         else :
              
             fs_telescope = parameters[fit.model.model_dictionnary['fs_'+telescope.name]]
             g_telescope = parameters[fit.model.model_dictionnary['g_'+telescope.name]]
             
-            lightcurve = align_telescope_lightcurve(telescope.lightcurve,fs_reference,g_reference,fs_telescope,g_telescope)
+            lightcurve = align_telescope_lightcurve(telescope.lightcurve_magnitude,fs_reference,g_reference,fs_telescope,g_telescope)
         
         ax.errorbar(lightcurve[:,0], lightcurve[:,1], yerr=lightcurve[:,2],fmt='.',label=telescope.name)
         
@@ -279,18 +291,19 @@ def MCMC_plot_residuals(fit, parameters, ax):
         
         gamma = telescope.gamma
         
-        time = telescope.lightcurve[:,0]
-        magnitude = telescope.lightcurve[:,1]
-        flux = microltoolbox.magnitude_to_flux(magnitude)
-        err_magnitude = telescope.lightcurve[:,2]
+        
+        time = telescope.lightcurve_flux[:,0]
+        flux = telescope.lightcurve_flux[:,1]
+	error_flux = telescope.lightcurve_flux[:,2]
+        err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux,flux)
 
-        amplification = fit.model.magnification(parameters, time, gamma,reference_telescope)[0]
+        amplification = fit.model.magnification(parameters, time, gamma,telescope.deltas_positions)[0]
         
         flux_model = fs_telescope*( amplification+g_telescope)
         
         residuals = 2.5*np.log10(flux_model/flux)
         ax.errorbar(time, residuals, yerr=err_mag,fmt='.')
-    ax.set_ylim([-0.1,0.1])
+    ax.set_ylim([-plot_residuals_windows,plot_residuals_windows])
 
 
 def LM_parameters_result(fit) :
@@ -331,7 +344,7 @@ def MCMC_covariance(mcmc_chains):
     return covariance_matrix
 
 def LM_fit_errors(fit) :
-     """ Estimate the parameters errors from the fit.fit_covariance matrix.
+    """ Estimate the parameters errors from the fit.fit_covariance matrix.
 	 :param fit: a fit object. See the microlfits for more details.
 	 :return : a namedtuple object containing the square roots of parameters variance.
     """
@@ -356,7 +369,7 @@ def cov2corr(covariance_matrix):
     return correlation_matrix
 
 def LM_plot_lightcurves(fit) :
-   """ Plot the aligned datasets and the best fit on the first subplot figure_axes[0] and residuals
+    """ Plot the aligned datasets and the best fit on the first subplot figure_axes[0] and residuals
        on the second subplot figure_axes[1].
        :param fit: a fit object. See the microlfits for more details.
        :return : a figure representing data+model and residuals. 
@@ -410,14 +423,14 @@ def LM_plot_model(fit, figure_axe) :
     """
 
 
-    min_time = min([min(i.lightcurve[:,0]) for i in fit.event.telescopes])
-    max_time = max([max(i.lightcurve[:,0]) for i in fit.event.telescopes])
+    min_time = min([min(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
+    max_time = max([max(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
 	
     time = np.linspace(min_time, max_time + 100, 30000) 
     if fit.model.parallax_model[0] !='None' :
 	    #import pdb; pdb.set_trace()
 	    reference_telescope = copy.copy(fit.event.telescopes[0])
-	    reference_telescope.lightcurve = np.array([time,[0]*len(time),[0]*len(time)]).T
+	    reference_telescope.lightcurve_magnitude = np.array([time,[0]*len(time),[0]*len(time)]).T
 	    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
     else :
@@ -433,7 +446,7 @@ def LM_plot_model(fit, figure_axe) :
     magnitude = microltoolbox.flux_to_magnitude(flux)
     
     figure_axe.plot(time,magnitude,'r',lw=2)
-    figure_axe.set_ylim([min(magnitude)-0.1,max(magnitude)+0.1])
+    figure_axe.set_ylim([min(magnitude)-plot_lightcurve_windows,max(magnitude)+plot_lightcurve_windows])
     figure_axe.invert_yaxis()
     figure_axe.text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=figure_axe.transAxes)
     
@@ -451,18 +464,18 @@ def LM_plot_residuals(fit,figure_axe):
         
         gamma = telescope.gamma
         
-        time = telescope.lightcurve[:,0]
-        magnitude = telescope.lightcurve[:,1]
-        flux = microltoolbox.magnitude_to_flux(mag)
-        err_mag = telescope.lightcurve[:,2]
-
+        time = telescope.lightcurve_flux[:,0]
+        flux = telescope.lightcurve_flux[:,1]
+	error_flux = telescope.lightcurve_flux[:,2]
+        err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux,flux)
+	
         amplification = fit.model.magnification(fit.fit_results, time, gamma,telescope.deltas_positions)[0]
         
-        flux_model = fs_telescope*(amplication+g_telescope)
+        flux_model = fs_telescope*(amplification+g_telescope)
         
         residuals = 2.5*np.log10(flux_model/flux)
         figure_axe.errorbar(time, residuals, yerr=err_mag,fmt='.')
-    figure_axe.set_ylim([-0.1,0.1])
+    figure_axe.set_ylim([-plot_residuals_windows,plot_residuals_windows])
     figure_axe.invert_yaxis()
 
     
@@ -479,14 +492,14 @@ def LM_plot_align_data(fit,figure_axe) :
         
         if telescope.name == reference_telescope :
             
-            lightcurve = telescope.lightcurve
+            lightcurve = telescope.lightcurve_magnitude
         
         else :
              
             fs_telescope = fit.fit_results[fit.model.model_dictionnary['fs_'+telescope.name]]
             g_telescope = fit.fit_results[fit.model.model_dictionnary['g_'+telescope.name]]
             
-            lightcurve = align_telescope_lightcurve(telescope.lightcurve,fs_reference,g_reference,fs_telescope,g_telescope)
+            lightcurve = align_telescope_lightcurve(telescope.lightcurve_magnitude,fs_reference,g_reference,fs_telescope,g_telescope)
 
         figure_axe.errorbar(lightcurve[:,0], lightcurve[:,1], yerr=lightcurve[:,2],fmt='.',label=telescope.name)
         
@@ -495,7 +508,7 @@ def LM_plot_align_data(fit,figure_axe) :
     
     
 def align_telescope_lightcurve(lightcurve_telescope_mag,fs_reference,g_reference,fs_telescope,g_telescope) :
-     """ Align data to the survey telescope (i.e telescope 0).
+    """ Align data to the survey telescope (i.e telescope 0).
 	:param lightcurve_telescope_mag: the survey telescope in magnitude
 	:param fs_reference: the survey telescope reference source flux (i.e the fitted value)
 	:param g_reference: the survey telescope reference blending parameter (i.e the fitted value)

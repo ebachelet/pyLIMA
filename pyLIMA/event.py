@@ -138,9 +138,9 @@ class Event(object):
             
             for telescope in self.telescopes :
                 
-                if len(telescope.lightcurve) == 0 :
+                if len(telescope.lightcurve_magnitude) == 0 & len(telescope.lightcurve_flux) == 0 :
                     
-                     print 'ERROR : There is no associated lightcurve with this telescopes : '\
+                     print 'ERROR : There is no associated lightcurve in magnitude of flux with this telescopes : '\
                             +telescope.name+', add one with telescope.lightcurve = your_data'
                      return
         

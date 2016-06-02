@@ -20,7 +20,7 @@ def magnitude_to_flux(mag):
     
 def flux_to_magnitude(flux):
     """ Transform the injected flux to the the corresponding magnitude."""
-
+   
     mag = magnitude_constant-2.5*np.log10(flux)
     
     return mag

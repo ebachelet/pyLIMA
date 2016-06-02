@@ -130,6 +130,8 @@ class MLFits(object):
          reliable.
          A negative source flux is also counted as a bad fit.
          A negative rho or rho> 0.1 is also consider as a bad fit
+
+	
         """
 
         flag_quality = 'Good Fit'
@@ -215,11 +217,11 @@ class MLFits(object):
                                    bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
                                    recombination=0.7,polish='None')
 	# Best solution
-        res=differential_evolution_estimation['x']
+        best_solution = differential_evolution_estimation['x']
         
-	number_of_paczynski_parameters = len(res)
+	number_of_paczynski_parameters = len(best_solution)
         nwalkers = 100*number_of_paczynski_parameters
-	
+	#nwalkers = 100
 	# Initialize the population of MCMC        
 	population = []
 
@@ -233,18 +235,24 @@ class MLFits(object):
 
                 if j==0:
                     
-                    individual.append(res[j]+np.random.uniform(-1,1))
+                    individual.append(best_solution[j]+np.random.uniform(-1,1))
                 if j==1:
                     
-                    individual.append(res[j]*(np.random.uniform(0.1,3)))
+                    individual.append(best_solution[j]*(np.random.uniform(0.1,3)))
                 if j==2:
             
-                    individual.append(res[j]*(np.random.uniform(0.1,3)))
+                    individual.append(best_solution[j]*(np.random.uniform(0.1,3)))
                 
                 if j==3:
                     
-                    individual.append(res[j]*(np.random.uniform(0.1,3)))
+                    individual.append(best_solution[j]*(np.random.uniform(0.1,3)))
 
+		if j==4:
+                    
+                    individual.append(best_solution[j]*(np.random.uniform(0.1,3)))
+
+		
+            
             chichi = self.chichi_MCMC(individual)
             if chichi != -np.inf :
                 
@@ -258,6 +266,7 @@ class MLFits(object):
 	# First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, 100)
+	print 'MCMC preburn done'
         sampler.reset()
 	
 	# Final estimation using the previous output.
@@ -559,7 +568,7 @@ class MLFits(object):
 
     def LM_residuals(self, fit_process_parameters):
         """ The normalized residuals associated to the model and parameters.
-        residuals_i=(y_i-model_i)/sigma_i
+        residuals_i=(data_i-model_i)/sigma_i
         The sum of square residuals gives chi^2.
         """
 	
@@ -621,8 +630,6 @@ class MLFits(object):
             errflux = lightcurve[:, 2]
             gamma = telescope.gamma
             
-            
-
             try :
 	       
 		# magnification according to the model. amplification[0] is A(t), amplification[1] is u(t)
@@ -653,7 +660,7 @@ class MLFits(object):
             errflux = lightcurve[:, 2]
             gamma = telescope.gamma
 
-            amplification = self.model.magnification(fit_process_parameters, time, gamma)[0]
+            amplification = self.model.magnification(fit_process_parameters, time, gamma,telescope.deltas_positions)[0]
 
             fs, fb = np.polyfit(amplification, flux, 1, w=1 / errflux)
 

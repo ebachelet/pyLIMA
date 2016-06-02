@@ -24,8 +24,8 @@ def initial_guess_PSPL(event):
         try:
                 
             # only the best photometry
-            good_photometry_indexes = np.where((telescope.lightcurve[:, 2] < max(0.1, np.mean(telescope.lightcurve[:, 2]))))[0]
-            lightcurve_bis = telescope.lightcurve[good_photometry_indexes]
+            good_photometry_indexes = np.where((telescope.lightcurve_magnitude[:, 2] < max(0.1, np.mean(telescope.lightcurve_magnitude[:, 2]))))[0]
+            lightcurve_bis = telescope.lightcurve_magnitude[good_photometry_indexes]
 
             
             lightcurve_bis = lightcurve_bis[lightcurve_bis[:, 0].argsort(), :]
@@ -75,14 +75,14 @@ def initial_guess_PSPL(event):
             
         except:
 
-            time = telescope.lightcurve[:, 0]
-            flux = microltoolbox.magnitude_to_flux( telescope.lightcurve[:, 1])
+            time = telescope.lightcurve_magnitude[:, 0]
+            flux = microltoolbox.magnitude_to_flux( telescope.lightcurve_magnitude[:, 1])
             to = np.median(time)
             max_flux = max(flux)
             To.append(to)
             Max_flux.append(max_flux)
            
-            Errmag.append(np.mean(telescope.lightcurve[:, 2]))
+            Errmag.append(np.mean(telescope.lightcurve_magnitude[:, 2]))
 
 
 

@@ -54,43 +54,70 @@ class Telescope(object):
                  Default is 0.5.
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve=None, light_curve_dictionnary = {'time': 0, 'mag' : 1, 'err_mag' : 2 }):
+    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude = None, light_curve_magnitude_dictionnary = {'time': 0, 'mag' : 1, 'err_mag' : 2 },light_curve_flux = None, light_curve_flux_dictionnary = {'time': 0, 'flux' : 1, 'err_flux' : 2 }, reference_flux = 10000 ):
         """ Initialization of the attributes described above."""
         
         self.name = name      
         self.filter = camera_filter  # Claret2011 convention
-        self.lightcurve_dictionnary = light_curve_dictionnary
-        if light_curve is None :
+        self.lightcurve_magnitude_dictionnary = light_curve_magnitude_dictionnary
+	self.lightcurve_flux_dictionnary = light_curve_flux_dictionnary
+	self.reference_flux = reference_flux
+
+        if light_curve_magnitude is None :
                 
-            self.lightcurve = []
+            self.lightcurve_magnitude = []
                 
         else :
         
-            self.lightcurve = light_curve 
-            self.lightcurve = self.arrange_the_lightcurve_columns()
+            self.lightcurve_magnitude = light_curve_magnitude 
+            self.lightcurve_magnitude = self.arrange_the_lightcurve_columns('magnitude')
     	    self.lightcurve_flux  = self.lightcurve_in_flux()
        
+
+	if light_curve_flux is None :
+                
+            pass
+                
+        else :
+        
+            self.lightcurve_flux= light_curve_flux
+            self.lightcurve_flux= self.arrange_the_lightcurve_columns('flux')
+    	    self.lightcurve_magnitude  = self.lightcurve_in_magnitude()
+
         self.location = 'Earth'
-        #self.lightcurve_flux = []
         self.altitude = 0.0
         self.longitude = 0.57
         self.latitude = 49.49
         self.gamma = 0.0 # This mean you will fit uniform source brightness
         self.deltas_positions = []
-
+	
     
        
-    def arrange_the_lightcurve_columns(self):
+    def arrange_the_lightcurve_columns(self, choice):
         """ Rearange the lightcurve in magnitude in the pyLIMA convention."""
-        
-	lightcurve = []
-        pyLIMA_convention = ['time','mag','err_mag']
+       
+        pyLIMA_magnitude_convention = ['time','mag','err_mag']
+	pyLIMA_flux_convention = ['time','flux','err_flux']
 
-        for good_column in pyLIMA_convention :
+        if choice == 'magnitude' :
+        	 
+		lightcurve = []
+		for good_column in pyLIMA_magnitude_convention :
             
-            lightcurve.append(self.lightcurve[:,self.lightcurve_dictionnary[good_column]])
+            		lightcurve.append(self.lightcurve_magnitude[:,self.lightcurve_magnitude_dictionnary[good_column]])
         
-        return np.array(lightcurve).T
+        	return np.array(lightcurve).T
+
+	if choice == 'flux' :
+        	 
+		lightcurve = []
+		for good_column in pyLIMA_flux_convention :
+            
+            		lightcurve.append(self.lightcurve_flux[:,self.lightcurve_flux_dictionnary[good_column]])
+        
+		lightcurve = np.array(lightcurve).T
+		lightcurve[:,1] =  lightcurve[:,1]+self.reference_flux
+        	return lightcurve
 
     def n_data(self, choice='Mag'):
         """ Return the number of data points in the lightcurve.
@@ -174,17 +201,17 @@ class Telescope(object):
         outliers_in_mag = 5.0
         
       
-        index = np.where((~np.isnan(self.lightcurve).any(axis=1)) & (
-            np.abs(self.lightcurve[:, 2]) < maximum_accepted_precision))[0]
+        index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) & (
+            np.abs(self.lightcurve_magnitude[:, 2]) < maximum_accepted_precision))[0]
 
         #Should return at least 2 points
         if len(index) > 2:
 
-            lightcurve = self.lightcurve[index]
+            lightcurve = self.lightcurve_magnitude[index]
 
         else:
 
-            lightcurve = self.lightcurve
+            lightcurve = self.lightcurve_magnitude
 
         return lightcurve
 
@@ -203,7 +230,7 @@ class Telescope(object):
 
         else:
 
-            lightcurve = self.lightcurve
+            lightcurve = self.lightcurve_magnitude
 	
 	time = lightcurve[:,0]        
 	mag = lightcurve[:,1]
@@ -213,3 +240,36 @@ class Telescope(object):
         error_flux = microltoolbox.error_magnitude_to_error_flux(err_mag, flux)
         
         return np.array([time, flux, error_flux]).T
+
+
+
+
+    def lightcurve_in_magnitude(self, clean='No'):
+        """
+        Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention. Transform error bar
+        accordingly.
+        
+        :param clean: ['Yes' or 'No']. Perform or not a clean_data call to avoid outliers.
+        
+        :return : the lightcurve in magnitude, lightcurve_magnitude.
+        """
+        if clean is 'Yes':
+
+            lightcurve = self.clean_data()
+
+        else:
+
+            lightcurve = self.lightcurve_flux
+	
+	time = lightcurve[:,0]        
+	flux = lightcurve[:,1] 
+	error_flux = lightcurve[:,2]
+        #import pdb; pdb.set_trace()
+        magnitude = microltoolbox.flux_to_magnitude(flux)
+        error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
+        
+	ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T 
+
+	index = np.where((~np.isnan(ligthcurve_magnitude).any(axis=1)))[0] # prevent nan magnitude
+
+        return ligthcurve_magnitude[index]
