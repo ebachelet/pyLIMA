@@ -42,20 +42,22 @@ def main(command_line):
         current_event = event.Event()
         current_event.name = name
         
-	current_event.ra = 269.8865416666667
-        current_event.dec = -28.407416666666666
-	#current_event.ra = 267.909875  
-        #current_event.dec = -28.494130555555557
+	
 
 	event_telescopes = [i for i in events_names if name  in i]
         #event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat','MOA-2016-BLG-215_transformed.dat']
         #event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
         #Names = ['OGLE','Kepler']
 	#Locations = ['Earth','Space']
-        event_telescopes = ['OGLE2016BLG0813.dat','OGLE20160813_K2_flux.dat']
-        Names = ['OGLE','Kepler']
+        #event_telescopes = ['OGLE2016BLG0813.dat','OGLE20160813_K2_flux.dat']
+	current_event.ra = 269.8865416666667
+        current_event.dec = -28.407416666666666	
+        Names = ['MOA','Kepler']
 	Locations = ['Earth','Space']
         #event_telescopes = ['MOA2016BLG0221_flux.dat','MOA2016BLG0221_K2_flux.dat']
+	event_telescopes = ['MOA2016BLG0233_flux.dat','MOA2016BLG0233_K2_flux.dat']
+	#event_telescopes = ['OGLE2016BLG0548.dat','OGLE20160548_K2_flux.dat']
+	
 	count=0
 
         start=time.time()
@@ -74,7 +76,7 @@ def main(command_line):
 	    if Names[count]=='Kepler' :
             	telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_flux=lightcurve)
 	    else :
-		telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_magnitude=lightcurve)
+		telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_flux=lightcurve)
             telescope.gamma=0.5
             telescope.location=Locations[count]
             current_event.telescopes.append(telescope)
@@ -82,7 +84,7 @@ def main(command_line):
            
         print 'Start;', current_event.name
        
-        current_event.find_survey('OGLE')
+        current_event.find_survey('MOA')
    
         current_event.check_event()
        
@@ -90,7 +92,7 @@ def main(command_line):
         #import pdb; pdb.set_trace()
         #
 
-        current_event.fit(Model,'MCMC')
+        current_event.fit(Model,'DE')
         
         
         current_event.fits[0].produce_outputs()

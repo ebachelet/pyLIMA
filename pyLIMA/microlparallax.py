@@ -8,7 +8,7 @@ from __future__ import division
 import telnetlib
 
 import numpy as np
-from astropy import constants as const
+from astropy import constants as astronomical_constants
 from scipy import interpolate
 from astropy.time import Time
 from pyslalib import slalib
@@ -18,22 +18,7 @@ def horizons_obscodes(observatory):
     """Map LCOGT sitecodes to those needed for JPL HORIZONS.
     McDonald Observatory (ELP/V37) is used as a default if the look-up fails"""
 
-    JPL_HORIZONS_ID = {'ALMA': '-7',
-                       'VLA': '-5',
-                       'GBT': '-9',
-                       'MAUNAKEA': '-80',
-                       'OVRO': '-81',
-                       'ELP': 'V37',
-                       'FTN': 'F65',
-                       'FTS': 'E10',
-                       'SQA': 'G51',
-                       'W85': 'W85',
-                       'W86': 'W86',
-                       'W87': 'W87',
-                       'CPT': 'K92',
-                       'K91': 'K91',
-                       'K92': 'K92',
-                       'K93': 'K93',
+    JPL_HORIZONS_ID = {
                        'Geocentric': '500',
 		       'Kepler':'-227'
                        }
@@ -58,41 +43,75 @@ def optcallback(socket, command, option):
 
 
 class MLParallaxes(object):
-    def __init__(self, event, model):
-        """ Initialization of the attributes described above. """
-        self.AU = const.au.value
-        self.speed_of_light = const.c.value
-        self.Earth_radius = const.R_earth.value
-        self.event = event
-        self.model = model[0]
-        self.topar = model[1]
-        self.delta_tau = []
-        self.delta_u = []
-        self.target_angles = [self.event.ra * np.pi / 180, self.event.dec * np.pi / 180]
+    """
+    ######## Parallax module ########
+    @author: Etienne Bachelet
+
+    This module compute the parallax shifts due to different parallax effects.
+
+    Attributes :
+
+         event : the event object on which you perform the fit on. More details on the event module.
+ 
+	 parallax_model : The parallax effect you want to fit. Have to be a list containing the parallax model name
+	 and the reference time to_par (in JD unit). Example : ['Annual',2457000.0]
+	
+	 AU : the astronomical unit,  as defined by astropy (in meter)	
+                 
+	 speed_of_light : the speed light c,  as defined by astropy (in meter/second)
+
+	 Earth_radius : the Earth equatorial radius,  as defined by astropy (in meter)
+
+	 target_angles_in_the_sky : a list containing [RA,DEC] of the target in radians unit.
+
+
+    """
+
+
+
+    def __init__(self, event, parallax_model):
+        """ Initialization of the attributes described above. 
+	    :param event: the event object on which you perform the fit on. More details on the event module.
+	    :param parallax_model: The parallax effect you want to fit. Have to be a list containing the parallax model name
+	    and the to_par value. Example : ['Annual',2457000.0]
+	"""
+	
+	self.event = event
+        self.parallax_model = parallax_model[0]
+        self.to_par = parallax_model[1]
+        self.AU = astronomical_constants.au.value
+        self.speed_of_light = astronomical_constants.c.value
+        self.Earth_radius = astronomical_constants.R_earth.value
+        
+        self.target_angles_in_the_sky = [self.event.ra * np.pi / 180, self.event.dec * np.pi / 180]
 
     def N_E_vectors_target(self):
+	""" This function define the North and East vectors projected on the sky plane perpendicular to the line
+	    of sight (i.e the line define by RA,DEC of the event).
+	"""
+        target_angles_in_the_sky = self.target_angles_in_the_sky
+        Target = np.array([np.cos(target_angles_in_the_sky[1]) * np.cos(target_angles_in_the_sky[0]),
+                           np.cos(target_angles_in_the_sky[1]) * np.sin(target_angles_in_the_sky[0]),
+                           np.sin(target_angles_in_the_sky[1])])
 
-        target_angles = self.target_angles
-        Target = np.array([np.cos(target_angles[1]) * np.cos(target_angles[0]),
-                           np.cos(target_angles[1]) * np.sin(target_angles[0]),
-                           np.sin(target_angles[1])])
-
-        self.East = np.array([-np.sin(target_angles[0]), np.cos(target_angles[0]), 0.0])
+        self.East = np.array([-np.sin(target_angles_in_the_sky[0]), np.cos(target_angles_in_the_sky[0]), 0.0])
         self.North = np.cross(Target, self.East)
 
-    def HJD_to_JD(self, t):
-
+    def HJD_to_JD(self, time_to_transform):
+	""" Transform the input time from HJD to JD.
+	    :param time_to_transform : the numpy array containing the time you want to correct.
+	"""
         AU = self.AU
         light_speed = self.speed_of_light
 
         time_correction = []
         # DTT=[]
-        t = t
+       
 
-        for i in t:
+        for time in time_to_transform:
 
             count = 0
-            jd = np.copy(i)
+            jd = np.copy(time)
 
             while count < 3:
 
@@ -100,133 +119,153 @@ class MLParallaxes(object):
                 Sun_position = -Earth_position[0]
 
                 Sun_angles = slalib.sla_dcc2s(Sun_position)
-                target_angles = self.target_angles
+                target_angles_in_the_sky = self.target_angles_in_the_sky
 
                 t_correction = np.sqrt(Sun_position[0] ** 2 + Sun_position[1] ** 2 + Sun_position[
                     2] ** 2) * AU / light_speed * (
-                               np.sin(Sun_angles[1]) * np.sin(target_angles[1]) + np.cos(
-                                   Sun_angles[1]) * np.cos(target_angles[1]) * np.cos(
-                                   target_angles[0] - Sun_angles[0])) / (3600 * 24.0)
+                               np.sin(Sun_angles[1]) * np.sin(target_angles_in_the_sky[1]) + np.cos(
+                                   Sun_angles[1]) * np.cos(target_angles_in_the_sky[1]) * np.cos(
+                                   target_angles_in_the_sky[0] - Sun_angles[0])) / (3600 * 24.0)
                 count = count + 1
 
         # DTT.append(slalib.sla_dtt(jd)/(3600*24))
         time_correction.append(t_correction)
 
-        JD = t + np.array(time_correction)
+        JD = time_to_transform + np.array(time_correction)
 
         return JD
 
     def parallax_combination(self, telescopes):
-       
+        """ Compute, and set, the deltas_positions attributes of the telescope object 
+	   inside the list of telescopes.   
+	   :param telescopes :  a list containing the telescope object on which you want to set the deltas_positions 
+	   due to parallax. deltas_positions is the offset between the position of the observatory at the time t, and the
+	   center of the Earth at the date to_par. More details on each parallax functions. 
+	"""
 	
-        for i in telescopes:
+        for telescope in telescopes:
 
             self.N_E_vectors_target()
-            delta_position_North = np.array([])
-            delta_position_East = np.array([])
+            
 
-            kind = i.location
-            #t = self.HJD_to_JD(i.lightcurve_flux[:,0])
-            #t = i.lightcurve_flux[:, 0]
-	    t = i.lightcurve_flux[:,0]
+            location = telescope.location
+           
+	    time = telescope.lightcurve_flux[:,0]
             delta_North = np.array([])
             delta_East = np.array([])
 
-            if kind == 'Earth':
+            if location == 'Earth':
 
-                if (self.model == 'Annual'):
+                if (self.parallax_model == 'Annual'):
 
-                    positions = self.annual_parallax(t)
-                    # import pdb; pdb.set_trace()
-                    delta_North = np.append(delta_North, positions[0])
-                    delta_East = np.append(delta_East, positions[1])
+                    telescope_positions = self.annual_parallax(time)
+                    
+                    delta_North = np.append(delta_North, telescope_positions[0])
+                    delta_East = np.append(delta_East, telescope_positions[1])
 
-                if (self.model == 'Terrestrial'):
+                if (self.parallax_model == 'Terrestrial'):
 
-                    altitude = i.altitude
-                    longitude = i.longitude
-                    latitude = i.latitude
+                    altitude = telescope.altitude
+                    longitude = telescope.longitude
+                    latitude = telescope.latitude
 
-                    positions = self.terrestrial_parallax(t, altitude, longitude, latitude)
-                    delta_North = np.append(delta_North, positions[0])
-                    delta_East = np.append(delta_East, positions[1])
+                    telescope_positions = self.terrestrial_parallax(time, altitude, longitude, latitude)
+                    delta_North = np.append(delta_North, telescope_positions[0])
+                    delta_East = np.append(delta_East, telescope_positions[1])
 
-                if (self.model == 'Full'):
+                if (self.parallax_model == 'Full'):
 
-                    positions = self.annual_parallax(t)
-                    delta_North = np.append(delta_North, positions[0])
-                    delta_East = np.append(delta_East, positions[1])
+                    telescope_positions = self.annual_parallax(time)
+                    
+                    delta_North = np.append(delta_North, telescope_positions[0])
+                    delta_East = np.append(delta_East, telescope_positions[1])
 
-                    altitude = i.altitude
-                    longitude = i.longitude
-                    latitude = i.latitude
-		    import pdb; pdb.set_trace()
-                    positions = self.terrestrial_parallax(t, altitude, longitude, latitude)
-                    delta_North = np.append(delta_North, positions[0])
-                    delta_East = np.append(delta_East, positions[1])
+                    altitude = telescope.altitude
+                    longitude = telescope.longitude
+                    latitude = telescope.latitude
 
+                    telescope_positions = self.terrestrial_parallax(time, altitude, longitude, latitude)
+                    delta_North = np.append(delta_North, telescope_positions[0])
+                    delta_East = np.append(delta_East, telescope_positions[1])
+                    
 
             else:
-                positions = self.annual_parallax(t)
-                delta_North = np.append(delta_North, positions[0])
-                delta_East = np.append(delta_East, positions[1])
-                name = i.name
-                try:
-                    positions = self.space_parallax(t, name)
-                except:
-                    print 'TIME OUT CONNECTION TO JPL'
-                    import pdb;
-                    pdb.set_trace()
 
-                    positions = self.space_parallax(t, name)
+                telescope_positions = self.annual_parallax(time)
+                delta_North = np.append(delta_North, telescope_positions[0])
+                delta_East = np.append(delta_East, telescope_positions[1])
+                name = telescope.name
+
+                
+                telescope_positions = self.space_parallax(time, name)
+                
+                positions = self.space_parallax(time, name)
 		            
-		delta_North = delta_North + positions[0]
-                delta_East = delta_East + positions[1]
+		delta_North = delta_North + telescope_positions[0]
+                delta_East = delta_East + telescope_positions[1]
 	    
-            delta_position_North = np.append(delta_position_North, delta_North)
-            delta_position_East = np.append(delta_position_East, delta_East)
+     
+            deltas_position = np.array([delta_North, delta_East])
 
-            deltas_position = np.array([delta_position_North, delta_position_East])
-            i.deltas_positions = deltas_position
+	    # set the attributes deltas_positions for the telescope object
+            telescope.deltas_positions = deltas_position
 
-    def annual_parallax(self, t):
-        
-        #topar=self.HJD_to_JD(np.array([self.topar]))-2400000.5
-        #topar = self.topar - 2400000.5
-	topar = self.topar - 2400000.5   
-	Earth_position_ref = slalib.sla_epv(topar)
-        Sun_position_ref = -Earth_position_ref[0]
-        Sun_speed_ref = -Earth_position_ref[1]
+    def annual_parallax(self, time_to_treat):
+        """ Compute the position shift due to the Earth movement. Please have a look on :
+	    "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
+	     Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+	     :param  time_to_treat: a numpy array containing the time where you want to compute this effect.
+   	     :return: the shift induce by the Earth motion around the Sun
+	     WARNING :  this is a geocentric point of view.
+		        slalib use MJD time definition, which is MJD = JD-2400000.5	 
+	"""
+	
+	to_par_mjd = self.to_par - 2400000.5   
+	Earth_position_time_reference = slalib.sla_epv(to_par_mjd)
+        Sun_position_time_reference  = -Earth_position_time_reference[0]
+        Sun_speed_time_reference  = -Earth_position_time_reference[1]
         delta_Sun = []
 
-        for i in t:
+        for time in  time_to_treat:
 
-            tt = i - 2400000.5
+            time_mjd = time - 2400000.5
 
-            Earth_position = slalib.sla_epv(tt)
+            Earth_position = slalib.sla_epv(time_mjd)
             Sun_position = -Earth_position[0]
-            delta_sun = Sun_position - (tt - topar) * Sun_speed_ref - Sun_position_ref
+            delta_sun = Sun_position - (time_mjd - to_par_mjd) * Sun_speed_time_reference - Sun_position_time_reference
             
 
             delta_Sun.append(delta_sun.tolist())
 
         delta_Sun = np.array(delta_Sun)
-        delta_Sun_proj = np.array([np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
+        
+	delta_Sun_projected = np.array([np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
 
-        return delta_Sun_proj
+        return delta_Sun_projected
 
-    def terrestrial_parallax(self, t, altitude, longitude, latitude):
-
+    def terrestrial_parallax(self, time_to_treat, altitude, longitude, latitude):
+	""" Compute the position shift due to the distance of the obervatories from the Earth center.
+	    Please have a look on :
+	    "Parallax effects in binary microlensing events"
+	    Hardy, S.J and Walker, M.A. 1995. http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
+	    :param  time_to_treat: a numpy array containing the time where you want to compute this effect.
+            :param altitude: the altitude of the telescope in meter
+	    :param longitude: the longitude of the telescope in degree
+	    :param latitude: the latitude of the telescope in degree
+	    :return: the shift induce by the distance of the telescope to the Earth center.
+	    WARNING : slalib use MJD time definition, which is MJD = JD-2400000.5
+	"""
         radius = (self.Earth_radius + altitude)/self.AU
         Longitude = longitude * np.pi / 180.0
         Latitude = latitude * np.pi / 180.0
 	
         delta_telescope = []
-        for i in t:
+        for time in  time_to_treat:
 
-            tt = i - 2400000.5
-            sideral_time = slalib.sla_gmst(tt)
-            telescope_longitude = - Longitude - self.target_angles[0]*np.pi/180 + sideral_time/24.0*np.pi
+            time_mjd = time - 2400000.5
+            sideral_time = slalib.sla_gmst(time_mjg)
+            telescope_longitude = - Longitude - self.target_angles_in_the_sky[0]*np.pi/180 + sideral_time/24.0*np.pi
+	    
 	    delta_telescope.append(radius*slalib.sla_dcs2c(telescope_longitude,Latitude))            
 
 
@@ -234,45 +273,42 @@ class MLParallaxes(object):
 	delta_telescope_projected = np.array([np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])
         return delta_telescope_projected
 
-    def space_parallax(self, t, name):
-        # tstart = self.HJD_to_JD(np.array([t[0]]))
-        # tend = self.HJD_to_JD(np.array([t[-1]]))
-        #import pdb; pdb.set_trace()
-
-        tstart = t[0] - 1
-        tend = t[-1] + 1
+    def space_parallax(self,  time_to_treat, satellite_name):
+        """ Compute the position shift due to the distance of the obervatories from the Earth center.
+	    Please have a look on :
+	    "Parallax effects in binary microlensing events"
+	    Hardy, S.J and Walker, M.A. 1995. http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
+	    :param  time_to_treat: a numpy array containing the time where you want to compute this effect.
+            :param satellite_name: the name of the observatory. Have to be recognize by JPL HORIZON.
+	    :return: the shift induce by the distance of the telescope to the Earth center.
+	    WARNING : slalib use MJD time definition, which is MJD = JD-2400000.5
+	"""
+        tstart = min(time_to_treat) - 1
+        tend = max(time_to_treat) + 1
         
-        positions = self.produce_horizons_ephem(name, tstart, tend, observatory='Geocentric',step_size='60m', verbose=False)[1]
-        #positions = np.loadtxt('SWIFT.dat')
-        #positions = positions[:, :-1]
-	positions = np.array(positions)
-        dates = positions[:, 0].astype(float)
-        ra = positions[:, 1].astype(float)
-        dec = positions[:, 2].astype(float)
-        distances = positions[:, 3].astype(float)
+        satellite_positions = self.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',step_size='60m', verbose=False)[1]
+       
+	satellite_positions = np.array(satellite_positions)
+        dates = satellite_positions[:, 0].astype(float)
+        ra = satellite_positions[:, 1].astype(float)
+        dec = satellite_positions[:, 2].astype(float)
+        distances = satellite_positions[:, 3].astype(float)
 	
-        interpol_ra = interpolate.interp1d(dates, ra)
-        interpol_dec = interpolate.interp1d(dates, dec)
-        interpol_dist = interpolate.interp1d(dates, distances)
-        # times=self.HJD_to_JD(t)
-
-        ra_interpolated = interpol_ra(t)
-        dec_interpolated = interpol_dec(t)
-        distance_interpolated = interpol_dist(t)
+        interpolated_ra = interpolate.interp1d(dates, ra)
+        interpolated_dec = interpolate.interp1d(dates, dec)
+        interpolated_distance = interpolate.interp1d(dates, distances)
+       
+        ra_interpolated = interpolated_ra(time_to_treat)
+        dec_interpolated = interpolated_dec(time_to_treat)
+        distance_interpolated = interpolated_distance(time_to_treat)
 
         
 	delta_satellite = []
-        for i in xrange(len(t)):
+        for index_time in xrange(len(time_to_treat)):
 
-            tt = i
-            #delta_North.append(distance_interpolated[tt] * (np.sin(dec_interpolated[tt]*np.pi/180) * np.cos(
-            #    self.target_angles[1]) - np.cos(dec_interpolated[tt]*np.pi/180) * np.sin(
-            #    self.target_angles[1]) * np.cos(ra_interpolated[tt]*np.pi/180-self.target_angles[0])))
-            #delta_East.append(distance_interpolated[tt] * np.cos(dec_interpolated[tt]*np.pi/180) * np.sin(
-            #    ra_interpolated[tt]*np.pi/180-self.target_angles[0]))
-	    
-       	    
-	    delta_satellite.append(distance_interpolated[tt]*slalib.sla_dcs2c(ra_interpolated[tt]*np.pi/180,dec_interpolated[tt]*np.pi/180))
+            
+              
+      	    delta_satellite.append(distance_interpolated[index_time]*slalib.sla_dcs2c(ra_interpolated[index_time]*np.pi/180,dec_interpolated[index_time]*np.pi/180))
 	
 	delta_satellite=np.array(delta_satellite)
 	delta_satellite_projected = np.array([np.dot(delta_satellite, self.North), np.dot(delta_satellite, self.East)])
@@ -280,13 +316,7 @@ class MLParallaxes(object):
 
         return delta_satellite_projected
 
-    def parallax_outputs(self, PiE):
-
-        piE = np.array(PiE)
-        delta_tau = np.dot(piE, self.delta_position)
-        delta_u = np.cross(piE, self.delta_position.T)
-
-        return delta_tau, delta_u
+  
 
     def produce_horizons_ephem(self, body, start_time, end_time, observatory='ELP', step_size='60m',
                                verbose=False):
@@ -314,10 +344,7 @@ class MLParallaxes(object):
         if (verbose):
             print "Observatory ID= ", OBSERVATORY_ID
 	#import pdb; pdb.set_trace()
-        tstart = Time(start_time,format='jd')
-
-        tstart = 'JD' + str(tstart.isot)
-	tstart = tstart[:12]+' '+tstart[13:-7]
+       
 	tstart ='JD' + str(start_time)
 
 
@@ -540,3 +567,13 @@ class MLParallaxes(object):
                       }
         flag = 'Succes connection to JPL'
         return flag, horemp
+
+
+
+    def parallax_outputs(self, PiE):
+	'''Depreciated '''
+        piE = np.array(PiE)
+        delta_tau = np.dot(piE, self.delta_position)
+        delta_u = np.cross(piE, self.delta_position.T)
+
+        return delta_tau, delta_u

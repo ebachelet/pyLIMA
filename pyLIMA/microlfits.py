@@ -48,16 +48,15 @@ class MLFits(object):
     """
 
     def __init__(self, event):
-        """The fit class has to be intialized with an event. """
-
+        """The fit class has to be intialized with an event. 
+	   :param event: the event object on which you perform the fit on. More details on the event module.
+	
+	"""
+	
         self.event = event
 
     def mlfit(self, model, method):
         """This function realize the requested microlensin fit, and set the according results attributes.
-	
-
-		:param model: The microlensing model you want to fit. Has to be an object define in microlmodels module.
-	                      More details on the microlmodels module.
 
     		:param method: The fitting method you want to use. Has to be a string  in :
 
@@ -130,8 +129,6 @@ class MLFits(object):
          reliable.
          A negative source flux is also counted as a bad fit.
          A negative rho or rho> 0.1 is also consider as a bad fit
-
-	
         """
 
         flag_quality = 'Good Fit'
@@ -402,6 +399,8 @@ class MLFits(object):
         
         """Return the analytical Jacobian matrix, if requested by method LM.
 	   Available only for PSPL and FSPL without second_order. 
+	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+	   :return jacobi: a numpy array which represents the jacobian matrix
 	   PROBABLY NEED REWORK
 	"""
 
@@ -567,9 +566,10 @@ class MLFits(object):
         return jacobi
 
     def LM_residuals(self, fit_process_parameters):
-        """ The normalized residuals associated to the model and parameters.
-        residuals_i=(data_i-model_i)/sigma_i
-        The sum of square residuals gives chi^2.
+        """The normalized residuals associated to the model and parameters.
+           :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+	   :return residuals: a numpy array which represents the residuals_i for each telescope,residuals_i=(data_i-model_i)/sigma_i
+           The sum of square residuals gives chi^2.
         """
 	
 	# Construct an np.array with each telescope residuals
@@ -597,7 +597,10 @@ class MLFits(object):
         return residuals
 
     def chichi(self, fit_process_parameters):
-        """Return the chi^2. """
+        """Return the chi^2.
+	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine. 
+	   :return chichi: the chi^2
+	"""
 
         residuals = self.LM_residuals(fit_process_parameters)
         chichi = (residuals ** 2).sum()
@@ -605,22 +608,27 @@ class MLFits(object):
         return chichi
 
     def chichi_telescopes(self, fit_process_parameters):
-        """Return the chi^2 for each telescopes """
+        """Return the chi^2 for each telescopes 
+	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine. 
+	   :return chichi: a list containing the chi^2 for each individual telescopes
+	"""
 
         residuals = self.LM_residuals(fit_process_parameters)
-        CHICHI = []
+        chichi_list = []
         start_index = 0
         for telescope in self.event.telescopes:
 
-            CHICHI.append((residuals[start:start + len(telescope.lightcurve_flux)] ** 2).sum())
+            chichi_list.append((residuals[start:start + len(telescope.lightcurve_flux)] ** 2).sum())
 
             start_index += len(telescope.lightcurve_flux)
 
-        return CHICHI
+        return chichi_list
 
     def chichi_differential(self, fit_process_parameters):
-        """Return the chi^2 for dirrential_evolution. fsi,fbi evaluated trough polyfit. """
-
+        """Return the chi^2 for the differential evolution algorithm
+	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine. 
+	   :return chichi_list: the chi^2
+	"""
         residuals = np.array([])
         
         for telescope in self.event.telescopes:
@@ -648,7 +656,10 @@ class MLFits(object):
         return chichi
 
     def chichi_MCMC(self, fit_process_parameters):
-        """Return the chi^2 for MCMC. fsi,fbi evaluated trough polyfit. """
+       """Return the chi^2 for the MCMC algorithm
+	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine. 
+	   :return chichi_list: the chi^2
+	"""
 
         residuals = np.array([])
        
@@ -681,8 +692,12 @@ class MLFits(object):
         return - (chichi)
 
     def find_fluxes(self, fit_process_parameters, model):
-        """ Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM method.
-        """
+        """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM method.
+	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+           :param model: the Paczynski model on which you want to compute the fs,g parameters.
+	   :return chichi_list: the (fs,g) telescopes flux parameters.
+	"""
+        
         telescopes_fluxes = []
 
         for telescope in self.event.telescopes:
