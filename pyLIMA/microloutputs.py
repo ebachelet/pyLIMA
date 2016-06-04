@@ -128,7 +128,7 @@ def  MCMC_plot_parameters_distribution(fit,mcmc_best):
     	:param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
     	:return: a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)
     """
-    dimensions = len(fit.model.parameters_boundaries)
+    dimensions = mcmc_best.shape[1]-1
     
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions,sharex='col')
     

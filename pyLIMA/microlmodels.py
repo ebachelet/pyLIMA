@@ -146,8 +146,7 @@ class MLModels(object):
              """
              
              
-    def __init__(self, event, model='PSPL', parallax = ['None', 0.0], xallarap = ['None', 0.0], orbital_motion = ['None', 0.0],
-                 source_spots = 'None'):
+    def __init__(self, event, model='PSPL', parallax = ['None', 0.0], xallarap = ['None', 0.0], orbital_motion = ['None', 0.0], source_spots = 'None'):
         """ Initialization of the attributes described above. """
 
         self.event = event
@@ -182,7 +181,9 @@ class MLModels(object):
 
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
-	    self.compute_parallax(self.parallax_model)
+	    
+	    self.compute_parallax_all_telescopes()
+
         if self.xallarap_model[0] != 'None':
 
             self.model_dictionnary['XiEN'] = len(self.model_dictionnary)
@@ -269,17 +270,18 @@ class MLModels(object):
             return amplification, u   
             
     
-    def compute_parallax(self, second_order):
+    def compute_parallax_all_telescopes(self):
          """ Compute the parallax for all the telescopes, if this is desired in
          the second order parameter."""
-         telescopes = []
+         
+	 
          for telescope in self.event.telescopes:
   
             if len(telescope.deltas_positions) == 0:
-                telescopes.append(telescope)
+                 telescope.compute_parallax(self.event,self.parallax_model)
 	
-         para = microlparallax.MLParallaxes(self.event, second_order)
-         para.parallax_combination(telescopes)        
+        
+                
             
     def compute_parallax_curvature(self, piE, delta_positions) :
         """ Compute the curvature induce by the parallax of from

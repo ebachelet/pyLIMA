@@ -8,20 +8,20 @@ Created on Mon May 23 17:18:15 2016
 import numpy as np
 
 # magnitude reference
-magnitude_constant = 27.4
+MAGNITUDE_CONSTANT = 27.4
 
 
 def magnitude_to_flux(mag):
     """ Transform the injected magnitude to the the corresponding flux."""
 
-    flux = 10 ** ((magnitude_constant - mag) / 2.5)
+    flux = 10 ** ((MAGNITUDE_CONSTANT - mag) / 2.5)
     
     return flux
     
 def flux_to_magnitude(flux):
     """ Transform the injected flux to the the corresponding magnitude."""
    
-    mag = magnitude_constant-2.5*np.log10(flux)
+    mag = MAGNITUDE_CONSTANT-2.5*np.log10(flux)
     
     return mag
 

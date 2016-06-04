@@ -54,7 +54,7 @@ class Telescope(object):
                  Default is 0.5.
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude = None, light_curve_magnitude_dictionnary = {'time': 0, 'mag' : 1, 'err_mag' : 2 },light_curve_flux = None, light_curve_flux_dictionnary = {'time': 0, 'flux' : 1, 'err_flux' : 2 }, reference_flux = 10000 ):
+    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None, light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2 }, light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2 }, reference_flux=10000 ):
         """ Initialization of the attributes described above."""
         
         self.name = name      
@@ -80,14 +80,14 @@ class Telescope(object):
                 
         else :
         
-            self.lightcurve_flux= light_curve_flux
-            self.lightcurve_flux= self.arrange_the_lightcurve_columns('flux')
+            self.lightcurve_flux = light_curve_flux
+            self.lightcurve_flux = self.arrange_the_lightcurve_columns('flux')
     	    self.lightcurve_magnitude  = self.lightcurve_in_magnitude()
 
         self.location = 'Earth'
-        self.altitude = 0.0
-        self.longitude = 0.57
-        self.latitude = 49.49
+        self.altitude = 0.0 # meters
+        self.longitude = 0.57 # degrees
+        self.latitude = 49.49 # degrees
         self.gamma = 0.0 # This mean you will fit uniform source brightness
         self.deltas_positions = []
 	
@@ -96,28 +96,31 @@ class Telescope(object):
     def arrange_the_lightcurve_columns(self, choice):
         """ Rearange the lightcurve in magnitude in the pyLIMA convention."""
        
-        pyLIMA_magnitude_convention = ['time','mag','err_mag']
-	pyLIMA_flux_convention = ['time','flux','err_flux']
+        pyLIMA_magnitude_convention = ['time', 'mag', 'err_mag']
+	pyLIMA_flux_convention = ['time', 'flux', 'err_flux']
 
         if choice == 'magnitude' :
         	 
 		lightcurve = []
 		for good_column in pyLIMA_magnitude_convention :
             
-            		lightcurve.append(self.lightcurve_magnitude[:,self.lightcurve_magnitude_dictionnary[good_column]])
+            		lightcurve.append(self.lightcurve_magnitude[:, self.lightcurve_magnitude_dictionnary[good_column]])
         
-        	return np.array(lightcurve).T
+		lightcurve = np.array(lightcurve).T
+
+        	return lightcurve
 
 	if choice == 'flux' :
         	 
 		lightcurve = []
 		for good_column in pyLIMA_flux_convention :
             
-            		lightcurve.append(self.lightcurve_flux[:,self.lightcurve_flux_dictionnary[good_column]])
+            		lightcurve.append(self.lightcurve_flux[:, self.lightcurve_flux_dictionnary[good_column]])
         
 		lightcurve = np.array(lightcurve).T
-		lightcurve[:,1] =  lightcurve[:,1]+self.reference_flux
-        	return lightcurve
+		lightcurve[:, 1] =  lightcurve[:, 1] + self.reference_flux
+        	
+		return lightcurve
 
     def n_data(self, choice='Mag'):
         """ Return the number of data points in the lightcurve.
@@ -178,13 +181,13 @@ class Telescope(object):
 
         self.gamma = 2 * linear_limb_darkening_coefficient / (3 - linear_limb_darkening_coefficient)
     
-    def compute_parallax(self,event,parallax):   
+    def compute_parallax(self, event, parallax):   
 	"""
         Need to be rethink for parallax.
 
         """
 	para = microlparallax.MLParallaxes(event, parallax)
-	para.parallax_combination([self])
+	para.parallax_combination(self)
 
 
     def clean_data(self):
@@ -232,14 +235,15 @@ class Telescope(object):
 
             lightcurve = self.lightcurve_magnitude
 	
-	time = lightcurve[:,0]        
-	mag = lightcurve[:,1]
-	err_mag = lightcurve[:,2]
+	time = lightcurve[:, 0]        
+	mag = lightcurve[:, 1]
+	err_mag = lightcurve[:, 2]
 
         flux = microltoolbox.magnitude_to_flux(mag)
         error_flux = microltoolbox.error_magnitude_to_error_flux(err_mag, flux)
         
-        return np.array([time, flux, error_flux]).T
+	lightcurve_in_flux = np.array([time, flux, error_flux]).T
+        return lightcurve_in_flux
 
 
 
@@ -261,10 +265,10 @@ class Telescope(object):
 
             lightcurve = self.lightcurve_flux
 	
-	time = lightcurve[:,0]        
-	flux = lightcurve[:,1] 
+	time = lightcurve[:, 0]        
+	flux = lightcurve[:, 1] 
 	error_flux = lightcurve[:,2]
-        #import pdb; pdb.set_trace()
+        
         magnitude = microltoolbox.flux_to_magnitude(flux)
         error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
         

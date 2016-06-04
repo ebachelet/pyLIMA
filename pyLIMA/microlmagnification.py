@@ -16,8 +16,8 @@ def amplification_PSPL(tau, uo):
     """
     # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
     U = (tau ** 2 + uo ** 2) ** 0.5
-    U2 = U ** 2
-    amplification = (U2 + 2) / (U * (U2 + 4) ** 0.5)
+    U_square = U ** 2
+    amplification = (U_square + 2) / (U * (U_square + 4) ** 0.5)
     
     #return both magnification and U, required by some methods
     return amplification, U
@@ -30,24 +30,24 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
 	http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
     """
     U = (tau ** 2 + uo ** 2) ** 0.5
-    U2 = U ** 2
-    amplification_PSPL = (U2 + 2) / (U * (U2 + 4) ** 0.5)
+    U_square = U ** 2
+    amplification_PSPL = (U_square + 2) / (U * (U_square + 4) ** 0.5)
    
-    Z = U / rho
+    z_yoo = U / rho
     
     amplification_FSPL = np.zeros(len(amplification_PSPL))
 
-    # Far from the lens (Z>>1), then PSPL.	
-    indexes_PSPL = np.where((Z > yoo_table[0][-1]))[0]
+    # Far from the lens (z_yoo>>1), then PSPL.	
+    indexes_PSPL = np.where((z_yoo > yoo_table[0][-1]))[0]
     amplification_FSPL[indexes_PSPL] = amplification_PSPL[indexes_PSPL]
 
-    # Very close to the lens (Z<<1), then Witt&Mao limit.
-    indexes_WM = np.where((Z < yoo_table[0][0]))[0]
-    amplification_FSPL[indexes_WM] = amplification_PSPL[indexes_WM] * (2 * Z[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * Z[indexes_WM])
+    # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
+    indexes_WM = np.where((z_yoo < yoo_table[0][0]))[0]
+    amplification_FSPL[indexes_WM] = amplification_PSPL[indexes_WM] * (2 * z_yoo[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
    
-    # FSPL regime (Z~1), then Yoo et al derivatives
-    indexes_FSPL = np.where((Z <= yoo_table[0][-1]) & (Z >= yoo_table[0][0]))[0]
-    amplification_FSPL[indexes_FSPL] = amplification_PSPL[indexes_FSPL] * (yoo_table[1](Z[indexes_FSPL]) - gamma * yoo_table[2](Z[indexes_FSPL]))
+    # FSPL regime (z_yoo~1), then Yoo et al derivatives
+    indexes_FSPL = np.where((z_yoo <= yoo_table[0][-1]) & (z_yoo >= yoo_table[0][0]))[0]
+    amplification_FSPL[indexes_FSPL] = amplification_PSPL[indexes_FSPL] * (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
     
     amplification = amplification_FSPL
    
