@@ -112,13 +112,19 @@ def MCMC_compute_fs_g(fit,mcmc_chains) :
     :param mcmc_chains: a numpy array representing the mcmc chains.
     :return: a numpy array containing the corresponding fluxes parameters
     """
-    Fluxes = []
-    for chain in mcmc_chains :
+    Fluxes = np.zeros((len(mcmc_chains),2*len(fit.event.telescopes)))
+
+    for i in xrange(len(mcmc_chains)) :
         
-        fluxes = fit.find_fluxes(chain, fit.model)
-        Fluxes.append(fluxes)
-    
-    return np.array(Fluxes)
+	if Fluxes[i][0] == 0 :
+		
+		index = np.where(mcmc_chains== mcmc_chains[i])[0]
+	
+        	fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
+
+        	Fluxes[np.unique(index)] = fluxes
+
+    return Fluxes
 
 
 def  MCMC_plot_parameters_distribution(fit,mcmc_best):
@@ -161,7 +167,7 @@ def  MCMC_plot_parameters_distribution(fit,mcmc_best):
             else :
                 
                 if count_j<count_i :
-                
+                   
                     axes2[count_i,count_j].scatter(mcmc_best[:,fit.model.model_dictionnary[key_j]],mcmc_best[:,fit.model.model_dictionnary[key_i]],c=mcmc_best[:,-1],edgecolor='None')
                     
                 else :
@@ -187,13 +193,17 @@ def  MCMC_plot_lightcurves(fit,mcmc_best):
     MCMC_plot_align_data(fit,mcmc_best[0], figure_axes[0])
      
      
-    index = np.linspace(0,len(mcmc_best)-1,35).astype(int)
+    model_panel_chichi = np.linspace(max(mcmc_best[:,-1]),min(mcmc_best[:,-1]),35).astype(int)
     color_normalization = matplotlib.colors.Normalize(vmin=np.min(mcmc_best[:,-1]),vmax=np.max(mcmc_best[:,-1]))
     color_map = matplotlib.cm.jet
 
     scalar_couleur_map = matplotlib.cm.ScalarMappable(cmap=color_map, norm= color_normalization)
     scalar_couleur_map.set_array([])
-    for indice in index :
+
+    for model_chichi in  model_panel_chichi :
+	
+	indice = np.searchsorted(mcmc_best[:,-1], model_chichi)-1
+	
         MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice,-1],figure_axes[0], scalar_couleur_map)
 
      

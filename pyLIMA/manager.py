@@ -50,15 +50,17 @@ def main(command_line):
         #event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
         #Names = ['OGLE','Kepler']
 	#Locations = ['Earth','Space']
-        event_telescopes = ['OGLE2016BLG0813.dat','OGLE20160813_K2_flux.dat']
+        
 	current_event.ra = 269.8865416666667
         current_event.dec = -28.407416666666666	
         Names = ['OGLE','Kepler']
 	Locations = ['Earth','Space']
+	event_telescopes = ['OGLE2016BLG0813.dat','OGLE20160813_K2_flux.dat']
         #event_telescopes = ['MOA2016BLG0221_flux.dat','MOA2016BLG0221_K2_flux.dat']
 	#event_telescopes = ['MOA2016BLG0233_flux.dat','MOA2016BLG0233_K2_flux.dat']
 	#event_telescopes = ['OGLE2016BLG0548.dat','OGLE20160548_K2_flux.dat']
 	#event_telescopes = ['MOA2016BLG0286_flux.dat']
+	#event_telescopes = ['MOA2016BLG0307_flux.dat']
 	count=0
 
         start=time.time()
@@ -77,7 +79,7 @@ def main(command_line):
 	    if Names[count]=='Kepler' :
             	telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_flux=lightcurve)
 	    else :
-		telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_magnitude=lightcurve)
+		telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_magnitude=lightcurve,reference_flux= 2654.61)
             telescope.gamma=0.5
             telescope.location=Locations[count]
             current_event.telescopes.append(telescope)

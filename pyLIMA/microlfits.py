@@ -214,12 +214,14 @@ class MLFits(object):
         differential_evolution_estimation = differential_evolution(self.chichi_differential,
                                    bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
                                    recombination=0.7,polish='None')
+	
+	print 'pre MCMC done'
 	# Best solution
         best_solution = differential_evolution_estimation['x']
         
 	number_of_paczynski_parameters = len(best_solution)
-        nwalkers = 100*number_of_paczynski_parameters
-	#nwalkers = 100
+        #nwalkers = 100*number_of_paczynski_parameters
+	nwalkers = 100
 	# Initialize the population of MCMC        
 	population = []
 
@@ -233,51 +235,62 @@ class MLFits(object):
 
                 if j == 0:
                     
-                    individual.append(best_solution[j]+np.random.uniform(-1, 1))
+                    individual.append(best_solution[j]+np.random.uniform(-20,20))
                 if j == 1:
                     
-                    individual.append(best_solution[j]*(np.random.uniform(-3, 3)))
+                    individual.append(best_solution[j]*(np.random.uniform(-1, 1)))
                 if j == 2:
             
-                    individual.append(best_solution[j]*(np.random.uniform(-3, 3)))
+                    individual.append(best_solution[j]*(np.random.uniform(-0, 1)))
                 
                 if j == 3:
                     
-                    individual.append(best_solution[j]*(np.random.uniform(-3, 3)))
+                    individual.append(best_solution[j]*(np.random.uniform(-1, 1)))
 
 		if j == 4:
                     
-                    individual.append(best_solution[j]*(np.random.uniform(-3, 3)))
+                    individual.append(best_solution[j]*(np.random.uniform(-1, 1)))
 
 		
             
             chichi = self.chichi_MCMC(individual)
 
             if chichi != -np.inf :
-                
+                #np.array(individual)
                 population.append(np.array(individual))
                 count_walkers += 1
            
-     
-
+       
+	
         sampler = emcee.EnsembleSampler(nwalkers, number_of_paczynski_parameters, self.chichi_MCMC)
+ 	#sampler = emcee.PTSampler(20,nwalkers, number_of_paczynski_parameters, self.chichi_MCMC,self.logp)
+	#p0 = np.random.uniform(low=-1.0, high=1.0, size=(20, nwalkers, number_of_paczynski_parameters))
+	#AA=20*[population]
+	#for p, lnprob, lnlike in sampler.sample( np.array(AA), iterations=1000):
+    	#	pass	
+
+
+        #import pdb; pdb.set_trace()
+	
 
 	# First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, 100)
+
 	print 'MCMC preburn done'
-        sampler.reset()
+        #sampler.reset()
 	
 	# Final estimation using the previous output.
 
-        final_positions, final_probabilities, state = sampler.run_mcmc(final_positions, 100)
+        #final_positions, final_probabilities, state = sampler.run_mcmc(final_positions, 100)
 
 	
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
             
         return MCMC_chains, MCMC_probabilities
-
+    #def logp(self,x) :
+    #	return 0.0
     def diff_evolution(self) :
         """  The DE method. Differential evolution algoritm. 
 	     Based on the scipy.optimize.differential_evolution.
@@ -664,9 +677,16 @@ class MLFits(object):
 	   :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine. 
 	   :return chichi_list: the chi^2
 	"""
-
+	count = 0	
+	for parameter in fit_process_parameters :
+		
+		if (parameter<self.model.parameters_boundaries[count][0]) | (parameter>self.model.parameters_boundaries[count][1]) :
+			return -np.inf
+		count += 1	
         residuals = np.array([])
        
+	
+
         for telescope in self.event.telescopes:
 
             lightcurve = telescope.lightcurve_flux
@@ -692,7 +712,7 @@ class MLFits(object):
                 chichi = (residuals ** 2).sum()
                 # Little prior here
                 chichi += np.log(len(time))*1/(1+f_blending/f_source)
-                 
+                
         return - (chichi)
 
     def find_fluxes(self, fit_process_parameters, model):
