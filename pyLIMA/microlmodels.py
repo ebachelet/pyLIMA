@@ -181,8 +181,8 @@ class MLModels(object):
 
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
-	    
-	    self.compute_parallax_all_telescopes()
+        
+        self.compute_parallax_all_telescopes()
 
         if self.xallarap_model[0] != 'None':
 
@@ -250,7 +250,7 @@ class MLModels(object):
         if self.parallax_model[0] != 'None' :
             piE = np.array([parameters[self.model_dictionnary['piEN']],
                                 parameters[self.model_dictionnary['piEE']]])
-	    #import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
             dTau,dUo = self.compute_parallax_curvature(piE, delta_positions)
             dtau += dTau
             duo += dUo
@@ -274,12 +274,12 @@ class MLModels(object):
          """ Compute the parallax for all the telescopes, if this is desired in
          the second order parameter."""
          
-	 
+     
          for telescope in self.event.telescopes:
   
             if len(telescope.deltas_positions) == 0:
                  telescope.compute_parallax(self.event,self.parallax_model)
-	
+    
         
                 
             

@@ -11,6 +11,7 @@ from collections import OrderedDict
 import matplotlib
 import matplotlib.pyplot as plt
 
+
 import numpy as np
 from astropy.time import Time
 from scipy.stats.distributions import t as student
@@ -22,16 +23,14 @@ import copy
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
-
-
 def LM_outputs(fit) :
     """ Standard 'LM' and 'DE' outputs.
     :param fit: a fit object. See the microlfits for more details.
     :return: a namedtuple containing the following attributes :
-	     - fit_parameters : an namedtuple object containing all the fitted parameters
-	     - fit_errors : an namedtuple object containing all the fitted parameters errors
-	     - fit_correlation_matrix : a numpy array representing the fitted parameters correlation matrix
-	     - figure_lightcurve : a two matplotlib figure showing the data and model and the correspoding residuals
+         - fit_parameters : an namedtuple object containing all the fitted parameters
+         - fit_errors : an namedtuple object containing all the fitted parameters errors
+         - fit_correlation_matrix : a numpy array representing the fitted parameters correlation matrix
+         - figure_lightcurve : a two matplotlib figure showing the data and model and the correspoding residuals
     """
     
     results = LM_parameters_result(fit)
@@ -58,10 +57,10 @@ def MCMC_outputs(fit) :
     """ Standard 'LM' and 'DE' outputs.
     :param fit: a fit object. See the microlfits for more details.
     :return: a namedtuple containing the following attributes :
-	     - MCMC_chains : a numpy array containing all the parameters chains + the corresponding objective function.
-	     - MCMC_correlations : a numpy array representing the fitted parameters correlation matrix from the MCMC chains
-	     - figure_lightcurve : a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.
-	     - figure_distributions : a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)
+         - MCMC_chains : a numpy array containing all the parameters chains + the corresponding objective function.
+         - MCMC_correlations : a numpy array representing the fitted parameters correlation matrix from the MCMC chains
+         - figure_lightcurve : a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.
+         - figure_distributions : a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)
     """
 
     chains = fit.MCMC_chains
@@ -116,42 +115,41 @@ def MCMC_compute_fs_g(fit,mcmc_chains) :
 
     for i in xrange(len(mcmc_chains)) :
         
-	if Fluxes[i][0] == 0 :
-		
-		index = np.where(mcmc_chains== mcmc_chains[i])[0]
-	
-        	fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
+        if Fluxes[i][0] == 0 :
 
-        	Fluxes[np.unique(index)] = fluxes
+            index = np.where(mcmc_chains== mcmc_chains[i])[0]
+
+            fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
+
+            Fluxes[np.unique(index)] = fluxes
 
     return Fluxes
 
 
 def  MCMC_plot_parameters_distribution(fit,mcmc_best):
     """ Plot the fit parameters distributions.
-	Only plot the best mcmc_chains are plotted.
-	:param fit: a fit object. See the microlfits for more details.
-    	:param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
-    	:return: a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)
+    Only plot the best mcmc_chains are plotted.
+    :param fit: a fit object. See the microlfits for more details.
+        :param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
+        :return: a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)
     """
     dimensions = mcmc_best.shape[1]-1
     
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions,sharex='col')
-    
+
 
     count_i = 0
 
     for key_i in fit.model.model_dictionnary.keys()[: dimensions] :
+
         axes2[count_i,0].set_ylabel(key_i)
         axes2[-1,count_i].set_xlabel(key_i)
-        
-        
-        count_j = 0         
+
+        count_j = 0
         for key_j in fit.model.model_dictionnary.keys()[: dimensions] :
-            
-            
+
             axes2[count_i,count_j].ticklabel_format(useOffset=False, style='plain')
-            
+
             if count_i!=dimensions-1:
                 
                 plt.setp(axes2[count_i,count_j].get_xticklabels() , visible=False)
@@ -159,19 +157,21 @@ def  MCMC_plot_parameters_distribution(fit,mcmc_best):
             if (count_j!=0) and (count_j!=count_i) :
 
                 plt.setp(axes2[count_i,count_j].get_yticklabels() , visible=False)
-            
+
             if count_i==count_j :
                 
                 axes2[count_i,count_j].hist(mcmc_best[:,fit.model.model_dictionnary[key_i]], 100)
-            
+
+                axes2[count_i,count_j].locator_params(nbins=dimensions/2)
+
             else :
                 
                 if count_j<count_i :
                    
                     axes2[count_i,count_j].scatter(mcmc_best[:,fit.model.model_dictionnary[key_j]],mcmc_best[:,fit.model.model_dictionnary[key_i]],c=mcmc_best[:,-1],edgecolor='None')
-                    
+                    axes2[count_i,count_j].locator_params(nbins=dimensions/2)
                 else :
-                    axes2[count_i,count_j].axis('off')     
+                    axes2[count_i,count_j].axis('off')
                 
             count_j += 1  
             
@@ -183,10 +183,10 @@ def  MCMC_plot_parameters_distribution(fit,mcmc_best):
 
 def  MCMC_plot_lightcurves(fit,mcmc_best):
     """ Plot 35 models from the mcmc_best sample. This is made to have  35 models equally spaced
-	in term of objective funtion (~chichi)
-	:param fit: a fit object. See the microlfits for more details.
-    	:param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
-    	:return: a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.
+    in term of objective funtion (~chichi)
+    :param fit: a fit object. See the microlfits for more details.
+        :param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
+        :return: a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.
     """
     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)  
 
@@ -201,12 +201,12 @@ def  MCMC_plot_lightcurves(fit,mcmc_best):
     scalar_couleur_map.set_array([])
 
     for model_chichi in  model_panel_chichi :
-	
-	indice = np.searchsorted(mcmc_best[:,-1], model_chichi)-1
-	
+
+        indice = np.searchsorted(mcmc_best[:,-1], model_chichi)-1
+
         MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice,-1],figure_axes[0], scalar_couleur_map)
 
-     
+
     plt.colorbar(scalar_couleur_map,ax=figure_axes[0])
     figure_axes[0].text(0.01,0.97,'provided by pyLIMA',style='italic',fontsize=10,transform=figure_axes[0].transAxes)
     figure_axes[0].invert_yaxis()   
@@ -217,31 +217,29 @@ def  MCMC_plot_lightcurves(fit,mcmc_best):
 
 def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map) :
     """ Plot a  model to a given figure, with the color corresponding to the objective function of the model. 
-	:param fit: a fit object. See the microlfits for more details.
-    	:param parameters: the parameters [list] of the model you want to plot.
-	:param couleurs: the values of the objective function for the model that match the color table scalar_couleur_map
-	:param figure_axes: the axes where the plot are draw
-	:param scalar_couleur_map: a matplotlib table that return a color given a scalar value (the objective function here)
+    :param fit: a fit object. See the microlfits for more details.
+        :param parameters: the parameters [list] of the model you want to plot.
+    :param couleurs: the values of the objective function for the model that match the color table scalar_couleur_map
+    :param figure_axes: the axes where the plot are draw
+    :param scalar_couleur_map: a matplotlib table that return a color given a scalar value (the objective function here)
     """
     min_time = min([min(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
-	
+
     time_of_model = np.arange(min_time, max_time + 100, 0.01)
     if fit.model.parallax_model[0] !='None' :
-	    #import pdb; pdb.set_trace()
-	    reference_telescope = copy.copy(fit.event.telescopes[0])
-	    reference_telescope.lightcurve_magnitude = np.array([time_of_model,[0]*len(time_of_model),[0]*len(time_of_model)]).T
-	    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
-	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        #import pdb; pdb.set_trace()
+        reference_telescope = copy.copy(fit.event.telescopes[0])
+        reference_telescope.lightcurve_magnitude = np.array([time_of_model,[0]*len(time_of_model),[0]*len(time_of_model)]).T
+        reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
     else :
- 	  #import pdb; pdb.set_trace()
-	  reference_telescope = fit.event.telescopes[0]
-    
+        #import pdb; pdb.set_trace()
+        reference_telescope = fit.event.telescopes[0]
 
 
     time_of_model = np.arange(min_time, max_time + 100, 0.01)
-    
-   
+
     gamma = reference_telescope.gamma
     fs_reference = parameters[fit.model.model_dictionnary['fs_'+reference_telescope.name]]
     g_reference = parameters[fit.model.model_dictionnary['g_'+reference_telescope.name]]
@@ -253,16 +251,12 @@ def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map) 
    
 
     figure_axes.plot(time_of_model,magnitude_model, color=scalar_couleur_map.to_rgba(couleurs), alpha=0.5)
-    
-    
-  
-    
-    
+
 def MCMC_plot_align_data(fit, parameters, ax) :
     """ Plot the data on the figure. Telescopes are aligned to the survey telescope (i.e number 0). 
-	:param fit: a fit object. See the microlfits for more details.
-    	:param parameters: the parameters [list] of the model you want to plot.
-	:param ax: the matplotlib axes where you plot the data
+    :param fit: a fit object. See the microlfits for more details.
+        :param parameters: the parameters [list] of the model you want to plot.
+    :param ax: the matplotlib axes where you plot the data
     """
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = parameters[fit.model.model_dictionnary['fs_'+ reference_telescope]]
@@ -289,9 +283,9 @@ def MCMC_plot_align_data(fit, parameters, ax) :
 
 def MCMC_plot_residuals(fit, parameters, ax):
     """ Plot the data residual on the appropriate figure.  
-	:param fit: a fit object. See the microlfits for more details.
-    	:param parameters: the parameters [list] of the model you want to plot.
-	:param ax: the matplotlib axes where you plot the data
+    :param fit: a fit object. See the microlfits for more details.
+        :param parameters: the parameters [list] of the model you want to plot.
+    :param ax: the matplotlib axes where you plot the data
     """
 
     for telescope in fit.event.telescopes :
@@ -304,13 +298,13 @@ def MCMC_plot_residuals(fit, parameters, ax):
         
         time = telescope.lightcurve_flux[:,0]
         flux = telescope.lightcurve_flux[:,1]
-	error_flux = telescope.lightcurve_flux[:,2]
+        error_flux = telescope.lightcurve_flux[:,2]
         err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux,flux)
 
         amplification = fit.model.magnification(parameters, time, gamma,telescope.deltas_positions)[0]
-        
+
         flux_model = fs_telescope*( amplification+g_telescope)
-        
+
         residuals = 2.5*np.log10(flux_model/flux)
         ax.errorbar(time, residuals, yerr=err_mag,fmt='.')
     ax.set_ylim([-plot_residuals_windows,plot_residuals_windows])
@@ -318,8 +312,8 @@ def MCMC_plot_residuals(fit, parameters, ax):
 
 def LM_parameters_result(fit) :
     """ Produce a namedtuple object containing the fitted parameters in the fit.fit_results.  
-	:param fit: a fit object. See the microlfits for more details.
-	:param fit_parameters: a namedtuple object containing the fitted parameters.
+    :param fit: a fit object. See the microlfits for more details.
+    :param fit_parameters: a namedtuple object containing the fitted parameters.
     """
     
     fit_parameters = collections.namedtuple('Parameters',fit.model.model_dictionnary.keys())
@@ -333,8 +327,8 @@ def LM_parameters_result(fit) :
 
 def MCMC_covariance(mcmc_chains):
     """ Estimate the covariance matrix from the mcmc_chains  
-	:param mcmc_chains: a numpy array representing the mcmc chains.
-	:return : a numpy array representing the covariance matrix of your MCMC sampling.
+    :param mcmc_chains: a numpy array representing the mcmc chains.
+    :return : a numpy array representing the covariance matrix of your MCMC sampling.
     """
     esperances = []   
     for i in xrange(mcmc_chains.shape[1]-1):
@@ -355,8 +349,8 @@ def MCMC_covariance(mcmc_chains):
 
 def LM_fit_errors(fit) :
     """ Estimate the parameters errors from the fit.fit_covariance matrix.
-	 :param fit: a fit object. See the microlfits for more details.
-	 :return : a namedtuple object containing the square roots of parameters variance.
+     :param fit: a fit object. See the microlfits for more details.
+     :return : a namedtuple object containing the square roots of parameters variance.
     """
     keys = ['err_'+parameter for parameter in fit.model.model_dictionnary.keys() ]
     parameters_errors = collections.namedtuple('Errors_Parameters',keys)
@@ -369,8 +363,8 @@ def LM_fit_errors(fit) :
 
 def cov2corr(covariance_matrix):
     """ Covariance matrix to correlation matrix.
-	:param covariance_matrix: a (square) numpy array representing the covariance matrix 
-	:return : a (square) numpy array representing the correlation matrix 
+    :param covariance_matrix: a (square) numpy array representing the covariance matrix 
+    :return : a (square) numpy array representing the correlation matrix 
     """
 
     d = np.sqrt(covariance_matrix.diagonal())
@@ -402,8 +396,8 @@ def LM_plot_parameters(fit) :
     
 def initialize_plot_lightcurve(fit):
     """ Initialize the lightcurve plot.
-	:param fit: a fit object. See the microlfits for more details.
-	:return : a matplotlib figure  and the corresponding matplotlib axes.  
+    :param fit: a fit object. See the microlfits for more details.
+    :return : a matplotlib figure  and the corresponding matplotlib axes.  
     """
     figure,figure_axes = plt.subplots(2,1,sharex=True)
     figure_axes[0].grid()
@@ -414,8 +408,8 @@ def initialize_plot_lightcurve(fit):
 
 def initialize_plot_parameters(fit):
     """ Initialize the parameters plot.
-	:param fit: a fit object. See the microlfits for more details.
-	:return : a matplotlib figure  and the corresponding matplotlib axes.  
+    :param fit: a fit object. See the microlfits for more details.
+    :return : a matplotlib figure  and the corresponding matplotlib axes.  
     """
     dimension_y = np.floor(len(fit.fits_result)/3)
     dimension_x = len(fit.fits_result)-3*dimension_y
@@ -428,24 +422,24 @@ def initialize_plot_parameters(fit):
     
 def LM_plot_model(fit, figure_axe) :
     """ Plot the microlensing model from the fit.
-	:param fit: a fit object. See the microlfits for more details.
-	:param figure_axe: a matplotlib axes correpsonding to the figure.
+    :param fit: a fit object. See the microlfits for more details.
+    :param figure_axe: a matplotlib axes correpsonding to the figure.
     """
 
 
     min_time = min([min(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:,0]) for i in fit.event.telescopes])
-	
+
     time = np.linspace(min_time, max_time + 100, 30000) 
     if fit.model.parallax_model[0] !='None' :
-	    #import pdb; pdb.set_trace()
-	    reference_telescope = copy.copy(fit.event.telescopes[0])
-	    reference_telescope.lightcurve_magnitude = np.array([time,[0]*len(time),[0]*len(time)]).T
-	    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
-	    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        #import pdb; pdb.set_trace()
+        reference_telescope = copy.copy(fit.event.telescopes[0])
+        reference_telescope.lightcurve_magnitude = np.array([time,[0]*len(time),[0]*len(time)]).T
+        reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
     else :
- 	  #import pdb; pdb.set_trace()
-	  reference_telescope = fit.event.telescopes[0] 
+        #import pdb; pdb.set_trace()
+        reference_telescope = fit.event.telescopes[0] 
     gamma = reference_telescope.gamma
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope.name]]
     g_reference = fit.fit_results[fit.model.model_dictionnary['g_'+reference_telescope.name]]
@@ -462,8 +456,8 @@ def LM_plot_model(fit, figure_axe) :
     
 def LM_plot_residuals(fit,figure_axe):
     """ Plot the residuals from the fit.
-	:param fit: a fit object. See the microlfits for more details.
-	:param figure_axe: a matplotlib axes correpsonding to the figure.
+    :param fit: a fit object. See the microlfits for more details.
+    :param figure_axe: a matplotlib axes correpsonding to the figure.
     """
    
 
@@ -476,13 +470,13 @@ def LM_plot_residuals(fit,figure_axe):
         
         time = telescope.lightcurve_flux[:,0]
         flux = telescope.lightcurve_flux[:,1]
-	error_flux = telescope.lightcurve_flux[:,2]
+        error_flux = telescope.lightcurve_flux[:,2]
         err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux,flux)
-	
+
         amplification = fit.model.magnification(fit.fit_results, time, gamma,telescope.deltas_positions)[0]
         
         flux_model = fs_telescope*(amplification+g_telescope)
-        
+
         residuals = 2.5*np.log10(flux_model/flux)
         figure_axe.errorbar(time, residuals, yerr=err_mag,fmt='.')
     figure_axe.set_ylim([-plot_residuals_windows,plot_residuals_windows])
@@ -491,8 +485,8 @@ def LM_plot_residuals(fit,figure_axe):
     
 def LM_plot_align_data(fit,figure_axe) :
     """ Plot the aligned data.
-	:param fit: a fit object. See the microlfits for more details.
-	:param figure_axe: a matplotlib axes correpsonding to the figure.
+    :param fit: a fit object. See the microlfits for more details.
+    :param figure_axe: a matplotlib axes correpsonding to the figure.
     """
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_'+reference_telescope]]
@@ -519,11 +513,11 @@ def LM_plot_align_data(fit,figure_axe) :
     
 def align_telescope_lightcurve(lightcurve_telescope_mag,fs_reference,g_reference,fs_telescope,g_telescope) :
     """ Align data to the survey telescope (i.e telescope 0).
-	:param lightcurve_telescope_mag: the survey telescope in magnitude
-	:param fs_reference: the survey telescope reference source flux (i.e the fitted value)
-	:param g_reference: the survey telescope reference blending parameter (i.e the fitted value)
-	:param fs_telescope: the telescope source flux (i.e the fitted value)
-	:param g_reference: the telescope blending parameter (i.e the fitted value)
+    :param lightcurve_telescope_mag: the survey telescope in magnitude
+    :param fs_reference: the survey telescope reference source flux (i.e the fitted value)
+    :param g_reference: the survey telescope reference blending parameter (i.e the fitted value)
+    :param fs_telescope: the telescope source flux (i.e the fitted value)
+    :param g_reference: the telescope blending parameter (i.e the fitted value)
     """
     time = lightcurve_telescope_mag[:,0]
     magnitude = lightcurve_telescope_mag[:,1]

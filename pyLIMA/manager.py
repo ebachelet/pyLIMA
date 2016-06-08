@@ -26,8 +26,9 @@ import microlmodels
 
 def main(command_line):
    
-    events_names=[event_name for event_name in os.listdir('../../Dun_lightcurves/') if ('MOA2016BLG0221.dat'  in event_name) and ('~' not in event_name)]
-
+    events_names=[event_name for event_name in os.listdir(command_line.input_directory) if ('Lightcurve_'  in event_name) and ('Follow' not in event_name)]
+    events_names2=[event_name for event_name in os.listdir(command_line.input_directory) if ('Lightcurve_'  in event_name) and ('~' not in event_name)]
+    import pdb; pdb.set_trace()
 
     events = []
     start = time.time()
@@ -35,40 +36,40 @@ def main(command_line):
     errors = []
    
     
-    for event_name in events_names[0:20]:
+    for event_name in events_names[0:]:
 
-        #name='Lightcurve_'+str(9994)+'_'
-        #name = event_name[:-4]
-	name = 'MOA2016BLG0286.dat'   
-	current_event = event.Event()
+        #name='Lightcurve_'+str(9975)+'_'
+        name = event_name[:-10]
+        #name = 'Lightcurve_1'
+        current_event = event.Event()
         current_event.name = name
         
-	
 
-	event_telescopes = [i for i in events_names if name  in i]
+
+        event_telescopes = [i for i in events_names2 if name  in i]
         #event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat','MOA-2016-BLG-215_transformed.dat']
         #event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
         #Names = ['OGLE','Kepler']
-	#Locations = ['Earth','Space']
+        #Locations = ['Earth','Space']
         
-	current_event.ra = 269.8865416666667
-        current_event.dec = -28.407416666666666	
-        Names = ['OGLE','Kepler']
-	Locations = ['Earth','Space']
-	event_telescopes = ['OGLE2016BLG0813.dat','OGLE20160813_K2_flux.dat']
+        current_event.ra = 269.8865416666667
+        current_event.dec = -28.407416666666666    
+        Names = ['Survey','Followr']
+        Locations = ['Earth','Earth']
+        #event_telescopes = ['Lightcurve_1_Survey.dat','Lightcurve_1_Follow.dat']
         #event_telescopes = ['MOA2016BLG0221_flux.dat','MOA2016BLG0221_K2_flux.dat']
-	#event_telescopes = ['MOA2016BLG0233_flux.dat','MOA2016BLG0233_K2_flux.dat']
-	#event_telescopes = ['OGLE2016BLG0548.dat','OGLE20160548_K2_flux.dat']
-	#event_telescopes = ['MOA2016BLG0286_flux.dat']
-	#event_telescopes = ['MOA2016BLG0307_flux.dat']
-	count=0
+        #event_telescopes = ['MOA2016BLG0233_flux.dat','MOA2016BLG0233_K2_flux.dat']
+        #event_telescopes = ['OGLE2016BLG0548.dat','OGLE20160548_K2_flux.dat']
+        #event_telescopes = ['MOA2016BLG0286_flux.dat']
+        #event_telescopes = ['MOA2016BLG0307_flux.dat']
+        count=0
 
         start=time.time()
         for event_telescope in event_telescopes:
             try :
                raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope, usecols=(0, 1, 2))
                #good = np.where(raw_light_curve[:,1]<24)[0]
-	       good = np.where(raw_light_curve[:,0]>0)[0]
+               good = np.where(raw_light_curve[:,0]>-1)[0]
                raw_light_curve=raw_light_curve[good]
                lightcurve=np.array([raw_light_curve[:,0],raw_light_curve[:,1],raw_light_curve[:,2]]).T
                if lightcurve[0,0]>2450000 :
@@ -76,10 +77,10 @@ def main(command_line):
             except :
                 pass
             
-	    if Names[count]=='Kepler' :
-            	telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_flux=lightcurve)
-	    else :
-		telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_magnitude=lightcurve,reference_flux= 2654.61)
+            if Names[count]=='Kepler' :
+                telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_flux=lightcurve)
+            else :
+                telescope = telescopes.Telescope(name=Names[count], camera_filter='I', light_curve_magnitude=lightcurve)
             telescope.gamma=0.5
             telescope.location=Locations[count]
             current_event.telescopes.append(telescope)
@@ -87,21 +88,20 @@ def main(command_line):
            
         print 'Start;', current_event.name
        
-        current_event.find_survey('OGLE')
+        current_event.find_survey('Survey')
    
         current_event.check_event()
        
-        Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['Annual', 2457510.0])
-        #import pdb; pdb.set_trace()
-        #
+        Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['None', 2457510.0])
+       
 
         current_event.fit(Model,'MCMC')
         
         
         current_event.fits[0].produce_outputs()
-        
+        #print current_event.fits[0].fit_results
         plt.show()
-        import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     end = time.time()
    
     print end - start
@@ -117,9 +117,9 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='PSPL')
-    parser.add_argument('-i', '--input_directory', default='../../Dun_lightcurves/') 
-    parser.add_argument('-o', '--output_directory', default='/nethome/Desktop/Microlensing/K2_C9/Dun_lightcurves/Results/')
+    parser.add_argument('-m', '--model', default='FSPL')
+    parser.add_argument('-i', '--input_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/SimulationML/Lightcurves_FSPL/Lightcurves/') 
+    parser.add_argument('-o', '--output_directory', default='/nethome/Desktop/Microlensing/OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret', default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()
 

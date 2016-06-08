@@ -19,7 +19,7 @@ class Event(object):
     """
     ######## Event module ########
     
-    This module create an event class with the informations (attributes) needed for the fits.
+    This module create an event object with the informations (attributes) needed for the fits.
 
     Attributes :
 
@@ -27,9 +27,9 @@ class Event(object):
          
          name : name of the event. Should be a string. Default is 'Sagittarius A*'
          
-         ra : right ascension of the event (J2000). Should be a float in degree between 0.0 and 360.0. Default is ra of Sagittarius A = 266.416792 from Baker & Sramek 1999ApJ...524..805B
+         ra : right ascension of the event (J2000). Should be a float in degree between 0.0 and 360.0. Default is ra of Sagittarius A, :math:`\\alpha` = 266.416792 from Baker & Sramek 1999ApJ...524..805B
     
-         dec : declination of the event (J2000). Should be a float in degree between -90 and 90. Default is dec of Sagittarius A = -29.007806 from Baker & Sramek 1999ApJ...524..805B
+         dec : declination of the event (J2000). Should be a float in degree between -90 and 90. Default is dec of Sagittarius A, :math:`\\delta` = -29.007806 from Baker & Sramek 1999ApJ...524..805B
     
          Teff : effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K
          
@@ -108,9 +108,9 @@ class Event(object):
         An ERROR is returned if the check is not successfull
         Should be used before any event_fit function calls
 
-        First check if the event name is a string
-        Then check if the right ascension (event.ra) is between 0 and 360 degrees
-        Then check if the declination (event.dec) is between -90 and 90 degrees
+        First check if the event name is a string.
+        Then check if the right ascension (event.ra) is between 0 and 360 degrees.
+        Then check if the declination (event.dec) is between -90 and 90 degrees.
         Then check if you have any telescopes ingested.
         Finally check if your telescopes have a lightcurve attributes different from None.
         """
@@ -149,6 +149,9 @@ class Event(object):
     def find_survey(self, choice=None):
         """Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
+        
+        :param choice: the name of the telescope choosing as the survey. Has to be a string.
+                       Default is the first telescope.
         """
         self.survey = choice or self.telescopes[0].name
 
@@ -166,26 +169,13 @@ class Event(object):
             print 'ERROR : There is no telescope names containing ' + self.survey
             return
 
-    def plot_data(self, choice, observe, align):
-        """ Not working and probably depreciated"""
-        if align == 'Yes':
-
-            self.plotter.align_lightcurves(choice)
-
-        if observe is 'Mag':
-
-            self.plotter.plot_lightcurves_mag(align)
-
-        if observe is 'Flux':
-
-            self.plotter.plot_lightcurves_flux(align)
-
+    
     def lightcurves_in_flux(self, choice='Yes'):
-        """ Transform for all telescope ingested the input magnitude lightcurve in flux unit.
+        """ Transform all telescoep magnitude lightcurves in flux units.
             
 
             :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'. More details in the telescope module
-            :return:  the lightcurve in flux for all telescopes.
+            
         """
         for telescope in self.telescopes:
 
@@ -204,4 +194,18 @@ class Event(object):
          # self.outputs.find_observables()
          # Parameters,lightcurve_model,lightcurve_data = self.outputs.K2_C9_outputs()
          # return Parameters,lightcurve_model,lightcurve_data
+        
+    def plot_data(self, choice, observe, align):
+        """ Not working and probably depreciated"""
+        if align == 'Yes':
+
+            self.plotter.align_lightcurves(choice)
+
+        if observe is 'Mag':
+
+            self.plotter.plot_lightcurves_mag(align)
+
+        if observe is 'Flux':
+
+            self.plotter.plot_lightcurves_flux(align)
 
