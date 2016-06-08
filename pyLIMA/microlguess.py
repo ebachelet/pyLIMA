@@ -12,7 +12,12 @@ import microltoolbox
 
 def initial_guess_PSPL(event):
     """Function to find initial PSPL guess for Levenberg-Marquardt solver (method=='LM').
-    This assumes no blending.
+       This assumes no blending.
+       
+       :param object event: the event object on which you perform the fit on. More details on the event module.
+
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE) and the source flux of the survey telescope.
+       :rtype: list,float
     """
     
     # to estimation
@@ -177,7 +182,7 @@ def initial_guess_PSPL(event):
     if len(indextEPlus) != 0:
 
         tEPlus = time[indextEPlus[0]] - to_guess
-        tE_guesses.append(tEplus)
+        tE_guesses.append(tEPlus)
 
     if len(indextEMoins) != 0:
 
@@ -196,13 +201,18 @@ def initial_guess_PSPL(event):
     return [to_guess,uo_guess,tE_guess],fs_guess
 
 def initial_guess_FSPL(event): 
-  """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
-    This assumes no blending.
-  """
-  PSPL_guess, fs_guess = initial_guess_PSPL(event)
-    
-  rho_guess = 0.05
+    """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
+       This assumes no blending.
+       
+       :param object event: the event object on which you perform the fit on. More details on the event module.
 
-  FSPL_guess = PSPL_guess+[rho_guess]
-    
-  return FSPL_guess, fs_guess
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.
+       :rtype: list,float
+    """
+    PSPL_guess, fs_guess = initial_guess_PSPL(event)
+    # Dummy guess
+    rho_guess = 0.05
+
+    FSPL_guess = PSPL_guess+[rho_guess]
+
+    return FSPL_guess, fs_guess

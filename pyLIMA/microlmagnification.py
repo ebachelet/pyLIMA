@@ -8,14 +8,19 @@ Created on Tue Dec  8 14:37:33 2015
 from __future__ import division
 import numpy as np
 
-def amplification_PSPL(tau, uo):
+def amplification_PSPL(tau, u):
     """ The Paczynski magnification.
-	"Gravitational microlensing by the galactic halo", 	
-	Paczynski, B. 1986
-	http://adsabs.harvard.edu/abs/1986ApJ...304....1P
+        "Gravitational microlensing by the galactic halo",Paczynski, B. 1986
+        http://adsabs.harvard.edu/abs/1986ApJ...304....1P
+    
+        :param array_like tau: the tau define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+        :param array_like u: the u define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+    
+        :return: the PSPL magnification A_PSPL(t) and the impact parameter U(t)
+        :rtype: array_like,array_like
     """
     # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
-    U = (tau ** 2 + uo ** 2) ** 0.5
+    U = (tau ** 2 + u ** 2) ** 0.5
     U_square = U ** 2
     amplification = (U_square + 2) / (U * (U_square + 4) ** 0.5)
     
@@ -23,13 +28,20 @@ def amplification_PSPL(tau, uo):
     return amplification, U
 
 
-def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
+def amplification_FSPL(tau, u, rho, gamma, yoo_table):
     """ The Yoo FSPL magnification.
-	"OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens", 	
-	Yoo, J. et al 2004
-	http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
+        "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens",Yoo, J. et al 2004
+        http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
+
+        :param array_like tau: the tau define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+        :param array_like u: the u define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+        :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
+        :param array_like yoo_table: the interpolated Yoo et al table.
+    
+        :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)
+        :rtype: array_like,array_like
     """
-    U = (tau ** 2 + uo ** 2) ** 0.5
+    U = (tau ** 2 + u ** 2) ** 0.5
     U_square = U ** 2
     amplification_PSPL = (U_square + 2) / (U * (U_square + 4) ** 0.5)
    
@@ -37,7 +49,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     
     amplification_FSPL = np.zeros(len(amplification_PSPL))
 
-    # Far from the lens (z_yoo>>1), then PSPL.	
+    # Far from the lens (z_yoo>>1), then PSPL.    
     indexes_PSPL = np.where((z_yoo > yoo_table[0][-1]))[0]
     amplification_FSPL[indexes_PSPL] = amplification_PSPL[indexes_PSPL]
 
@@ -55,51 +67,10 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     
 
 #### TO DO : the following probably depreciated ####
-def amplification(x, y, rho, gamma, model):
-    """ The magnification associated to the model, at time t using parameters and gamma.
-        The formula change regarding the requested model :
-        PSPL' --> Point Source Point Lens. The amplification is taken from :
-        "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
-        A=(u^2+2)/[u*(u^2+4)^0.5]
-
-        'FSPL' --> Finite Source Point Lens. The amplification is taken from :
-        "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,
-        J. et al.2004ApJ...603..139Y
-        Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
-        to compute B0(z) and B1(z).
-
-        'DSPL'  --> not available now
-        'Binary' --> not available now
-        'Triple' --> not available now
-        """
-    u = (x ** 2 + y ** 2) ** 0.5
-    u2 = u ** 2
-    ampli = (u2 + 2) / (u * (u2 + 4) ** 0.5)
-
-    if model.paczynski_model == 'PSPL':
-
-        return ampli, u
-    if model.paczynski_model == 'FSPL':
-
-        Z = u / rho
-        # import pdb; pdb.set_trace()
-        ampli_fspl = np.zeros(len(ampli))
-
-        ind = np.where((Z > model.yoo_table[0][-1]))[0]
-        ampli_fspl[ind] = ampli[ind]
-
-        ind = np.where((Z < model.yoo_table[0][0]))[0]
-        ampli_fspl[ind] = ampli[ind] * (2 * Z[ind] - gamma * (2 - 3 * np.pi / 4) * Z[ind])
-
-        ind = np.where((Z <= model.yoo_table[0][-1]) & (Z >= model.yoo_table[0][0]))[0]
-        ampli_fspl[ind] = ampli[ind] * (
-            model.yoo_table[1](Z[ind]) - gamma * model.yoo_table[2](Z[ind]))
-        ampli = ampli_fspl
-
-        return ampli, u
 
 
 def source_trajectory(model, t, parameters):
+    """Not working yet """
     tau = (t - parameters[model.model_dictionnary['to']]) / parameters[
         model.model_dictionnary['tE']]
 
@@ -114,6 +85,7 @@ def source_trajectory(model, t, parameters):
 
 
 def function_LEE(r, v, u, rho, gamma):
+    """Not working yet"""
     if r == 0:
         LEE = 1.0
     else:
@@ -125,6 +97,7 @@ def function_LEE(r, v, u, rho, gamma):
 
 
 def LEE_limit(v, u, rho, gamma):
+    """Not working yet"""
     if u <= rho:
         limit_1 = 0.0
     else:

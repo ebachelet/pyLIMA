@@ -10,7 +10,7 @@ from __future__ import division
 import numpy as np
 
 import microlfits
-import microlplotter
+
 import microloutputs
 import microlparallax
 
@@ -179,32 +179,4 @@ class Event(object):
         for telescope in self.telescopes:
 
            telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
-
-    def initialize_plots(self, choice, observe):
-        """ Not working and probably depreciated"""
-        self.plotter = microlplotter.MLPlotter(self)
-        self.plotter.initialize_plots(choice, observe)
-
-    def produce_outputs(self, choice):
-         """ Not working and probably depreciated"""
-         self.outputs = microloutputs.MLOutputs(self)
-         # self.outputs.cov2corr()
-         self.outputs.errors_on_fits(choice)
-         # self.outputs.find_observables()
-         # Parameters,lightcurve_model,lightcurve_data = self.outputs.K2_C9_outputs()
-         # return Parameters,lightcurve_model,lightcurve_data
-        
-    def plot_data(self, choice, observe, align):
-        """ Not working and probably depreciated"""
-        if align == 'Yes':
-
-            self.plotter.align_lightcurves(choice)
-
-        if observe is 'Mag':
-
-            self.plotter.plot_lightcurves_mag(align)
-
-        if observe is 'Flux':
-
-            self.plotter.plot_lightcurves_flux(align)
 

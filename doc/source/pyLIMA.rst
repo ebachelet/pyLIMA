@@ -9,12 +9,13 @@ Submodules
    pyLIMA.event
    pyLIMA.manager
    pyLIMA.microlfits
+   pyLIMA.microlguess
    pyLIMA.microllimb_darkening
    pyLIMA.microlmagnification
    pyLIMA.microlmodels
    pyLIMA.microloutputs
    pyLIMA.microlparallax
-   pyLIMA.microlplotter
+   pyLIMA.microltoolbox
    pyLIMA.run_test
    pyLIMA.telescopes
 
