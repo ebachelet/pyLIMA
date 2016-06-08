@@ -91,7 +91,6 @@ class Event(object):
             print 'ERROR : Wrong method request, has to be an integer selected between ' + \
                   ' or '.join(available_methods) + ''
             return
-        #self.lightcurves_in_flux('Yes')
 
         fit = microlfits.MLFits(self)
         fit.mlfit(Model, method)
@@ -148,10 +147,10 @@ class Event(object):
 
     def find_survey(self, choice=None):
         """Function to find the survey telescope in the telescopes list,
-        and put it on the first place (useful for some fits functions).
+           and put it on the first place (useful for some fits functions).
         
-        :param choice: the name of the telescope choosing as the survey. Has to be a string.
-                       Default is the first telescope.
+            :param choice: the name of the telescope choosing as the survey. Has to be a string.
+                           Default is the first telescope.
         """
         self.survey = choice or self.telescopes[0].name
 
@@ -171,7 +170,7 @@ class Event(object):
 
     
     def lightcurves_in_flux(self, choice='Yes'):
-        """ Transform all telescoep magnitude lightcurves in flux units.
+        """ Transform all telescopes magnitude lightcurves in flux units.
             
 
             :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'. Defaul is 'Yes'. More details in the telescope module

@@ -112,6 +112,9 @@ class Telescope(object):
         """Rearange the lightcurve to the pyLIMA convention.
         
             :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply the sorting.
+            
+            :return: the lightcurve sorted in pyLIMA convention
+            :rtype: array_like
         """
        
         pyLIMA_magnitude_convention = ['time', 'mag', 'err_mag']
@@ -142,7 +145,9 @@ class Telescope(object):
         """ Return the number of data points in the lightcurve.
         
         :param string choice: 'magnitude' (default) or 'flux' The unit you want to check data for.
+        
         :return: the size of the corresponding lightcurve
+        :rtype: int
         """
 
         if choice == 'flux':
@@ -240,7 +245,8 @@ class Telescope(object):
         
         :param string clean: 'Yes' or 'No'. Perform or not a clean_data call to avoid outliers.
         
-        :return : the lightcurve in flux, lightcurve_flux.
+        :return: the lightcurve in flux, lightcurve_flux.
+        :rtype: array_like
         """
         if clean is 'Yes':
 
@@ -265,7 +271,8 @@ class Telescope(object):
         Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
         
-        :return : the lightcurve in magnitude, lightcurve_magnitude.
+        :return: the lightcurve in magnitude, lightcurve_magnitude.
+        :rtype: array_like
         """
 
         lightcurve = self.lightcurve_flux

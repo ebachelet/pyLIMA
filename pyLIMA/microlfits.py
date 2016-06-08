@@ -18,69 +18,70 @@ import microlguess
 class MLFits(object):
     """
     ######## Fitter module ########
-    @author: Etienne Bachelet
 
     This module fits the event with the selected attributes.
+
     WARNING: All fits (and so results) are made using data in flux.
 
     Attributes :
 
-         event : the event object on which you perform the fit on. More details on the event module.
+        event : the event object on which you perform the fit on. More details on the event module.
 
-     model : The microlensing model you want to fit. Has to be an object define in microlmodels module.
+        model : The microlensing model you want to fit. Has to be an object define in microlmodels module.
                  More details on the microlmodels module.
+        
+        method : The fitting method you want to use for the fit.
+        
+        guess : The guess you can give to the fit or the guess return by the initial_guess function.
+        
+        fit_results : the fit parameters returned by method LM and DE.
+        
+        fit_covariance : the fit parameters covariance matrix returned by method LM and DE.
+        
+        fit_time : the time needed to fit.
+        
+        MCMC_chains : the MCMC chains returns by the MCMC method
+        
+        MCMC_probabilities : the objective function computed for each chains of the MCMC method
 
-     method : The fitting method you want to use for the fit.
+    :param object event: the event object on which you perform the fit on. More details on the event module.
 
-     guess : The guess you can give to the fit or the guess return by the initial_guess function.
-
-     fit_results : the fit parameters returned by method LM and DE.
-
-     fit_covariance : the fit parameters covariance matrix returned by method LM and DE.
-
-     fit_time : the time needed to fit.
-
-     MCMC_chains : the MCMC chains returns by the MCMC method
-
-     MCMC_probabilities : the objective function computed for each chains of the MCMC method
 
     """
 
     def __init__(self, event):
-        """The fit class has to be intialized with an event.
-       :param event: the event object on which you perform the fit on. More details on the event module.
-
-    """
+        """The fit class has to be intialized with an event."""
 
         self.event = event
 
     def mlfit(self, model, method):
-        """This function realize the requested microlensin fit, and set the according results attributes.
+        """This function realize the requested microlensing fit, and set the according results attributes.
+        
+        :param object model: the model object requested. More details on the microlmodels module.
 
-            :param method: The fitting method you want to use. Has to be a string  in :
+        :param string method: The fitting method you want to use. Has to be a string  in :
 
-                             'LM' --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
-                                   WARNING : the parameter maxfev (number of maximum iterations) is set to 50000
-                               the parameter ftol (relative precision on the chi^2) is set to 0.00001
-                               your fit may not converge because of these limits.
-                               The starting points of this method are found using the initial_guess method.
-                               Obviously, this can fail. In this case, switch to method 'DE'.
+                                 'LM' --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
+                                          WARNING : the parameter maxfev (number of maximum iterations) is set to 50000
+                                          the parameter ftol (relative precision on the chi^2) is set to 0.00001
+                                          your fit may not converge because of these limits.
+                                          The starting points of this method are found using the initial_guess method.
+                                          Obviously, this can fail. In this case, switch to method 'DE'.
 
-                          'DE' --> Differential evolution algoritm. Based on the scipy.optimize.differential_evolution.
-                               Look Storn & Price (1997) : "Differential Evolution – A Simple and Efficient Heuristic for                                global Optimization over Continuous Spaces"
-                               Because this method is heuristic, it is not 100% sure a satisfying solution is found. Just                     relaunch :)
-                               The result is then use as a starting point for the 'LM' method.
+                                 'DE' --> Differential evolution algoritm. Based on the scipy.optimize.differential_evolution.
+                                          Look Storn & Price (1997) : "Differential Evolution – A Simple and Efficient Heuristic for global Optimization over Continuous Spaces"
+                                          Because this method is heuristic, it is not 100% sure a satisfying solution is found. Just relaunch :)
+                                          The result is then use as a starting point for the 'LM' method.
 
 
-                          'MCMC' --> Monte-Carlo Markov Chain algorithm. Based on the emcee python package :
-                             " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
-                             The inital population is computed around the best solution return by
-                             the 'DE' method.
+                                 'MCMC' --> Monte-Carlo Markov Chain algorithm. Based on the emcee python package :
+                                          " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
+                                          The inital population is computed around the best solution return by
+                                          the 'DE' method.
 
-    Note that a sanity check is done post-fit to assess the fit quality with the check_fit
-    function.
-
-    """
+        Note that a sanity check is done post-fit to assess the fit quality with the check_fit
+        function.
+        """
 
 
         self.model = model
@@ -123,10 +124,16 @@ class MLFits(object):
 
     def check_fit(self):
         """Check if the fit results and covariance make sens.
+        
          0.0 terms or a negative term in the diagonal covariance matrix indicate the fit is not
          reliable.
+         
          A negative source flux is also counted as a bad fit.
+         
          A negative rho or rho> 0.1 is also consider as a bad fit
+         
+         :return: a flag indicated good or bad fit ('Good Fit' or 'Bad Fit')
+         :rtype: string
         """
 
         flag_quality = 'Good Fit'
@@ -159,8 +166,10 @@ class MLFits(object):
 
     def initial_guess(self):
         """Try to estimate the microlensing parameters. Only use for PSPL and FSPL
-            models. More details on microlguess module.
-        :return guess_parameters: a list containing parameters guess related to the model.
+           models. More details on microlguess module.
+
+           :return guess_parameters: a list containing parameters guess related to the model.
+           :rtype: list
         """
         #Estimate  the Paczynski parameters
 
@@ -203,13 +212,17 @@ class MLFits(object):
     def MCMC(self) :
         """ The MCMC method. Construc starting points of the chains around
             the best solution found by the 'DE' method.
-            The objective function is chichi_MCMC. Optimization
+            The objective function is :func:`chichi_MCMC`. Optimization
             is made on Paczynski parameters, fs and g are found using a linear fit (np.polyfit).
+
             Based on the emcee python package :
             " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
             Have a look here : http://dan.iel.fm/emcee/current/
+
             :return: a tuple containing (MCMC_chains, MCMC_probabilities)
-            Launch nwalkers = 100*number_of_paczynski_parameters chains with 100 links
+            :rtype: tuple
+            
+            Launch nwalkers = 200 chains with 100 links
         """
         differential_evolution_estimation = differential_evolution(self.chichi_differential,
                                    bounds=self.model.parameters_boundaries,mutation=(0.5,1), popsize=30,
@@ -221,7 +234,7 @@ class MLFits(object):
 
         number_of_paczynski_parameters = len(best_solution)
         #nwalkers = 100*number_of_paczynski_parameters
-        nwalkers = 100
+        nwalkers = 200
         # Initialize the population of MCMC
         population = []
 
@@ -236,9 +249,11 @@ class MLFits(object):
                 if j == 0:
 
                     individual.append(best_solution[j]+np.random.uniform(-20,20))
+
                 if j == 1:
 
                     individual.append(best_solution[j]*(1+np.random.uniform(-0.5,0.5)))
+
                 if j == 2:
 
                     individual.append(best_solution[j]*(1+np.random.uniform(-0.5,0.5)))
@@ -282,21 +297,22 @@ class MLFits(object):
         return MCMC_chains, MCMC_probabilities
 
     def diff_evolution(self) :
-        """  The DE method. Differential evolution algoritm.
+        """  The DE method. Differential evolution algoritm. The objective function is :func:`chichi_differential`.
          Based on the scipy.optimize.differential_evolution.
-             Look Storn & Price (1997) :
+         Look Storn & Price (1997) :
          "Differential Evolution – A Simple and Efficient Heuristic for
          global Optimization over Continuous Spaces"
+
          :return: a tuple containing (fit_results, fit_covariance, computation_time)
-
-         WARNING : tol (relative standard deviation of the objective function) is set to 10^-6
-                       popsize (the total number of individuals is : popsize*number_of_paczynski_parameters)
-               is set to 20
-                       mutation is set to (0.5, 1.5)
-               recombination is set to 0.6
-                       These parameters can avoid the fit to properly converge (expected to be rare :)).
-               Just relaunch should be fine.
-
+         :rtype: tuple
+         
+         WARNING :
+                   tol (relative standard deviation of the objective function) is set to 10^-6
+                   popsize (the total number of individuals is : popsize*number_of_paczynski_parameters)
+                   is set to 20 mutation is set to (0.5, 1.5)
+                   recombination is set to 0.6
+                   These parameters can avoid the fit to properly converge (expected to be rare :)).
+                   Just relaunch should be fine.
         """
 
         starting_time = TIME.time()
@@ -322,20 +338,24 @@ class MLFits(object):
         """The LM method. This is based on the Levenberg-Marquardt algorithm:
 
            "A Method for the Solution of Certain Problems in Least Squares"
-            Levenberg, K. Quart. Appl. Math. 2, 1944, p. 164-168
+           Levenberg, K. Quart. Appl. Math. 2, 1944, p. 164-168
            "An Algorithm for Least-Squares Estimation of Nonlinear Parameters"
-            Marquardt, D. SIAM J. Appl. Math. 11, 1963, p. 431-441
+           Marquardt, D. SIAM J. Appl. Math. 11, 1963, p. 431-441
 
            Based on scipy.optimize.leastsq python routine, which is based on MINPACK's lmdif and lmder
            algorithms (fortran based).
 
-           The objective function (function to minimize) is LM_residuals
+           The objective function is :func:`LM_residuals`.
            The starting point parameters are self.guess.
-           the Jacobian is given by the LM_Jacobian function
+           the Jacobian is given by :func:`LM_Jacobian`.
 
            The fit is performed on all parameters : Paczynski parameters and telescopes fluxes.
+           
            :return: a tuple containing (fit_results, fit_covariance, computation_time)
-           WARNING : ftol (relative error desired in the sum of square) is set to 10^-6
+           :rtype: tuple
+
+           WARNING :
+                     ftol (relative error desired in the sum of square) is set to 10^-6
                      maxfev (maximum number of function call) is set to 50000
                      These limits can avoid the fit to properly converge (expected to be rare :))
         """
@@ -403,11 +423,13 @@ class MLFits(object):
         return fit_result, covariance_matrix, computation_time
 
     def LM_Jacobian(self, fit_process_parameters):
-
         """Return the analytical Jacobian matrix, if requested by method LM.
-       Available only for PSPL and FSPL without second_order.
-       :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-       :return jacobi: a numpy array which represents the jacobian matrix
+        Available only for PSPL and FSPL without second_order.
+
+       :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+
+       :return: a numpy array which represents the jacobian matrix
+       :rtype: array_like
        PROBABLY NEED REWORK
     """
 
@@ -571,8 +593,11 @@ class MLFits(object):
 
     def LM_residuals(self, fit_process_parameters):
         """The normalized residuals associated to the model and parameters.
-           :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-       :return residuals: a numpy array which represents the residuals_i for each telescope,residuals_i=(data_i-model_i)/sigma_i
+
+           :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+
+           :return: a numpy array which represents the residuals_i for each telescope,residuals_i=(data_i-model_i)/sigma_i
+           :rtype: array_like
            The sum of square residuals gives chi^2.
         """
 
@@ -601,10 +626,14 @@ class MLFits(object):
         return residuals
 
     def chichi(self, fit_process_parameters):
-        """Return the chi^2.
-       :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-       :return chichi: the chi^2
-    """
+        """Return the chi^2 .
+        
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+        
+        :returns: the chi^2
+        
+        :rtype: float
+        """
 
         residuals = self.LM_residuals(fit_process_parameters)
         chichi = (residuals ** 2).sum()
@@ -612,10 +641,14 @@ class MLFits(object):
         return chichi
 
     def chichi_telescopes(self, fit_process_parameters):
-        """Return the chi^2 for each telescopes
-       :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-       :return chichi: a list containing the chi^2 for each individual telescopes
-    """
+        """Return a list of chi^2 (float) for individuals telescopes.
+        
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+        
+        :returns: the chi^2 for each telescopes
+        
+        :rtype: list
+        """
 
         residuals = self.LM_residuals(fit_process_parameters)
         chichi_list = []
@@ -629,10 +662,14 @@ class MLFits(object):
         return chichi_list
 
     def chichi_differential(self, fit_process_parameters):
-        """Return the chi^2 for the differential evolution algorithm
-       :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-       :return chichi_list: the chi^2
-    """
+        """Return the chi^2 for the DE method. There is some priors here.
+        
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+        
+        :returns: the chi^2
+        
+        :rtype: float
+        """
         residuals = np.array([])
 
         for telescope in self.event.telescopes:
@@ -660,9 +697,13 @@ class MLFits(object):
         return chichi
 
     def chichi_MCMC(self, fit_process_parameters):
-        """Return the chi^2 for the MCMC algorithm
-        :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-        :return chichi_list: the chi^2
+        """Return the chi^2 for the MCMC method. There is some priors here.
+        
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+        
+        :returns: the chi^2
+        
+        :rtype: float
         """
         #count = 0
         #for parameter in fit_process_parameters :
@@ -704,9 +745,12 @@ class MLFits(object):
 
     def find_fluxes(self, fit_process_parameters, model):
         """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM method.
-       :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
-           :param model: the Paczynski model on which you want to compute the fs,g parameters.
-       :return chichi_list: the (fs,g) telescopes flux parameters.
+
+        :param fit_process_parameters: the model parameters ingested by the correpsonding fitting routine.
+        :param model: the Paczynski model on which you want to compute the fs,g parameters.
+        
+        :return: a list of tuple with the (fs,g) telescopes flux parameters.
+        :rtype: list
     """
 
         telescopes_fluxes = []

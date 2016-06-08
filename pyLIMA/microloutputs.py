@@ -161,7 +161,6 @@ def  MCMC_plot_parameters_distribution(fit,mcmc_best):
             if count_i==count_j :
                 
                 axes2[count_i,count_j].hist(mcmc_best[:,fit.model.model_dictionnary[key_i]], 100)
-
                 axes2[count_i,count_j].locator_params(nbins=dimensions/2)
 
             else :
@@ -169,6 +168,8 @@ def  MCMC_plot_parameters_distribution(fit,mcmc_best):
                 if count_j<count_i :
                    
                     axes2[count_i,count_j].scatter(mcmc_best[:,fit.model.model_dictionnary[key_j]],mcmc_best[:,fit.model.model_dictionnary[key_i]],c=mcmc_best[:,-1],edgecolor='None')
+                    axes2[count_i,count_j].set_xlim([min(mcmc_best[:,fit.model.model_dictionnary[key_j]]),max(mcmc_best[:,fit.model.model_dictionnary[key_j]])])
+                    axes2[count_i,count_j].set_ylim([min(mcmc_best[:,fit.model.model_dictionnary[key_i]]),max(mcmc_best[:,fit.model.model_dictionnary[key_i]])])
                     axes2[count_i,count_j].locator_params(nbins=dimensions/2)
                 else :
                     axes2[count_i,count_j].axis('off')
