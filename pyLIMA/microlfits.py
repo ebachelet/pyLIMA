@@ -21,7 +21,7 @@ class MLFits(object):
 
     This module fits the event with the selected attributes.
 
-    WARNING: All fits (and so results) are made using data in flux.
+    **WARNING**: All fits (and so results) are made using data in flux.
 
     Attributes :
 
@@ -62,7 +62,7 @@ class MLFits(object):
         :param string method: The fitting method you want to use. Has to be a string  in :
 
                                  'LM' --> Levenberg-Marquardt algorithm. Based on the scipy.optimize.leastsq routine.
-                                          WARNING : the parameter maxfev (number of maximum iterations) is set to 50000
+                                          **WARNING** : the parameter maxfev (number of maximum iterations) is set to 50000
                                           the parameter ftol (relative precision on the chi^2) is set to 0.00001
                                           your fit may not converge because of these limits.
                                           The starting points of this method are found using the initial_guess method.
@@ -306,7 +306,7 @@ class MLFits(object):
          :return: a tuple containing (fit_results, fit_covariance, computation_time)
          :rtype: tuple
          
-         WARNING :
+         **WARNING** :
                    tol (relative standard deviation of the objective function) is set to 10^-6
                    popsize (the total number of individuals is : popsize*number_of_paczynski_parameters)
                    is set to 20 mutation is set to (0.5, 1.5)
@@ -354,7 +354,7 @@ class MLFits(object):
            :return: a tuple containing (fit_results, fit_covariance, computation_time)
            :rtype: tuple
 
-           WARNING :
+           **WARNING**:
                      ftol (relative error desired in the sum of square) is set to 10^-6
                      maxfev (maximum number of function call) is set to 50000
                      These limits can avoid the fit to properly converge (expected to be rare :))

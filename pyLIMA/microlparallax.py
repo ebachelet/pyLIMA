@@ -10,7 +10,6 @@ import telnetlib
 import numpy as np
 from astropy import constants as astronomical_constants
 from scipy import interpolate
-from astropy.time import Time
 from pyslalib import slalib
 
 
@@ -50,32 +49,30 @@ class MLParallaxes(object):
     This module compute the parallax shifts due to different parallax effects.
 
     Attributes :
+    
+    event : the event object on which you perform the fit on. More details on the event module.
 
-         event : the event object on which you perform the fit on. More details on the event module.
-         parallax_model : the parallax model Has to be "Annual', "Terrestrial" or "Full"
+    parallax_model : The parallax effect you want to fit. Have to be a list containing the parallax model name
+    and the reference time to_par (in JD unit). Example : ['Annual',2457000.0]
 
-     parallax_model : The parallax effect you want to fit. Have to be a list containing the parallax model name
-     and the reference time to_par (in JD unit). Example : ['Annual',2457000.0]
+    AU : the astronomical unit,  as defined by astropy (in meter)
 
-     AU : the astronomical unit,  as defined by astropy (in meter)
+    speed_of_light : the speed light c,  as defined by astropy (in meter/second)
 
-     speed_of_light : the speed light c,  as defined by astropy (in meter/second)
+    Earth_radius : the Earth equatorial radius,  as defined by astropy (in meter)
 
-     Earth_radius : the Earth equatorial radius,  as defined by astropy (in meter)
-
-     target_angles_in_the_sky : a list containing [RA,DEC] of the target in radians unit.
-
+    target_angles_in_the_sky : a list containing [RA,DEC] of the target in radians unit.
+    
+   :param event: the event object on which you perform the fit on. More details on the event module.
+   :param parallax_model: The parallax effect you want to fit. Have to be a list containing the parallax model name
+        and the to_par value. Example : ['Annual',2457000.0]
 
     """
 
 
 
     def __init__(self, event, parallax_model):
-        """Initialization of the attributes described above.
-        :param event: the event object on which you perform the fit on. More details on the event module.
-        :param parallax_model: The parallax effect you want to fit. Have to be a list containing the parallax model name
-        and the to_par value. Example : ['Annual',2457000.0]
-        """
+        """Initialization of the attributes described above."""
 
         self.event = event
         self.parallax_model = parallax_model[0]
@@ -101,8 +98,11 @@ class MLParallaxes(object):
 
     def HJD_to_JD(self, time_to_transform):
         """Transform the input time from HJD to JD.
-            :param time_to_transform : the numpy array containing the time you want to correct.
-            """
+        
+        :param array_like time_to_transform: the numpy array containing the time in HJD you want to transform in JD.
+        :return: the time in JD
+        :rtype: array_like
+        """
         AU = self.AU
         light_speed = self.speed_of_light
 
@@ -212,16 +212,16 @@ class MLParallaxes(object):
         telescope.deltas_positions = deltas_position
 
     def annual_parallax(self, time_to_treat):
-        """ Compute the position shift due to the Earth movement. Please have a look on :
+        """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
-         Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
-         
-         :param  time_to_treat: a numpy array containing the time where you want to compute this effect.
-         :return: the shift induce by the Earth motion around the Sun
-         :rtype: array_like
+        Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+        
+        :param  time_to_treat: a numpy array containing the time where you want to compute this effect.
+        :return: the shift induce by the Earth motion around the Sun
+        :rtype: array_like
 
-         WARNING :  this is a geocentric point of view.
-                slalib use MJD time definition, which is MJD = JD-2400000.5
+        **WARNING** : this is a geocentric point of view.
+                      slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
         to_par_mjd = self.to_par - 2400000.5
@@ -260,7 +260,7 @@ class MLParallaxes(object):
         :return: the shift induce by the distance of the telescope to the Earth center.
         :rtype: array_like
 
-        WARNING : slalib use MJD time definition, which is MJD = JD-2400000.5
+        **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
         radius = (self.Earth_radius + altitude)/self.AU
@@ -271,7 +271,7 @@ class MLParallaxes(object):
         for time in  time_to_treat:
 
             time_mjd = time - 2400000.5
-            sideral_time = slalib.sla_gmst(time_mjg)
+            sideral_time = slalib.sla_gmst(time_mjd)
             telescope_longitude = - Longitude - self.target_angles_in_the_sky[0]*np.pi/180 + sideral_time/24.0*np.pi
 
         delta_telescope.append(radius*slalib.sla_dcs2c(telescope_longitude,Latitude))
@@ -291,7 +291,7 @@ class MLParallaxes(object):
         :param satellite_name: the name of the observatory. Have to be recognize by JPL HORIZON.
         :return: the shift induce by the distance of the telescope to the Earth center.
         :rtype: array_like
-        WARNING : slalib use MJD time definition, which is MJD = JD-2400000.5
+        **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
         tstart = min(time_to_treat) - 1
