@@ -147,9 +147,9 @@ class Event(object):
 
     def find_survey(self, choice=None):
         """Function to find the survey telescope in the telescopes list,
-           and put it on the first place (useful for some fits functions).
+        and put it on the first place (useful for some fits functions).
         
-            :param choice: the name of the telescope choosing as the survey. Has to be a string.
+        :param choice: the name of the telescope choosing as the survey. Has to be a string.
                            Default is the first telescope.
         """
         self.survey = choice or self.telescopes[0].name
