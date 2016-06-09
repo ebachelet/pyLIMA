@@ -202,8 +202,8 @@ class MLParallaxes(object):
 
 
 
-        delta_North = delta_North + telescope_positions[0]
-        delta_East = delta_East + telescope_positions[1]
+            delta_North = delta_North + telescope_positions[0]
+            delta_East = delta_East + telescope_positions[1]
 
 
         deltas_position = np.array([delta_North, delta_East])

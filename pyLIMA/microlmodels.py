@@ -182,7 +182,7 @@ class MLModels(object):
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
         
-        self.compute_parallax_all_telescopes()
+            self.compute_parallax_all_telescopes()
 
         if self.xallarap_model[0] != 'None':
 
