@@ -218,7 +218,8 @@ class Telescope(object):
         or fainter than the lightcurve median or if nan appears in any columns or errobar higher
         than a 1 mag.
         
-        :return: the microlensing linear limb-darkening coefficient gamma. 
+        :return: the cleaned magnitude lightcurve
+        :rtype: array_like
         """
         
         maximum_accepted_precision = 10.0

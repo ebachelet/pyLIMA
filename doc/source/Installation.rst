@@ -9,6 +9,8 @@ pyLIMA is a python based software which require some libraries :
 
 `matplotlib <http://matplotlib.org/>`_
 
+`Astropy <http://www.astropy.org/>`_
+
 `pyslalib <https://github.com/scottransom/pyslalib>`_, the slalib python wraper
 
 `emcee <http://dan.iel.fm/emcee/current/>`_, the mcmc hammer

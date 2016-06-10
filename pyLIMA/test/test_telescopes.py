@@ -33,7 +33,7 @@ def test_init():
     assert telescope2.name == 'Goleta'
     assert telescope2.filter == 'sdss_i'
     assert telescope2.lightcurve_magnitude.shape == (2,3)
-    
+    assert telescope2.lightcurve_flux.shape == (2,3)
     telescope2.location = 'Space'
     telescope2.altitude = 1.0
     telescope2.longitude = -150.0
@@ -120,8 +120,8 @@ def test_input_lightcurve_flux():
    
 
    assert np.allclose(telescope.lightcurve_magnitude,np.array([[  1.00000000e+01,   1.74000000e+01,  -1.08573620e-05],
-       [  5.00000000e+00,   1.73996743e+01,  -1.08541058e-05],
-       [  7.00000000e+00,   1.73994573e+01,  -1.08519361e-05],
-       [  5.00000000e+00,   1.73992403e+01,  -0.00000000e+00],
-       [  1.00000000e+00,   1.73991318e+01,  -2.92914444e-03],
-       [  2.00000000e+00,   1.73990233e+01,  -3.25427976e-06]]))
+                                                               [  5.00000000e+00,   1.73996743e+01,  -1.08541058e-05],
+                                                               [  7.00000000e+00,   1.73994573e+01,  -1.08519361e-05],
+                                                               [  5.00000000e+00,   1.73992403e+01,  -0.00000000e+00],
+                                                               [  1.00000000e+00,   1.73991318e+01,  -2.92914444e-03],
+                                                               [  2.00000000e+00,   1.73990233e+01,  -3.25427976e-06]])) 
