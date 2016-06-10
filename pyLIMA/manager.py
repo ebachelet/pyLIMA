@@ -89,7 +89,7 @@ def main(command_line):
         print 'Start;', current_event.name
        
         current_event.find_survey('Survey')
-   
+        current_event.dec = 98
         current_event.check_event()
        
         Model = microlmodels.MLModels(current_event, command_line.model,parallax = ['None', 2457510.0])

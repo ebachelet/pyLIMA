@@ -83,7 +83,8 @@ class MLFits(object):
         function.
         """
 
-
+        self.event.check_event()
+        
         self.model = model
         self.method = method
 

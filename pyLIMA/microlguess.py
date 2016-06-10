@@ -24,6 +24,7 @@ def initial_guess_PSPL(event):
     To = []
     Max_flux = []
     Errmag = []
+
     for telescope in event.telescopes:
         # Lot of process here, if one fails, just skip
         try:
@@ -73,8 +74,9 @@ def initial_guess_PSPL(event):
             To.append(to)
             Max_flux.append(max_flux)
             Errmag.append(np.mean(lightcurve_bis[good_points, 2]))
-            
+
         except:
+            import pdb; pdb.set_trace()
 
             time = telescope.lightcurve_magnitude[:, 0]
             flux = microltoolbox.magnitude_to_flux( telescope.lightcurve_magnitude[:, 1])
@@ -90,16 +92,16 @@ def initial_guess_PSPL(event):
 
     to_guess = sum(np.array(To) / np.array(Errmag) ** 2) / sum(1 / np.array(Errmag) ** 2)
     survey = event.telescopes[0]
-    lightcurve = survey.lightcurve_flux
+    lightcurve = survey.lightcurve_magnitude
     lightcurve = lightcurve[lightcurve[:, 0].argsort(), :]
     
     ## fs, uo, tE estimations only one the survey telescope    
 
 
     time = lightcurve[:, 0]
-    flux = lightcurve[:, 1]
-    errflux = lightcurve[:, 2]
-
+    flux = microltoolbox.magnitude_to_flux(lightcurve[:, 1])
+    errflux = microltoolbox.error_magnitude_to_error_flux(lightcurve[:, 2],flux)
+  
     # fs estimation, no blend
 
     baseline_flux_0 = np.min(flux)
@@ -139,19 +141,23 @@ def initial_guess_PSPL(event):
     B = 0.5 * (Amax + 1)
 
     if len(index_plus) != 0:
+    
         if len(index_moins) != 0:
             ttE = (time[index_plus[0]] - time[index_moins[-1]])
             tE1 = ttE / (2 * np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2))
+            tE_guesses.append(tE1)
 
         else:
             ttE = time[index_plus[0]] - to_guess
             tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2)
+            tE_guesses.append(tE1)
     else:
 
-        ttE = to_guess- time[index_moins[-1]]
-    tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2)
-    
-    tE_guesses.append(tE1)
+        if len(index_moins) != 0:
+            ttE = to_guess- time[index_moins[-1]]
+            tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2)
+            tE_guesses.append(tE1)
+        
     
     # Method 2 : flux(t_E) = fs_guess * (uo^+3)/[(uo^2+1)^0.5*(uo^2+5)^0.5]
  
@@ -197,7 +203,7 @@ def initial_guess_PSPL(event):
     if tE_guess < 0.1:
 
         tE_guess = 20.0
-    
+
     return [to_guess,uo_guess,tE_guess],fs_guess
 
 def initial_guess_FSPL(event): 

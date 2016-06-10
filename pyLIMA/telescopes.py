@@ -81,8 +81,9 @@ class Telescope(object):
         self.reference_flux = reference_flux
 
         if light_curve_magnitude is None :
-                
+               
             self.lightcurve_magnitude = []
+            self.lightcurve_flux = []
                 
         else :
         
@@ -156,7 +157,7 @@ class Telescope(object):
             
         if choice == 'magnitude':
 
-            return len(self.lightcurve[:, 0])
+            return len(self.lightcurve_magnitude[:, 0])
 
     def find_gamma(self, Teff, log_g, claret_path='./data/'):
         """

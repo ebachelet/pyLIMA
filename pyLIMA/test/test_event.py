@@ -6,9 +6,88 @@ Created on Wed May 18 15:19:27 2016
 """
 import numpy as np
 import mock
+import pytest 
 
 from pyLIMA import event
 
+
+def test_check_event_bad_name():
+    
+    current_event = event.Event()
+    
+    current_event.name = 49.49
+    
+    with pytest.raises(SystemExit):
+        
+
+         current_event.check_event()
+         
+def test_check_event_bad_ra():
+    
+    current_event = event.Event()
+    
+    current_event.ra = -49.49
+    
+    with pytest.raises(SystemExit):
+        
+
+         current_event.check_event()
+         
+
+def test_check_event_bad_dec():
+    
+    current_event = event.Event()
+    
+    current_event.dec = -189
+    
+    with pytest.raises(SystemExit):
+        
+
+         current_event.check_event()
+
+def test_check_event_no_telescopes():
+    
+    current_event = event.Event()
+    
+    with pytest.raises(SystemExit):
+        
+
+         current_event.check_event()
+
+
+def test_check_event_telescopes_without_lightcurves():
+    
+    current_event = event.Event()
+    telescope = mock.MagicMock()
+    
+    current_event.telescopes.append(telescope)
+    
+    with pytest.raises(SystemExit):
+        
+
+         current_event.check_event()
+
+def test_check_event_with_one_telescope_with_magnitude_lightcurve():
+    
+    current_event = event.Event()
+    telescope = mock.MagicMock()
+    telescope.name = 'NDG'
+    telescope.lightcurve_magnitude =  np.array([0,36307805477.010025,-39420698921.705284])
+    current_event.telescopes.append(telescope)
+    
+
+
+    current_event.check_event()
+    
+def test_check_event_with_one_telescope_with_flux_lightcurve():
+    
+    current_event = event.Event()
+    telescope = mock.MagicMock()
+    telescope.name = 'NDG'
+    telescope.lightcurve_flux =  np.array([0,36307805477.010025,-39420698921.705284])
+    current_event.telescopes.append(telescope)
+    
+    current_event.check_event()
 
 def test_telescopes_names():
     
@@ -73,13 +152,13 @@ def test_lightcurves_in_flux_sets_telescope_lightcurve_flux():
     telescope1 = mock.MagicMock()
     telescope1.lightcurve_in_flux.return_value=np.array([])
     telescope2 = mock.MagicMock()
-    telescope2.lightcurve = np.array([0,1,1])
-    telescope2.lightcurve_in_flux.return_value=np.array([0,36307805477.010025,-39420698921.705284])        
+    telescope2.lightcurve_magnitude = np.array([0,1,1])
+    telescope2.lightcurve_in_flux.return_value = np.array([0,36307805477.010025,-39420698921.705284])        
     telescopes = [telescope1, telescope2]
     current_event.telescopes.extend(telescopes)
     
     current_event.lightcurves_in_flux()
-    results = [np.array([]),np.array([0,36307805477.010025,-39420698921.705284])]
+    results = [np.array([]), np.array([0,36307805477.010025,-39420698921.705284])]
     count = 0
     for telescope in telescopes:   
         assert np.allclose(telescope.lightcurve_flux, results[count])

@@ -8,9 +8,9 @@ Created on Thu Aug 27 16:39:32 2015
 from __future__ import division
 
 import numpy as np
+import sys
 
 import microlfits
-
 import microloutputs
 import microlparallax
 
@@ -113,35 +113,37 @@ class Event(object):
         Then check if you have any telescopes ingested.
         Finally check if your telescopes have a lightcurve attributes different from None.
         """
-        if self.name == 'None':
-            print 'ERROR : The event name (' + str(
-                self.name) + ') is not correct, it has to be a string'
-            return
+       
+
+        if not isinstance(self.name,basestring) :
+            
+            sys.exit('ERROR : The event name (' + str(
+                self.name) + ') is not correct, it has to be a string')
 
         if (self.ra > 360) or (self.ra < 0):
-            print 'ERROR : The event ra (' + str(
-                self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees'
-            return
+          
+            sys.exit('ERROR : The event ra (' + str(
+                self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees')
 
         if (self.dec > 90) or (self.dec < -90):
-            print 'ERROR : The event ra (' + str(
-                self.dec) + ') is not correct, it has to be between -90 and 90 degrees'
-            return
+
+            sys.exit('ERROR : The event dec (' + str(
+                self.dec) + ') is not correct, it has to be between -90 and 90 degrees')
 
         if len(self.telescopes) == 0:
             print 'ERROR : There is no associated telescopes with this event, add some using ' \
                   'self.telescopes.append'
-            return
+            sys.exit('There is no telescope associated to your event, no fit possible!')
 
         else :
             
             for telescope in self.telescopes :
                 
-                if len(telescope.lightcurve_magnitude) == 0 & len(telescope.lightcurve_flux) == 0 :
+                if (len(telescope.lightcurve_magnitude) == 0) & (len(telescope.lightcurve_flux) == 0) :
                     
-                     print 'ERROR : There is no associated lightcurve in magnitude of flux with this telescopes : '\
+                     print 'ERROR : There is no associated lightcurve in magnitude or flux with this telescopes : '\
                             +telescope.name+', add one with telescope.lightcurve = your_data'
-                     return
+                     sys.exit('There is no lightcurve associated to the  telescope '+str(telescope.name)+', no fit possible!')
         
         print 'Everything is fine, this event can be treat'
 
