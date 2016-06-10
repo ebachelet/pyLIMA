@@ -7,13 +7,12 @@ Created on Mon Dec  7 10:32:13 2015
 
 from __future__ import division
 from collections import OrderedDict
+import os.path
 
 import numpy as np
 from scipy import interpolate, misc
-import os.path 
 
 import microlmagnification
-import microlparallax
 
 full_path = os.path.abspath(__file__)
 directory, filename = os.path.split(full_path)
@@ -48,15 +47,15 @@ interpol_db0 = interpolate.interp1d(zz, dB0, kind='linear')
 interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
 yoo_table = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
 
+
 class MLModels(object):
-    
     """
     ######## MLModels module ########
-  
+
 
 
     Keyword arguments:
-    
+
     event --> A event class which describe your event that you want to model. See the event module.
 
     model --> The microlensing model you want. Has to be a string :
@@ -73,10 +72,10 @@ class MLModels(object):
              'DSPL'  --> not available now
              'Binary' --> not available now
              'Triple' --> not available now
-             
-    
-                          
-    
+
+
+
+
     second_order --> Second order effect : parallax, orbital_motion and source_spots . A list
         of string as :
 
@@ -117,10 +116,11 @@ class MLModels(object):
                 'None' --> No source spots
 
                 More details in the microlsspots module
-                
+
      Parameters description. The PARAMETERS RULE is (quantity in brackets are optional):
 
-            [to,uo,tE,(rho),(s),(q),(alpha),(PiEN),(PiEE),(dsdt),(dalphadt),(source_spots)]+Sum_i[fsi,fbi/fsi]
+            [to,uo,tE,(rho),(s),(q),(alpha),(PiEN),(PiEE),(dsdt),(dalphadt),
+            (source_spots)]+Sum_i[fsi,fbi/fsi]
 
             to --> time of maximum amplification in HJD
             uo --> minimum impact parameter (for the time to)
@@ -138,15 +138,16 @@ class MLModels(object):
             fsi --> source flux in unit : m=27.4-2.5*np.log10(flux)
             fbi/fsi --> blending flux ratio
 
-            As an example , if you choose an FSPL model with 'Annual' parallax and two telescopes 1 and 2
+            As an example , if you choose an FSPL model with 'Annual' parallax and two telescopes
+            1 and 2
             to fit, the parameters will look like :
-                             
+
             [to,uo,tE,rho,PiEN,PiEE,fs1,fb1/fs1,fs2,fb2/fs2]
-        
+
              """
-             
-             
-    def __init__(self, event, model='PSPL', parallax = ['None', 0.0], xallarap = ['None', 0.0], orbital_motion = ['None', 0.0], source_spots = 'None'):
+
+    def __init__(self, event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
+                 orbital_motion=['None', 0.0], source_spots='None'):
         """ Initialization of the attributes described above. """
 
         self.event = event
@@ -154,7 +155,7 @@ class MLModels(object):
         self.parallax_model = parallax
         self.xallarap_model = xallarap
         self.orbital_motion_model = orbital_motion
-        self.source_spots_model =  source_spots
+        self.source_spots_model = source_spots
 
         self.yoo_table = yoo_table
         self.define_parameters()
@@ -166,7 +167,8 @@ class MLModels(object):
         return function(x)
 
     def define_parameters(self):
-        """ Create the model_dictionnary which explain to the different modules which parameter is what (
+        """ Create the model_dictionnary which explain to the different modules which parameter
+        is what (
         Paczynski parameters+second_order+fluxes)
         Also defines the parameters_boundaries requested by method 'DE' and 'MCMC'
         """
@@ -181,7 +183,7 @@ class MLModels(object):
 
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
-        
+
             self.compute_parallax_all_telescopes()
 
         if self.xallarap_model[0] != 'None':
@@ -198,12 +200,13 @@ class MLModels(object):
 
             self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
 
-        model_paczynski_boundaries = {'PSPL': [(min(self.event.telescopes[0].lightcurve_flux[:, 0])-300,
-                                                max(self.event.telescopes[0].lightcurve_flux[:, 0])+300),
-                                               (-2.0, 2.0), (1.0, 300)], 'FSPL': [
-            (min(self.event.telescopes[0].lightcurve_flux[:, 0])-300,
-             max(self.event.telescopes[0].lightcurve_flux[:, 0])+300),
-            (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
+        model_paczynski_boundaries = {
+            'PSPL': [(min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
+                      max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
+                     (-2.0, 2.0), (1.0, 300)], 'FSPL': [
+                (min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
+                 max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
+                (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
 
         model_parallax_boundaries = {'None': [], 'Annual': [(-2.0, 2.0), (-2.0, 2.0)],
                                      'Terrestrial': [(-2.0, 2.0), (-2.0, 2.0)], 'Full':
@@ -214,7 +217,7 @@ class MLModels(object):
         model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
 
         model_source_spots_boundaries = {'None': []}
-       
+
         self.parameters_boundaries = model_paczynski_boundaries[self.paczynski_model] + \
                                      model_parallax_boundaries[
                                          self.parallax_model[0]] + model_xallarap_boundaries[
@@ -231,67 +234,56 @@ class MLModels(object):
         self.model_dictionnary = OrderedDict(
             sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
+    def magnification(self, parameters, time, gamma=0, delta_positions=0):
 
-    def magnification(self, parameters , time, gamma = 0, delta_positions = 0) :
-        
         """ Compute the according magnification """
-        
+
         to = parameters[self.model_dictionnary['to']]
         uo = parameters[self.model_dictionnary['uo']]
-        tE = parameters[self.model_dictionnary['tE']]        
-        
+        tE = parameters[self.model_dictionnary['tE']]
+
         tau = (time - to) / tE
-        
-        
-        
+
         dtau = 0
         duo = 0
-        
-        if self.parallax_model[0] != 'None' :
+
+        if self.parallax_model[0] != 'None':
             piE = np.array([parameters[self.model_dictionnary['piEN']],
-                                parameters[self.model_dictionnary['piEE']]])
-        #import pdb; pdb.set_trace()
-            dTau,dUo = self.compute_parallax_curvature(piE, delta_positions)
+                            parameters[self.model_dictionnary['piEE']]])
+            # import pdb; pdb.set_trace()
+            dTau, dUo = self.compute_parallax_curvature(piE, delta_positions)
             dtau += dTau
             duo += dUo
-        
-        tau += dtau     
-        uo = duo+uo
-        
+
+        tau += dtau
+        uo = duo + uo
+
         if self.paczynski_model == 'PSPL':
-            
+
             amplification, u = microlmagnification.amplification_PSPL(tau, uo)
             return amplification, u
-            
+
         if self.paczynski_model == 'FSPL':
-            
+
             rho = parameters[self.model_dictionnary['rho']]
-            amplification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, self.yoo_table)
-            return amplification, u   
-            
-    
+            amplification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma,
+                                                                      self.yoo_table)
+            return amplification, u
+
     def compute_parallax_all_telescopes(self):
-         """ Compute the parallax for all the telescopes, if this is desired in
-         the second order parameter."""
-         
-     
-         for telescope in self.event.telescopes:
-  
+        """ Compute the parallax for all the telescopes, if this is desired in
+        the second order parameter."""
+
+        for telescope in self.event.telescopes:
+
             if len(telescope.deltas_positions) == 0:
-                 telescope.compute_parallax(self.event,self.parallax_model)
-    
-        
-                
-            
-    def compute_parallax_curvature(self, piE, delta_positions) :
+                telescope.compute_parallax(self.event, self.parallax_model)
+
+    def compute_parallax_curvature(self, piE, delta_positions):
         """ Compute the curvature induce by the parallax of from
         deltas_positions of a telescope """
-                  
+
         delta_tau = -np.dot(piE, delta_positions)
         delta_u = -np.cross(piE, delta_positions.T)
-           
-        return delta_tau,delta_u
-    
-    
-        
-        
+
+        return delta_tau, delta_u

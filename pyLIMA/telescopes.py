@@ -16,7 +16,7 @@ import microlparallax
 class Telescope(object):
     """
     ######## Telescope module ########
-    
+
     This module create a telescope object with the informations (attributes) needed for the fits.
 
     Attributes :
@@ -33,17 +33,17 @@ class Telescope(object):
                  The classical (Milne definition) linear limb darkening coefficient can be found using:
                  u=(3*gamma)/(2+gamma).
                  Default is 0.0 (i.e uniform source brightness)
-                 
+
         lightcurve_magnitude : a numpy array describing your data in magnitude.
-          
+
         lightcurve_magnitude_dictionnary ; a python dictionnary to transform the lightcurve_magnitude input to pyLIMA convention.
 
         lightcurve_flux : a numpy array describing your data in flux.
-          
+
         lightcurve_flux_dictionnary : a python dictionnary to transform the lightcurve_flux input to pyLIMA convention.
-           
+
         reference_flux : a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .
-        
+
         deltas-positions : a list containing the position shift of this observatory due to parallax. Default is an empty list. More details in microlparallax.
 
     :param string name: name of the telescope. Default is 'NDG'
@@ -60,44 +60,44 @@ class Telescope(object):
     :param array_like light_curve_magnitude:  a numpy array with time, magnitude and error in magnitude. Default is an None.
 
     :param dict light_curve_magnitude_dictionnary: a python dictionnary that informs your columns convention. Used to translate to pyLIMA
-                                convention [time,mag,err_mag]. Default is {'time': 0, 'mag' : 1, 'err_mag' : 2 } 
+                                convention [time,mag,err_mag]. Default is {'time': 0, 'mag' : 1, 'err_mag' : 2 }
 
 
     :param array-like light_curve_flux:  a numpy array with time, flux and error in flux. Default is an None.
 
     :param dict light_curve_flux_dictionnary: a python dictionnary that informs your columns convention. Used to translate to pyLIMA
                                 convention [time,flux,err_flux]. Default is {'time': 0, 'flux' : 1, 'err_flux' : 2 }
-                                
+
     :param float reference_flux: a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .
     """
 
     def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None, light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2 }, light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2 }, reference_flux=10000.0 ):
         """Initialization of the attributes described above."""
-        
-        self.name = name      
+
+        self.name = name
         self.filter = camera_filter  # Claret2011 convention
         self.lightcurve_magnitude_dictionnary = light_curve_magnitude_dictionnary
         self.lightcurve_flux_dictionnary = light_curve_flux_dictionnary
         self.reference_flux = reference_flux
 
         if light_curve_magnitude is None :
-               
+
             self.lightcurve_magnitude = []
             self.lightcurve_flux = []
-                
+
         else :
-        
-            self.lightcurve_magnitude = light_curve_magnitude 
+
+            self.lightcurve_magnitude = light_curve_magnitude
             self.lightcurve_magnitude = self.arrange_the_lightcurve_columns('magnitude')
             self.lightcurve_flux  = self.lightcurve_in_flux()
-       
+
 
         if light_curve_flux is None :
-                
+
             pass
-                
+
         else :
-        
+
             self.lightcurve_flux = light_curve_flux
             self.lightcurve_flux = self.arrange_the_lightcurve_columns('flux')
             self.lightcurve_magnitude  = self.lightcurve_in_magnitude()
@@ -108,16 +108,16 @@ class Telescope(object):
         self.latitude = 49.49 # degrees
         self.gamma = 0.0 # This mean you will fit uniform source brightness
         self.deltas_positions = []
-       
+
     def arrange_the_lightcurve_columns(self, choice):
         """Rearange the lightcurve to the pyLIMA convention.
-        
+
             :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply the sorting.
-            
+
             :return: the lightcurve sorted in pyLIMA convention
             :rtype: array_like
         """
-       
+
         pyLIMA_magnitude_convention = ['time', 'mag', 'err_mag']
         pyLIMA_flux_convention = ['time', 'flux', 'err_flux']
 
@@ -125,9 +125,9 @@ class Telescope(object):
 
            lightcurve = []
            for good_column in pyLIMA_magnitude_convention :
-           
+
                lightcurve.append(self.lightcurve_magnitude[:, self.lightcurve_magnitude_dictionnary[good_column]])
-        
+
            lightcurve = np.array(lightcurve).T
            return lightcurve
 
@@ -135,7 +135,7 @@ class Telescope(object):
 
            lightcurve = []
            for good_column in pyLIMA_flux_convention :
-            
+
                lightcurve.append(self.lightcurve_flux[:, self.lightcurve_flux_dictionnary[good_column]])
 
            lightcurve = np.array(lightcurve).T
@@ -144,9 +144,9 @@ class Telescope(object):
 
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.
-        
+
         :param string choice: 'magnitude' (default) or 'flux' The unit you want to check data for.
-        
+
         :return: the size of the corresponding lightcurve
         :rtype: int
         """
@@ -154,7 +154,7 @@ class Telescope(object):
         if choice == 'flux':
 
             return len(self.lightcurve_flux[:, 0])
-            
+
         if choice == 'magnitude':
 
             return len(self.lightcurve_magnitude[:, 0])
@@ -164,10 +164,10 @@ class Telescope(object):
         Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter,
         the given effective
         temperature and the given surface gravity in log10 cgs.
-        
+
         WARNING. Two strong assomption are made :
                   - the microturbulent velocity turbulent_velocity is fixed to 2 km/s
-                  
+
                   - the metallicity is fixed equal to the Sun : metallicity=0.0
         :param float Teff: The effective temperature of the source in Kelvin.
         :param float log_g: The log10 surface gravity in cgs.
@@ -203,7 +203,7 @@ class Telescope(object):
 
     def compute_parallax(self, event, parallax):
         """ Compute and set the deltas_positions attribute due to the parallax.
-        
+
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
@@ -217,15 +217,15 @@ class Telescope(object):
         are 10 mag brighter
         or fainter than the lightcurve median or if nan appears in any columns or errobar higher
         than a 1 mag.
-        
+
         :return: the cleaned magnitude lightcurve
         :rtype: array_like
         """
-        
+
         maximum_accepted_precision = 10.0
         outliers_in_mag = 5.0
-        
-      
+
+
         index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) & (
             np.abs(self.lightcurve_magnitude[:, 2]) < maximum_accepted_precision))[0]
 
@@ -244,9 +244,9 @@ class Telescope(object):
         """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
-        
+
         :param string clean: 'Yes' or 'No'. Perform or not a clean_data call to avoid outliers.
-        
+
         :return: the lightcurve in flux, lightcurve_flux.
         :rtype: array_like
         """
@@ -272,7 +272,7 @@ class Telescope(object):
         """
         Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
-        
+
         :return: the lightcurve in magnitude, lightcurve_magnitude.
         :rtype: array_like
         """
@@ -286,7 +286,7 @@ class Telescope(object):
         magnitude = microltoolbox.flux_to_magnitude(flux)
         error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
 
-        ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T 
+        ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T
 
         index = np.where((~np.isnan(ligthcurve_magnitude).any(axis=1)))[0] # prevent nan magnitude
 

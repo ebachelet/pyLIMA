@@ -8,9 +8,9 @@ import collections
 import contextlib
 import StringIO
 
-_claret_columns = 'logg, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, ' \
+_CLARET_COLUMNS = 'log_g, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, ' \
                   'filter, method, model'
-_claret_type = collections.namedtuple('ClaretType', _claret_columns)
+_ClaretType = collections.namedtuple('ClaretType', _CLARET_COLUMNS)
 
 
 def read_claret_data(file_name, camera_filter):
@@ -30,7 +30,7 @@ def read_claret_data(file_name, camera_filter):
         for line in file_socket.readlines():
             data = [_convert_datum(x) for x in line.strip().split()]
 
-            claret_datum = _claret_type(*data)
+            claret_datum = _ClaretType(*data)
 
             if claret_datum.filter == camera_filter:
                 yield claret_datum
@@ -39,6 +39,11 @@ def read_claret_data(file_name, camera_filter):
 
 
 def _convert_datum(datum):
+    """
+    Convert a datum to a float (if possible).
+    :param datum: Datum to convert.
+    :return: Float or original if not convertible
+    """
     try:
         return float(datum)
     except ValueError:
