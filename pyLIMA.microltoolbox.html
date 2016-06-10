@@ -41,6 +41,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="pyLIMA.telescopes.html" title="pyLIMA.telescopes module"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -56,8 +59,94 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pylima-microltoolbox-module">
-<h1>pyLIMA.microltoolbox module<a class="headerlink" href="#pylima-microltoolbox-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pyLIMA.microltoolbox">
+<span id="pylima-microltoolbox-module"></span><h1>pyLIMA.microltoolbox module<a class="headerlink" href="#module-pyLIMA.microltoolbox" title="Permalink to this headline">¶</a></h1>
+<p>Created on Mon May 23 17:18:15 2016</p>
+<p>&#64;author: ebachelet</p>
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.error_flux_to_error_magnitude">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">error_flux_to_error_magnitude</code><span class="sig-paren">(</span><em>error_flux</em>, <em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#error_flux_to_error_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.error_flux_to_error_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected flux error to the the corresponding error in magnitude.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>error_flux</strong> (<em>array_like</em>) &#8211; the flux errors measurements you want to transform.</li>
+<li><strong>flux</strong> (<em>array_like</em>) &#8211; the fluxes corresponding to these errors</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the transformed errors in magnitude</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.error_magnitude_to_error_flux">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">error_magnitude_to_error_flux</code><span class="sig-paren">(</span><em>error_magnitude</em>, <em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#error_magnitude_to_error_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.error_magnitude_to_error_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected magnitude error to the the corresponding error in flux.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>error_magnitude</strong> (<em>array_like</em>) &#8211; the magnitude errors measurements you want to transform.</li>
+<li><strong>flux</strong> (<em>array_like</em>) &#8211; the fluxes corresponding to these errors</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the transformed errors in flux units</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.flux_to_magnitude">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">flux_to_magnitude</code><span class="sig-paren">(</span><em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#flux_to_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.flux_to_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected flux to the the corresponding magnitude.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flux</strong> (<em>array_like</em>) &#8211; the flux you want to transform.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the transformed magnitude</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.magnitude_to_flux">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">magnitude_to_flux</code><span class="sig-paren">(</span><em>magnitude</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#magnitude_to_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.magnitude_to_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected magnitude to the the corresponding flux.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>magnitude</strong> (<em>array_like</em>) &#8211; the magnitude you want to transform.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the transformed magnitude in flux unit</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 

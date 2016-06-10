@@ -41,6 +41,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="pyLIMA.microlparallax.html" title="pyLIMA.microlparallax module"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -56,8 +59,432 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pylima-microloutputs-module">
-<h1>pyLIMA.microloutputs module<a class="headerlink" href="#pylima-microloutputs-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pyLIMA.microloutputs">
+<span id="pylima-microloutputs-module"></span><h1>pyLIMA.microloutputs module<a class="headerlink" href="#module-pyLIMA.microloutputs" title="Permalink to this headline">¶</a></h1>
+<p>Created on Mon Nov  9 16:38:14 2015</p>
+<p>&#64;author: ebachelet</p>
+<dl class="function">
+<dt id="pyLIMA.microloutputs.K2_C9_outputs">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">K2_C9_outputs</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#K2_C9_outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.K2_C9_outputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_fit_errors">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_fit_errors</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_fit_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_fit_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the parameters errors from the fit.fit_covariance matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple object containing the square roots of parameters variance.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_outputs">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_outputs</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard &#8216;LM&#8217; and &#8216;DE&#8217; outputs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple containing the following attributes :<p>fit_parameters : an namedtuple object containing all the fitted parameters</p>
+<p>fit_errors : an namedtuple object containing all the fitted parameters errors</p>
+<p>fit_correlation_matrix : a numpy array representing the fitted parameters correlation matrix</p>
+<p>figure_lightcurve : a two matplotlib figure showing the data and model and the correspoding residuals</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_parameters_result">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_parameters_result</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_parameters_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_parameters_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a namedtuple object containing the fitted parameters in the fit.fit_results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>fit_parameters</strong> &#8211; a namedtuple object containing the fitted parameters.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_plot_align_data">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_plot_align_data</code><span class="sig-paren">(</span><em>fit</em>, <em>figure_axe</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_plot_align_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_plot_align_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the aligned data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>figure_axe</strong> (<em>matplotlib_axes</em>) &#8211; a matplotlib axes correpsonding to the figure.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_plot_lightcurves">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_plot_lightcurves</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_plot_lightcurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_plot_lightcurves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the aligned datasets and the best fit on the first subplot figure_axes[0] and residuals
+on the second subplot figure_axes[1].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a figure representing data+model and residuals.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">matplotlib_figure</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_plot_model">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_plot_model</code><span class="sig-paren">(</span><em>fit</em>, <em>figure_axe</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_plot_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_plot_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the microlensing model from the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>figure_axe</strong> (<em>matplotlib_axes</em>) &#8211; a matplotlib axes correpsonding to the figure.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_plot_parameters">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_plot_parameters</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_plot_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_plot_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>NOT USED</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.LM_plot_residuals">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_plot_residuals</code><span class="sig-paren">(</span><em>fit</em>, <em>figure_axe</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_plot_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_plot_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the residuals from the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>figure_axe</strong> (<em>matplotlib_axes</em>) &#8211; a matplotlib axes correpsonding to the figure.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_compute_fs_g">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_compute_fs_g</code><span class="sig-paren">(</span><em>fit</em>, <em>mcmc_chains</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_compute_fs_g"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_compute_fs_g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the corresponding source flux fs and blending factor g corresponding to each mcmc chain.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>mcmc_chains</strong> &#8211; a numpy array representing the mcmc chains.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a numpy array containing the corresponding fluxes parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_type</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_covariance">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_covariance</code><span class="sig-paren">(</span><em>mcmc_chains</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_covariance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the covariance matrix from the mcmc_chains</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mcmc_chains</strong> &#8211; a numpy array representing the mcmc chains.</td>
+</tr>
+</tbody>
+</table>
+<p>:return : a numpy array representing the covariance matrix of your MCMC sampling.
+:rtype: array_like</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_outputs">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_outputs</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard &#8216;LM&#8217; and &#8216;DE&#8217; outputs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple containing the following attributes :<p>MCMC_chains : a numpy array containing all the parameters chains + the corresponding objective function.</p>
+<p>MCMC_correlations : a numpy array representing the fitted parameters correlation matrix from the MCMC chains</p>
+<p>figure_lightcurve : a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.</p>
+<p>figure_distributions : a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_plot_align_data">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_align_data</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>ax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_align_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_align_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the data on the figure. Telescopes are aligned to the survey telescope (i.e number 0).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>parameters</strong> &#8211; the parameters [list] of the model you want to plot.</li>
+<li><strong>ax</strong> &#8211; the matplotlib axes where you plot the data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_plot_lightcurves">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_lightcurves</code><span class="sig-paren">(</span><em>fit</em>, <em>mcmc_best</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_lightcurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_lightcurves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot 35 models from the mcmc_best sample. This is made to have  35 models equally spaced
+in term of objective funtion (~chichi)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>mcmc_best</strong> &#8211; a numpy array representing the best (&lt;= 6 sigma) mcmc chains.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib_figure</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_plot_model">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_model</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>couleurs</em>, <em>figure_axes</em>, <em>scalar_couleur_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a  model to a given figure, with the color corresponding to the objective function of the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>parameters</strong> &#8211; the parameters [list] of the model you want to plot.</li>
+<li><strong>couleurs</strong> &#8211; the values of the objective function for the model that match the color table scalar_couleur_map</li>
+<li><strong>figure_axes</strong> &#8211; the axes where the plot are draw</li>
+<li><strong>scalar_couleur_map</strong> &#8211; a matplotlib table that return a color given a scalar value (the objective function here)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_plot_parameters_distribution">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_parameters_distribution</code><span class="sig-paren">(</span><em>fit</em>, <em>mcmc_best</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_parameters_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_parameters_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the fit parameters distributions.
+Only plot the best mcmc_chains are plotted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>mcmc_best</strong> &#8211; a numpy array representing the best (&lt;= 6 sigma) mcmc chains.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib_figure</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.MCMC_plot_residuals">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_residuals</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>ax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the data residual on the appropriate figure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
+<li><strong>parameters</strong> &#8211; the parameters [list] of the model you want to plot.</li>
+<li><strong>ax</strong> &#8211; the matplotlib axes where you plot the data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.align_telescope_lightcurve">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">align_telescope_lightcurve</code><span class="sig-paren">(</span><em>lightcurve_telescope_mag</em>, <em>fs_reference</em>, <em>g_reference</em>, <em>fs_telescope</em>, <em>g_telescope</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#align_telescope_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.align_telescope_lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Align data to the survey telescope (i.e telescope 0).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lightcurve_telescope_mag</strong> (<em>array_like</em>) &#8211; the survey telescope in magnitude</li>
+<li><strong>fs_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference source flux (i.e the fitted value)</li>
+<li><strong>g_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference blending parameter (i.e the fitted value)</li>
+<li><strong>fs_telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the telescope source flux (i.e the fitted value)</li>
+<li><strong>g_reference</strong> &#8211; the telescope blending parameter (i.e the fitted value)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the aligned to survey lightcurve in magnitude</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.cov2corr">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">cov2corr</code><span class="sig-paren">(</span><em>covariance_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#cov2corr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.cov2corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Covariance matrix to correlation matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>covariance_matrix</strong> (<em>array_like</em>) &#8211; a (square) numpy array representing the covariance matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a (square) numpy array representing the correlation matrix</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.errors_on_fits">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">errors_on_fits</code><span class="sig-paren">(</span><em>self</em>, <em>choice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#errors_on_fits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.errors_on_fits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.errors_on_observables">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">errors_on_observables</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#errors_on_observables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.errors_on_observables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.find_observables">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">find_observables</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#find_observables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.find_observables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.find_observables_errors">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">find_observables_errors</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#find_observables_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.find_observables_errors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.initialize_plot_lightcurve">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">initialize_plot_lightcurve</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#initialize_plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.initialize_plot_lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the lightcurve plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a matplotlib figure  and the corresponding matplotlib axes</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">matplotlib_figure,matplotlib_axes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.initialize_plot_parameters">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">initialize_plot_parameters</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#initialize_plot_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.initialize_plot_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the parameters plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a matplotlib figure  and the corresponding matplotlib axes.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">matplotlib_figure,matplotlib_axes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.student_errors">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">student_errors</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#student_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.student_errors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 
