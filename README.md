@@ -9,4 +9,6 @@ Authors : Etienne Bachelet, etibachelet@gmail.com
 
 This is an alpha version, do not expect it works :)
 
+[Documentation](https://ebachelet.github.io/pyLIMA/)
+
 Coming soon!
