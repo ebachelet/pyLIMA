@@ -200,31 +200,33 @@ class MLModels(object):
 
             self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
 
-        model_paczynski_boundaries = {
-            'PSPL': [(min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
-                      max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
-                     (-2.0, 2.0), (1.0, 300)], 'FSPL': [
-                (min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
-                 max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
-                (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
+        #model_paczynski_boundaries = {
+        #    'PSPL': [(min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
+        #              max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
+        #             (-2.0, 2.0), (1.0, 300)], 'FSPL': [
+        #        (min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
+        #         max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
+        #        (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
 
-        model_parallax_boundaries = {'None': [], 'Annual': [(-2.0, 2.0), (-2.0, 2.0)],
-                                     'Terrestrial': [(-2.0, 2.0), (-2.0, 2.0)], 'Full':
-                                         [(-2.0, 2.0), (-2.0, 2.0)]}
+        #model_parallax_boundaries = {'None': [], 'Annual': [(-2.0, 2.0), (-2.0, 2.0)],
+        #                             'Terrestrial': [(-2.0, 2.0), (-2.0, 2.0)], 'Full':
+        #                                 [(-2.0, 2.0), (-2.0, 2.0)]}
 
-        model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
+        #model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
-        model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
+        #model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
 
-        model_source_spots_boundaries = {'None': []}
+        #model_source_spots_boundaries = {'None': []}
 
-        self.parameters_boundaries = model_paczynski_boundaries[self.paczynski_model] + \
-                                     model_parallax_boundaries[
-                                         self.parallax_model[0]] + model_xallarap_boundaries[
-                                         self.xallarap_model[0]] + model_orbital_motion_boundaries[
-                                         self.orbital_motion_model[0]] + \
-                                     model_source_spots_boundaries[
-                                         self.source_spots_model]
+        #self.parameters_boundaries = model_paczynski_boundaries[self.paczynski_model] + \
+        #                             model_parallax_boundaries[
+        #                                 self.parallax_model[0]] + model_xallarap_boundaries[
+        #                                 self.xallarap_model[0]] + model_orbital_motion_boundaries[
+        #                                 self.orbital_motion_model[0]] + \
+        #                             model_source_spots_boundaries[
+        #                                 self.source_spots_model]
+
+        
 
         for telescope in self.event.telescopes:
 

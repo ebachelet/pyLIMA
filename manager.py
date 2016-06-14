@@ -29,14 +29,13 @@ def main(command_line):
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
                      ('Lightcurve_' in event_name) and ('~' not in event_name)]
 
-    import pdb
-    pdb.set_trace()
+   
 
     start = time.time()
     results = []
     errors = []
 
-    for event_name in events_names[0:]:
+    for event_name in events_names[50:]:
 
         # name='Lightcurve_'+str(9975)+'_'
         name = event_name[:-10]
@@ -92,13 +91,12 @@ def main(command_line):
         print 'Start;', current_event.name
 
         current_event.find_survey('Survey')
-        current_event.dec = 98
         current_event.check_event()
 
         Model = microlmodels.MLModels(current_event, command_line.model,
                                       parallax=['None', 2457510.0])
 
-        current_event.fit(Model, 'MCMC')
+        current_event.fit(Model, 'DE')
 
         current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results

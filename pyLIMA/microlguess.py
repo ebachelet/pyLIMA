@@ -226,3 +226,67 @@ def initial_guess_FSPL(event):
     FSPL_guess = PSPL_guess + [rho_guess]
 
     return FSPL_guess, fs_guess
+    
+    
+def differential_evolution_parameters_boundaries(event, model):
+    """
+    """
+    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in event.telescopes]
+    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in event.telescopes]
+    
+    to_boundaries = (min(  minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
+    uo_boundaries = (-2.0, 2.0)
+    tE_boundaries = (1.0, 300)
+    rho_boundaries = (10**-5, 0.05)
+    
+    piEN_boundaries = (-2.0, 2.0)
+    piEE_boundaries = (-2.0, 2.0)
+    XiEN_boundaries = (-2.0, 2.0)
+    XiEE_boundaries = (-2.0, 2.0)
+    
+    
+    
+    #model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
+
+    #model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
+
+    #model_source_spots_boundaries = {'None': []}
+    
+    
+    parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
+    
+    if model.paczynski_model == 'FSPL' :
+        
+        parameters_boundaries.append(rho_boundaries)
+    
+    if model.parallax_model[0] != 'None' :
+        
+        parameters_boundaries.append(piEN_boundaries)
+        parameters_boundaries.append(piEE_boundaries)
+        
+    if  model.xallarap_model[0] != 'None' :
+        
+        parameters_boundaries.append(XiEN_boundaries)
+        parameters_boundaries.append(XiEE_boundaries)
+        
+    #if orbital_motion
+    #if source_spots
+
+    return parameters_boundaries
+
+def MCMC_parameters_initialization(parameter_key, parameter_value):
+    
+    
+    
+    
+    if parameter_key == 'to' :
+        
+        to_parameters_trial = parameter_value + np.random.uniform(-1, 1)
+        
+        return to_parameters_trial
+    
+    else :
+        
+        all_other_parameter_trial = parameter_value*( 1+np.random.uniform(-0.9, 0.9))
+    
+        return  all_other_parameter_trial

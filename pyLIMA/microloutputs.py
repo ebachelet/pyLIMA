@@ -87,8 +87,9 @@ def MCMC_outputs(fit):
     chains = fit.MCMC_chains
     probabilities = fit.MCMC_probabilities
 
+    
     CHAINS = chains[:, :, 0].ravel()
-    for i in xrange(len(fit.model.parameters_boundaries) - 1):
+    for i in xrange(chains[0].shape[1] - 1):
         i += 1
         CHAINS = np.c_[CHAINS, chains[:, :, i].ravel()]
     fluxes = MCMC_compute_fs_g(fit, CHAINS)
