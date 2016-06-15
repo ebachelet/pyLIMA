@@ -35,7 +35,7 @@ def main(command_line):
     results = []
     errors = []
 
-    for event_name in events_names[50:]:
+    for event_name in events_names[1:]:
 
         # name='Lightcurve_'+str(9975)+'_'
         name = event_name[:-10]
@@ -96,14 +96,19 @@ def main(command_line):
         Model = microlmodels.MLModels(current_event, command_line.model,
                                       parallax=['None', 50.0])
 
+        #Model.fancy_to_pyLIMA_dictionnary = {'tstar':'tE'}
+        #Model.pyLIMA_to_fancy = {'tstar':lambda parameters : np.log10(parameters[Model.pyLIMA_standards_dictionnary['tE']]),
+        #                         }
+        #Model.fancy_to_pyLIMA = {'tE':lambda parameters : 10**parameters[Model.model_dictionnary['tstar']],
+        #                         }
         current_event.fit(Model, 'LM')
-
+        import pdb;
+        pdb.set_trace()
         current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results
         plt.show()
-        
-        import pdb
-        pdb.set_trace()
+
+
 
     end = time.time()
 

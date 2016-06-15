@@ -11,13 +11,14 @@ import os.path
 
 import numpy as np
 from scipy import interpolate, misc
+import collections
+import microlguess
 
 import microlmagnification
 import microlpriors
 
 full_path = os.path.abspath(__file__)
 directory, filename = os.path.split(full_path)
-
 
 ### THIS NEED TO BE SORTED ####
 try:
@@ -130,49 +131,64 @@ class MLModels(object):
         self.source_spots_model = source_spots
 
         self.yoo_table = yoo_table
-        self.define_parameters()
 
+        self.model_dictionnary = {}
+        self.pyLIMA_standards_dictionnary = {}
 
-    def define_parameters(self):
+        self.fancy_to_pyLIMA_dictionnary = {}
+        self.pyLIMA_to_fancy = {}
+        self.fancy_to_pyLIMA = {}
+
+        self.define_pyLIMA_standard_parameters()
+
+    def define_model_parameters(self):
+
+        if len(self.pyLIMA_to_fancy) != 0:
+
+            for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
+                self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
+                    self.fancy_to_pyLIMA_dictionnary[key_parameter])
+
+    def define_pyLIMA_standard_parameters(self):
         """ Create the model_dictionnary which explain to the different modules which parameter
         is what (
         Paczynski parameters+second_order+fluxes
         """
-
-        self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
+        if self.paczynski_model == 'PSPL':
+            self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
 
         if self.paczynski_model == 'FSPL':
-
+            self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
             self.model_dictionnary['rho'] = len(self.model_dictionnary)
 
         if self.parallax_model[0] != 'None':
-
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
 
         if self.xallarap_model[0] != 'None':
-
             self.model_dictionnary['XiEN'] = len(self.model_dictionnary)
             self.model_dictionnary['XiEE'] = len(self.model_dictionnary)
 
         if self.orbital_motion_model[0] != 'None':
-
             self.model_dictionnary['dsdt'] = len(self.model_dictionnary)
             self.model_dictionnary['dalphadt'] = len(self.model_dictionnary)
 
         if self.source_spots_model != 'None':
-
             self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
 
         for telescope in self.event.telescopes:
-
             self.model_dictionnary['fs_' + telescope.name] = len(self.model_dictionnary)
             self.model_dictionnary['g_' + telescope.name] = len(self.model_dictionnary)
 
         self.model_dictionnary = OrderedDict(
             sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
+        self.pyLIMA_standards_dictionnary = self.model_dictionnary.copy()
+
+        self.parameters_boundaries =  microlguess.differential_evolution_parameters_boundaries(self.event, self)
+
 
     def magnification(self, parameters, time, gamma=0.0, delta_positions=0):
 
@@ -207,12 +223,10 @@ class MLModels(object):
         uo = delta_uo + uo
 
         if self.paczynski_model == 'PSPL':
-
             amplification, u = microlmagnification.amplification_PSPL(tau, uo)
             return amplification, u
 
         if self.paczynski_model == 'FSPL':
-
             rho = parameters[self.model_dictionnary['rho']]
             amplification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma,
                                                                       self.yoo_table)
@@ -234,8 +248,7 @@ class MLModels(object):
 
         return delta_tau, delta_u
 
-
-    def compute_the_microlensing_model(self, telescope, parameters):
+    def compute_the_microlensing_model(self, telescope, input_parameters):
         """ NEED A DOCSTRING
         """
 
@@ -243,19 +256,21 @@ class MLModels(object):
         dalphadt = None
 
         if self.parallax_model[0] != 'None':
-
-            piE = np.array([parameters[self.model_dictionnary['piEN']],
-                            parameters[self.model_dictionnary['piEE']]])
+            piE = np.array([input_parameters[self.model_dictionnary['piEN']],
+                            input_parameters[self.model_dictionnary['piEE']]])
 
         if self.orbital_motion_model[0] != 'None':
-
             pass
 
         if self.paczynski_model == 'PSPL':
 
-            to = parameters[self.model_dictionnary['to']]
-            uo = parameters[self.model_dictionnary['uo']]
-            tE = parameters[self.model_dictionnary['tE']]
+            import pdb
+            pdb.set_trace()
+
+            parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(input_parameters)
+            to = parameters.to
+            uo = parameters.uo
+            tE = parameters.tE
 
             source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
                                                                               parallax=piE, orbital_motion=dalphadt)
@@ -264,57 +279,86 @@ class MLModels(object):
 
             try:
 
-                #LM method
-                f_source = parameters[self.model_dictionnary['fs_' + telescope.name]]
-                f_blending = f_source*parameters[self.model_dictionnary['g_' + telescope.name]]
+                # LM method
+                f_source = getattr(parameters, 'fs_' + telescope.name)
+                f_blending = f_source *getattr(parameters, 'g_' + telescope.name)
 
             except:
 
-                #Other methods
+                # Other methods
                 lightcurve = telescope.lightcurve_flux
                 flux = lightcurve[:, 1]
                 errflux = lightcurve[:, 2]
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
 
-            microlensing_model = f_source*amplification+f_blending
-            #Prior here
+            microlensing_model = f_source * amplification + f_blending
+            # Prior here
             priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
 
             return microlensing_model, priors
 
         if self.paczynski_model == 'FSPL':
 
-            to = parameters[self.model_dictionnary['to']]
-            uo = parameters[self.model_dictionnary['uo']]
-            tE = parameters[self.model_dictionnary['tE']]
+            parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(input_parameters)
+            to = parameters.to
+            uo = parameters.uo
+            tE = parameters.tE
 
             source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
                                                                               parallax=piE, orbital_motion=dalphadt)
-            rho = parameters[self.model_dictionnary['rho']]
+            rho = parameters.rho
             gamma = telescope.gamma
             amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
                                                                       gamma, self.yoo_table)
 
             try:
 
-                #LM method
-                f_source = parameters[self.model_dictionnary['fs_' + telescope.name]]
-                f_blending = f_source*parameters[self.model_dictionnary['g_' + telescope.name]]
+                # LM method
+                f_source = getattr(parameters, 'fs_' + telescope.name)
+                f_blending = f_source * getattr(parameters, 'g_' + telescope.name)
 
             except:
 
-                #Other methods
+                # Other methods
                 lightcurve = telescope.lightcurve_flux
                 flux = lightcurve[:, 1]
                 errflux = lightcurve[:, 2]
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
 
-            microlensing_model = f_source*amplification+f_blending
+            microlensing_model = f_source * amplification + f_blending
 
-            #Prior here
+            # Prior here
             priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
 
             return microlensing_model, priors
+
+    def fancy_parameters_to_pyLIMA_standard_parameters(self, parameters):
+
+        parameter = collections.namedtuple('parameters', self.model_dictionnary)
+        for key_parameter in self.model_dictionnary:
+            setattr(parameter, key_parameter, parameters[self.model_dictionnary[key_parameter]])
+
+        if len(self.fancy_to_pyLIMA) != 0:
+
+          for key_parameter in self.fancy_to_pyLIMA.keys():
+
+                    setattr(parameter, key_parameter, self.fancy_to_pyLIMA[key_parameter](parameters))
+
+        return parameter
+
+    def pyLIMA_standard_parameters_to_fancy_parameters(self, parameters):
+
+        parameter = collections.namedtuple('parameters', self.pyLIMA_standards_dictionnary)
+
+        for key_parameter in self.pyLIMA_standards_dictionnary.keys():
+            setattr(parameter, key_parameter, parameters[self.pyLIMA_standards_dictionnary[key_parameter]])
+
+        if len(self.pyLIMA_to_fancy) != 0:
+
+            for key_parameter in self.pyLIMA_to_fancy.keys():
+                setattr(parameter, key_parameter, self.pyLIMA_to_fancy[key_parameter](parameters))
+
+        return parameter
 
     def source_trajectory(self, telescope, to, uo, tE, alpha=0.0, parallax=None, orbital_motion=None):
         """ NEED A DOCSTRING
@@ -323,23 +367,22 @@ class MLModels(object):
         time = lightcurve[:, 0]
 
         tau = (time - to) / tE
+        uo = np.array([uo] * len(tau))
 
-        dtau = 0
-        duo = 0
+        delta_tau = 0
+        delta_uo = 0
 
         if parallax is not None:
+            piE = parallax
+            parallax_delta_tau, parallax_delta_uo = self.compute_parallax_curvature(piE, telescope.deltas_positions)
+            delta_tau += parallax_delta_tau
+            delta_uo += parallax_delta_uo
 
-             piE = parallax
-             dTau, dUo = self.compute_parallax_curvature(piE, telescope.deltas_positions)
+        tau += delta_tau
+        uo += delta_uo
 
-             dtau += dTau
-             duo += dUo
-
-        tau += dtau
-        uo = duo + uo
-
-        source_trajectory_x = tau*np.cos(alpha)-uo*np.sin(alpha)
-        source_trajectory_y = tau*np.sin(alpha)+uo*np.cos(alpha)
+        source_trajectory_x = tau * np.cos(alpha) - uo * np.sin(alpha)
+        source_trajectory_y = tau * np.sin(alpha) + uo * np.cos(alpha)
 
         return source_trajectory_x, source_trajectory_y
 
@@ -352,9 +395,8 @@ class MLModels(object):
 
         :return: a numpy array which represents the jacobian matrix
         :rtype: array_like
-        PROBABLY NEED REWORK
         """
-
+        # TODO :PROBABLY NEED REWORK
         if self.paczynski_model == 'PSPL':
 
             # Derivatives of the residuals_LM objective function, PSPL version
@@ -366,7 +408,6 @@ class MLModels(object):
             dresdeps = np.array([])
 
             for telescope in self.event.telescopes:
-
                 lightcurve = telescope.lightcurve_flux
 
                 time = lightcurve[:, 0]
@@ -384,8 +425,7 @@ class MLModels(object):
                         (fit_process_parameters[self.model_dictionnary['tE']] ** 2 * Amplification[1])
                 dUduo = fit_process_parameters[self.model_dictionnary['uo']] / Amplification[1]
                 dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / \
-                (fit_process_parameters[self.model_dictionnary['tE']] ** 3 *Amplification[1])
-
+                        (fit_process_parameters[self.model_dictionnary['tE']] ** 3 * Amplification[1])
 
                 # Derivative of the objective function
                 dresdto = np.append(dresdto,
@@ -422,7 +462,6 @@ class MLModels(object):
             fake_params = np.delete(fit_process_parameters, self.model_dictionnary['rho'])
 
             for telescope in self.event.telescopes:
-
                 lightcurve = telescope.lightcurve_flux
                 time = lightcurve[:, 0]
                 errflux = lightcurve[:, 2]
@@ -432,7 +471,7 @@ class MLModels(object):
                 Amplification_PSPL = fake_model.magnification(fake_params, time, gamma)
 
                 dAmplification_PSPLdU = (-8) / (Amplification_PSPL[1] ** 2 * \
-                                        (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
+                                                (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
 
                 # z_yoo=U/rho
                 z_yoo = Amplification_PSPL[1] / fit_process_parameters[
@@ -458,24 +497,25 @@ class MLModels(object):
                 # FSPL regime (z_yoo~1), then Yoo et al derivatives
                 ind = np.where((z_yoo <= self.yoo_table[0][-1]) & (z_yoo >= self.yoo_table[0][0]))[0]
                 dadu[ind] = dAmplification_PSPLdU[ind] * (self.yoo_table[1](z_yoo[ind]) - \
-                            gamma * self.yoo_table[2](z_yoo[ind])) + Amplification_PSPL[0][ind] * \
-                            (self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](z_yoo[ind])) *\
+                                                          gamma * self.yoo_table[2](z_yoo[ind])) + \
+                            Amplification_PSPL[0][ind] * \
+                            (self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](z_yoo[ind])) * \
                             1 / fit_process_parameters[self.model_dictionnary['rho']]
 
                 dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
                               fit_process_parameters[self.model_dictionnary['rho']] ** 2 * \
-                              (self.yoo_table[3](z_yoo[ind]) - gamma *self.yoo_table[4](z_yoo[ind]))
+                              (self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](z_yoo[ind]))
 
                 dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / \
-                        (fit_process_parameters[self.model_dictionnary['tE']] ** 2 *\
-                        Amplification_PSPL[1])
+                        (fit_process_parameters[self.model_dictionnary['tE']] ** 2 * \
+                         Amplification_PSPL[1])
 
                 dUduo = fit_process_parameters[self.model_dictionnary['uo']] / \
                         Amplification_PSPL[1]
 
                 dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / \
                         (fit_process_parameters[self.model_dictionnary['tE']] ** 3 * \
-                        Amplification_PSPL[1])
+                         Amplification_PSPL[1])
 
                 # Derivative of the objective function
                 dresdto = np.append(dresdto, -fit_process_parameters[
@@ -507,7 +547,6 @@ class MLModels(object):
         start_index = 0
 
         for telescope in self.event.telescopes:
-
             dFS = np.zeros((len(dresdto)))
             dG = np.zeros((len(dresdto)))
             index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))

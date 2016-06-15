@@ -8,7 +8,6 @@ Created on Thu Aug 27 16:39:32 2015
 from __future__ import division
 
 import sys
-
 import numpy as np
 
 from pyLIMA import microlfits
@@ -119,17 +118,14 @@ class Event(object):
         """
 
         if not isinstance(self.name, basestring):
-
             sys.exit('ERROR : The event name (' + str(
                 self.name) + ') is not correct, it has to be a string')
 
         if (self.ra > 360) or (self.ra < 0):
-
             sys.exit('ERROR : The event ra (' + str(
                 self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees')
 
         if (self.dec > 90) or (self.dec < -90):
-
             sys.exit('ERROR : The event dec (' + str(
                 self.dec) + ') is not correct, it has to be between -90 and 90 degrees')
 
@@ -144,7 +140,6 @@ class Event(object):
 
                 if (len(telescope.lightcurve_magnitude) == 0) & \
                         (len(telescope.lightcurve_flux) == 0):
-
                     print 'ERROR : There is no associated lightcurve in magnitude or flux with ' \
                           'this telescopes : ' \
                           + telescope.name + ', add one with telescope.lightcurve = your_data'
@@ -185,7 +180,6 @@ class Event(object):
         """
 
         for telescope in self.telescopes:
-
             telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
 
     def compute_parallax_all_telescopes(self, parallax_model):

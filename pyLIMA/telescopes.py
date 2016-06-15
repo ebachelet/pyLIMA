@@ -9,9 +9,9 @@ from __future__ import division
 import numpy as np
 import astropy.io.fits as fits
 
-
 import microltoolbox
 import microlparallax
+
 
 class Telescope(object):
     """
@@ -78,8 +78,8 @@ class Telescope(object):
     """
 
     def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None,
-                 light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2},
-                 light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2},
+                 light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2},
+                 light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
                  reference_flux=10000.0):
         """Initialization of the attributes described above."""
 
@@ -100,7 +100,6 @@ class Telescope(object):
             self.lightcurve_magnitude = self.arrange_the_lightcurve_columns('magnitude')
             self.lightcurve_flux = self.lightcurve_in_flux()
 
-
         if light_curve_flux is None:
 
             pass
@@ -112,10 +111,10 @@ class Telescope(object):
             self.lightcurve_magnitude = self.lightcurve_in_magnitude()
 
         self.location = 'Earth'
-        self.altitude = 0.0 # meters
-        self.longitude = 0.57 # degrees
-        self.latitude = 49.49 # degrees
-        self.gamma = 0.0 # This mean you will fit uniform source brightness
+        self.altitude = 0.0  # meters
+        self.longitude = 0.57  # degrees
+        self.latitude = 49.49  # degrees
+        self.gamma = 0.0  # This mean you will fit uniform source brightness
         self.deltas_positions = []
 
     def arrange_the_lightcurve_columns(self, choice):
@@ -135,7 +134,6 @@ class Telescope(object):
 
             lightcurve = []
             for good_column in pyLIMA_magnitude_convention:
-
                 lightcurve.append(self.lightcurve_magnitude[:, self.lightcurve_magnitude_dictionnary[good_column]])
 
             lightcurve = np.array(lightcurve).T
@@ -145,7 +143,6 @@ class Telescope(object):
 
             lightcurve = []
             for good_column in pyLIMA_flux_convention:
-
                 lightcurve.append(self.lightcurve_flux[:, self.lightcurve_flux_dictionnary[good_column]])
 
             lightcurve = np.array(lightcurve).T
@@ -162,11 +159,9 @@ class Telescope(object):
         """
 
         if choice == 'flux':
-
             return len(self.lightcurve_flux[:, 0])
 
         if choice == 'magnitude':
-
             return len(self.lightcurve_magnitude[:, 0])
 
     def find_gamma(self, Teff, log_g, claret_path='./data/'):
@@ -202,10 +197,10 @@ class Telescope(object):
 
         # Find the raw by computing distance of all raw and coefficient
 
-        limb_darkening_coefficient_raw_index = np.sqrt((claret_table_reduce[:, 0] - log_g) ** 2 + \
-            (claret_table_reduce[:, 1] - Teff) ** 2 + \
-            (claret_table_reduce[:, 2] - metallicity) ** 2+ \
-            (claret_table_reduce[:, 3] - turbulent_velocity) ** 2).argmin()
+        limb_darkening_coefficient_raw_index = np.sqrt((claret_table_reduce[:, 0] - log_g) ** 2 +
+                                                       (claret_table_reduce[:, 1] - Teff) ** 2 +
+                                                       (claret_table_reduce[:, 2] - metallicity) ** 2 +
+                                                       (claret_table_reduce[:, 3] - turbulent_velocity) ** 2).argmin()
 
         linear_limb_darkening_coefficient = claret_table_reduce[limb_darkening_coefficient_raw_index, -1]
 
@@ -219,7 +214,6 @@ class Telescope(object):
         """
         para = microlparallax.MLParallaxes(event, parallax)
         para.parallax_combination(self)
-
 
     def clean_data(self):
         """
@@ -235,11 +229,10 @@ class Telescope(object):
         maximum_accepted_precision = 10.0
         outliers_in_mag = 5.0
 
+        index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) &
+                         (np.abs(self.lightcurve_magnitude[:, 2]) < maximum_accepted_precision))[0]
 
-        index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) & (
-            np.abs(self.lightcurve_magnitude[:, 2]) < maximum_accepted_precision))[0]
-
-        #Should return at least 2 points
+        # Should return at least 2 points
         if len(index) > 2:
 
             lightcurve = self.lightcurve_magnitude[index]
@@ -298,6 +291,6 @@ class Telescope(object):
 
         ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T
 
-        index = np.where((~np.isnan(ligthcurve_magnitude).any(axis=1)))[0] # prevent nan magnitude
+        index = np.where((~np.isnan(ligthcurve_magnitude).any(axis=1)))[0]  # prevent nan magnitude
 
         return ligthcurve_magnitude[index]

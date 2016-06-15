@@ -56,8 +56,8 @@ def initial_guess_PSPL(event):
             while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
 
                 indexes = \
-                np.where((flux_clean[good_points] > np.median(flux_clean[good_points])) & (
-                    errmag[good_points] <= max(0.1, 2.0 * np.mean(errmag[good_points]))))[0]
+                    np.where((flux_clean[good_points] > np.median(flux_clean[good_points])) & (
+                        errmag[good_points] <= max(0.1, 2.0 * np.mean(errmag[good_points]))))[0]
 
                 if len(indexes) < 1:
 
@@ -117,7 +117,6 @@ def initial_guess_PSPL(event):
         baseline_flux = np.median(flux[indexes])
 
         if len(indexes) < 100:
-
             print 'low'
             baseline_flux = np.median(flux[flux.argsort()[:100]])
             break
@@ -160,7 +159,6 @@ def initial_guess_PSPL(event):
             tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2)
             tE_guesses.append(tE1)
 
-
     # Method 2 : flux(t_E) = fs_guess * (uo^+3)/[(uo^2+1)^0.5*(uo^2+5)^0.5]
 
     flux_tE = fs_guess * (uo_guess ** 2 + 3) / \
@@ -169,17 +167,14 @@ def initial_guess_PSPL(event):
     indextEmoins = np.where((flux < flux_tE) & (time < to))[0]
 
     if len(indextEmoins) != 0:
-
         indextEmoins = indextEmoins[-1]
         tEmoins = to_guess - time[indextEmoins]
         tE_guesses.append(tEmoins)
 
     if len(indextEplus) != 0:
-
         indextEplus = indextEplus[0]
         tEplus = time[indextEplus] - to_guess
         tE_guesses.append(tEplus)
-
 
     # Method 3 : the first points before/after to_guess that reach the baseline. Very rough
     # approximation ot tE.
@@ -188,12 +183,10 @@ def initial_guess_PSPL(event):
     indextEMoins = np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
 
     if len(indextEPlus) != 0:
-
         tEPlus = time[indextEPlus[0]] - to_guess
         tE_guesses.append(tEPlus)
 
     if len(indextEMoins) != 0:
-
         tEMoins = to_guess - time[indextEMoins[-1]]
         tE_guesses.append(tEMoins)
 
@@ -203,7 +196,6 @@ def initial_guess_PSPL(event):
 
     # safety reason, unlikely
     if tE_guess < 0.1:
-
         tE_guess = 20.0
 
     return [to_guess, uo_guess, tE_guess], fs_guess
@@ -226,67 +218,59 @@ def initial_guess_FSPL(event):
     FSPL_guess = PSPL_guess + [rho_guess]
 
     return FSPL_guess, fs_guess
-    
-    
+
+
 def differential_evolution_parameters_boundaries(event, model):
     """
     """
     minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in event.telescopes]
     maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in event.telescopes]
-    
-    to_boundaries = (min(  minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
+
+    to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     uo_boundaries = (-2.0, 2.0)
     tE_boundaries = (1.0, 300)
-    rho_boundaries = (10**-5, 0.05)
-    
+    rho_boundaries = (10 ** -5, 0.05)
+
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
     XiEN_boundaries = (-2.0, 2.0)
     XiEE_boundaries = (-2.0, 2.0)
-    
-    
-    
-    #model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
-    #model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
+    # model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
-    #model_source_spots_boundaries = {'None': []}
-    
-    
+    # model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
+
+    # model_source_spots_boundaries = {'None': []}
+
+
     parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
-    
-    if model.paczynski_model == 'FSPL' :
-        
+
+    if model.paczynski_model == 'FSPL':
         parameters_boundaries.append(rho_boundaries)
-    
-    if model.parallax_model[0] != 'None' :
-        
+
+    if model.parallax_model[0] != 'None':
         parameters_boundaries.append(piEN_boundaries)
         parameters_boundaries.append(piEE_boundaries)
-        
-    if  model.xallarap_model[0] != 'None' :
-        
+
+    if model.xallarap_model[0] != 'None':
         parameters_boundaries.append(XiEN_boundaries)
         parameters_boundaries.append(XiEE_boundaries)
-        
-    #if orbital_motion
-    #if source_spots
+
+    # if orbital_motion
+    # if source_spots
 
     return parameters_boundaries
 
+
 def MCMC_parameters_initialization(parameter_key, parameter_value):
-    
-    
-    
-    
-    if parameter_key == 'to' :
-        
+    if parameter_key == 'to':
+
         to_parameters_trial = parameter_value + np.random.uniform(-1, 1)
-        
+
         return to_parameters_trial
-    
-    else :
-        
-        all_other_parameter_trial = parameter_value*( 1+np.random.uniform(-0.9, 0.9))
-    
-        return  all_other_parameter_trial
+
+    else:
+
+        all_other_parameter_trial = parameter_value * (1 + np.random.uniform(-0.9, 0.9))
+
+        return all_other_parameter_trial
