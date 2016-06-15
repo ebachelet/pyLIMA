@@ -216,7 +216,7 @@ class MLParallaxes(object):
 
         # set the attributes deltas_positions for the telescope object
         telescope.deltas_positions = deltas_position
-
+       
     def annual_parallax(self, time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
@@ -284,10 +284,11 @@ class MLParallaxes(object):
             time_mjd = time - 2400000.5
             sideral_time = slalib.sla_gmst(time_mjd)
             telescope_longitude = - Longitude - self.target_angles_in_the_sky[
-                                                    0] * np.pi / 180 + sideral_time / 24.0 * np.pi
-
-        delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
-
+                                                    0]  + sideral_time 
+       
+            delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
+        import pdb
+        pdb.set_trace()
         delta_telescope = np.array(delta_telescope)
         delta_telescope_projected = np.array(
             [np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])

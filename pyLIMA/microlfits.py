@@ -11,6 +11,7 @@ import numpy as np
 import scipy.optimize
 
 import emcee
+
 import microlmodels
 import microloutputs
 import microlguess
@@ -111,7 +112,7 @@ class MLFits(object):
            
         if self.method == 'DE':
 
-            self.fit_results, self.fit_covariance, self.fit_time = self.diff_evolution()
+            self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
 
         if self.method == 'MCMC':
 
@@ -205,6 +206,7 @@ class MLFits(object):
         fake_model = microlmodels.MLModels(self.event, 'PSPL')
         telescopes_fluxes = self.find_fluxes(guess_parameters, fake_model)
 
+        #The survey is already none from microlguess
         telescopes_fluxes[0] = f_source
         telescopes_fluxes[1] = 0.0
 
@@ -244,9 +246,9 @@ class MLFits(object):
             Launch nwalkers = 200 chains with 100 links
         """
         differential_evolution_estimation =  scipy.optimize.differential_evolution(self.chichi_differential_evolution,
-                                                                   bounds=microlguess.differential_evolution_parameters_boundaries(self.event, self.model),
-                                                                   mutation=(0.5, 1), popsize=30,
-                                                                   recombination=0.7, polish='None')
+                                             bounds=microlguess.differential_evolution_parameters_boundaries(
+                                             self.event, self.model), mutation=(0.5, 1), popsize=30,
+                                             recombination=0.7, polish='None')
 
         print 'pre MCMC done'
         # Best solution
@@ -292,7 +294,7 @@ class MLFits(object):
 
         return MCMC_chains, MCMC_probabilities
 
-    def diff_evolution(self):
+    def differential_evolution(self):
         """  The DE method. Differential evolution algoritm. The objective function is
         :func:`chichi_differential_evolution`.
          Based on the scipy.optimize.differential_evolution.
@@ -437,180 +439,9 @@ class MLFits(object):
 
        :return: a numpy array which represents the jacobian matrix
        :rtype: array_like
-       PROBABLY NEED REWORK
+      
         """
-
-        if self.model.paczynski_model == 'PSPL':
-
-            # Derivatives of the residuals_LM objective function, PSPL version
-
-            dresdto = np.array([])
-            dresduo = np.array([])
-            dresdtE = np.array([])
-            dresdfs = np.array([])
-            dresdeps = np.array([])
-
-            for telescope in self.event.telescopes:
-
-                lightcurve = telescope.lightcurve_flux
-
-                time = lightcurve[:, 0]
-                errflux = lightcurve[:, 2]
-                gamma = telescope.gamma
-
-                # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
-                # Amplification[1] is U(t).
-                Amplification = self.model.magnification(fit_process_parameters, time, gamma)
-                dAmplificationdU = (-8) / \
-                                   (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
-
-                # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
-                dUdto = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) / \
-                        (fit_process_parameters[self.model.model_dictionnary['tE']] ** 2 * Amplification[1])
-                dUduo = fit_process_parameters[self.model.model_dictionnary['uo']] / Amplification[1]
-                dUdtE = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) ** 2 / (
-                            fit_process_parameters[self.model.model_dictionnary['tE']] ** 3 *
-                            Amplification[1])
-
-
-                # Derivative of the objective function
-                dresdto = np.append(dresdto,
-                                    -fit_process_parameters[
-                                        self.model.model_dictionnary['fs_' + telescope.name]] *
-                                    dAmplificationdU * dUdto / errflux)
-                dresduo = np.append(dresduo,
-                                    -fit_process_parameters[
-                                        self.model.model_dictionnary['fs_' + telescope.name]] *
-                                    dAmplificationdU * dUduo / errflux)
-                dresdtE = np.append(dresdtE,
-                                    -fit_process_parameters[
-                                        self.model.model_dictionnary['fs_' + telescope.name]] *
-                                    dAmplificationdU * dUdtE / errflux)
-                dresdfs = np.append(dresdfs, -(
-                    Amplification[0] + fit_process_parameters[
-                        self.model.model_dictionnary['g_' + telescope.name]]) / errflux)
-                dresdeps = np.append(dresdeps, -fit_process_parameters[
-                    self.model.model_dictionnary['fs_' + telescope.name]] / errflux)
-
-            jacobi = np.array([dresdto, dresduo, dresdtE])
-
-        if self.model.paczynski_model == 'FSPL':
-
-            # Derivatives of the residuals_LM objective function, FSPL version
-            dresdto = np.array([])
-            dresduo = np.array([])
-            dresdtE = np.array([])
-            dresdrho = np.array([])
-            dresdfs = np.array([])
-            dresdeps = np.array([])
-
-            fake_model = microlmodels.MLModels(self.event, 'PSPL')
-            fake_params = np.delete(fit_process_parameters, self.model.model_dictionnary['rho'])
-
-            for telescope in self.event.telescopes:
-
-                lightcurve = telescope.lightcurve_flux
-                time = lightcurve[:, 0]
-                errflux = lightcurve[:, 2]
-                gamma = telescope.gamma
-
-                # Derivative of A = Yoo et al (2004) method.
-                Amplification_PSPL = fake_model.magnification(fake_params, time, gamma)
-                dAmplification_PSPLdU = (-8) / (
-                Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
-
-                # z_yoo=U/rho
-                z_yoo = Amplification_PSPL[1] / fit_process_parameters[
-                    self.model.model_dictionnary['rho']]
-
-                dadu = np.zeros(len(Amplification_PSPL[0]))
-                dadrho = np.zeros(len(Amplification_PSPL[0]))
-
-                # Far from the lens (z_yoo>>1), then PSPL.
-                ind = np.where((z_yoo > self.model.yoo_table[0][-1]))[0]
-                dadu[ind] = dAmplification_PSPLdU[ind]
-                dadrho[ind] = -0.0
-
-                # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
-                ind = np.where((z_yoo < self.model.yoo_table[0][0]))[0]
-                dadu[ind] = dAmplification_PSPLdU[ind] * (
-                2 * z_yoo[ind] - gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
-                dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
-                              fit_process_parameters[
-                                  self.model.model_dictionnary[
-                                      'rho']] ** 2 * (
-                                  2 - gamma * (2 - 3 * np.pi / 4))
-
-                # FSPL regime (z_yoo~1), then Yoo et al derivatives
-                ind = np.where(
-                    (z_yoo <= self.model.yoo_table[0][-1]) & (z_yoo >= self.model.yoo_table[0][0]))[
-                    0]
-                dadu[ind] = dAmplification_PSPLdU[ind] * (
-                    self.model.yoo_table[1](z_yoo[ind]) - gamma * self.model.yoo_table[2](
-                        z_yoo[ind])) + Amplification_PSPL[0][ind] * (
-                    self.model.yoo_table[3](z_yoo[ind]) - gamma * self.model.yoo_table[4](
-                        z_yoo[ind])) * 1 / fit_process_parameters[
-                                           self.model.model_dictionnary['rho']]
-
-                dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
-                              fit_process_parameters[
-                                  self.model.model_dictionnary[
-                                      'rho']] ** 2 * (
-                                  self.model.yoo_table[3](z_yoo[ind]) - gamma *
-                                  self.model.yoo_table[4](
-                                      z_yoo[ind]))
-
-                dUdto = -(time - fit_process_parameters[self.model.model_dictionnary['to']]) / (
-                    fit_process_parameters[self.model.model_dictionnary['tE']] ** 2 *
-                    Amplification_PSPL[1])
-                dUduo = fit_process_parameters[self.model.model_dictionnary['uo']] / \
-                        Amplification_PSPL[1]
-                dUdtE = -(
-                         time - fit_process_parameters[self.model.model_dictionnary['to']]) ** 2 / (
-                            fit_process_parameters[self.model.model_dictionnary['tE']] ** 3 *
-                            Amplification_PSPL[1])
-
-                # Derivative of the objective function
-                dresdto = np.append(dresdto, -fit_process_parameters[
-                    self.model.model_dictionnary['fs_' + telescope.name]] * dadu *
-                                    dUdto / errflux)
-                dresduo = np.append(dresduo, -fit_process_parameters[
-                    self.model.model_dictionnary['fs_' + telescope.name]] * dadu *
-                                    dUduo / errflux)
-                dresdtE = np.append(dresdtE, -fit_process_parameters[
-                    self.model.model_dictionnary['fs_' + telescope.name]] * dadu *
-                                    dUdtE / errflux)
-
-                dresdrho = np.append(dresdrho,
-                                     -fit_process_parameters[
-                                         self.model.model_dictionnary['fs_' + telescope.name]] *
-                                     dadrho / errflux)
-
-                Amplification_FSPL = self.model.magnification(fit_process_parameters, time, gamma)
-                dresdfs = np.append(dresdfs, -(
-                    Amplification_FSPL[0] + fit_process_parameters[
-                        self.model.model_dictionnary['g_' + telescope.name]]) / errflux)
-                dresdeps = np.append(dresdeps, -fit_process_parameters[
-                    self.model.model_dictionnary['fs_' + telescope.name]] / errflux)
-
-            jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho])
-
-        # Split the fs and g derivatives in several columns correpsonding to
-        # each observatories
-        start_index = 0
-
-        for telescope in self.event.telescopes:
-
-            dFS = np.zeros((len(dresdto)))
-            dG = np.zeros((len(dresdto)))
-            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))
-            dFS[index] = dresdfs[index]
-            dG[index] = dresdeps[index]
-            jacobi = np.vstack([jacobi, dFS])
-            jacobi = np.vstack([jacobi, dG])
-
-            start_index = index[-1] + 1
-
+        jacobi = self.model.model_Jacobian(fit_process_parameters)
         return jacobi
 
     
@@ -632,22 +463,12 @@ class MLFits(object):
 
         for telescope in self.event.telescopes:
 
-            lightcurve = telescope.lightcurve_flux
-            time = lightcurve[:, 0]
-            flux = lightcurve[:, 1]
-            errflux = lightcurve[:, 2]
-            gamma = telescope.gamma
-
             # magnification according to the model. amplification[0] is A(t), amplification[1] is
             #  u(t)
-            amplification = self.model.magnification(fit_process_parameters, time, gamma,
-                                                     telescope.deltas_positions)[0]
-
-            f_source = fit_process_parameters[self.model.model_dictionnary['fs_' + telescope.name]]
-            f_blending = f_source*fit_process_parameters[self.model.model_dictionnary['g_' + telescope.name]]
+           
+            residus, priors = self.model_residuals(telescope, fit_process_parameters)
             
-                   
-            residus = model_residuals(flux, errflux, amplification, f_source, f_blending)
+            # no prior here
             
             residuals = np.append(residuals,residus)
 
@@ -705,29 +526,15 @@ class MLFits(object):
         residuals = np.array([])
 
         for telescope in self.event.telescopes:
-            lightcurve = telescope.lightcurve_flux
-            time = lightcurve[:, 0]
-            flux = lightcurve[:, 1]
-            errflux = lightcurve[:, 2]
-            gamma = telescope.gamma
+          
+            residus, priors = self.model_residuals(telescope, fit_process_parameters)
+       
+            # Little prior here, need to be chaneged
+            if priors == np.inf:
 
-            try:
-
-                # magnification according to the model. amplification[0] is A(t), amplification[
-                # 1] is u(t)
-                amplification = self.model.magnification(fit_process_parameters, time, gamma,
-                                                         telescope.deltas_positions)[0]
-                f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
                 
-            except:
                 return np.inf
 
-            if (f_source < 0):
-
-                return np.inf
-
-            residus = model_residuals(flux, errflux, amplification, f_source, f_blending)
-                
             residuals = np.append(residuals, residus)
 
         chichi = (residuals ** 2).sum()
@@ -743,42 +550,52 @@ class MLFits(object):
 
         :rtype: float
         """
-        
-
-        residuals = np.array([])
 
         chichi = 0
 
         for telescope in self.event.telescopes:
 
-            lightcurve = telescope.lightcurve_flux
-            time = lightcurve[:, 0]
-            flux = lightcurve[:, 1]
-            errflux = lightcurve[:, 2]
-            gamma = telescope.gamma
+            residus, priors = self.model_residuals(telescope, fit_process_parameters)
+            
+            
+            # Little prior here, need to be chaneged
+            if priors == np.inf:
 
-            amplification = self.model.magnification(fit_process_parameters, time, gamma,
-                                                     telescope.deltas_positions)[0]
-
-            f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-
-            # Little prior here
-            if (f_source < 0) | (f_blending / f_source < -1.0):
-
-                chichi = np.inf
-                return -chichi
+                
+                return -np.inf
 
             else:
-
-                residus = model_residuals(flux, errflux, amplification, f_source, f_blending)
                 
-                residuals = residus
-
-                chichi += (residuals ** 2).sum()
-                # Little prior here
-                chichi += np.log(len(time)) * 1 / (1 + f_blending / f_source)
+                chichi += (residus ** 2).sum()
+                # Little prior here, need to be chaneged
+                
+                chichi += priors
 
         return -chichi
+    
+    def model_residuals(self, telescope, fit_process_parameters):
+        """ Compute the residuals and the priors of a telescope lightcurve according to the model.
+    
+        :param object telescope: a telescope object. More details in telescopes module.
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding
+        fitting routine.
+        
+        :return: the residuals in flux, the priors
+        :rtype: array_like, float
+        """
+        lightcurve = telescope.lightcurve_flux
+        
+        flux = lightcurve[:, 1]
+        errflux = lightcurve[:, 2]
+       
+        microlensing_model = self.model.compute_the_microlensing_model(telescope, fit_process_parameters)
+
+        residuals = (flux-microlensing_model[0])/errflux
+        
+        priors = microlensing_model[1:]
+
+        return residuals, priors
+       
 
     def find_fluxes(self, fit_process_parameters, model):
         """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM
@@ -790,7 +607,7 @@ class MLFits(object):
 
         :return: a list of tuple with the (fs,g) telescopes flux parameters.
         :rtype: list
-    """
+        """
 
         telescopes_fluxes = []
 
@@ -829,18 +646,5 @@ class MLFits(object):
             outputs = microloutputs.MCMC_outputs(self)
 
         self.outputs = outputs
-        
-def model_residuals( flux, errflux, magnification, f_source, f_blending):
-    """ Compute the residuals.
-    :param array_like flux: the data flux you try to fit
-    :param array_like errflux: the according errobar
-    :param array_like magnification: the magnification of the model
-    :param float f_source: the telescope source flux
-    :param float f_blending: the telescope blendding flux
-    
-    :return: the residuals in flux
-    :rtype: array_like
-    """
-    residuals = (flux-f_source*magnification-f_blending)/errflux
 
-    return residuals
+  

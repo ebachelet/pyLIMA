@@ -71,7 +71,11 @@ class Telescope(object):
     :param float reference_flux: a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None, light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2 }, light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2 }, reference_flux=10000.0 ):
+    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None, 
+                 light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2 }, 
+                 light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2 }, 
+                 reference_flux=10000.0 ):
+                     
         """Initialization of the attributes described above."""
 
         self.name = name

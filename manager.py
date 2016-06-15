@@ -94,16 +94,16 @@ def main(command_line):
         current_event.check_event()
 
         Model = microlmodels.MLModels(current_event, command_line.model,
-                                      parallax=['None', 2457510.0])
+                                      parallax=['None', 50.0])
 
-        current_event.fit(Model, 'DE')
+        current_event.fit(Model, 'LM')
 
         current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results
         plt.show()
-
-    import pdb
-    pdb.set_trace()
+        
+        import pdb
+        pdb.set_trace()
 
     end = time.time()
 

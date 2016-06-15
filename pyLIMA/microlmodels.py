@@ -13,6 +13,7 @@ import numpy as np
 from scipy import interpolate, misc
 
 import microlmagnification
+import microlpriors
 
 full_path = os.path.abspath(__file__)
 directory, filename = os.path.split(full_path)
@@ -52,54 +53,45 @@ class MLModels(object):
     """
     ######## MLModels module ########
 
+    This module defines the model you want to fit your data to.
 
+    Attributes :
 
-    Keyword arguments:
+        event : A event class which describe your event that you want to model. See the event module.
 
-    event --> A event class which describe your event that you want to model. See the event module.
+        paczynski_model : The microlensing model you want. Has to be a string :
 
-    model --> The microlensing model you want. Has to be a string :
+                 'PSPL' --> Point Source Point Lens. The amplification is taken from :
+                 "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
 
-             'PSPL' --> Point Source Point Lens. The amplification is taken from :
-             "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
+                 'FSPL' --> Finite Source Point Lens. The amplification is taken from :
+                 "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,
+                 J. et al.2004ApJ...603..139Y
+                 Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
+                 to compute B0(z) and B1(z).
+                 
+                 'DSPL'  --> not available now
+                 'Binary' --> not available now
+                 'Triple' --> not available now
 
-             'FSPL' --> Finite Source Point Lens. The amplification is taken from :
-             "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,
-             J. et al.2004ApJ...603..139Y
-              Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
-              to compute B0(z) and B1(z).
+        parallax_model : Parallax model you want to use for the Earth types telescopes.
+                   Has to be a list containing the model in the available_parallax
+                   parameter and the value of topar. Have a look here for more details :
+                   http://adsabs.harvard.edu/abs/2011ApJ...738...87S
 
-             'DSPL'  --> not available now
-             'Binary' --> not available now
-             'Triple' --> not available now
+                    'Annual' --> Annual parallax
+                    'Terrestrial' --> Terrestrial parallax
+                    'Full' --> combination of previous
 
+                    topar --> a time in HJD choosed as the referenced time fot the parallax
 
+                  If you have some Spacecraft types telescopes, the space based parallax
+                  is computed if parallax is different of 'None'
+                  More details in the microlparallax module
+                  
+        xallarap_model : not available yet
 
-
-    second_order --> Second order effect : parallax, orbital_motion and source_spots . A list
-        of string as :
-
-            [parallax,orbital_motion,source_spots]
-            Example : [['Annual',2456876.2],['2D',2456876.2],'None']
-
-            parallax --> Parallax model you want to use for the Earth types telescopes.
-                         Has to be a list containing the model in the available_parallax
-                         parameter and
-                         the value of topar.
-
-                         'Annual' --> Annual parallax
-                         'Terrestrial' --> Terrestrial parallax
-                         'Full' --> combination of previous
-
-                         topar --> a time in HJD choosed as the referenced time fot the parallax
-
-                         If you have some Spacecraft types telescopes, the space based parallax
-                         is computed.
-
-                         More details in the microlparallax module
-
-            orbital_motion --> Orbital motion you want to use. Has to be a list containing the model
-                               in the available_orbital_motion parameter and the value of toom:
+        orbital_motion_model : not available yet
 
                 'None' --> No orbital motion
                 '2D' --> Classical orbital motion
@@ -110,45 +102,26 @@ class MLModels(object):
 
                 More details in the microlomotion module
 
-            source_spots --> Consider spots on the source. Has to be a string in the
-            available_source_spots parameter :
-
+        source_spots_model : not available yet
+        
                 'None' --> No source spots
 
-                More details in the microlsspots module
-
-     Parameters description. The PARAMETERS RULE is (quantity in brackets are optional):
-
-            [to,uo,tE,(rho),(s),(q),(alpha),(PiEN),(PiEE),(dsdt),(dalphadt),
-            (source_spots)]+Sum_i[fsi,fbi/fsi]
-
-            to --> time of maximum amplification in HJD
-            uo --> minimum impact parameter (for the time to)
-            tE --> angular Einstein ring crossing time in days
-            rho --> normalized angular source radius = theta_*/theta_E
-            s --> normalized projected angular speration between the two bodies
-            q --> mass ratio
-            alpha --> counterclockwise angle (in radians) between the source
-            trajectory and the lenses axes
-            PiEN --> composant North (in the sky plane) of the parallax vector
-            PiEE --> composant East (in the sky plane) of the parallax vector
-            ds/dt --> s variations due to the lens movement
-            dalpha/dt --> angle variations due to the lens movement
-            source_spots --> ?????
-            fsi --> source flux in unit : m=27.4-2.5*np.log10(flux)
-            fbi/fsi --> blending flux ratio
-
-            As an example , if you choose an FSPL model with 'Annual' parallax and two telescopes
-            1 and 2
-            to fit, the parameters will look like :
-
-            [to,uo,tE,rho,PiEN,PiEE,fs1,fb1/fs1,fs2,fb2/fs2]
-
-             """
+                 More details in the microlsspots module
+                 
+                 
+    :param object event: a event object. More details on the event module.
+    :param string model: the microlensing model you want.
+    :param list parallax: a list of [string,float] indicating the parallax model you want and to_par
+    :param list xallarap: a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.
+    :param list orbital_motion: a list of [string,float] indicating the parallax model you want and to_om.NOT WORKING NOW.
+    :param string source_spots: a string indicated the source_spots you want. NOT WORKING.        
+             
+    """
 
     def __init__(self, event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
                  orbital_motion=['None', 0.0], source_spots='None'):
-        """ Initialization of the attributes described above. """
+        """ Initialization of the attributes described above.
+        """
 
         self.event = event
         self.paczynski_model = model
@@ -160,17 +133,11 @@ class MLModels(object):
         self.yoo_table = yoo_table
         self.define_parameters()
 
-    def f_derivative(x, function):
-        import pdb;
-        pdb.set_trace()
-
-        return function(x)
 
     def define_parameters(self):
         """ Create the model_dictionnary which explain to the different modules which parameter
         is what (
-        Paczynski parameters+second_order+fluxes)
-        Also defines the parameters_boundaries requested by method 'DE' and 'MCMC'
+        Paczynski parameters+second_order+fluxes
         """
 
         self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
@@ -184,7 +151,7 @@ class MLModels(object):
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
             self.model_dictionnary['piEE'] = len(self.model_dictionnary)
 
-            self.compute_parallax_all_telescopes()
+            self.event.compute_parallax_all_telescopes(self.parallax_model)
 
         if self.xallarap_model[0] != 'None':
 
@@ -200,34 +167,6 @@ class MLModels(object):
 
             self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
 
-        #model_paczynski_boundaries = {
-        #    'PSPL': [(min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
-        #              max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
-        #             (-2.0, 2.0), (1.0, 300)], 'FSPL': [
-        #        (min(self.event.telescopes[0].lightcurve_flux[:, 0]) - 300,
-        #         max(self.event.telescopes[0].lightcurve_flux[:, 0]) + 300),
-        #        (0.00001, 2.0), (1.0, 300), (0.0001, 0.05)]}
-
-        #model_parallax_boundaries = {'None': [], 'Annual': [(-2.0, 2.0), (-2.0, 2.0)],
-        #                             'Terrestrial': [(-2.0, 2.0), (-2.0, 2.0)], 'Full':
-        #                                 [(-2.0, 2.0), (-2.0, 2.0)]}
-
-        #model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
-
-        #model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
-
-        #model_source_spots_boundaries = {'None': []}
-
-        #self.parameters_boundaries = model_paczynski_boundaries[self.paczynski_model] + \
-        #                             model_parallax_boundaries[
-        #                                 self.parallax_model[0]] + model_xallarap_boundaries[
-        #                                 self.xallarap_model[0]] + model_orbital_motion_boundaries[
-        #                                 self.orbital_motion_model[0]] + \
-        #                             model_source_spots_boundaries[
-        #                                 self.source_spots_model]
-
-        
-
         for telescope in self.event.telescopes:
 
             self.model_dictionnary['fs_' + telescope.name] = len(self.model_dictionnary)
@@ -236,9 +175,17 @@ class MLModels(object):
         self.model_dictionnary = OrderedDict(
             sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
-    def magnification(self, parameters, time, gamma=0, delta_positions=0):
+    def magnification(self, parameters, time, gamma=0.0, delta_positions=0):
 
-        """ Compute the according magnification """
+        """ Compute the magnification  associated to the model.
+        
+        :param list parameters: the model parameters you want to compute the magnification around
+        :param array_like time: the time you want to obtain the magnification
+        :param float gamma: the limb-darkening coefficient
+        :param array_like delta_positions: the deltas_position from the parallax        
+        :return: the amplification A(time) and the impact parameter U(time)
+        :rtype: float,float
+        """
 
         to = parameters[self.model_dictionnary['to']]
         uo = parameters[self.model_dictionnary['uo']]
@@ -272,20 +219,324 @@ class MLModels(object):
                                                                       self.yoo_table)
             return amplification, u
 
-    def compute_parallax_all_telescopes(self):
-        """ Compute the parallax for all the telescopes, if this is desired in
-        the second order parameter."""
-
-        for telescope in self.event.telescopes:
-
-            if len(telescope.deltas_positions) == 0:
-                telescope.compute_parallax(self.event, self.parallax_model)
+    
 
     def compute_parallax_curvature(self, piE, delta_positions):
         """ Compute the curvature induce by the parallax of from
-        deltas_positions of a telescope """
+        deltas_positions of a telescope 
+
+        :param array_like piE: the microlensing parallax vector. Have a look : http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+        :param array_like delta_positions: the delta_positions of the telescope. More details in microlparallax module.
+        :return: delta_tau and delta_u, the shift introduce by parallax
+        :rtype: array_like,array_like
+        
+        """
 
         delta_tau = -np.dot(piE, delta_positions)
         delta_u = -np.cross(piE, delta_positions.T)
 
         return delta_tau, delta_u
+
+
+    def compute_the_microlensing_model(self, telescope, parameters) :
+        
+        
+        piE = None
+        dalphadt = None
+        
+        if self.parallax_model[0] != 'None':
+            
+            piE = np.array([parameters[self.model_dictionnary['piEN']],
+                            parameters[self.model_dictionnary['piEE']]])
+        
+            
+        if self.orbital_motion_model[0] != 'None':
+            
+            pass
+
+        if self.paczynski_model == 'PSPL' :
+            
+            to = parameters[self.model_dictionnary['to']]
+            uo = parameters[self.model_dictionnary['uo']]
+            tE = parameters[self.model_dictionnary['tE']]
+            
+            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0, 
+                                                                              parallax=piE, orbital_motion=dalphadt)
+            
+            amplification, u = microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
+            
+            try :
+                
+                #LM method
+                f_source = parameters[self.model_dictionnary['fs_' + telescope.name]]
+                f_blending = f_source*parameters[self.model_dictionnary['g_' + telescope.name]]
+            
+            except :
+                
+                #Other methods
+                lightcurve = telescope.lightcurve_flux
+                flux = lightcurve[:, 1]
+                errflux = lightcurve[:, 2]
+                f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+                
+            microlensing_model = f_source*amplification+f_blending
+            
+            #Prior here       
+            priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
+
+            return microlensing_model, priors
+            
+        if self.paczynski_model == 'FSPL' :
+            
+            to = parameters[self.model_dictionnary['to']]
+            uo = parameters[self.model_dictionnary['uo']]
+            tE = parameters[self.model_dictionnary['tE']]
+            
+            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0, 
+                                                                              parallax=piE, orbital_motion=dalphadt)            
+            
+            
+            
+            rho = parameters[self.model_dictionnary['rho']]
+            gamma = telescope.gamma
+            amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho, gamma,
+                                                                      self.yoo_table)
+            
+            try :
+                
+                #LM method
+                f_source = parameters[self.model_dictionnary['fs_' + telescope.name]]
+                f_blending = f_source*parameters[self.model_dictionnary['g_' + telescope.name]]
+            
+            except :
+                
+                #Other methods
+                lightcurve = telescope.lightcurve_flux
+                flux = lightcurve[:, 1]
+                errflux = lightcurve[:, 2]
+                f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+                
+            microlensing_model = f_source*amplification+f_blending
+            
+            #Prior here
+            priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
+            
+            return microlensing_model, priors
+            
+    
+    
+    
+    
+    
+    def source_trajectory(self, telescope, to, uo, tE, alpha=0.0, parallax=None, orbital_motion=None) :
+        
+        lightcurve = telescope.lightcurve_flux
+        time = lightcurve[:,0]        
+        
+        tau = (time - to) / tE
+        
+        dtau = 0
+        duo = 0
+       
+        if parallax is not None:
+            
+             piE = parallax
+             dTau, dUo = self.compute_parallax_curvature(piE, telescope.deltas_positions)
+             
+             dtau += dTau
+             duo += dUo
+             
+        tau += dtau
+        uo = duo + uo
+        
+        source_trajectory_x = tau*np.cos(alpha)-uo*np.sin(alpha)
+        source_trajectory_y = tau*np.sin(alpha)+uo*np.cos(alpha)
+        
+        return source_trajectory_x,  source_trajectory_y
+        
+        
+        
+    def model_Jacobian(self, fit_process_parameters) :
+        """Return the analytical Jacobian matrix, if requested by method LM.
+        Available only for PSPL and FSPL without second_order.
+
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding
+        fitting routine.
+
+        :return: a numpy array which represents the jacobian matrix
+        :rtype: array_like
+        PROBABLY NEED REWORK
+        """
+
+        if self.paczynski_model == 'PSPL':
+
+            # Derivatives of the residuals_LM objective function, PSPL version
+
+            dresdto = np.array([])
+            dresduo = np.array([])
+            dresdtE = np.array([])
+            dresdfs = np.array([])
+            dresdeps = np.array([])
+
+            for telescope in self.event.telescopes:
+
+                lightcurve = telescope.lightcurve_flux
+
+                time = lightcurve[:, 0]
+                errflux = lightcurve[:, 2]
+                gamma = telescope.gamma
+
+                # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
+                # Amplification[1] is U(t).
+                Amplification = self.magnification(fit_process_parameters, time, gamma)
+                dAmplificationdU = (-8) / \
+                                   (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
+
+                # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
+                dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / \
+                        (fit_process_parameters[self.model_dictionnary['tE']] ** 2 * Amplification[1])
+                dUduo = fit_process_parameters[self.model_dictionnary['uo']] / Amplification[1]
+                dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / (
+                            fit_process_parameters[self.model_dictionnary['tE']] ** 3 *
+                            Amplification[1])
+
+
+                # Derivative of the objective function
+                dresdto = np.append(dresdto,
+                                    -fit_process_parameters[
+                                        self.model_dictionnary['fs_' + telescope.name]] *
+                                    dAmplificationdU * dUdto / errflux)
+                dresduo = np.append(dresduo,
+                                    -fit_process_parameters[
+                                        self.model_dictionnary['fs_' + telescope.name]] *
+                                    dAmplificationdU * dUduo / errflux)
+                dresdtE = np.append(dresdtE,
+                                    -fit_process_parameters[
+                                        self.model_dictionnary['fs_' + telescope.name]] *
+                                    dAmplificationdU * dUdtE / errflux)
+                dresdfs = np.append(dresdfs, -(
+                    Amplification[0] + fit_process_parameters[
+                        self.model_dictionnary['g_' + telescope.name]]) / errflux)
+                dresdeps = np.append(dresdeps, -fit_process_parameters[
+                    self.model_dictionnary['fs_' + telescope.name]] / errflux)
+
+            jacobi = np.array([dresdto, dresduo, dresdtE])
+
+        if self.paczynski_model == 'FSPL':
+
+            # Derivatives of the residuals_LM objective function, FSPL version
+            dresdto = np.array([])
+            dresduo = np.array([])
+            dresdtE = np.array([])
+            dresdrho = np.array([])
+            dresdfs = np.array([])
+            dresdeps = np.array([])
+
+            fake_model = MLModels(self.event, 'PSPL')
+            fake_params = np.delete(fit_process_parameters, self.model_dictionnary['rho'])
+
+            for telescope in self.event.telescopes:
+
+                lightcurve = telescope.lightcurve_flux
+                time = lightcurve[:, 0]
+                errflux = lightcurve[:, 2]
+                gamma = telescope.gamma
+
+                # Derivative of A = Yoo et al (2004) method.
+                Amplification_PSPL = fake_model.magnification(fake_params, time, gamma)
+                dAmplification_PSPLdU = (-8) / (
+                Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
+
+                # z_yoo=U/rho
+                z_yoo = Amplification_PSPL[1] / fit_process_parameters[
+                    self.model_dictionnary['rho']]
+
+                dadu = np.zeros(len(Amplification_PSPL[0]))
+                dadrho = np.zeros(len(Amplification_PSPL[0]))
+
+                # Far from the lens (z_yoo>>1), then PSPL.
+                ind = np.where((z_yoo > self.yoo_table[0][-1]))[0]
+                dadu[ind] = dAmplification_PSPLdU[ind]
+                dadrho[ind] = -0.0
+
+                # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
+                ind = np.where((z_yoo < self.yoo_table[0][0]))[0]
+                dadu[ind] = dAmplification_PSPLdU[ind] * (
+                2 * z_yoo[ind] - gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
+                dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
+                              fit_process_parameters[
+                                  self.model_dictionnary[
+                                      'rho']] ** 2 * (
+                                  2 - gamma * (2 - 3 * np.pi / 4))
+
+                # FSPL regime (z_yoo~1), then Yoo et al derivatives
+                ind = np.where(
+                    (z_yoo <= self.yoo_table[0][-1]) & (z_yoo >= self.yoo_table[0][0]))[
+                    0]
+                dadu[ind] = dAmplification_PSPLdU[ind] * (
+                    self.yoo_table[1](z_yoo[ind]) - gamma * self.yoo_table[2](
+                        z_yoo[ind])) + Amplification_PSPL[0][ind] * (
+                    self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](
+                        z_yoo[ind])) * 1 / fit_process_parameters[
+                                           self.model_dictionnary['rho']]
+
+                dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
+                              fit_process_parameters[
+                                  self.model_dictionnary[
+                                      'rho']] ** 2 * (
+                                  self.yoo_table[3](z_yoo[ind]) - gamma *
+                                  self.yoo_table[4](
+                                      z_yoo[ind]))
+
+                dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / (
+                    fit_process_parameters[self.model_dictionnary['tE']] ** 2 *
+                    Amplification_PSPL[1])
+                dUduo = fit_process_parameters[self.model_dictionnary['uo']] / \
+                        Amplification_PSPL[1]
+                dUdtE = -(
+                         time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / (
+                            fit_process_parameters[self.model_dictionnary['tE']] ** 3 *
+                            Amplification_PSPL[1])
+
+                # Derivative of the objective function
+                dresdto = np.append(dresdto, -fit_process_parameters[
+                    self.model_dictionnary['fs_' + telescope.name]] * dadu *
+                                    dUdto / errflux)
+                dresduo = np.append(dresduo, -fit_process_parameters[
+                    self.model_dictionnary['fs_' + telescope.name]] * dadu *
+                                    dUduo / errflux)
+                dresdtE = np.append(dresdtE, -fit_process_parameters[
+                    self.model_dictionnary['fs_' + telescope.name]] * dadu *
+                                    dUdtE / errflux)
+
+                dresdrho = np.append(dresdrho,
+                                     -fit_process_parameters[
+                                         self.model_dictionnary['fs_' + telescope.name]] *
+                                     dadrho / errflux)
+
+                Amplification_FSPL = self.magnification(fit_process_parameters, time, gamma)
+                dresdfs = np.append(dresdfs, -(
+                    Amplification_FSPL[0] + fit_process_parameters[
+                        self.model_dictionnary['g_' + telescope.name]]) / errflux)
+                dresdeps = np.append(dresdeps, -fit_process_parameters[
+                    self.model_dictionnary['fs_' + telescope.name]] / errflux)
+
+            jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho])
+
+        # Split the fs and g derivatives in several columns correpsonding to
+        # each observatories
+        start_index = 0
+
+        for telescope in self.event.telescopes:
+
+            dFS = np.zeros((len(dresdto)))
+            dG = np.zeros((len(dresdto)))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))
+            dFS[index] = dresdfs[index]
+            dG[index] = dresdeps[index]
+            jacobi = np.vstack([jacobi, dFS])
+            jacobi = np.vstack([jacobi, dG])
+
+            start_index = index[-1] + 1
+
+        return jacobi
