@@ -36,7 +36,8 @@ class Telescope(object):
 
         lightcurve_magnitude : a numpy array describing your data in magnitude.
 
-        lightcurve_magnitude_dictionnary ; a python dictionnary to transform the lightcurve_magnitude input to pyLIMA convention.
+        lightcurve_magnitude_dictionnary : a python dictionnary to transform the lightcurve_magnitude
+                                          input to pyLIMA convention.
 
         lightcurve_flux : a numpy array describing your data in flux.
 
@@ -44,7 +45,8 @@ class Telescope(object):
 
         reference_flux : a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .
 
-        deltas-positions : a list containing the position shift of this observatory due to parallax. Default is an empty list. More details in microlparallax.
+        deltas-positions : a list containing the position shift of this observatory due to parallax.
+                           Default is an empty list. More details in microlparallax.
 
     :param string name: name of the telescope. Default is 'NDG'
 
@@ -57,25 +59,28 @@ class Telescope(object):
                and 'i'' is the SDSS-i' Sloan filter.
 
 
-    :param array_like light_curve_magnitude:  a numpy array with time, magnitude and error in magnitude. Default is an None.
+    :param array_like light_curve_magnitude:  a numpy array with time, magnitude and error in magnitude.
+                                              Default is an None.
 
-    :param dict light_curve_magnitude_dictionnary: a python dictionnary that informs your columns convention. Used to translate to pyLIMA
-                                convention [time,mag,err_mag]. Default is {'time': 0, 'mag' : 1, 'err_mag' : 2 }
+    :param dict light_curve_magnitude_dictionnary: a python dictionnary that informs your columns convention. Used to
+                                                   translate to pyLIMA convention [time,mag,err_mag].
+                                                   Default is {'time': 0, 'mag' : 1, 'err_mag' : 2 }
 
 
     :param array-like light_curve_flux:  a numpy array with time, flux and error in flux. Default is an None.
 
-    :param dict light_curve_flux_dictionnary: a python dictionnary that informs your columns convention. Used to translate to pyLIMA
-                                convention [time,flux,err_flux]. Default is {'time': 0, 'flux' : 1, 'err_flux' : 2 }
+    :param dict light_curve_flux_dictionnary: a python dictionnary that informs your columns convention. Used to
+                                              translate to pyLIMA convention [time,flux,err_flux].
+                                              Default is {'time': 0, 'flux' : 1, 'err_flux' : 2 }
 
-    :param float reference_flux: a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .
+    :param float reference_flux: a float used for the transformation of difference fluxes to real fluxes.
+                                 Default is 10000.0 .
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None, 
-                 light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2 }, 
-                 light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2 }, 
-                 reference_flux=10000.0 ):
-                     
+    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None,
+                 light_curve_magnitude_dictionnary={'time': 0, 'mag' : 1, 'err_mag' : 2},
+                 light_curve_flux=None, light_curve_flux_dictionnary={'time': 0, 'flux' : 1, 'err_flux' : 2},
+                 reference_flux=10000.0):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -84,27 +89,27 @@ class Telescope(object):
         self.lightcurve_flux_dictionnary = light_curve_flux_dictionnary
         self.reference_flux = reference_flux
 
-        if light_curve_magnitude is None :
+        if light_curve_magnitude is None:
 
             self.lightcurve_magnitude = []
             self.lightcurve_flux = []
 
-        else :
+        else:
 
             self.lightcurve_magnitude = light_curve_magnitude
             self.lightcurve_magnitude = self.arrange_the_lightcurve_columns('magnitude')
-            self.lightcurve_flux  = self.lightcurve_in_flux()
+            self.lightcurve_flux = self.lightcurve_in_flux()
 
 
-        if light_curve_flux is None :
+        if light_curve_flux is None:
 
             pass
 
-        else :
+        else:
 
             self.lightcurve_flux = light_curve_flux
             self.lightcurve_flux = self.arrange_the_lightcurve_columns('flux')
-            self.lightcurve_magnitude  = self.lightcurve_in_magnitude()
+            self.lightcurve_magnitude = self.lightcurve_in_magnitude()
 
         self.location = 'Earth'
         self.altitude = 0.0 # meters
@@ -116,7 +121,8 @@ class Telescope(object):
     def arrange_the_lightcurve_columns(self, choice):
         """Rearange the lightcurve to the pyLIMA convention.
 
-            :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply the sorting.
+            :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply
+                                   the sorting.
 
             :return: the lightcurve sorted in pyLIMA convention
             :rtype: array_like
@@ -125,26 +131,26 @@ class Telescope(object):
         pyLIMA_magnitude_convention = ['time', 'mag', 'err_mag']
         pyLIMA_flux_convention = ['time', 'flux', 'err_flux']
 
-        if choice == 'magnitude' :
+        if choice == 'magnitude':
 
-           lightcurve = []
-           for good_column in pyLIMA_magnitude_convention :
+            lightcurve = []
+            for good_column in pyLIMA_magnitude_convention:
 
-               lightcurve.append(self.lightcurve_magnitude[:, self.lightcurve_magnitude_dictionnary[good_column]])
+                lightcurve.append(self.lightcurve_magnitude[:, self.lightcurve_magnitude_dictionnary[good_column]])
 
-           lightcurve = np.array(lightcurve).T
-           return lightcurve
+            lightcurve = np.array(lightcurve).T
+            return lightcurve
 
-        if choice == 'flux' :
+        if choice == 'flux':
 
-           lightcurve = []
-           for good_column in pyLIMA_flux_convention :
+            lightcurve = []
+            for good_column in pyLIMA_flux_convention:
 
-               lightcurve.append(self.lightcurve_flux[:, self.lightcurve_flux_dictionnary[good_column]])
+                lightcurve.append(self.lightcurve_flux[:, self.lightcurve_flux_dictionnary[good_column]])
 
-           lightcurve = np.array(lightcurve).T
-           lightcurve[:, 1] =  lightcurve[:, 1] + self.reference_flux
-           return lightcurve
+            lightcurve = np.array(lightcurve).T
+            lightcurve[:, 1] = lightcurve[:, 1] + self.reference_flux
+            return lightcurve
 
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.
@@ -185,9 +191,9 @@ class Telescope(object):
         # TODO: Use read claret generator
 
         claret_table = fits.open(claret_path + 'Claret2011.fits')
-        claret_table = np.array(
-            [claret_table[1].data['log g'], claret_table[1].data['Teff (K)'], claret_table[1].data['Z (Sun)'],
-             claret_table[1].data['Xi (km/s)'], claret_table[1].data['u'], claret_table[1].data['filter']]).T
+        claret_table = np.array([claret_table[1].data['log g'], claret_table[1].data['Teff (K)'],
+                                 claret_table[1].data['Z (Sun)'], claret_table[1].data['Xi (km/s)'],
+                                 claret_table[1].data['u'], claret_table[1].data['filter']]).T
 
         # Find the raw corresponding to the requested filter.
 
@@ -196,12 +202,12 @@ class Telescope(object):
 
         # Find the raw by computing distance of all raw and coefficient
 
-        limb_darkening_coefficient_raw_index = np.sqrt(
-            (claret_table_reduce[:, 0] - log_g) ** 2 + (claret_table_reduce[:, 1] - Teff) ** 2 + (
-            claret_table_reduce[:, 2] - metallicity) ** 2
-            + (claret_table_reduce[:, 3] - turbulent_velocity) ** 2).argmin()
+        limb_darkening_coefficient_raw_index = np.sqrt((claret_table_reduce[:, 0] - log_g) ** 2 + \
+            (claret_table_reduce[:, 1] - Teff) ** 2 + \
+            (claret_table_reduce[:, 2] - metallicity) ** 2+ \
+            (claret_table_reduce[:, 3] - turbulent_velocity) ** 2).argmin()
 
-        linear_limb_darkening_coefficient = claret_table_reduce[limb_darkening_coefficient_raw_index , -1]
+        linear_limb_darkening_coefficient = claret_table_reduce[limb_darkening_coefficient_raw_index, -1]
 
         self.gamma = 2 * linear_limb_darkening_coefficient / (3 - linear_limb_darkening_coefficient)
 
@@ -285,7 +291,7 @@ class Telescope(object):
 
         time = lightcurve[:, 0]
         flux = lightcurve[:, 1]
-        error_flux = lightcurve[:,2]
+        error_flux = lightcurve[:, 2]
 
         magnitude = microltoolbox.flux_to_magnitude(flux)
         error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)

@@ -104,12 +104,12 @@ class MLFits(object):
 
         self.model = model
         self.method = method
-        
+
         if self.method == 'LM':
 
             self.guess = self.initial_guess()
             self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
-           
+
         if self.method == 'DE':
 
             self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
@@ -245,10 +245,12 @@ class MLFits(object):
 
             Launch nwalkers = 200 chains with 100 links
         """
-        differential_evolution_estimation =  scipy.optimize.differential_evolution(self.chichi_differential_evolution,
-                                             bounds=microlguess.differential_evolution_parameters_boundaries(
-                                             self.event, self.model), mutation=(0.5, 1), popsize=30,
-                                             recombination=0.7, polish='None')
+        differential_evolution_estimation = \
+        scipy.optimize.differential_evolution(self.chichi_differential_evolution,
+                                              bounds= \
+                                              microlguess.differential_evolution_parameters_boundaries(
+                                              self.event, self.model), mutation=(0.5, 1), popsize=30,
+                                              recombination=0.7, polish='None')
 
         print 'pre MCMC done'
         # Best solution
@@ -259,16 +261,16 @@ class MLFits(object):
         nwalkers = 200
         # Initialize the population of MCMC
         population = []
-       
+
         count_walkers = 0
         while count_walkers < nwalkers:
-            # Construct an individual of the population around the best solution. 
+
+        # Construct an individual of the population around the best solution.
             individual = []
             for parameter_key in self.model.model_dictionnary.keys()[:number_of_paczynski_parameters]:
 
-                individual.append(microlguess.MCMC_parameters_initialization(parameter_key, best_solution[self.model.model_dictionnary[parameter_key]]))
-                
-
+                individual.append(microlguess.MCMC_parameters_initialization(parameter_key,
+                                                                             best_solution[self.model.model_dictionnary[parameter_key]]))
             chichi = self.chichi_MCMC(individual)
 
             if chichi != -np.inf:
@@ -276,15 +278,14 @@ class MLFits(object):
                 population.append(np.array(individual))
                 count_walkers += 1
 
-        sampler = emcee.EnsembleSampler(nwalkers, number_of_paczynski_parameters, self.chichi_MCMC,a=2.0)
-        
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_paczynski_parameters, self.chichi_MCMC, a=2.0)
+
         # First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, 100)
         print 'MCMC preburn done'
         sampler.reset()
-        
-        
+
         # Final estimation using the previous output.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(final_positions, 100)
@@ -316,12 +317,14 @@ class MLFits(object):
         """
 
         starting_time = TIME.time()
-        differential_evolution_estimation =  scipy.optimize.differential_evolution(self.chichi_differential_evolution,
-                                                                   bounds=microlguess.differential_evolution_parameters_boundaries(self.event, self.model),
-                                                                   mutation=0.6, popsize=20,
-                                                                   tol=0.000001,
-                                                                   recombination=0.6, polish='True',
-                                                                   disp=True)
+        differential_evolution_estimation =  scipy.optimize.differential_evolution(
+            self.chichi_differential_evolution,  
+            bounds=microlguess.differential_evolution_parameters_boundaries(self.event, self.model),
+            mutation=0.6, popsize=20,
+            tol=0.000001,
+            recombination=0.6, polish='True',
+            disp=True
+        )
 
         paczynski_parameters = differential_evolution_estimation['x'].tolist()
 
@@ -370,13 +373,14 @@ class MLFits(object):
         # import pdb; pdb.set_trace()
 
         if self.model.parallax_model[0] == 'None':
-            lmarquardt_fit =  scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
-                                     Dfun=self.LM_Jacobian,
-                                     col_deriv=1, full_output=1, ftol=10 ** -6, xtol=10 ** -10,
-                                     gtol=10 ** -5)
+            lmarquardt_fit = scipy.optimize.leastsq(
+                self.residuals_LM, self.guess, maxfev=50000,
+                Dfun=self.LM_Jacobian,
+                col_deriv=1, full_output=1, ftol=10 ** -6, xtol=10 ** -10,
+                gtol=10 ** -5)
         else:
 
-            lmarquardt_fit =  scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
+            lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
                                      ftol=10 ** -6, xtol=10 ** -10,
                                      gtol=10 ** -5)
 
@@ -392,15 +396,14 @@ class MLFits(object):
             n_data = n_data + telescope.n_data('flux')
 
         n_parameters = len(self.model.model_dictionnary)
-        
+
         try:
             # Try to extract the covariance matrix from the lmarquard_fit output
 
             if np.all(lmarquardt_fit[1].diagonal() > 0) & (lmarquardt_fit[1] is not None):
                 # Normalise the output by the reduced chichi
-                covariance_matrix = lmarquardt_fit[1] * fit_result[
-                    len(self.model.model_dictionnary)] / (
-                                        n_data - n_parameters)
+                covariance_matrix = lmarquardt_fit[1] * fit_result[len(self.model.model_dictionnary)] / \
+                                    (n_data - n_parameters)
 
             # Try to do it "manually"
             else:
@@ -428,23 +431,18 @@ class MLFits(object):
         # import pdb; pdb.set_trace()
         return fit_result, covariance_matrix, computation_time
 
-    
-
     def LM_Jacobian(self, fit_process_parameters):
         """Return the analytical Jacobian matrix, if requested by method LM.
         Available only for PSPL and FSPL without second_order.
 
-       :param list fit_process_parameters: the model parameters ingested by the correpsonding
-       fitting routine.
-
-       :return: a numpy array which represents the jacobian matrix
-       :rtype: array_like
-      
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding
+        fitting routine.
+        :return: a numpy array which represents the jacobian matrix
+        :rtype: array_like
         """
+
         jacobi = self.model.model_Jacobian(fit_process_parameters)
         return jacobi
-
-    
 
     def residuals_LM(self, fit_process_parameters):
         """The normalized residuals associated to the model and parameters.
@@ -463,14 +461,10 @@ class MLFits(object):
 
         for telescope in self.event.telescopes:
 
-            # magnification according to the model. amplification[0] is A(t), amplification[1] is
-            #  u(t)
-           
+            # Find the residuals of telescope observation regarding the parameters and model
             residus, priors = self.model_residuals(telescope, fit_process_parameters)
-            
             # no prior here
-            
-            residuals = np.append(residuals,residus)
+            residuals = np.append(residuals, residus)
 
         return residuals
 
@@ -526,13 +520,14 @@ class MLFits(object):
         residuals = np.array([])
 
         for telescope in self.event.telescopes:
-          
+
+            # Find the residuals of telescope observation regarding the parameters and model
+
             residus, priors = self.model_residuals(telescope, fit_process_parameters)
-       
+
             # Little prior here, need to be chaneged
             if priors == np.inf:
 
-                
                 return np.inf
 
             residuals = np.append(residuals, residus)
@@ -555,13 +550,12 @@ class MLFits(object):
 
         for telescope in self.event.telescopes:
 
+            # Find the residuals of telescope observation regarding the parameters and model
             residus, priors = self.model_residuals(telescope, fit_process_parameters)
-            
-            
+
             # Little prior here, need to be chaneged
             if priors == np.inf:
 
-                
                 return -np.inf
 
             else:
@@ -623,7 +617,7 @@ class MLFits(object):
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             # Prior here
-            if (f_source < 0):
+            if f_source < 0:
 
                 telescopes_fluxes.append(np.min(flux))
                 telescopes_fluxes.append(0.0)
@@ -646,5 +640,3 @@ class MLFits(object):
             outputs = microloutputs.MCMC_outputs(self)
 
         self.outputs = outputs
-
-  

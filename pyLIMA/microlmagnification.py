@@ -9,7 +9,7 @@ from __future__ import division
 import numpy as np
 
 
-def amplification_PSPL(tau, u):
+def amplification_PSPL(tau, uo):
     """ The Paczynski magnification.
         "Gravitational microlensing by the galactic halo",Paczynski, B. 1986
         http://adsabs.harvard.edu/abs/1986ApJ...304....1P
@@ -23,15 +23,17 @@ def amplification_PSPL(tau, u):
         :rtype: array_like,array_like
     """
     # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
-    U = (tau ** 2 + u ** 2) ** 0.5
-    U_square = U ** 2
-    amplification = (U_square + 2) / (U * (U_square + 4) ** 0.5)
+
+    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  #u(t)
+    impact_parameter_square = impact_parameter ** 2 #u(t)^2
+
+    amplification = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
 
     # return both magnification and U, required by some methods
-    return amplification, U
+    return amplification, impact_parameter
 
 
-def amplification_FSPL(tau, u, rho, gamma, yoo_table):
+def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     """ The Yoo FSPL magnification.
         "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens",Yoo, J. et al 2004
         http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
@@ -46,31 +48,35 @@ def amplification_FSPL(tau, u, rho, gamma, yoo_table):
         :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)
         :rtype: array_like,array_like
     """
-    U = (tau ** 2 + u ** 2) ** 0.5
-    U_square = U ** 2
-    amplification_PSPL = (U_square + 2) / (U * (U_square + 4) ** 0.5)
+    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  #u(t)
+    impact_parameter_square = impact_parameter ** 2 #u(t)^2
 
-    z_yoo = U / rho
+    amplification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
 
-    amplification_FSPL = np.zeros(len(amplification_PSPL))
+    z_yoo = impact_parameter / rho
+
+    amplification_fspl = np.zeros(len(amplification_pspl))
 
     # Far from the lens (z_yoo>>1), then PSPL.
     indexes_PSPL = np.where((z_yoo > yoo_table[0][-1]))[0]
-    amplification_FSPL[indexes_PSPL] = amplification_PSPL[indexes_PSPL]
+
+    amplification_fspl[indexes_PSPL] = amplification_pspl[indexes_PSPL]
 
     # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
     indexes_WM = np.where((z_yoo < yoo_table[0][0]))[0]
-    amplification_FSPL[indexes_WM] = amplification_PSPL[indexes_WM] * (
-    2 * z_yoo[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
+
+    amplification_fspl[indexes_WM] = amplification_pspl[indexes_WM] * \
+    (2 * z_yoo[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
 
     # FSPL regime (z_yoo~1), then Yoo et al derivatives
     indexes_FSPL = np.where((z_yoo <= yoo_table[0][-1]) & (z_yoo >= yoo_table[0][0]))[0]
-    amplification_FSPL[indexes_FSPL] = amplification_PSPL[indexes_FSPL] * (
-    yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
 
-    amplification = amplification_FSPL
+    amplification_fspl[indexes_FSPL] = amplification_pspl[indexes_FSPL] * \
+    (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
 
-    return amplification, U
+    amplification = amplification_fspl
+
+    return amplification, impact_parameter
 
 
 #### TO DO : the following probably depreciated ####

@@ -69,7 +69,7 @@ class MLModels(object):
                  J. et al.2004ApJ...603..139Y
                  Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
                  to compute B0(z) and B1(z).
-                 
+
                  'DSPL'  --> not available now
                  'Binary' --> not available now
                  'Triple' --> not available now
@@ -88,7 +88,7 @@ class MLModels(object):
                   If you have some Spacecraft types telescopes, the space based parallax
                   is computed if parallax is different of 'None'
                   More details in the microlparallax module
-                  
+
         xallarap_model : not available yet
 
         orbital_motion_model : not available yet
@@ -103,19 +103,18 @@ class MLModels(object):
                 More details in the microlomotion module
 
         source_spots_model : not available yet
-        
+
                 'None' --> No source spots
 
                  More details in the microlsspots module
-                 
-                 
+
     :param object event: a event object. More details on the event module.
     :param string model: the microlensing model you want.
     :param list parallax: a list of [string,float] indicating the parallax model you want and to_par
     :param list xallarap: a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.
-    :param list orbital_motion: a list of [string,float] indicating the parallax model you want and to_om.NOT WORKING NOW.
-    :param string source_spots: a string indicated the source_spots you want. NOT WORKING.        
-             
+    :param list orbital_motion: a list of [string,float] indicating the parallax model you want and to_om.
+                                NOT WORKING NOW.
+    :param string source_spots: a string indicated the source_spots you want. NOT WORKING.
     """
 
     def __init__(self, event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
@@ -178,11 +177,11 @@ class MLModels(object):
     def magnification(self, parameters, time, gamma=0.0, delta_positions=0):
 
         """ Compute the magnification  associated to the model.
-        
+
         :param list parameters: the model parameters you want to compute the magnification around
         :param array_like time: the time you want to obtain the magnification
         :param float gamma: the limb-darkening coefficient
-        :param array_like delta_positions: the deltas_position from the parallax        
+        :param array_like delta_positions: the deltas_position from the parallax
         :return: the amplification A(time) and the impact parameter U(time)
         :rtype: float,float
         """
@@ -193,19 +192,19 @@ class MLModels(object):
 
         tau = (time - to) / tE
 
-        dtau = 0
-        duo = 0
+        delta_tau = 0
+        delta_uo = 0
 
         if self.parallax_model[0] != 'None':
             piE = np.array([parameters[self.model_dictionnary['piEN']],
                             parameters[self.model_dictionnary['piEE']]])
             # import pdb; pdb.set_trace()
-            dTau, dUo = self.compute_parallax_curvature(piE, delta_positions)
-            dtau += dTau
-            duo += dUo
+            parallax_delta_tau, parallax_delta_uo = self.compute_parallax_curvature(piE, delta_positions)
+            delta_tau += parallax_delta_tau
+            delta_uo += parallax_delta_uo
 
-        tau += dtau
-        uo = duo + uo
+        tau += delta_tau
+        uo = delta_uo + uo
 
         if self.paczynski_model == 'PSPL':
 
@@ -219,17 +218,15 @@ class MLModels(object):
                                                                       self.yoo_table)
             return amplification, u
 
-    
-
     def compute_parallax_curvature(self, piE, delta_positions):
         """ Compute the curvature induce by the parallax of from
-        deltas_positions of a telescope 
+        deltas_positions of a telescope.
 
-        :param array_like piE: the microlensing parallax vector. Have a look : http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+        :param array_like piE: the microlensing parallax vector. Have a look :
+                               http://adsabs.harvard.edu/abs/2004ApJ...606..319G
         :param array_like delta_positions: the delta_positions of the telescope. More details in microlparallax module.
         :return: delta_tau and delta_u, the shift introduce by parallax
         :rtype: array_like,array_like
-        
         """
 
         delta_tau = -np.dot(piE, delta_positions)
@@ -238,125 +235,115 @@ class MLModels(object):
         return delta_tau, delta_u
 
 
-    def compute_the_microlensing_model(self, telescope, parameters) :
-        
-        
+    def compute_the_microlensing_model(self, telescope, parameters):
+        """ NEED A DOCSTRING
+        """
+
         piE = None
         dalphadt = None
-        
+
         if self.parallax_model[0] != 'None':
-            
+
             piE = np.array([parameters[self.model_dictionnary['piEN']],
                             parameters[self.model_dictionnary['piEE']]])
-        
-            
+
         if self.orbital_motion_model[0] != 'None':
-            
+
             pass
 
-        if self.paczynski_model == 'PSPL' :
-            
+        if self.paczynski_model == 'PSPL':
+
             to = parameters[self.model_dictionnary['to']]
             uo = parameters[self.model_dictionnary['uo']]
             tE = parameters[self.model_dictionnary['tE']]
-            
-            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0, 
+
+            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
                                                                               parallax=piE, orbital_motion=dalphadt)
-            
+
             amplification, u = microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
-            
-            try :
-                
+
+            try:
+
                 #LM method
                 f_source = parameters[self.model_dictionnary['fs_' + telescope.name]]
                 f_blending = f_source*parameters[self.model_dictionnary['g_' + telescope.name]]
-            
-            except :
-                
+
+            except:
+
                 #Other methods
                 lightcurve = telescope.lightcurve_flux
                 flux = lightcurve[:, 1]
                 errflux = lightcurve[:, 2]
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-                
+
             microlensing_model = f_source*amplification+f_blending
-            
-            #Prior here       
+            #Prior here
             priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
 
             return microlensing_model, priors
-            
-        if self.paczynski_model == 'FSPL' :
-            
+
+        if self.paczynski_model == 'FSPL':
+
             to = parameters[self.model_dictionnary['to']]
             uo = parameters[self.model_dictionnary['uo']]
             tE = parameters[self.model_dictionnary['tE']]
-            
-            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0, 
-                                                                              parallax=piE, orbital_motion=dalphadt)            
-            
-            
-            
+
+            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
+                                                                              parallax=piE, orbital_motion=dalphadt)
             rho = parameters[self.model_dictionnary['rho']]
             gamma = telescope.gamma
-            amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho, gamma,
-                                                                      self.yoo_table)
-            
-            try :
-                
+            amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
+                                                                      gamma, self.yoo_table)
+
+            try:
+
                 #LM method
                 f_source = parameters[self.model_dictionnary['fs_' + telescope.name]]
                 f_blending = f_source*parameters[self.model_dictionnary['g_' + telescope.name]]
-            
-            except :
-                
+
+            except:
+
                 #Other methods
                 lightcurve = telescope.lightcurve_flux
                 flux = lightcurve[:, 1]
                 errflux = lightcurve[:, 2]
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-                
+
             microlensing_model = f_source*amplification+f_blending
-            
+
             #Prior here
             priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
-            
+
             return microlensing_model, priors
-            
-    
-    
-    
-    
-    
-    def source_trajectory(self, telescope, to, uo, tE, alpha=0.0, parallax=None, orbital_motion=None) :
-        
+
+    def source_trajectory(self, telescope, to, uo, tE, alpha=0.0, parallax=None, orbital_motion=None):
+        """ NEED A DOCSTRING
+        """
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:,0]        
-        
+        time = lightcurve[:, 0]
+
         tau = (time - to) / tE
-        
+
         dtau = 0
         duo = 0
-       
+
         if parallax is not None:
-            
+
              piE = parallax
              dTau, dUo = self.compute_parallax_curvature(piE, telescope.deltas_positions)
-             
+
              dtau += dTau
              duo += dUo
-             
+
         tau += dtau
         uo = duo + uo
-        
+
         source_trajectory_x = tau*np.cos(alpha)-uo*np.sin(alpha)
         source_trajectory_y = tau*np.sin(alpha)+uo*np.cos(alpha)
-        
-        return source_trajectory_x,  source_trajectory_y
-        
-        
-        
-    def model_Jacobian(self, fit_process_parameters) :
+
+        return source_trajectory_x, source_trajectory_y
+
+    def model_Jacobian(self, fit_process_parameters):
         """Return the analytical Jacobian matrix, if requested by method LM.
         Available only for PSPL and FSPL without second_order.
 
@@ -396,9 +383,8 @@ class MLModels(object):
                 dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / \
                         (fit_process_parameters[self.model_dictionnary['tE']] ** 2 * Amplification[1])
                 dUduo = fit_process_parameters[self.model_dictionnary['uo']] / Amplification[1]
-                dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / (
-                            fit_process_parameters[self.model_dictionnary['tE']] ** 3 *
-                            Amplification[1])
+                dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / \
+                (fit_process_parameters[self.model_dictionnary['tE']] ** 3 *Amplification[1])
 
 
                 # Derivative of the objective function
@@ -444,8 +430,9 @@ class MLModels(object):
 
                 # Derivative of A = Yoo et al (2004) method.
                 Amplification_PSPL = fake_model.magnification(fake_params, time, gamma)
-                dAmplification_PSPLdU = (-8) / (
-                Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
+
+                dAmplification_PSPLdU = (-8) / (Amplification_PSPL[1] ** 2 * \
+                                        (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
 
                 # z_yoo=U/rho
                 z_yoo = Amplification_PSPL[1] / fit_process_parameters[
@@ -461,42 +448,34 @@ class MLModels(object):
 
                 # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
                 ind = np.where((z_yoo < self.yoo_table[0][0]))[0]
-                dadu[ind] = dAmplification_PSPLdU[ind] * (
-                2 * z_yoo[ind] - gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
+                dadu[ind] = dAmplification_PSPLdU[ind] * \
+                            (2 * z_yoo[ind] - gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
+
                 dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
-                              fit_process_parameters[
-                                  self.model_dictionnary[
-                                      'rho']] ** 2 * (
-                                  2 - gamma * (2 - 3 * np.pi / 4))
+                              fit_process_parameters[self.model_dictionnary['rho']] ** 2 * \
+                              (2 - gamma * (2 - 3 * np.pi / 4))
 
                 # FSPL regime (z_yoo~1), then Yoo et al derivatives
-                ind = np.where(
-                    (z_yoo <= self.yoo_table[0][-1]) & (z_yoo >= self.yoo_table[0][0]))[
-                    0]
-                dadu[ind] = dAmplification_PSPLdU[ind] * (
-                    self.yoo_table[1](z_yoo[ind]) - gamma * self.yoo_table[2](
-                        z_yoo[ind])) + Amplification_PSPL[0][ind] * (
-                    self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](
-                        z_yoo[ind])) * 1 / fit_process_parameters[
-                                           self.model_dictionnary['rho']]
+                ind = np.where((z_yoo <= self.yoo_table[0][-1]) & (z_yoo >= self.yoo_table[0][0]))[0]
+                dadu[ind] = dAmplification_PSPLdU[ind] * (self.yoo_table[1](z_yoo[ind]) - \
+                            gamma * self.yoo_table[2](z_yoo[ind])) + Amplification_PSPL[0][ind] * \
+                            (self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](z_yoo[ind])) *\
+                            1 / fit_process_parameters[self.model_dictionnary['rho']]
 
                 dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / \
-                              fit_process_parameters[
-                                  self.model_dictionnary[
-                                      'rho']] ** 2 * (
-                                  self.yoo_table[3](z_yoo[ind]) - gamma *
-                                  self.yoo_table[4](
-                                      z_yoo[ind]))
+                              fit_process_parameters[self.model_dictionnary['rho']] ** 2 * \
+                              (self.yoo_table[3](z_yoo[ind]) - gamma *self.yoo_table[4](z_yoo[ind]))
 
-                dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / (
-                    fit_process_parameters[self.model_dictionnary['tE']] ** 2 *
-                    Amplification_PSPL[1])
+                dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / \
+                        (fit_process_parameters[self.model_dictionnary['tE']] ** 2 *\
+                        Amplification_PSPL[1])
+
                 dUduo = fit_process_parameters[self.model_dictionnary['uo']] / \
                         Amplification_PSPL[1]
-                dUdtE = -(
-                         time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / (
-                            fit_process_parameters[self.model_dictionnary['tE']] ** 3 *
-                            Amplification_PSPL[1])
+
+                dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / \
+                        (fit_process_parameters[self.model_dictionnary['tE']] ** 3 * \
+                        Amplification_PSPL[1])
 
                 # Derivative of the objective function
                 dresdto = np.append(dresdto, -fit_process_parameters[
