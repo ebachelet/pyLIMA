@@ -226,15 +226,27 @@ class MLFits(object):
         if self.model.source_spots_model != 'None':
             guess_parameters = guess_parameters + [0]
 
-        guess_parameters_pyLIMA_standards = guess_parameters + telescopes_fluxes
+        guess_parameters += telescopes_fluxes
+
+        guess_parameters_pyLIMA_standards = collections.namedtuple('parameters',
+                                                                   self.model.pyLIMA_standards_dictionnary.keys())
+
+        for key_parameter in self.model.pyLIMA_standards_dictionnary.keys():
+
+            try:
+                setattr(guess_parameters_pyLIMA_standards, key_parameter,
+                        guess_parameters[self.model.pyLIMA_standards_dictionnary[key_parameter]])
+
+            except :
+
+                pass
 
         fancy_parameters_guess = self.model.pyLIMA_standard_parameters_to_fancy_parameters(
             guess_parameters_pyLIMA_standards)
 
-        model_guess_parameters = guess_parameters_pyLIMA_standards
-        for key_parameter in self.model.model_dictionnary:
-            model_guess_parameters[self.model.model_dictionnary[key_parameter]] = getattr(fancy_parameters_guess,
-                                                                                          key_parameter)
+        model_guess_parameters = []
+        for key_parameter in self.model.model_dictionnary.keys():
+            model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
         return model_guess_parameters
 
     def MCMC(self):
@@ -276,14 +288,19 @@ class MLFits(object):
                 individual.append(microlguess.MCMC_parameters_initialization(parameter_key,
                                                                              best_solution[self.model.model_dictionnary[
                                                                                  parameter_key]]))
+
+            # fluxes = self.find_fluxes(individual,self.model)
+            # individual += fluxes
+
             chichi = self.chichi_MCMC(individual)
 
             if chichi != -np.inf:
                 # np.array(individual)
                 population.append(np.array(individual))
                 count_walkers += 1
-
-        sampler = emcee.EnsembleSampler(nwalkers, number_of_paczynski_parameters, self.chichi_MCMC, a=2.0)
+        # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
+        number_of_parameters = number_of_paczynski_parameters
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
 
         # First estimation using population as a starting points.
 
@@ -301,7 +318,7 @@ class MLFits(object):
         return MCMC_chains, MCMC_probabilities
 
     def differential_evolution(self):
-        """  The DE method. Differential evolution algoritm. The objective function is
+        """  The DE method. Differential evolution algorithm. The objective function is
         :func:`chichi_differential_evolution`.
          Based on the scipy.optimize.differential_evolution.
          Look Storn & Price (1997) :
@@ -458,10 +475,10 @@ class MLFits(object):
 
         # Construct an np.array with each telescope residuals
         residuals = np.array([])
-
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, fit_process_parameters)
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
             # no prior here
             residuals = np.append(residuals, residus)
 
@@ -516,14 +533,14 @@ class MLFits(object):
         :rtype: float
         """
         residuals = np.array([])
-
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
 
             # Find the residuals of telescope observation regarding the parameters and model
 
-            residus, priors = self.model_residuals(telescope, fit_process_parameters)
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
 
-            # Little prior here, need to be chaneged
+            # Little prior here, need to be changed
             if priors == np.inf:
                 return np.inf
 
@@ -544,11 +561,11 @@ class MLFits(object):
         """
 
         chichi = 0
-
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
 
             # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, fit_process_parameters)
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
 
             # Little prior here, need to be chaneged
             if priors == np.inf:
@@ -558,7 +575,7 @@ class MLFits(object):
             else:
 
                 chichi += (residus ** 2).sum()
-                # Little prior here, need to be chaneged
+                # Little prior here, need to be changed
 
                 chichi += priors
 
@@ -593,23 +610,21 @@ class MLFits(object):
 
         :param fit_process_parameters: the model parameters ingested by the correpsonding fitting
         routine.
-        :param model: the Paczynski model on which you want to compute the fs,g parameters.
+        :param model: the on which you want to compute the fs,g parameters.
 
         :return: a list of tuple with the (fs,g) telescopes flux parameters.
         :rtype: list
         """
 
         telescopes_fluxes = []
-
+        pyLIMA_parameters = model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             lightcurve = telescope.lightcurve_flux
-            time = lightcurve[:, 0]
+
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            gamma = telescope.gamma
 
-            amplification = \
-                model.magnification(fit_process_parameters, time, gamma, telescope.deltas_positions)[0]
+            amplification = model.model_magnification(telescope, pyLIMA_parameters)[0]
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             # Prior here

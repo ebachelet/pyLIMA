@@ -29,13 +29,11 @@ def main(command_line):
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
                      ('Lightcurve_' in event_name) and ('~' not in event_name)]
 
-   
-
     start = time.time()
     results = []
     errors = []
 
-    for event_name in events_names[1:]:
+    for event_name in events_names[0:]:
 
         # name='Lightcurve_'+str(9975)+'_'
         name = event_name[:-10]
@@ -96,10 +94,15 @@ def main(command_line):
         Model = microlmodels.MLModels(current_event, command_line.model,
                                       parallax=['None', 50.0])
 
-        #Model.fancy_to_pyLIMA_dictionnary = {'tstar':'tE'}
-        #Model.pyLIMA_to_fancy = {'tstar':lambda parameters : np.log10(parameters[Model.pyLIMA_standards_dictionnary['tE']]),
-        #                         }
-        #Model.fancy_to_pyLIMA = {'tE':lambda parameters : 10**parameters[Model.model_dictionnary['tstar']],
+        #Model.fancy_to_pyLIMA_dictionnary = {'tstar': 'tE','logustar':'uo','tpresque':'to'}
+        #Model.pyLIMA_to_fancy = {
+        #    'tstar': lambda parameters: np.log10(parameters.tE),
+        #    'logustar': lambda parameters: np.log10(parameters.tE*parameters.uo*parameters.to),
+        #    'tpresque': lambda parameters: parameters.to-1}
+
+        #Model.fancy_to_pyLIMA = {'tE': lambda parameters: 10 ** parameters.tstar,
+        #                        'uo':lambda parameters: 10**parameters.logustar/((parameters.tpresque+1)*10 ** parameters.tstar),
+        #                        'to':lambda parameters: parameters.tpresque+1
         #                         }
         current_event.fit(Model, 'LM')
         import pdb;
@@ -107,8 +110,6 @@ def main(command_line):
         current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results
         plt.show()
-
-
 
     end = time.time()
 
@@ -131,10 +132,10 @@ if __name__ == '__main__':
                         default='/nethome/Desktop/Microlensing/OpenSourceProject/'
                                 'SimulationML/Lightcurves_FSPL/Lightcurves/')
     parser.add_argument('-o', '--output_directory', default='/nethome/Desktop/Microlensing/'
-                        'OpenSourceProject/Developement/Fitter/FSPL/')
+                                                            'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',
                         default='/home/ebachelet/Desktop/nethome/Desktop/Microlensing/'
-                        'OpenSourceProject/Claret2011/J_A+A_529_A75/')
+                                'OpenSourceProject/Claret2011/J_A+A_529_A75/')
     arguments = parser.parse_args()
 
     model = arguments.model

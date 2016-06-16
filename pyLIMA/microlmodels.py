@@ -12,8 +12,9 @@ import os.path
 import numpy as np
 from scipy import interpolate, misc
 import collections
-import microlguess
+import time as python_time
 
+import microlguess
 import microlmagnification
 import microlpriors
 
@@ -149,6 +150,9 @@ class MLModels(object):
                 self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
                     self.fancy_to_pyLIMA_dictionnary[key_parameter])
 
+            self.model_dictionnary = OrderedDict(
+                sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
     def define_pyLIMA_standard_parameters(self):
         """ Create the model_dictionnary which explain to the different modules which parameter
         is what (
@@ -187,13 +191,12 @@ class MLModels(object):
 
         self.pyLIMA_standards_dictionnary = self.model_dictionnary.copy()
 
-        self.parameters_boundaries =  microlguess.differential_evolution_parameters_boundaries(self.event, self)
-
+        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self.event, self)
 
     def magnification(self, parameters, time, gamma=0.0, delta_positions=0):
 
         """ Compute the magnification  associated to the model.
-
+        ##THIS IS DEPCRIATED< ONLY USED IN JACOBIAN##
         :param list parameters: the model parameters you want to compute the magnification around
         :param array_like time: the time you want to obtain the magnification
         :param float gamma: the limb-darkening coefficient
@@ -248,40 +251,84 @@ class MLModels(object):
 
         return delta_tau, delta_u
 
-    def compute_the_microlensing_model(self, telescope, input_parameters):
+    def compute_pyLIMA_parameters(self, input_parameters):
         """ NEED A DOCSTRING
         """
+        #start_time = python_time.time()
+        model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
 
+        for key_parameter in self.model_dictionnary.keys():
+
+            try:
+
+                setattr(model_parameters, key_parameter, input_parameters[self.model_dictionnary[key_parameter]])
+
+            except:
+
+                pass
+
+        #print 'arange', python_time.time() - start_time
+
+        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
+
+        #print 'conversion', python_time.time() - start_time
+        return pyLIMA_parameters
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+
+        """ NEED A DOCSTRING
+        """
         piE = None
         dalphadt = None
 
         if self.parallax_model[0] != 'None':
-            piE = np.array([input_parameters[self.model_dictionnary['piEN']],
-                            input_parameters[self.model_dictionnary['piEE']]])
+            piE = np.array([pyLIMA_parameters.piEN,
+                            pyLIMA_parameters.piEE])
 
         if self.orbital_motion_model[0] != 'None':
             pass
 
         if self.paczynski_model == 'PSPL':
-
-            import pdb
-            pdb.set_trace()
-
-            parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(input_parameters)
-            to = parameters.to
-            uo = parameters.uo
-            tE = parameters.tE
+            to = pyLIMA_parameters.to
+            uo = pyLIMA_parameters.uo
+            tE = pyLIMA_parameters.tE
 
             source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
                                                                               parallax=piE, orbital_motion=dalphadt)
 
             amplification, u = microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
 
+            return amplification, u
+
+        if self.paczynski_model == 'FSPL':
+            to = pyLIMA_parameters.to
+            uo = pyLIMA_parameters.uo
+            tE = pyLIMA_parameters.tE
+
+            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
+                                                                              parallax=piE, orbital_motion=dalphadt)
+            rho = pyLIMA_parameters.rho
+            gamma = telescope.gamma
+            amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
+                                                                      gamma, self.yoo_table)
+
+            return amplification, u
+
+    def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
+
+        """ NEED A DOCSTRING
+        """
+
+        # start_time = python_time.time()
+        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
+
+        if self.paczynski_model == 'PSPL':
+
             try:
 
                 # LM method
-                f_source = getattr(parameters, 'fs_' + telescope.name)
-                f_blending = f_source *getattr(parameters, 'g_' + telescope.name)
+                f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
+                f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
             except:
 
@@ -299,23 +346,11 @@ class MLModels(object):
 
         if self.paczynski_model == 'FSPL':
 
-            parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(input_parameters)
-            to = parameters.to
-            uo = parameters.uo
-            tE = parameters.tE
-
-            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
-                                                                              parallax=piE, orbital_motion=dalphadt)
-            rho = parameters.rho
-            gamma = telescope.gamma
-            amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
-                                                                      gamma, self.yoo_table)
-
             try:
 
                 # LM method
-                f_source = getattr(parameters, 'fs_' + telescope.name)
-                f_blending = f_source * getattr(parameters, 'g_' + telescope.name)
+                f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
+                f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
             except:
 
@@ -329,40 +364,36 @@ class MLModels(object):
 
             # Prior here
             priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
-
+            # print 'the microl model', python_time.time() - start_time
             return microlensing_model, priors
 
-    def fancy_parameters_to_pyLIMA_standard_parameters(self, parameters):
+    def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
 
-        parameter = collections.namedtuple('parameters', self.model_dictionnary)
-        for key_parameter in self.model_dictionnary:
-            setattr(parameter, key_parameter, parameters[self.model_dictionnary[key_parameter]])
-
+        # start_time = python_time.time()
         if len(self.fancy_to_pyLIMA) != 0:
 
-          for key_parameter in self.fancy_to_pyLIMA.keys():
+            for key_parameter in self.fancy_to_pyLIMA.keys():
+                setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
 
-                    setattr(parameter, key_parameter, self.fancy_to_pyLIMA[key_parameter](parameters))
+        # print 'fancy to PYLIMA', python_time.time() - start_time
+        return fancy_parameters
 
-        return parameter
+    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
 
-    def pyLIMA_standard_parameters_to_fancy_parameters(self, parameters):
-
-        parameter = collections.namedtuple('parameters', self.pyLIMA_standards_dictionnary)
-
-        for key_parameter in self.pyLIMA_standards_dictionnary.keys():
-            setattr(parameter, key_parameter, parameters[self.pyLIMA_standards_dictionnary[key_parameter]])
 
         if len(self.pyLIMA_to_fancy) != 0:
 
             for key_parameter in self.pyLIMA_to_fancy.keys():
-                setattr(parameter, key_parameter, self.pyLIMA_to_fancy[key_parameter](parameters))
+                setattr(pyLIMA_parameters, key_parameter, self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
 
-        return parameter
+        return pyLIMA_parameters
 
     def source_trajectory(self, telescope, to, uo, tE, alpha=0.0, parallax=None, orbital_motion=None):
+
         """ NEED A DOCSTRING
         """
+
+        # start_time = python_time.time()
         lightcurve = telescope.lightcurve_flux
         time = lightcurve[:, 0]
 
@@ -384,9 +415,11 @@ class MLModels(object):
         source_trajectory_x = tau * np.cos(alpha) - uo * np.sin(alpha)
         source_trajectory_y = tau * np.sin(alpha) + uo * np.cos(alpha)
 
+        # print 'trajectory', python_time.time() - start_time
         return source_trajectory_x, source_trajectory_y
 
     def model_Jacobian(self, fit_process_parameters):
+
         """Return the analytical Jacobian matrix, if requested by method LM.
         Available only for PSPL and FSPL without second_order.
 
@@ -396,6 +429,7 @@ class MLModels(object):
         :return: a numpy array which represents the jacobian matrix
         :rtype: array_like
         """
+
         # TODO :PROBABLY NEED REWORK
         if self.paczynski_model == 'PSPL':
 
@@ -421,7 +455,7 @@ class MLModels(object):
                                    (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
 
                 # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
-                dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / \
+                dUdto = -(time - fit_process_parameters[self.tionnary['to']]) / \
                         (fit_process_parameters[self.model_dictionnary['tE']] ** 2 * Amplification[1])
                 dUduo = fit_process_parameters[self.model_dictionnary['uo']] / Amplification[1]
                 dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / \
