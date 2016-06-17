@@ -18,9 +18,9 @@ def test_amplification_PSPL():
     magnification, u = microlmagnification.amplification_PSPL(tau, uo)
 
 
-    EPSILON = 0.001
+   
 
-    assert np.abs(magnification-1.3416)<=EPSILON
+    assert np.allclose(magnification,np.array([1.34164079]))
     assert u == 1
 
 def test_amplification_FSPL_one_point():

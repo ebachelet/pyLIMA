@@ -16,7 +16,7 @@ import emcee
 import microlmodels
 import microloutputs
 import microlguess
-
+import microlpriors
 
 class MLFits(object):
     """
@@ -180,7 +180,7 @@ class MLFits(object):
                 flag_quality = 'Bad Fit'
                 return flag_quality
 
-        if 'rho' in self.model.model_dictionnary:
+        if 'rho' in self.model.model_dictionnary.keys():
 
             if (self.fit_results[self.model.model_dictionnary['rho']] > 0.1) | \
                     (self.fit_results[self.model.model_dictionnary['rho']] < 0.0):
@@ -210,7 +210,7 @@ class MLFits(object):
         fake_model = microlmodels.MLModels(self.event, 'PSPL')
         telescopes_fluxes = self.find_fluxes(guess_parameters, fake_model)
 
-        # The survey is already known from microlguess
+        # The survey fluxes are already known from microlguess
         telescopes_fluxes[0] = f_source
         telescopes_fluxes[1] = 0.0
 
@@ -237,7 +237,7 @@ class MLFits(object):
                 setattr(guess_parameters_pyLIMA_standards, key_parameter,
                         guess_parameters[self.model.pyLIMA_standards_dictionnary[key_parameter]])
 
-            except :
+            except:
 
                 pass
 
@@ -247,6 +247,7 @@ class MLFits(object):
         model_guess_parameters = []
         for key_parameter in self.model.model_dictionnary.keys():
             model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
+
         return model_guess_parameters
 
     def MCMC(self):
@@ -264,16 +265,16 @@ class MLFits(object):
 
             Launch nwalkers = 200 chains with 100 links
         """
-        differential_evolution_estimation = scipy.optimize.differential_evolution(self.chichi_differential_evolution,
-                                                                                  bounds=self.model.parameters_boundaries,
-                                                                                  mutation=(0.5, 1), popsize=30,
-                                                                                  recombination=0.7, polish='None')
+        differential_evolution_estimation = self.differential_evolution()[0]
+
+        self.guess = differential_evolution_estimation
 
         print 'pre MCMC done'
         # Best solution
-        best_solution = differential_evolution_estimation['x']
 
-        number_of_paczynski_parameters = len(best_solution)
+        best_solution = self.guess
+
+        number_of_paczynski_parameters = len(self.model.parameters_boundaries)
         # nwalkers = 100*number_of_paczynski_parameters
         nwalkers = 200
         # Initialize the population of MCMC
@@ -289,8 +290,8 @@ class MLFits(object):
                                                                              best_solution[self.model.model_dictionnary[
                                                                                  parameter_key]]))
 
-            # fluxes = self.find_fluxes(individual,self.model)
-            # individual += fluxes
+            #fluxes = self.find_fluxes(individual,self.model)
+            #individual += fluxes
 
             chichi = self.chichi_MCMC(individual)
 
@@ -298,7 +299,7 @@ class MLFits(object):
                 # np.array(individual)
                 population.append(np.array(individual))
                 count_walkers += 1
-        # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
+        #number_of_parameters = number_of_paczynski_parameters + len(fluxes)
         number_of_parameters = number_of_paczynski_parameters
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
 
@@ -559,6 +560,11 @@ class MLFits(object):
 
         :rtype: float
         """
+        prior_limit = microlpriors.microlensing_parameters_limits_priors(fit_process_parameters, self.model.parameters_boundaries)
+
+        if prior_limit == np.inf:
+
+            return -np.inf
 
         chichi = 0
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)

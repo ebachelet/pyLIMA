@@ -159,7 +159,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col')
 
     count_i = 0
-
+    #unique_mcmc_individuals = np.vstack({tuple(row) for row in mcmc_best})
     for key_i in fit.model.model_dictionnary.keys()[: dimensions]:
 
         axes2[count_i, 0].set_ylabel(key_i)
@@ -187,14 +187,15 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
 
                     axes2[count_i, count_j].scatter(
                         mcmc_best[:, fit.model.model_dictionnary[key_j]],
-                        mcmc_best[:, fit.model.model_dictionnary[key_i]], c=mcmc_best[:, -1],
+                        mcmc_best[:, fit.model.model_dictionnary[key_i]],
+                        c=mcmc_best[:, -1],
                         edgecolor='None')
                     axes2[count_i, count_j].set_xlim(
-                        [min(mcmc_best[:, fit.model.model_dictionnary[key_j]]),
-                         max(mcmc_best[:, fit.model.model_dictionnary[key_j]])])
+                        [min(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_j]]),
+                         max(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_j]])])
                     axes2[count_i, count_j].set_ylim(
-                        [min(mcmc_best[:, fit.model.model_dictionnary[key_i]]),
-                         max(mcmc_best[:, fit.model.model_dictionnary[key_i]])])
+                        [min(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_i]]),
+                         max(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_i]])])
                     axes2[count_i, count_j].locator_params(nbins=dimensions / 2)
                 else:
                     axes2[count_i, count_j].axis('off')
@@ -266,8 +267,8 @@ def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map):
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
     reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
-    pyLIMA_parameters = self.model.compute_pyLIMA_parameters(parameters)
-    flux_model = fit.model.compute_the_microlensing_model(reference_telescope,  pyLIMA_parameters)[0]
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+    flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
 
     magnitude_model = microltoolbox.flux_to_magnitude(flux_model)
 
@@ -495,8 +496,6 @@ def LM_plot_residuals(fit, figure_axe):
     """
 
     for telescope in fit.event.telescopes:
-
-
         time = telescope.lightcurve_flux[:, 0]
         flux = telescope.lightcurve_flux[:, 1]
         error_flux = telescope.lightcurve_flux[:, 2]

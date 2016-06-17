@@ -254,7 +254,7 @@ class MLModels(object):
     def compute_pyLIMA_parameters(self, input_parameters):
         """ NEED A DOCSTRING
         """
-        #start_time = python_time.time()
+        # start_time = python_time.time()
         model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
 
         for key_parameter in self.model_dictionnary.keys():
@@ -267,11 +267,11 @@ class MLModels(object):
 
                 pass
 
-        #print 'arange', python_time.time() - start_time
+        # print 'arange', python_time.time() - start_time
 
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
 
-        #print 'conversion', python_time.time() - start_time
+        # print 'conversion', python_time.time() - start_time
         return pyLIMA_parameters
 
     def model_magnification(self, telescope, pyLIMA_parameters):
@@ -380,7 +380,6 @@ class MLModels(object):
 
     def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
 
-
         if len(self.pyLIMA_to_fancy) != 0:
 
             for key_parameter in self.pyLIMA_to_fancy.keys():
@@ -455,7 +454,7 @@ class MLModels(object):
                                    (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
 
                 # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
-                dUdto = -(time - fit_process_parameters[self.tionnary['to']]) / \
+                dUdto = -(time - fit_process_parameters[self.model_dictionnary['to']]) / \
                         (fit_process_parameters[self.model_dictionnary['tE']] ** 2 * Amplification[1])
                 dUduo = fit_process_parameters[self.model_dictionnary['uo']] / Amplification[1]
                 dUdtE = -(time - fit_process_parameters[self.model_dictionnary['to']]) ** 2 / \

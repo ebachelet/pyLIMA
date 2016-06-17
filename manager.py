@@ -33,7 +33,7 @@ def main(command_line):
     results = []
     errors = []
 
-    for event_name in events_names[0:]:
+    for event_name in events_names[1:]:
 
         # name='Lightcurve_'+str(9975)+'_'
         name = event_name[:-10]
@@ -94,17 +94,13 @@ def main(command_line):
         Model = microlmodels.MLModels(current_event, command_line.model,
                                       parallax=['None', 50.0])
 
-        #Model.fancy_to_pyLIMA_dictionnary = {'tstar': 'tE','logustar':'uo','tpresque':'to'}
-        #Model.pyLIMA_to_fancy = {
-        #    'tstar': lambda parameters: np.log10(parameters.tE),
-        #    'logustar': lambda parameters: np.log10(parameters.tE*parameters.uo*parameters.to),
-        #    'tpresque': lambda parameters: parameters.to-1}
+        #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
-        #Model.fancy_to_pyLIMA = {'tE': lambda parameters: 10 ** parameters.tstar,
-        #                        'uo':lambda parameters: 10**parameters.logustar/((parameters.tpresque+1)*10 ** parameters.tstar),
-        #                        'to':lambda parameters: parameters.tpresque+1
-        #                         }
-        current_event.fit(Model, 'LM')
+        #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
+        #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
+
+        #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
+        current_event.fit(Model, 'MCMC')
         import pdb;
         pdb.set_trace()
         current_event.fits[0].produce_outputs()

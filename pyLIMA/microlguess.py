@@ -271,6 +271,6 @@ def MCMC_parameters_initialization(parameter_key, parameter_value):
 
     else:
 
-        all_other_parameter_trial = parameter_value * (1 + np.random.uniform(-0.9, 0.9))
+        all_other_parameter_trial = parameter_value * (1 + np.random.uniform(-0.1, 0.1))
 
         return all_other_parameter_trial
