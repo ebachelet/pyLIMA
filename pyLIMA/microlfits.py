@@ -63,7 +63,7 @@ class MLFits(object):
         """The fit class has to be intialized with an event object."""
 
         self.event = event
-        self.model = 'None'
+        self.model = microlmodels.MLModels(event)
         self.method = 'None'
         self.guess = 0.0
         self.outputs = []
@@ -616,11 +616,11 @@ class MLFits(object):
 
     def model_residuals(self, telescope, fit_process_parameters):
         """ Compute the residuals and the priors of a telescope lightcurve according to the model.
-    
+
         :param object telescope: a telescope object. More details in telescopes module.
         :param list fit_process_parameters: the model parameters ingested by the correpsonding
         fitting routine.
-        
+
         :return: the residuals in flux, the priors
         :rtype: array_like, float
         """
