@@ -13,6 +13,10 @@ import numpy as np
 from pyLIMA import microlfits
 
 
+class EventException(Exception):
+    pass
+
+
 class Event(object):
     """
     ######## Event module ########
@@ -118,21 +122,19 @@ class Event(object):
         """
 
         if not isinstance(self.name, basestring):
-            sys.exit('ERROR : The event name (' + str(
+            raise EventException('ERROR : The event name (' + str(
                 self.name) + ') is not correct, it has to be a string')
 
         if (self.ra > 360) or (self.ra < 0):
-            sys.exit('ERROR : The event ra (' + str(
+            raise EventException('ERROR : The event ra (' + str(
                 self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees')
 
         if (self.dec > 90) or (self.dec < -90):
-            sys.exit('ERROR : The event dec (' + str(
+            raise EventException('ERROR : The event dec (' + str(
                 self.dec) + ') is not correct, it has to be between -90 and 90 degrees')
 
         if len(self.telescopes) == 0:
-            print 'ERROR : There is no associated telescopes with this event, add some using ' \
-                  'self.telescopes.append'
-            sys.exit('There is no telescope associated to your event, no fit possible!')
+            raise EventException('There is no telescope associated to your event, no fit possible!')
 
         else:
 
@@ -143,7 +145,7 @@ class Event(object):
                     print 'ERROR : There is no associated lightcurve in magnitude or flux with ' \
                           'this telescopes : ' \
                           + telescope.name + ', add one with telescope.lightcurve = your_data'
-                    sys.exit('There is no lightcurve associated to the  telescope ' + str(
+                    raise EventException('There is no lightcurve associated to the  telescope ' + str(
                         telescope.name) + ', no fit possible!')
 
         print 'Everything is fine, this event can be treat'

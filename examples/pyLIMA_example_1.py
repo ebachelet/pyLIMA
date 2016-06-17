@@ -30,7 +30,7 @@ your_event = event.Event()
 
 your_event.name = 'your choice'
 
-your_event.ra = 269.39166666666665 
+your_event.ra = 269.39166666666665
 
 your_event.dec = -29.22083333333333
 
@@ -73,7 +73,7 @@ your_event.fit(model_1,'LM')
 
 your_event.fits[0].produce_outputs()
 
-print 'Chi2_LM :',your_event.fits[0].outputs.fit_parameters.chichi
+print 'Chi2_LM :',your_event.fits[0].outputs.fit_parameters._chichi
 
 plt.show()
 
@@ -83,7 +83,7 @@ your_event.fit(model_1,'DE')
 
 your_event.fits[1].produce_outputs()
 
-print 'Chi2_DE :',your_event.fits[1].outputs.fit_parameters.chichi
+print 'Chi2_DE :',your_event.fits[1].outputs.fit_parameters._chichi
 
 plt.show()
 
@@ -97,7 +97,7 @@ your_event.fit(model_2,'LM')
 
 your_event.fits[-1].produce_outputs()
 
-print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi
+print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters._chichi
 
 plt.show()
 
@@ -112,7 +112,7 @@ your_event.fit(model_2,'LM')
 
 your_event.fits[-1].produce_outputs()
 
-print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi
+print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters._chichi
 
 plt.show()
 
@@ -122,7 +122,7 @@ your_event.fit(model_2,'DE')
 
 your_event.fits[-1].produce_outputs()
 
-print 'Chi2_DE :',your_event.fits[-1].outputs.fit_parameters.chichi
+print 'Chi2_DE :',your_event.fits[-1].outputs.fit_parameters._chichi
 
 plt.show()
 
@@ -133,7 +133,7 @@ print 'Parameters', ' Model','   Fit','     Errors'
 
 print '-----------------------------------'
 
-print 't_o', '        79.9309 ',str(your_event.fits[-1].outputs.fit_parameters.to)[:7],'',str(your_event.fits[-1].outputs.fit_errors.err_to)[:7] 
+print 't_o', '        79.9309 ',str(your_event.fits[-1].outputs.fit_parameters.to)[:7],'',str(your_event.fits[-1].outputs.fit_errors.err_to)[:7]
 
 print 'u_o', '        0.00826 ',str(your_event.fits[-1].outputs.fit_parameters.uo)[:7],'',str(your_event.fits[-1].outputs.fit_errors.err_uo)[:7]
 

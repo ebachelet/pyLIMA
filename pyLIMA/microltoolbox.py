@@ -11,6 +11,23 @@ import numpy as np
 MAGNITUDE_CONSTANT = 27.4
 
 
+def chichi(residuals_fn, fit_process_parameters):
+    """Return the chi^2 .
+
+    :param list fit_process_parameters: the model parameters ingested by the correpsonding
+    fitting routine.
+
+    :returns: the chi^2
+
+    :rtype: float
+    """
+
+    residuals = residuals_fn(fit_process_parameters)
+    _chichi = (residuals ** 2).sum()
+
+    return _chichi
+
+
 def magnitude_to_flux(magnitude):
     """ Transform the injected magnitude to the the corresponding flux.
 

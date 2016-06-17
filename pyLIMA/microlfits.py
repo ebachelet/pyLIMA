@@ -16,7 +16,7 @@ import emcee
 import microlmodels
 import microloutputs
 import microlguess
-import microlpriors
+import microltoolbox
 
 
 class MLFits(object):
@@ -435,7 +435,7 @@ class MLFits(object):
         computation_time = python_time.time() - starting_time
 
         fit_result = lmarquardt_fit[0].tolist()
-        fit_result.append(self.chichi(lmarquardt_fit[0]))
+        fit_result.append(microltoolbox.chichi(self.residuals_LM, lmarquardt_fit[0]))
 
         n_data = 0.0
 
@@ -511,22 +511,6 @@ class MLFits(object):
             residuals = np.append(residuals, residus)
 
         return residuals
-
-    def chichi(self, fit_process_parameters):
-        """Return the chi^2 .
-
-        :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
-
-        :returns: the chi^2
-
-        :rtype: float
-        """
-
-        residuals = self.residuals_LM(fit_process_parameters)
-        chichi = (residuals ** 2).sum()
-
-        return chichi
 
     def chichi_telescopes(self, fit_process_parameters):
         """Return a list of chi^2 (float) for individuals telescopes.
