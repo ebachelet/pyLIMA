@@ -58,7 +58,7 @@ class Event(object):
         self.survey = 'None'
         self.fits = []
 
-    def fit(self, model, method):
+    def fit(self, model, method, flux_estimation_MCMC = 'MCMC'):
         """Function to fit the event with a model and a method.
 
 
@@ -96,7 +96,7 @@ class Event(object):
             return
 
         fit = microlfits.MLFits(self)
-        fit.mlfit(model, method)
+        fit.mlfit(model, method, flux_estimation_MCMC=flux_estimation_MCMC)
 
         self.fits.append(fit)
 

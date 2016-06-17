@@ -262,15 +262,29 @@ def differential_evolution_parameters_boundaries(event, model):
     return parameters_boundaries
 
 
-def MCMC_parameters_initialization(parameter_key, parameter_value):
+def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parameters):
     if parameter_key == 'to':
 
-        to_parameters_trial = parameter_value + np.random.uniform(-1, 1)
+        to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + np.random.uniform(-1, 1)
 
-        return to_parameters_trial
+        return [to_parameters_trial]
 
-    else:
+    if 'fs' in parameter_key :
 
-        all_other_parameter_trial = parameter_value * (1 + np.random.uniform(-0.1, 0.1))
+        epsilon = np.random.uniform(0.9, 1.1)
 
-        return all_other_parameter_trial
+        fs_trial = parameters[parameters_dictionnary[parameter_key]]*epsilon
+        g_trial = (1+parameters[parameters_dictionnary[parameter_key]+1])/epsilon -1
+
+        return [fs_trial,  g_trial]
+
+    if 'g_' in parameter_key :
+
+
+
+        return
+
+    epsilon = np.random.uniform(0.9, 1.1)
+    all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
+
+    return [all_other_parameter_trial]

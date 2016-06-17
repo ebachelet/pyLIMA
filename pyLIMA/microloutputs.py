@@ -90,9 +90,14 @@ def MCMC_outputs(fit):
     for i in xrange(chains[0].shape[1] - 1):
         i += 1
         CHAINS = np.c_[CHAINS, chains[:, :, i].ravel()]
-    fluxes = MCMC_compute_fs_g(fit, CHAINS)
+    CHAINS_NO_FLUXES = np.c_[CHAINS, probabilities.ravel()]
 
-    CHAINS = np.c_[CHAINS, fluxes, probabilities.ravel()]
+    if chains[0].shape[1] - 1 != len(fit.model.model_dictionnary):
+        fluxes = MCMC_compute_fs_g(fit, CHAINS)
+
+        CHAINS = np.c_[CHAINS, fluxes, probabilities.ravel()]
+
+
 
     best_proba = np.argmax(CHAINS[:, -1])
 
@@ -101,11 +106,13 @@ def MCMC_outputs(fit):
     BEST = CHAINS[index]
     BEST = BEST[BEST[:, -1].argsort(),]
 
+    BEST_PARAMETERS =  CHAINS_NO_FLUXES[index]
+    BEST_PARAMETERS = BEST_PARAMETERS[BEST_PARAMETERS[:, -1].argsort(),]
     covariance_matrix = MCMC_covariance(CHAINS)
     correlation_matrix = cov2corr(covariance_matrix)
 
     figure_lightcurve = MCMC_plot_lightcurves(fit, BEST)
-    figure_distributions = MCMC_plot_parameters_distribution(fit, BEST)
+    figure_distributions = MCMC_plot_parameters_distribution(fit,  BEST_PARAMETERS)
 
     key_outputs = ['MCMC_chains', 'MCMC_correlations', 'figure_lightcurve', 'figure_distributions']
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
@@ -159,7 +166,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col')
 
     count_i = 0
-    #unique_mcmc_individuals = np.vstack({tuple(row) for row in mcmc_best})
+    # unique_mcmc_individuals = np.vstack({tuple(row) for row in mcmc_best})
     for key_i in fit.model.model_dictionnary.keys()[: dimensions]:
 
         axes2[count_i, 0].set_ylabel(key_i)
@@ -191,11 +198,11 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
                         c=mcmc_best[:, -1],
                         edgecolor='None')
                     axes2[count_i, count_j].set_xlim(
-                        [min(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_j]]),
-                         max(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_j]])])
+                        [min(mcmc_best[:, fit.model.model_dictionnary[key_j]]),
+                         max(mcmc_best[:, fit.model.model_dictionnary[key_j]])])
                     axes2[count_i, count_j].set_ylim(
-                        [min(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_i]]),
-                         max(unique_mcmc_individuals[:, fit.model.model_dictionnary[key_i]])])
+                        [min(mcmc_best[:, fit.model.model_dictionnary[key_i]]),
+                         max(mcmc_best[:, fit.model.model_dictionnary[key_i]])])
                     axes2[count_i, count_j].locator_params(nbins=dimensions / 2)
                 else:
                     axes2[count_i, count_j].axis('off')

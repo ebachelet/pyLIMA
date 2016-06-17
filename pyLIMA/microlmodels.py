@@ -251,8 +251,13 @@ class MLModels(object):
 
         return delta_tau, delta_u
 
-    def compute_pyLIMA_parameters(self, input_parameters):
-        """ NEED A DOCSTRING
+    def compute_pyLIMA_parameters(self, fancy_parameters):
+        """ Realize the transformation between the fancy parameters to fit to the
+        standard pyLIMA parameters needed for computing a model.
+
+        :param list fancy_parameters: the parameters you fit
+        :return: pyLIMA parameters
+        :rtype: object (namedtuple)
         """
         # start_time = python_time.time()
         model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
@@ -261,7 +266,7 @@ class MLModels(object):
 
             try:
 
-                setattr(model_parameters, key_parameter, input_parameters[self.model_dictionnary[key_parameter]])
+                setattr(model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
 
             except:
 
@@ -275,8 +280,13 @@ class MLModels(object):
         return pyLIMA_parameters
 
     def model_magnification(self, telescope, pyLIMA_parameters):
+        """ Compute the magnification associated to the microlensing model.
 
-        """ NEED A DOCSTRING
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: the standard pyLIMA parameters
+        :return: amplification A(t) and the impact parameter U(t)
+        :rtype: array_like, array_like
         """
         piE = None
         dalphadt = None
@@ -315,8 +325,13 @@ class MLModels(object):
             return amplification, u
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
+        """ Compute the microlensing model of the corresponding telescope.
 
-        """ NEED A DOCSTRING
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: the standard pyLIMA parameters
+        :return: the microlensing model in flux and the piors
+        :rtype: array_like, float
         """
 
         # start_time = python_time.time()
@@ -326,13 +341,13 @@ class MLModels(object):
 
             try:
 
-                # LM method
+                # Fluxes parameters are fitted
                 f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
                 f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
             except:
 
-                # Other methods
+                # Fluxes parameters are estimated through np.polyfit
                 lightcurve = telescope.lightcurve_flux
                 flux = lightcurve[:, 1]
                 errflux = lightcurve[:, 2]
@@ -348,13 +363,13 @@ class MLModels(object):
 
             try:
 
-                # LM method
+                # Fluxes parameters are fitted
                 f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
                 f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
             except:
 
-                # Other methods
+                # Fluxes parameters are estimated through np.polyfit
                 lightcurve = telescope.lightcurve_flux
                 flux = lightcurve[:, 1]
                 errflux = lightcurve[:, 2]
@@ -368,7 +383,14 @@ class MLModels(object):
             return microlensing_model, priors
 
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
+        """ Transform the fancy parameters to the pyLIMA standards. The output got all
+        the necessary standard attributes, example to, uo, tE...
 
+
+        :param object fancy_parameters: the fancy_parameters as namedtuple
+        :return: the pyLIMA standards are added to the fancy parameters
+        :rtype: object
+        """
         # start_time = python_time.time()
         if len(self.fancy_to_pyLIMA) != 0:
 
@@ -379,7 +401,14 @@ class MLModels(object):
         return fancy_parameters
 
     def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
+        """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
+            the necessary fancy attributes.
 
+
+        :param object pyLIMA_parameters: the  standard pyLIMA parameters as namedtuple
+        :return: the fancy parameters are added to the fancy parameters
+        :rtype: object
+        """
         if len(self.pyLIMA_to_fancy) != 0:
 
             for key_parameter in self.pyLIMA_to_fancy.keys():
@@ -388,10 +417,20 @@ class MLModels(object):
         return pyLIMA_parameters
 
     def source_trajectory(self, telescope, to, uo, tE, alpha=0.0, parallax=None, orbital_motion=None):
+        """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
 
-        """ NEED A DOCSTRING
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param float to: the time of maximum magnification.
+        :param float uo: the minimum impact parameter, associated to to.
+        :param float tE: the angular Einstein ring crossing time
+        :param float alpha: the angle of the source trajectory, define in trigonometric convention.
+        :param array_like parallax: the parallax vector piE if needed
+        :param float orbital_motion: the angle shift dalphadt due to lens rotation
+
+        :return: source_trajectory_x, source_trajectory_y the x,y compenents of the source trajectory
+        :rtype: array_like,array_like
         """
-
         # start_time = python_time.time()
         lightcurve = telescope.lightcurve_flux
         time = lightcurve[:, 0]

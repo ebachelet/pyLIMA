@@ -48,6 +48,8 @@ class MLFits(object):
 
         MCMC_probabilities : the objective function computed for each chains of the MCMC method
 
+        fluxes_MCMC_method : a string describing how you want to estimate the model fluxes for the MCMC method.
+
         outputs : the standard pyLIMA outputs. More details in the microloutputs module.
 
     :param object event: the event object on which you perform the fit on. More details on the
@@ -69,8 +71,9 @@ class MLFits(object):
         self.fit_time = []
         self.MCMC_chains = []
         self.MCMC_probabilities = []
+        self.fluxes_MCMC_method = ''
 
-    def mlfit(self, model, method):
+    def mlfit(self, model, method, flux_estimation_MCMC):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -116,6 +119,7 @@ class MLFits(object):
 
         self.model = model
         self.method = method
+        self.fluxes_MCMC_method = flux_estimation_MCMC
 
         self.model.define_model_parameters()
 
@@ -274,9 +278,14 @@ class MLFits(object):
 
         best_solution = self.guess
 
-        number_of_paczynski_parameters = len(self.model.parameters_boundaries)
-        # nwalkers = 100*number_of_paczynski_parameters
+        if self.fluxes_MCMC_method == 'MCMC' :
+            limit_parameters = len(self.model.model_dictionnary.keys())
+
+        else :
+            limit_parameters = len(self.model.parameters_boundaries)
+
         nwalkers = 200
+
         # Initialize the population of MCMC
         population = []
 
@@ -285,10 +294,16 @@ class MLFits(object):
 
             # Construct an individual of the population around the best solution.
             individual = []
-            for parameter_key in self.model.model_dictionnary.keys()[:number_of_paczynski_parameters]:
-                individual.append(microlguess.MCMC_parameters_initialization(parameter_key,
-                                                                             best_solution[self.model.model_dictionnary[
-                                                                                 parameter_key]]))
+            for parameter_key in self.model.model_dictionnary.keys()[:limit_parameters]:
+
+                parameter_trial = microlguess.MCMC_parameters_initialization(parameter_key, self.model.model_dictionnary,
+                                                                             best_solution)
+
+                if parameter_trial:
+
+                    for parameter in parameter_trial:
+
+                        individual.append(parameter)
 
             #fluxes = self.find_fluxes(individual,self.model)
             #individual += fluxes
@@ -300,7 +315,9 @@ class MLFits(object):
                 population.append(np.array(individual))
                 count_walkers += 1
         #number_of_parameters = number_of_paczynski_parameters + len(fluxes)
-        number_of_parameters = number_of_paczynski_parameters
+        #number_of_parameters = number_of_paczynski_parameters
+
+        number_of_parameters = len(individual)
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
 
         # First estimation using population as a starting points.
@@ -560,11 +577,11 @@ class MLFits(object):
 
         :rtype: float
         """
-        prior_limit = microlpriors.microlensing_parameters_limits_priors(fit_process_parameters, self.model.parameters_boundaries)
+        #prior_limit = microlpriors.microlensing_parameters_limits_priors(fit_process_parameters, self.model.parameters_boundaries)
 
-        if prior_limit == np.inf:
+        #if prior_limit == np.inf:
 
-            return -np.inf
+            #return -np.inf
 
         chichi = 0
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
