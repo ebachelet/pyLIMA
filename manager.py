@@ -100,7 +100,7 @@ def main(command_line):
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'MCMC')
+        current_event.fit(Model, 'LM')
         import pdb;
         pdb.set_trace()
         current_event.fits[0].produce_outputs()

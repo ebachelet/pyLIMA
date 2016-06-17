@@ -18,6 +18,7 @@ import microloutputs
 import microlguess
 import microlpriors
 
+
 class MLFits(object):
     """
     ######## Fitter module ########
@@ -267,8 +268,15 @@ class MLFits(object):
             :return: a tuple containing (MCMC_chains, MCMC_probabilities)
             :rtype: tuple
 
-            Launch nwalkers = 200 chains with 100 links
+            **WARNING** :
+                   nwalkers is set to 200
+                   nlinks is set to 100
+                   nwalkers*nlinks MCMC steps in total
         """
+
+        nwalkers = 200
+        nlinks = 100
+
         differential_evolution_estimation = self.differential_evolution()[0]
 
         self.guess = differential_evolution_estimation
@@ -278,10 +286,10 @@ class MLFits(object):
 
         best_solution = self.guess
 
-        if self.fluxes_MCMC_method == 'MCMC' :
+        if self.fluxes_MCMC_method == 'MCMC':
             limit_parameters = len(self.model.model_dictionnary.keys())
 
-        else :
+        else:
             limit_parameters = len(self.model.parameters_boundaries)
 
         nwalkers = 200
@@ -296,17 +304,17 @@ class MLFits(object):
             individual = []
             for parameter_key in self.model.model_dictionnary.keys()[:limit_parameters]:
 
-                parameter_trial = microlguess.MCMC_parameters_initialization(parameter_key, self.model.model_dictionnary,
+                parameter_trial = microlguess.MCMC_parameters_initialization(parameter_key,
+                                                                             self.model.model_dictionnary,
                                                                              best_solution)
 
                 if parameter_trial:
 
                     for parameter in parameter_trial:
-
                         individual.append(parameter)
 
-            #fluxes = self.find_fluxes(individual,self.model)
-            #individual += fluxes
+            # fluxes = self.find_fluxes(individual,self.model)
+            # individual += fluxes
 
             chichi = self.chichi_MCMC(individual)
 
@@ -314,21 +322,21 @@ class MLFits(object):
                 # np.array(individual)
                 population.append(np.array(individual))
                 count_walkers += 1
-        #number_of_parameters = number_of_paczynski_parameters + len(fluxes)
-        #number_of_parameters = number_of_paczynski_parameters
+        # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
+        # number_of_parameters = number_of_paczynski_parameters
 
         number_of_parameters = len(individual)
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
 
         # First estimation using population as a starting points.
 
-        final_positions, final_probabilities, state = sampler.run_mcmc(population, 100)
+        final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
         print 'MCMC preburn done'
         sampler.reset()
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions, 100)
+        sampler.run_mcmc(final_positions, nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
@@ -363,11 +371,13 @@ class MLFits(object):
             mutation=0.6, popsize=20,
             tol=0.000001,
             recombination=0.6, polish='True',
-            disp=True
+            disp=False
         )
 
+        # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
         paczynski_parameters = differential_evolution_estimation['x'].tolist()
 
+        print 'DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun'])
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
 
@@ -577,11 +587,11 @@ class MLFits(object):
 
         :rtype: float
         """
-        #prior_limit = microlpriors.microlensing_parameters_limits_priors(fit_process_parameters, self.model.parameters_boundaries)
+        # prior_limit = microlpriors.microlensing_parameters_limits_priors(fit_process_parameters, self.model.parameters_boundaries)
 
-        #if prior_limit == np.inf:
+        # if prior_limit == np.inf:
 
-            #return -np.inf
+        # return -np.inf
 
         chichi = 0
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
