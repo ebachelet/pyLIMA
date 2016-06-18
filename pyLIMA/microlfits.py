@@ -205,31 +205,31 @@ class MLFits(object):
         # Estimate  the Paczynski parameters
 
         if self.model.paczynski_model == 'PSPL':
-            guess_parameters, f_source = microlguess.initial_guess_PSPL(self.event)
+            guess_paczynski_parameters, f_source = microlguess.initial_guess_PSPL(self.event)
 
         if self.model.paczynski_model == 'FSPL':
-            guess_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+            guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
 
         # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
         fake_model = microlmodels.MLModels(self.event, 'PSPL')
-        telescopes_fluxes = self.find_fluxes(guess_parameters, fake_model)
+        telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
 
         # The survey fluxes are already known from microlguess
         telescopes_fluxes[0] = f_source
         telescopes_fluxes[1] = 0.0
 
         if self.model.parallax_model[0] != 'None':
-            guess_parameters = guess_parameters + [0.0, 0.0]
+            guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
         if self.model.xallarap_model[0] != 'None':
-            guess_parameters = guess_parameters + [0, 0]
+            guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
         if self.model.orbital_motion_model[0] != 'None':
-            guess_parameters = guess_parameters + [0, 0]
+            guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
         if self.model.source_spots_model != 'None':
-            guess_parameters = guess_parameters + [0]
+            guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
         guess_parameters += telescopes_fluxes
 

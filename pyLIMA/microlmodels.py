@@ -630,3 +630,35 @@ class MLModels(object):
             start_index = index[-1] + 1
 
         return jacobi
+
+#Tentative of polymorphism
+class Model_PSPL(MLModels) :
+
+    def pacsynski_model_dictionnary(self):
+
+        return {'to': 0, 'uo': 1, 'tE': 2}
+
+    def magnification(self, parameters):
+
+        source_trajectory_x = parameters[0]
+        source_trajectory_y = parameters[1]
+
+        return microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
+
+
+
+class Model_FSPL(MLModels) :
+
+    def pacsynski_model_dictionnary(self):
+
+        return {'to': 0, 'uo': 1, 'tE': 2, 'rho': 4}
+
+    def magnification(self, parameters):
+
+        source_trajectory_x = parameters[0]
+        source_trajectory_y = parameters[1]
+
+        rho = parameters[2]
+        gamma = parameters[3]
+
+        return microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
