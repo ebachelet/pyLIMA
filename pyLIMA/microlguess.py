@@ -80,8 +80,6 @@ def initial_guess_PSPL(event):
             Errmag.append(np.mean(lightcurve_bis[good_points, 2]))
 
         except:
-            import pdb
-            pdb.set_trace()
 
             time = lightcurve_magnitude[:, 0]
             flux = microltoolbox.magnitude_to_flux(lightcurve_magnitude[:, 1])

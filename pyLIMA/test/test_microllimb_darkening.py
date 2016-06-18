@@ -4,7 +4,7 @@ Created on Thu Aug 27 16:39:32 2015
 
 @author: ebachelet
 """
-from microllimb_darkening import read_claret_data
+from pyLIMA import microllimb_darkening 
 
 DATA = """ 0.00  3500. -5.0  2.0  0.6278 Kp L  ATLAS
  0.50  3500. -5.0  2.0  0.6161 Kp L  ATLAS
@@ -30,17 +30,17 @@ DATA = """ 0.00  3500. -5.0  2.0  0.6278 Kp L  ATLAS
 
 
 def test_reading_file():
-    data = list(read_claret_data(DATA, camera_filter='all'))
+    data = list(microllimb_darkening.read_claret_data(DATA, camera_filter='all'))
 
     assert len(data) == 20
 
 
 def test_read_row_object():
-    data = list(read_claret_data(DATA, camera_filter='all'))
+    data = list(microllimb_darkening.read_claret_data(DATA, camera_filter='all'))
 
     first_row_object = data[0]
 
-    assert first_row_object.logg == 0.0
+    assert first_row_object.log_g == 0.0
     assert first_row_object.Teff == 3500.0
     assert first_row_object.metallicity == -5.0
     assert first_row_object.microturbulent_velocity == 2.0
@@ -51,7 +51,7 @@ def test_read_row_object():
 
 
 def test_filter_by_filter():
-    data = list(read_claret_data(DATA, camera_filter="z'"))
+    data = list(microllimb_darkening.read_claret_data(DATA, camera_filter="z'"))
 
     assert len(data) == 10
     assert data[0].filter == "z'"

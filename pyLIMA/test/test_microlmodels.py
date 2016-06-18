@@ -17,7 +17,7 @@ def _create_event():
     event.telescopes = [mock.MagicMock()]
     event.telescopes[0].name = 'Test'
     event.telescopes[0].lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
-
+    event.telescopes[0].gamma = 0.5
     return event
 
 
@@ -46,9 +46,8 @@ def test_magnification_FSPL_computation():
     parameters = Parameters(0, 0.1, 1, 5e-2)
 
     amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
-
-    # CHECK THIS!!!
-    assert np.allclose(amplification, np.array([0.0, 1.00]))
+    
+    assert np.allclose(amplification, np.array([ 10.34817883,   1.00000064]))
     assert np.allclose(impact_parameter, np.array([0.1, 42.0]))
 
 def test_magnification_PSPL_computation():

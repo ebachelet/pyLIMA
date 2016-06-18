@@ -14,6 +14,8 @@ MAGNITUDE_CONSTANT = 27.4
 def chichi(residuals_fn, fit_process_parameters):
     """Return the chi^2 .
 
+
+    :param func residuals_fn: a function which compute the residuals
     :param list fit_process_parameters: the model parameters ingested by the correpsonding
     fitting routine.
 
