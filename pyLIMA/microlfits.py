@@ -231,7 +231,7 @@ class MLFits(object):
         if self.model.source_spots_model != 'None':
             guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
-        guess_parameters += telescopes_fluxes
+        guess_paczynski_parameters += telescopes_fluxes
 
         guess_parameters_pyLIMA_standards = collections.namedtuple('parameters',
                                                                    self.model.pyLIMA_standards_dictionnary.keys())
@@ -240,7 +240,7 @@ class MLFits(object):
 
             try:
                 setattr(guess_parameters_pyLIMA_standards, key_parameter,
-                        guess_parameters[self.model.pyLIMA_standards_dictionnary[key_parameter]])
+                        guess_paczynski_parameters[self.model.pyLIMA_standards_dictionnary[key_parameter]])
 
             except:
 

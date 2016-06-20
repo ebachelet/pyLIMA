@@ -101,6 +101,9 @@ def main(command_line):
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
         current_event.fit(Model, 'LM')
+        Model = microlmodels.MLModels2(current_event, command_line.model,
+                                      parallax=['None', 50.0])
+
         import pdb;
         pdb.set_trace()
         current_event.fits[0].produce_outputs()
@@ -123,7 +126,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', default='FSPL')
+    parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/Desktop/Microlensing/OpenSourceProject/'
                                 'SimulationML/Lightcurves_FSPL/Lightcurves/')
