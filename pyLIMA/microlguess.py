@@ -244,7 +244,7 @@ def differential_evolution_parameters_boundaries(event, model):
 
     parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
 
-    if model.paczynski_model == 'FSPL':
+    if model.paczynski_model.model_type == 'FSPL':
         parameters_boundaries.append(rho_boundaries)
 
     if model.parallax_model[0] != 'None':

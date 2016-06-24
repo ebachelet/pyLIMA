@@ -8,6 +8,9 @@ Created on Mon Dec  7 10:32:13 2015
 from __future__ import division
 from collections import OrderedDict
 import os.path
+import abc
+import sys
+thismodule = sys.modules[__name__]
 
 import numpy as np
 from scipy import interpolate, misc
@@ -49,6 +52,97 @@ dB1 = np.concatenate([dB1, [dB1[-1]]])
 interpol_db0 = interpolate.interp1d(zz, dB0, kind='linear')
 interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
 yoo_table = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
+
+
+class ModelException(Exception):
+    pass
+
+
+def create_model(model_type):
+    """
+    Load a model according to the supplied model_type. Models are expected to be named
+    Model<model_type> e.g. ModelPSPL
+
+    :param string model_type: Model type e.g. PSPL
+    :return: Model object for given model_type
+    """
+    try:
+        return getattr(thismodule, 'Model{}'.format(model_type))()
+    except AttributeError:
+        raise ModelException('Unknown model "{}"'.format(model_type))
+
+
+class Model2(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
+    def model_type(self):
+        pass
+
+    @abc.abstractmethod
+    def paczynski_model_parameters(self):
+        return
+
+    @abc.abstractmethod
+    def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
+        return
+
+    def compute_the_microlensing_model(self, amplification, u, pyLIMA_parameters, telescope):
+        return self._default_microlensing_model(amplification, u, pyLIMA_parameters, telescope)
+
+    def _default_microlensing_model(self, amplification, u, pyLIMA_parameters, telescope):
+        try:
+            # Fluxes parameters are fitted
+            f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
+            f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
+
+        except AttributeError:
+
+            # Fluxes parameters are estimated through np.polyfit
+            lightcurve = telescope.lightcurve_flux
+            flux = lightcurve[:, 1]
+            errflux = lightcurve[:, 2]
+            f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+
+        microlensing_model = f_source * amplification + f_blending
+
+        # Prior here
+        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
+        # print 'the microl model', python_time.time() - start_time
+        return microlensing_model, priors
+
+
+class ModelPSPL(Model2):
+
+    @property
+    def model_type(self):
+        return 'PSPL'
+
+    def paczynski_model_parameters(self):
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2}
+
+        return model_dictionary
+
+    def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
+        return microlmagnification.amplification_PSPL(*source_trajectory)
+
+
+class ModelFSPL(Model2):
+
+    @property
+    def model_type(self):
+        return 'FSPL'
+
+    def paczynski_model_parameters(self):
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3}
+
+        return model_dictionary
+
+    def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
+        source_trajectory_x, source_trajectory_y = source_trajectory
+        rho = pyLIMA_parameters.rho
+        amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x,source_trajectory_y, rho, gamma, yoo_table)
+        return amplification, u
 
 
 class MLModels(object):
@@ -119,13 +213,13 @@ class MLModels(object):
     :param string source_spots: a string indicated the source_spots you want. NOT WORKING.
     """
 
-    def __init__(self, event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
+    def __init__(self, event, model, parallax=['None', 0.0], xallarap=['None', 0.0],
                  orbital_motion=['None', 0.0], source_spots='None'):
         """ Initialization of the attributes described above.
         """
 
         self.event = event
-        self.paczynski_model = model
+        self.paczynski_model = create_model(model)
         self.parallax_model = parallax
         self.xallarap_model = xallarap
         self.orbital_motion_model = orbital_motion
@@ -158,12 +252,7 @@ class MLModels(object):
         is what (
         Paczynski parameters+second_order+fluxes
         """
-        if self.paczynski_model == 'PSPL':
-            self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
-
-        if self.paczynski_model == 'FSPL':
-            self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
-            self.model_dictionnary['rho'] = len(self.model_dictionnary)
+        self.model_dictionnary = self.paczynski_model.paczynski_model_parameters()
 
         if self.parallax_model[0] != 'None':
             self.model_dictionnary['piEN'] = len(self.model_dictionnary)
@@ -298,31 +387,13 @@ class MLModels(object):
         if self.orbital_motion_model[0] != 'None':
             pass
 
-        if self.paczynski_model == 'PSPL':
-            to = pyLIMA_parameters.to
-            uo = pyLIMA_parameters.uo
-            tE = pyLIMA_parameters.tE
-
-            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
-                                                                              parallax=piE, orbital_motion=dalphadt)
-
-            amplification, u = microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
-
-            return amplification, u
-
-        if self.paczynski_model == 'FSPL':
-            to = pyLIMA_parameters.to
-            uo = pyLIMA_parameters.uo
-            tE = pyLIMA_parameters.tE
-
-            source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
-                                                                              parallax=piE, orbital_motion=dalphadt)
-            rho = pyLIMA_parameters.rho
-            gamma = telescope.gamma
-            amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
-                                                                      gamma, self.yoo_table)
-
-            return amplification, u
+        to = pyLIMA_parameters.to
+        uo = pyLIMA_parameters.uo
+        tE = pyLIMA_parameters.tE
+        source_trajectory = self.source_trajectory(telescope, to, uo, tE, alpha=0.0,
+                                                   parallax=piE, orbital_motion=dalphadt)
+        return self.paczynski_model.model_magnification(pyLIMA_parameters, source_trajectory,
+                                                        telescope.gamma, self.yoo_table)
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
         """ Compute the microlensing model of the corresponding telescope.
@@ -336,51 +407,9 @@ class MLModels(object):
 
         # start_time = python_time.time()
         amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
-
-        if self.paczynski_model == 'PSPL':
-
-            try:
-
-                # Fluxes parameters are fitted
-                f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
-                f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
-
-            except:
-
-                # Fluxes parameters are estimated through np.polyfit
-                lightcurve = telescope.lightcurve_flux
-                flux = lightcurve[:, 1]
-                errflux = lightcurve[:, 2]
-                f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-
-            microlensing_model = f_source * amplification + f_blending
-            # Prior here
-            priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
-
-            return microlensing_model, priors
-
-        if self.paczynski_model == 'FSPL':
-
-            try:
-
-                # Fluxes parameters are fitted
-                f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
-                f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
-
-            except:
-
-                # Fluxes parameters are estimated through np.polyfit
-                lightcurve = telescope.lightcurve_flux
-                flux = lightcurve[:, 1]
-                errflux = lightcurve[:, 2]
-                f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-
-            microlensing_model = f_source * amplification + f_blending
-
-            # Prior here
-            priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
-            # print 'the microl model', python_time.time() - start_time
-            return microlensing_model, priors
+        return self.paczynski_model.compute_the_microlensing_model(amplification, u,
+                                                                   pyLIMA_parameters,
+                                                                   telescope)
 
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
         """ Transform the fancy parameters to the pyLIMA standards. The output got all
@@ -631,187 +660,3 @@ class MLModels(object):
             start_index = index[-1] + 1
 
         return jacobi
-
-#Tentative of polymorphism
-class MLModels2(object):
-    """
-    ######## MLModels module ########
-
-    This module defines the model you want to fit your data to.
-
-    Attributes :
-
-        event : A event class which describe your event that you want to model. See the event module.
-
-        paczynski_model : The microlensing model you want. Has to be a string :
-
-                 'PSPL' --> Point Source Point Lens. The amplification is taken from :
-                 "Gravitational microlensing by the galactic halo" Paczynski,B. 1986ApJ...304....1P
-
-                 'FSPL' --> Finite Source Point Lens. The amplification is taken from :
-                 "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens' Yoo,
-                 J. et al.2004ApJ...603..139Y
-                 Note that the LINEAR LIMB-DARKENING is used, where the table b0b1.dat is interpolated
-                 to compute B0(z) and B1(z).
-
-                 'DSPL'  --> not available now
-                 'Binary' --> not available now
-                 'Triple' --> not available now
-
-        parallax_model : Parallax model you want to use for the Earth types telescopes.
-                   Has to be a list containing the model in the available_parallax
-                   parameter and the value of topar. Have a look here for more details :
-                   http://adsabs.harvard.edu/abs/2011ApJ...738...87S
-
-                    'Annual' --> Annual parallax
-                    'Terrestrial' --> Terrestrial parallax
-                    'Full' --> combination of previous
-
-                    topar --> a time in HJD choosed as the referenced time fot the parallax
-
-                  If you have some Spacecraft types telescopes, the space based parallax
-                  is computed if parallax is different of 'None'
-                  More details in the microlparallax module
-
-        xallarap_model : not available yet
-
-        orbital_motion_model : not available yet
-
-                'None' --> No orbital motion
-                '2D' --> Classical orbital motion
-                '3D' --> Full Keplerian orbital motion
-
-                toom --> a time in HJD choosed as the referenced time fot the orbital motion
-                        (Often choose equal to topar)
-
-                More details in the microlomotion module
-
-        source_spots_model : not available yet
-
-                'None' --> No source spots
-
-                 More details in the microlsspots module
-
-    :param object event: a event object. More details on the event module.
-    :param string model: the microlensing model you want.
-    :param list parallax: a list of [string,float] indicating the parallax model you want and to_par
-    :param list xallarap: a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.
-    :param list orbital_motion: a list of [string,float] indicating the parallax model you want and to_om.
-                                NOT WORKING NOW.
-    :param string source_spots: a string indicated the source_spots you want. NOT WORKING.
-    """
-
-    def __init__(self, event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None'):
-        """ Initialization of the attributes described above.
-        """
-        import pdb;
-        pdb.set_trace()
-        self.event = event
-        if model == 'PSPL' :
-            self.paczynski_model = Model_PSPL()
-        self.parallax_model = parallax
-        self.xallarap_model = xallarap
-        self.orbital_motion_model = orbital_motion
-        self.source_spots_model = source_spots
-
-        self.yoo_table = yoo_table
-
-        self.model_dictionnary = {}
-        self.pyLIMA_standards_dictionnary = {}
-
-        self.fancy_to_pyLIMA_dictionnary = {}
-        self.pyLIMA_to_fancy = {}
-        self.fancy_to_pyLIMA = {}
-
-        self.define_pyLIMA_standard_parameters()
-
-    def define_model_parameters(self):
-
-        if len(self.pyLIMA_to_fancy) != 0:
-
-            for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
-                self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
-                    self.fancy_to_pyLIMA_dictionnary[key_parameter])
-
-            self.model_dictionnary = OrderedDict(
-                sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
-
-    def define_pyLIMA_standard_parameters(self):
-        """ Create the model_dictionnary which explain to the different modules which parameter
-        is what (
-        Paczynski parameters+second_order+fluxes
-        """
-        if self.paczynski_model == 'PSPL':
-            self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
-
-        if self.paczynski_model == 'FSPL':
-            self.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2}
-            self.model_dictionnary['rho'] = len(self.model_dictionnary)
-
-        if self.parallax_model[0] != 'None':
-            self.model_dictionnary['piEN'] = len(self.model_dictionnary)
-            self.model_dictionnary['piEE'] = len(self.model_dictionnary)
-
-            self.event.compute_parallax_all_telescopes(self.parallax_model)
-
-        if self.xallarap_model[0] != 'None':
-            self.model_dictionnary['XiEN'] = len(self.model_dictionnary)
-            self.model_dictionnary['XiEE'] = len(self.model_dictionnary)
-
-        if self.orbital_motion_model[0] != 'None':
-            self.model_dictionnary['dsdt'] = len(self.model_dictionnary)
-            self.model_dictionnary['dalphadt'] = len(self.model_dictionnary)
-
-        if self.source_spots_model != 'None':
-            self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
-
-        for telescope in self.event.telescopes:
-            self.model_dictionnary['fs_' + telescope.name] = len(self.model_dictionnary)
-            self.model_dictionnary['g_' + telescope.name] = len(self.model_dictionnary)
-
-        self.model_dictionnary = OrderedDict(
-            sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
-
-        self.pyLIMA_standards_dictionnary = self.model_dictionnary.copy()
-
-        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self.event, self)
-
-
-
-class Model_PSPL(MLModels2) :
-
-    def pacsynski_model_dictionnary(self):
-
-        return {'to': 0, 'uo': 1, 'tE': 2}
-
-    def magnification(self, parameters):
-
-        source_trajectory_x = parameters[0]
-        source_trajectory_y = parameters[1]
-
-        return microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
-
-    def Jacobian(self, parameters):
-
-        pass
-
-class Model_FSPL(MLModels2) :
-
-    def pacsynski_model_dictionnary(self):
-
-        return {'to': 0, 'uo': 1, 'tE': 2, 'rho': 4}
-
-    def magnification(self, parameters):
-
-        source_trajectory_x = parameters[0]
-        source_trajectory_y = parameters[1]
-
-        rho = parameters[2]
-        gamma = parameters[3]
-
-        return microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
-
-    def Jacobian(self, parameters):
-
-        pass

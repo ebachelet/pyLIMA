@@ -18,20 +18,20 @@ def _create_event():
 def test_initial_guess_PSPL():
 
 	event = _create_event()
-	
+
 	guesses = microlguess.initial_guess_PSPL(event)
-	
+
 	assert len(guesses) == 2
 	assert len(guesses[0]) == 3
-	
 
-	
+
+
 def test_initial_guess_FSPL():
 
 	event = _create_event()
-	
+
 	guesses = microlguess.initial_guess_FSPL(event)
-	
+
 	assert len(guesses) == 2
 	assert len(guesses[0]) == 4
 
@@ -39,11 +39,11 @@ def test_differential_evolution_parameters_boundaries():
 
 	event = _create_event()
 	model = mock.MagicMock()
-	model.paczynski_model = 'PSPL'
+	model.paczynski_model.model_type = 'PSPL'
 	model.parallax_model = ['None']
 	model.xallarap_model = ['None']
 	model.parallax_model = ['None']
 	parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(event, model)
 
 	assert len(parameters_boundaries) == 3
-	
+
