@@ -148,7 +148,7 @@ class MLFits(object):
                       'method to "DE"'
 
                 self.method = 'DE'
-                self.mlfit(self.model, self.method)
+                self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
             else:
 

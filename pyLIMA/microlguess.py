@@ -221,6 +221,7 @@ def initial_guess_FSPL(event):
 def differential_evolution_parameters_boundaries(event, model):
     """
     """
+
     minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in event.telescopes]
     maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in event.telescopes]
 
