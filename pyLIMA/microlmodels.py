@@ -10,6 +10,7 @@ from collections import OrderedDict
 import os.path
 import abc
 import sys
+
 thismodule = sys.modules[__name__]
 
 import numpy as np
@@ -58,7 +59,8 @@ class ModelException(Exception):
     pass
 
 
-def create_model(model_type):
+def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None', 0.0],
+                 orbital_motion=['None', 0.0], source_spots='None'):
     """
     Load a model according to the supplied model_type. Models are expected to be named
     Model<model_type> e.g. ModelPSPL
@@ -66,14 +68,43 @@ def create_model(model_type):
     :param string model_type: Model type e.g. PSPL
     :return: Model object for given model_type
     """
+
     try:
-        return getattr(thismodule, 'Model{}'.format(model_type))()
+
+        model = getattr(thismodule, 'Model{}'.format(model_type))
+
     except AttributeError:
+
         raise ModelException('Unknown model "{}"'.format(model_type))
+
+    return model(event, parallax, xallarap,
+                 orbital_motion, source_spots)
 
 
 class Model2(object):
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, event, parallax=['None', 0.0], xallarap=['None', 0.0],
+                 orbital_motion=['None', 0.0], source_spots='None'):
+        """ Initialization of the attributes described above.
+        """
+
+        self.event = event
+        self.parallax_model = parallax
+        self.xallarap_model = xallarap
+        self.orbital_motion_model = orbital_motion
+        self.source_spots_model = source_spots
+        self.yoo_table = yoo_table
+        self.Jacobian_flag = 'OK'
+
+        self.model_dictionnary = {}
+        self.pyLIMA_standards_dictionnary = {}
+
+        self.fancy_to_pyLIMA_dictionnary = {}
+        self.pyLIMA_to_fancy = {}
+        self.fancy_to_pyLIMA = {}
+
+        self.define_pyLIMA_standard_parameters()
 
     @abc.abstractproperty
     def model_type(self):
@@ -87,16 +118,72 @@ class Model2(object):
     def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
         return
 
-    def compute_the_microlensing_model(self, amplification, u, pyLIMA_parameters, telescope):
-        return self._default_microlensing_model(amplification, u, pyLIMA_parameters, telescope)
+    def define_pyLIMA_standard_parameters(self):
 
-    def _default_microlensing_model(self, amplification, u, pyLIMA_parameters, telescope):
+        self.model_dictionnary = self.paczynski_model_parameters()
+
+        if self.parallax_model[0] != 'None':
+
+            self.Jacobian_flag = 'No way'
+            self.model_dictionnary['piEN'] = len(self.model_dictionnary)
+            self.model_dictionnary['piEE'] = len(self.model_dictionnary)
+
+            self.event.compute_parallax_all_telescopes(self.parallax_model)
+
+        if self.xallarap_model[0] != 'None':
+
+            self.Jacobian_flag = 'No way'
+            self.model_dictionnary['XiEN'] = len(self.model_dictionnary)
+            self.model_dictionnary['XiEE'] = len(self.model_dictionnary)
+
+        if self.orbital_motion_model[0] != 'None':
+
+            self.Jacobian_flag = 'No way'
+            self.model_dictionnary['dsdt'] = len(self.model_dictionnary)
+            self.model_dictionnary['dalphadt'] = len(self.model_dictionnary)
+
+        if self.source_spots_model != 'None':
+
+            self.Jacobian_flag = 'No way'
+            self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
+
+        for telescope in self.event.telescopes:
+            self.model_dictionnary['fs_' + telescope.name] = len(self.model_dictionnary)
+            self.model_dictionnary['g_' + telescope.name] = len(self.model_dictionnary)
+
+        self.model_dictionnary = OrderedDict(
+            sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
+        self.pyLIMA_standards_dictionnary = self.model_dictionnary.copy()
+
+        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
+
+    def define_model_parameters(self):
+
+        if len(self.pyLIMA_to_fancy) != 0:
+
+            self.Jacobian_flag = 'No way'
+            for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
+                self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
+                    self.fancy_to_pyLIMA_dictionnary[key_parameter])
+
+            self.model_dictionnary = OrderedDict(
+                sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
+    def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
+
+        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
+        return self._default_microlensing_model(telescope, pyLIMA_parameters, amplification)
+
+    def _default_microlensing_model(self, telescope, pyLIMA_parameters, amplification):
+
         try:
+
             # Fluxes parameters are fitted
             f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
             f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
-        except AttributeError:
+        except TypeError:
 
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
@@ -111,9 +198,124 @@ class Model2(object):
         # print 'the microl model', python_time.time() - start_time
         return microlensing_model, priors
 
+    def compute_pyLIMA_parameters(self, fancy_parameters):
+        """ Realize the transformation between the fancy parameters to fit to the
+        standard pyLIMA parameters needed for computing a model.
+
+        :param list fancy_parameters: the parameters you fit
+        :return: pyLIMA parameters
+        :rtype: object (namedtuple)
+        """
+        # start_time = python_time.time()
+        model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
+
+        for key_parameter in self.model_dictionnary.keys():
+
+            try:
+
+                setattr(model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
+
+            except:
+
+                pass
+
+        # print 'arange', python_time.time() - start_time
+
+        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
+
+        # print 'conversion', python_time.time() - start_time
+        return pyLIMA_parameters
+
+    def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
+        """ Transform the fancy parameters to the pyLIMA standards. The output got all
+        the necessary standard attributes, example to, uo, tE...
+
+
+        :param object fancy_parameters: the fancy_parameters as namedtuple
+        :return: the pyLIMA standards are added to the fancy parameters
+        :rtype: object
+        """
+        # start_time = python_time.time()
+        if len(self.fancy_to_pyLIMA) != 0:
+
+            for key_parameter in self.fancy_to_pyLIMA.keys():
+                setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
+
+        # print 'fancy to PYLIMA', python_time.time() - start_time
+        return fancy_parameters
+
+    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
+        """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
+            the necessary fancy attributes.
+
+
+        :param object pyLIMA_parameters: the  standard pyLIMA parameters as namedtuple
+        :return: the fancy parameters are added to the fancy parameters
+        :rtype: object
+        """
+        if len(self.pyLIMA_to_fancy) != 0:
+
+            for key_parameter in self.pyLIMA_to_fancy.keys():
+                setattr(pyLIMA_parameters, key_parameter, self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
+
+        return pyLIMA_parameters
+
+    def source_trajectory(self, telescope, pyLIMA_parameters):
+        """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
+
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param float to: the time of maximum magnification.
+        :param float uo: the minimum impact parameter, associated to to.
+        :param float tE: the angular Einstein ring crossing time
+        :param float alpha: the angle of the source trajectory, define in trigonometric convention.
+        :param array_like parallax: the parallax vector piE if needed
+        :param float orbital_motion: the angle shift dalphadt due to lens rotation
+
+        :return: source_trajectory_x, source_trajectory_y the x,y compenents of the source trajectory
+        :rtype: array_like,array_like
+        """
+        # Linear basic trajectory
+
+        lightcurve = telescope.lightcurve_flux
+        time = lightcurve[:, 0]
+
+        to = pyLIMA_parameters.to
+        uo = pyLIMA_parameters.uo
+        tE = pyLIMA_parameters.tE
+
+        tau = (time - to) / tE
+        uo = np.array([uo] * len(tau))
+
+        # These following second order induce curvatures in the source trajectory
+        # Parallax?
+        if 'piEN' in pyLIMA_parameters._fields:
+
+            piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
+            parallax_delta_tau, parallax_delta_uo = compute_parallax_curvature(piE, telescope.deltas_positions)
+
+            tau += parallax_delta_tau
+            uo += parallax_delta_uo
+
+        # Orbital motion?
+        # Xallarap?
+
+        if 'alpha' in pyLIMA_parameters._fields:
+
+            alpha = pyLIMA_parameters.alpha
+            source_trajectory_x = tau * np.cos(alpha) - uo * np.sin(alpha)
+            source_trajectory_y = tau * np.sin(alpha) + uo * np.cos(alpha)
+
+        else:
+
+            source_trajectory_x = tau
+            source_trajectory_y = uo
+
+
+        return source_trajectory_x, source_trajectory_y
+
 
 class ModelPSPL(Model2):
-
     @property
     def model_type(self):
         return 'PSPL'
@@ -123,12 +325,46 @@ class ModelPSPL(Model2):
 
         return model_dictionary
 
-    def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        source_trajectory = self.source_trajectory(telescope, pyLIMA_parameters)
         return microlmagnification.amplification_PSPL(*source_trajectory)
+
+    def model_Jacobian(self, telescope, pyLIMA_parameters):
+
+
+        # Derivatives of the residuals_LM objective function, PSPL version
+
+        lightcurve = telescope.lightcurve_flux
+
+        time = lightcurve[:, 0]
+        errflux = lightcurve[:, 2]
+
+        # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
+        # Amplification[1] is U(t).
+        Amplification = self.model_magnification(telescope, pyLIMA_parameters)
+        dAmplificationdU = (-8) / (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
+
+        # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
+        dUdto = -(time - pyLIMA_parameters.to) / \
+                (pyLIMA_parameters.tE ** 2 * Amplification[1])
+        dUduo = pyLIMA_parameters.uo / Amplification[1]
+        dUdtE = -(time - pyLIMA_parameters.to) ** 2 / \
+                (pyLIMA_parameters.tE ** 3 * Amplification[1])
+
+        # Derivative of the objective function
+
+        dresdto = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdto / errflux
+        dresduo = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUduo / errflux
+        dresdtE = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdtE / errflux
+        dresdfs = -(Amplification[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
+        dresdg = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
+
+        jacobi = np.array([dresdto, dresduo, dresdtE, dresdfs, dresdg])
+
+        return jacobi
 
 
 class ModelFSPL(Model2):
-
     @property
     def model_type(self):
         return 'FSPL'
@@ -138,11 +374,102 @@ class ModelFSPL(Model2):
 
         return model_dictionary
 
-    def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
-        source_trajectory_x, source_trajectory_y = source_trajectory
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters)
         rho = pyLIMA_parameters.rho
-        amplification, u = microlmagnification.amplification_FSPL(source_trajectory_x,source_trajectory_y, rho, gamma, yoo_table)
-        return amplification, u
+        gamma = telescope.gamma
+
+        return microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
+                                                      gamma, self.yoo_table)
+
+    def model_Jacobian(self, telescope, pyLIMA_parameters):
+        # Derivatives of the residuals_LM objective function, FSPL version
+
+        fake_model = ModelPSPL(self.event)
+
+        lightcurve = telescope.lightcurve_flux
+        time = lightcurve[:, 0]
+        errflux = lightcurve[:, 2]
+        gamma = telescope.gamma
+
+        # Derivative of A = Yoo et al (2004) method.
+        Amplification_PSPL = fake_model.model_magnification(telescope, pyLIMA_parameters)
+
+        dAmplification_PSPLdU = (-8) / (Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
+
+        # z_yoo=U/rho
+        z_yoo = Amplification_PSPL[1] / pyLIMA_parameters.rho
+
+        dadu = np.zeros(len(Amplification_PSPL[0]))
+        dadrho = np.zeros(len(Amplification_PSPL[0]))
+
+        # Far from the lens (z_yoo>>1), then PSPL.
+        ind = np.where((z_yoo > self.yoo_table[0][-1]))[0]
+        dadu[ind] = dAmplification_PSPLdU[ind]
+        dadrho[ind] = -0.0
+
+        # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
+        ind = np.where((z_yoo < self.yoo_table[0][0]))[0]
+        dadu[ind] = dAmplification_PSPLdU[ind] * (2 * z_yoo[ind] - gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
+
+        dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / pyLIMA_parameters.rho ** 2 * \
+                      (2 - gamma * (2 - 3 * np.pi / 4))
+
+        # FSPL regime (z_yoo~1), then Yoo et al derivatives
+        ind = np.where((z_yoo <= self.yoo_table[0][-1]) & (z_yoo >= self.yoo_table[0][0]))[0]
+
+        dadu[ind] = dAmplification_PSPLdU[ind] * (self.yoo_table[1](z_yoo[ind]) - \
+                                                  gamma * self.yoo_table[2](z_yoo[ind])) + \
+                                                  Amplification_PSPL[0][ind] * \
+                                                  (self.yoo_table[3](z_yoo[ind]) - \
+                                                   gamma * self.yoo_table[4](z_yoo[ind])) * 1 / pyLIMA_parameters.rho
+
+        dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / pyLIMA_parameters.rho ** 2 * \
+                      (self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](z_yoo[ind]))
+
+        dUdto = -(time - pyLIMA_parameters.to) / (pyLIMA_parameters.tE ** 2 * Amplification_PSPL[1])
+
+        dUduo = pyLIMA_parameters.uo / Amplification_PSPL[1]
+
+        dUdtE = -(time - pyLIMA_parameters.to) ** 2 / (pyLIMA_parameters.tE ** 3 * Amplification_PSPL[1])
+
+        # Derivative of the objective function
+        dresdto = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dadu * dUdto / errflux
+
+        dresduo = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dadu * dUduo / errflux
+
+        dresdtE = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dadu * dUdtE / errflux
+
+        dresdrho = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dadrho / errflux
+
+        Amplification_FSPL = self.model_magnification(telescope, pyLIMA_parameters)
+
+        dresdfs = -(Amplification_FSPL[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
+
+        dresdg = -getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
+
+        jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho, dresdfs, dresdg])
+
+        return jacobi
+
+
+
+
+def compute_parallax_curvature(piE, delta_positions):
+    """ Compute the curvature induce by the parallax of from
+    deltas_positions of a telescope.
+
+    :param array_like piE: the microlensing parallax vector. Have a look :
+                           http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+    :param array_like delta_positions: the delta_positions of the telescope. More details in microlparallax module.
+    :return: delta_tau and delta_u, the shift introduce by parallax
+    :rtype: array_like,array_like
+    """
+
+    delta_tau = -np.dot(piE, delta_positions)
+    delta_u = -np.cross(piE, delta_positions.T)
+
+    return delta_tau, delta_u
 
 
 class MLModels(object):
@@ -280,7 +607,7 @@ class MLModels(object):
 
         self.pyLIMA_standards_dictionnary = self.model_dictionnary.copy()
 
-        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self.event, self)
+        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
 
     def magnification(self, parameters, time, gamma=0.0, delta_positions=0):
 
@@ -314,11 +641,11 @@ class MLModels(object):
         tau += delta_tau
         uo = delta_uo + uo
 
-        if self.paczynski_model == 'PSPL':
+        if self.paczynski_model.model_type == 'PSPL':
             amplification, u = microlmagnification.amplification_PSPL(tau, uo)
             return amplification, u
 
-        if self.paczynski_model == 'FSPL':
+        if self.paczynski_model.model_type == 'FSPL':
             rho = parameters[self.model_dictionnary['rho']]
             amplification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma,
                                                                       self.yoo_table)
@@ -498,7 +825,7 @@ class MLModels(object):
         """
 
         # TODO :PROBABLY NEED REWORK
-        if self.paczynski_model == 'PSPL':
+        if self.paczynski_model.model_type == 'PSPL':
 
             # Derivatives of the residuals_LM objective function, PSPL version
 
@@ -550,7 +877,7 @@ class MLModels(object):
 
             jacobi = np.array([dresdto, dresduo, dresdtE])
 
-        if self.paczynski_model == 'FSPL':
+        if self.paczynski_model.model_type == 'FSPL':
 
             # Derivatives of the residuals_LM objective function, FSPL version
             dresdto = np.array([])

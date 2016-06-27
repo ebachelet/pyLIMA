@@ -63,7 +63,7 @@ class MLFits(object):
         """The fit class has to be intialized with an event object."""
 
         self.event = event
-        self.model = microlmodels.MLModels(event)
+        self.model = microlmodels.ModelPSPL(event)
         self.method = 'None'
         self.guess = 0.0
         self.outputs = []
@@ -204,15 +204,15 @@ class MLFits(object):
         """
         # Estimate  the Paczynski parameters
 
-        if self.model.paczynski_model == 'PSPL':
+        if self.model.model_type == 'PSPL':
             guess_paczynski_parameters, f_source = microlguess.initial_guess_PSPL(self.event)
 
-        if self.model.paczynski_model == 'FSPL':
+        if self.model.model_type == 'FSPL':
             guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
 
         # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
-        fake_model = microlmodels.MLModels(self.event, 'PSPL')
+        fake_model = microlmodels.ModelPSPL(self.event)
         telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
 
         # The survey fluxes are already known from microlguess
@@ -422,7 +422,7 @@ class MLFits(object):
         ### NEED CHANGE ###
         # import pdb; pdb.set_trace()
 
-        if (self.model.parallax_model[0] == 'None') & (len(self.model.fancy_to_pyLIMA_dictionnary) == 0):
+        if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
                                                     Dfun=self.LM_Jacobian, col_deriv=1, full_output=1, ftol=10 ** -6,
                                                     xtol=10 ** -10, gtol=10 ** -5)
@@ -486,7 +486,42 @@ class MLFits(object):
         :rtype: array_like
         """
 
-        jacobi = self.model.model_Jacobian(fit_process_parameters)
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
+        count = 0
+        #import pdb;
+        #pdb.set_trace()
+        for telescope in self.event.telescopes:
+
+            if count == 0:
+
+                _jacobi = self.model.model_Jacobian(telescope, pyLIMA_parameters)
+
+            else :
+
+                _jacobi = np.c_[_jacobi, self.model.model_Jacobian(telescope, pyLIMA_parameters)]
+
+            count += 1
+
+
+        jacobi = _jacobi[:-2]
+        # Split the fs and g derivatives in several columns correpsonding to
+        # each observatories
+        start_index = 0
+        dresdfs = _jacobi[-2]
+        dresdg = _jacobi[-1]
+
+
+        for telescope in self.event.telescopes:
+            dFS = np.zeros((len(dresdfs)))
+            dG = np.zeros((len(dresdg)))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))
+            dFS[index] = dresdfs[index]
+            dG[index] = dresdg[index]
+            jacobi = np.r_[jacobi, np.array([dFS, dG])]
+
+            start_index = index[-1] + 1
+
         return jacobi
 
     def residuals_LM(self, fit_process_parameters):

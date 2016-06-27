@@ -91,22 +91,24 @@ def main(command_line):
         current_event.find_survey('Survey')
         #current_event.check_event()
 
-        Model = microlmodels.MLModels(current_event, command_line.model,
-                                      parallax=['None', 50.0])
+        #Model = microlmodels.MLModels(current_event, command_line.model,
+        #                              parallax=['None', 50.0])
 
+        Model = microlmodels.create_model('FSPL', current_event)
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'LM')
+        current_event.fit(Model, 'MCMC')
+        import pdb;
+        pdb.set_trace()
 
 
-
-       #current_event.fits[0].produce_outputs()
+        current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results
-        #plt.show()
+        plt.show()
         results.append(current_event.fits[0].fit_results+[current_event.fits[0].fit_time])
         errors.append(current_event.fits[0].fit_covariance.diagonal()**0.5)
     end = time.time()

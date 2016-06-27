@@ -218,12 +218,12 @@ def initial_guess_FSPL(event):
     return FSPL_guess, fs_guess
 
 
-def differential_evolution_parameters_boundaries(event, model):
+def differential_evolution_parameters_boundaries(model):
     """
     """
 
-    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in event.telescopes]
-    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in event.telescopes]
+    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in model.event.telescopes]
+    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     uo_boundaries = (-2.0, 2.0)
@@ -244,7 +244,7 @@ def differential_evolution_parameters_boundaries(event, model):
 
     parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
 
-    if model.paczynski_model.model_type == 'FSPL':
+    if model.model_type == 'FSPL':
         parameters_boundaries.append(rho_boundaries)
 
     if model.parallax_model[0] != 'None':
