@@ -65,7 +65,7 @@ class MLFits(object):
         self.event = event
         self.model = microlmodels.ModelPSPL(event)
         self.method = 'None'
-        self.guess = 0.0
+        self.guess = []
         self.outputs = []
         self.fit_results = []
         self.fit_covariance = []
@@ -202,34 +202,46 @@ class MLFits(object):
            :return guess_parameters: a list containing parameters guess related to the model.
            :rtype: list
         """
-        # Estimate  the Paczynski parameters
 
-        if self.model.model_type == 'PSPL':
-            guess_paczynski_parameters, f_source = microlguess.initial_guess_PSPL(self.event)
 
-        if self.model.model_type == 'FSPL':
-            guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+        if len(self.model.parameters_guess) == 0:
 
-        # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
+            # Estimate  the Paczynski parameters
 
-        fake_model = microlmodels.ModelPSPL(self.event)
-        telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
+            if self.model.model_type == 'PSPL':
+                guess_paczynski_parameters, f_source = microlguess.initial_guess_PSPL(self.event)
 
-        # The survey fluxes are already known from microlguess
-        telescopes_fluxes[0] = f_source
-        telescopes_fluxes[1] = 0.0
+            if self.model.model_type == 'FSPL':
+                guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
 
-        if self.model.parallax_model[0] != 'None':
-            guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
+            # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
-        if self.model.xallarap_model[0] != 'None':
-            guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+            fake_model = microlmodels.ModelPSPL(self.event)
+            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
 
-        if self.model.orbital_motion_model[0] != 'None':
-            guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+            # The survey fluxes are already known from microlguess
+            telescopes_fluxes[0] = f_source
+            telescopes_fluxes[1] = 0.0
 
-        if self.model.source_spots_model != 'None':
-            guess_paczynski_parameters = guess_paczynski_parameters + [0]
+            if self.model.parallax_model[0] != 'None':
+                guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
+
+            if self.model.xallarap_model[0] != 'None':
+                guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+
+            if self.model.orbital_motion_model[0] != 'None':
+                guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+
+            if self.model.source_spots_model != 'None':
+                guess_paczynski_parameters = guess_paczynski_parameters + [0]
+
+
+
+        else :
+
+            guess_paczynski_parameters = self.model.parameters_guess
+
+            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
 
         guess_paczynski_parameters += telescopes_fluxes
 
@@ -279,7 +291,13 @@ class MLFits(object):
 
         differential_evolution_estimation = self.differential_evolution()[0]
 
-        self.guess = differential_evolution_estimation
+        if len(self.model.parameters_guess) == 0:
+
+            self.guess = differential_evolution_estimation
+
+        else:
+
+            self.guess = self.model.parameters_guess
 
         print 'pre MCMC done'
         # Best solution
@@ -419,8 +437,8 @@ class MLFits(object):
 
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
-        ### NEED CHANGE ###
-        # import pdb; pdb.set_trace()
+
+        #import pdb; pdb.set_trace()
 
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
@@ -431,7 +449,8 @@ class MLFits(object):
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
                                                     ftol=10 ** -6, xtol=10 ** -10,
                                                     gtol=10 ** -5)
-
+        #import pdb;
+        #pdb.set_trace()
         computation_time = python_time.time() - starting_time
 
         fit_result = lmarquardt_fit[0].tolist()
@@ -503,7 +522,9 @@ class MLFits(object):
 
             count += 1
 
+        # The objective function is : (data-model)/errors
 
+        _jacobi = -_jacobi
         jacobi = _jacobi[:-2]
         # Split the fs and g derivatives in several columns correpsonding to
         # each observatories
@@ -680,7 +701,7 @@ class MLFits(object):
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             # Prior here
-            if f_source < 0:
+            if (f_source < 0) :
 
                 telescopes_fluxes.append(np.min(flux))
                 telescopes_fluxes.append(0.0)

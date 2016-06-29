@@ -94,14 +94,15 @@ def main(command_line):
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('FSPL', current_event)
+        Model = microlmodels.create_model('DSPL', current_event)
+
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'MCMC')
+        current_event.fit(Model, 'DE')
         import pdb;
         pdb.set_trace()
 

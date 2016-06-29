@@ -219,7 +219,14 @@ def initial_guess_FSPL(event):
 
 
 def differential_evolution_parameters_boundaries(model):
-    """
+    """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
+       This assumes no blending.
+
+       :param object event: the event object on which you perform the fit on. More details on the
+       event module.
+
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.
+       :rtype: list,float
     """
 
     minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in model.event.telescopes]
@@ -229,6 +236,7 @@ def differential_evolution_parameters_boundaries(model):
     uo_boundaries = (-2.0, 2.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (10 ** -5, 0.05)
+    q_F_boundaries = (0.0,1.0)
 
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
@@ -242,11 +250,27 @@ def differential_evolution_parameters_boundaries(model):
     # model_source_spots_boundaries = {'None': []}
 
 
-    parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
+    # Paczynski models boundaries
+    if model.model_type == 'PSPL':
+
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
 
     if model.model_type == 'FSPL':
-        parameters_boundaries.append(rho_boundaries)
 
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries]
+
+    if model.model_type == 'DSPL':
+
+        parameters_boundaries = [to_boundaries, uo_boundaries, to_boundaries, uo_boundaries, tE_boundaries]
+        filters = [telescope.filter for telescope in model.event.telescopes]
+
+        unique_filters = np.unique(filters)
+
+        parameters_boundaries += [q_F_boundaries]*len(unique_filters)
+
+
+
+    # Second order boundaries
     if model.parallax_model[0] != 'None':
         parameters_boundaries.append(piEN_boundaries)
         parameters_boundaries.append(piEE_boundaries)
