@@ -214,6 +214,10 @@ class MLFits(object):
             if self.model.model_type == 'FSPL':
                 guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
 
+            if self.model.model_type == 'DSPL':
+
+                guess_paczynski_parameters, f_source = microlguess.initial_guess_DSPL(self.event)
+
             # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
             fake_model = microlmodels.ModelPSPL(self.event)

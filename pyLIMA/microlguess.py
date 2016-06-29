@@ -218,6 +218,23 @@ def initial_guess_FSPL(event):
     return FSPL_guess, fs_guess
 
 
+def initial_guess_DSPL(event):
+    """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
+       This assumes no blending.
+
+       :param object event: the event object on which you perform the fit on. More details on the
+       event module.
+
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.
+       :rtype: list,float
+    """
+    PSPL_guess, fs_guess = initial_guess_PSPL(event)
+
+    DSPL_guess = PSPL_guess[:2] + PSPL_guess[:2]+[PSPL_guess[2], 0.0]
+    return DSPL_guess, fs_guess
+
+
+
 def differential_evolution_parameters_boundaries(model):
     """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
        This assumes no blending.

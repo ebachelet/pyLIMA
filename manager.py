@@ -25,9 +25,9 @@ from pyLIMA import microlmodels
 
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('Lightcurve_' in event_name) and ('Follow' not in event_name)]
+                    ('.dat' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
-                     ('Lightcurve_' in event_name) and ('~' not in event_name)]
+                     ('.dat' in event_name) and ('~' not in event_name)]
 
     start = time.time()
     results = []
@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names[0:]:
 
         # name='Lightcurve_'+str(9975)+'_'
-        name = event_name[:-10]
+        name = 'KB120486'
         # name = 'Lightcurve_1'
         current_event = event.Event()
         current_event.name = name
@@ -50,7 +50,7 @@ def main(command_line):
 
         current_event.ra = 269.8865416666667
         current_event.dec = -28.407416666666666
-        Names = ['Survey', 'Followr']
+        Names = ['MOA', 'Followr']
         Locations = ['Earth', 'Earth']
         # event_telescopes = ['Lightcurve_1_Survey.dat','Lightcurve_1_Follow.dat']
         # event_telescopes = ['MOA2016BLG0221_flux.dat','MOA2016BLG0221_K2_flux.dat']
@@ -59,7 +59,8 @@ def main(command_line):
         # event_telescopes = ['MOA2016BLG0286_flux.dat']
         # event_telescopes = ['MOA2016BLG0307_flux.dat']
         count = 0
-
+        import pdb;
+        pdb.set_trace()
         start = time.time()
         for event_telescope in event_telescopes:
             try:
@@ -70,39 +71,44 @@ def main(command_line):
                 #raw_light_curve = raw_light_curve[good]
                 lightcurve = np.array(
                     [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
-                if lightcurve[0, 0] > 2450000:
-                    lightcurve[:, 0] = lightcurve[:, 0]
+
+
+
             except:
                 pass
 
-            if Names[count] == 'Kepler':
-                telescope = telescopes.Telescope(name=Names[count], camera_filter='I',
-                                                 light_curve_flux=lightcurve)
-            else:
-                telescope = telescopes.Telescope(name=Names[count], camera_filter='I',
+            if (event_telescope[0]+event_telescope[-5] != 'KR') & (event_telescope[0]+event_telescope[-5] != 'AI'):
+                if lightcurve[0,0] <2450000:
+                    lightcurve[:, 0] = lightcurve[:, 0] + 2450000
+                telescope = telescopes.Telescope(name=event_telescope[0]+event_telescope[-5], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve)
+            else:
+                if lightcurve[0,2] <2450000:
+                    lightcurve[:, 2] = lightcurve[:, 2]+ 2450000
+                telescope = telescopes.Telescope(name=event_telescope[0]+event_telescope[-5], camera_filter=event_telescope[-5],
+                                                 light_curve_magnitude=lightcurve,light_curve_magnitude_dictionnary={'time':2,'mag':0,'err_mag':1})
             telescope.gamma = 0.5
-            telescope.location = Locations[count]
+            telescope.location = 'Earth'
             current_event.telescopes.append(telescope)
             count += 1
 
         print 'Start;', current_event.name
 
-        current_event.find_survey('Survey')
+        current_event.find_survey('KR')
         #current_event.check_event()
 
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('DSPL', current_event)
-
+        Model = microlmodels.create_model('DSPL', current_event, parallax=['None', 2456155.0])
+        Model.parameters_guess = [2456154.269991687, -0.08277969411602736, 2456137.104172828, -0.0163239437626175, 76.18915659309934, 0.11861838160992759, 0.1246372760457063, 0.16472816314040648,0,0]
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'DE')
+        current_event.fit(Model, 'LM')
         import pdb;
         pdb.set_trace()
 
@@ -132,7 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='FSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/Lightcurves_FSPL/Lightcurves/')
+                                'SimulationML/DSPL_KB12486/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

@@ -196,9 +196,8 @@ class MLParallaxes(object):
 
                 telescope_positions = self.terrestrial_parallax(time, altitude, longitude, latitude)
 
-                delta_North = np.append(delta_North, telescope_positions[0])
-                delta_East = np.append(delta_East, telescope_positions[1])
-
+                delta_North += telescope_positions[0]
+                delta_East += telescope_positions[1]
 
         else:
 
@@ -243,9 +242,7 @@ class MLParallaxes(object):
 
             Earth_position = slalib.sla_epv(time_mjd)
             Sun_position = -Earth_position[0]
-            delta_sun = Sun_position - (
-                                       time_mjd - to_par_mjd) * Sun_speed_time_reference - \
-                        Sun_position_time_reference
+            delta_sun = Sun_position - (time_mjd - to_par_mjd) * Sun_speed_time_reference - Sun_position_time_reference
 
             delta_Sun.append(delta_sun.tolist())
 
@@ -287,8 +284,7 @@ class MLParallaxes(object):
                                                     0]  + sideral_time 
        
             delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
-        import pdb
-        pdb.set_trace()
+
         delta_telescope = np.array(delta_telescope)
         delta_telescope_projected = np.array(
             [np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])
