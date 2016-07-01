@@ -3,4 +3,5 @@ language: python
 python:
     - 2.7
 
-install: coveralls
+install:
+    pip install coveralls
