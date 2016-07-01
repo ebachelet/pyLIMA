@@ -230,9 +230,12 @@ def initial_guess_DSPL(event):
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
 
-    DSPL_guess = PSPL_guess[:2] + PSPL_guess[:2]+[PSPL_guess[2], 0.0]
-    return DSPL_guess, fs_guess
+    filters = [telescope.filter for telescope in event.telescopes]
 
+    unique_filters = np.unique(filters)
+
+    DSPL_guess = PSPL_guess[:2] + PSPL_guess[:2] + [PSPL_guess[2]] + [0.5] * len(unique_filters)
+    return DSPL_guess, fs_guess
 
 
 def differential_evolution_parameters_boundaries(model):
@@ -242,18 +245,22 @@ def differential_evolution_parameters_boundaries(model):
        :param object event: the event object on which you perform the fit on. More details on the
        event module.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of
+       the survey telescope.
        :rtype: list,float
     """
 
-    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in model.event.telescopes]
-    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in model.event.telescopes]
+    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in
+                                         model.event.telescopes]
+    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in
+                                         model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
+    delta_to_boundaries =(-300, 300)
     uo_boundaries = (-2.0, 2.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (10 ** -5, 0.05)
-    q_F_boundaries = (0.0,1.0)
+    q_F_boundaries = (0.0, 1.0)
 
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
@@ -269,23 +276,20 @@ def differential_evolution_parameters_boundaries(model):
 
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
-
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
 
     if model.model_type == 'FSPL':
-
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries]
 
     if model.model_type == 'DSPL':
-
-        parameters_boundaries = [to_boundaries, uo_boundaries, to_boundaries, uo_boundaries, tE_boundaries]
+        parameters_boundaries = [to_boundaries, uo_boundaries, delta_to_boundaries,
+                                 uo_boundaries, tE_boundaries]
         filters = [telescope.filter for telescope in model.event.telescopes]
 
         unique_filters = np.unique(filters)
 
-        parameters_boundaries += [q_F_boundaries]*len(unique_filters)
-
-
+        parameters_boundaries += [q_F_boundaries] * len(unique_filters)
+        # parameters_boundaries += [q_F_boundaries]
 
     # Second order boundaries
     if model.parallax_model[0] != 'None':
@@ -303,25 +307,20 @@ def differential_evolution_parameters_boundaries(model):
 
 
 def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parameters):
-    if parameter_key == 'to':
-
+    if 'to' in parameter_key:
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + np.random.uniform(-1, 1)
 
         return [to_parameters_trial]
 
-    if 'fs' in parameter_key :
-
+    if 'fs' in parameter_key:
         epsilon = np.random.uniform(0.9, 1.1)
 
-        fs_trial = parameters[parameters_dictionnary[parameter_key]]*epsilon
-        g_trial = (1+parameters[parameters_dictionnary[parameter_key]+1])/epsilon -1
+        fs_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
+        g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
 
-        return [fs_trial,  g_trial]
+        return [fs_trial, g_trial]
 
-    if 'g_' in parameter_key :
-
-
-
+    if 'g_' in parameter_key:
         return
 
     epsilon = np.random.uniform(0.9, 1.1)

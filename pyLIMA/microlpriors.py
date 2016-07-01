@@ -9,9 +9,11 @@ import numpy as np
 
 def microlensing_flux_priors(size_dataset, f_source, f_blending):
     # Little prior here, need to be chaneged
+
     if (f_source < 0) | (f_blending / f_source < -1.0):
 
         prior_flux_impossible = np.inf
+        return prior_flux_impossible
 
     else:
 

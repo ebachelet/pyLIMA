@@ -203,7 +203,6 @@ class MLFits(object):
            :rtype: list
         """
 
-
         if len(self.model.parameters_guess) == 0:
 
             # Estimate  the Paczynski parameters
@@ -215,12 +214,11 @@ class MLFits(object):
                 guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
 
             if self.model.model_type == 'DSPL':
-
                 guess_paczynski_parameters, f_source = microlguess.initial_guess_DSPL(self.event)
 
             # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
-            fake_model = microlmodels.ModelPSPL(self.event)
+            fake_model = microlmodels.create_model(self.model.model_type, self.event)
             telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
 
             # The survey fluxes are already known from microlguess
@@ -241,7 +239,7 @@ class MLFits(object):
 
 
 
-        else :
+        else:
 
             guess_paczynski_parameters = self.model.parameters_guess
 
@@ -293,16 +291,16 @@ class MLFits(object):
         nwalkers = 200
         nlinks = 100
 
-        differential_evolution_estimation = self.differential_evolution()[0]
-
         if len(self.model.parameters_guess) == 0:
 
+            differential_evolution_estimation = self.differential_evolution()[0]
             self.guess = differential_evolution_estimation
 
         else:
 
             self.guess = self.model.parameters_guess
 
+        self.guess += self.find_fluxes(self.guess, self.model)
         print 'pre MCMC done'
         # Best solution
 
@@ -313,8 +311,6 @@ class MLFits(object):
 
         else:
             limit_parameters = len(self.model.parameters_boundaries)
-
-        nwalkers = 200
 
         # Initialize the population of MCMC
         population = []
@@ -390,10 +386,10 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=0.6, popsize=20,
+            mutation=(0.5, 1.5), popsize=15,
             tol=0.000001,
             recombination=0.6, polish='True',
-            disp=False
+            disp=True
         )
 
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
@@ -403,6 +399,7 @@ class MLFits(object):
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
 
+
         self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
 
         fit_results, fit_covariance, fit_time = self.lmarquardt()
@@ -410,6 +407,37 @@ class MLFits(object):
         computation_time = python_time.time() - starting_time
 
         return fit_results, fit_covariance, computation_time
+
+    def chichi_differential_evolution(self, fit_process_parameters):
+        """Return the chi^2 for the DE method. There is some priors here.
+
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding
+        fitting routine.
+
+        :returns: the chi^2
+
+        :rtype: float
+        """
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        chichi = 0.0
+        for telescope in self.event.telescopes:
+            # Find the residuals of telescope observation regarding the parameters and model
+
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+
+            # Little prior here, need to be changed
+            # if priors == np.inf:
+            # return np.inf
+
+            # else:
+            #    chichi += (residus**2).sum()+priors
+            #
+            chichi += (residus ** 2).sum()
+
+        return chichi
+
+
 
     def lmarquardt(self):
         """The LM method. This is based on the Levenberg-Marquardt algorithm:
@@ -442,7 +470,7 @@ class MLFits(object):
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
 
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
@@ -453,8 +481,8 @@ class MLFits(object):
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
                                                     ftol=10 ** -6, xtol=10 ** -10,
                                                     gtol=10 ** -5)
-        #import pdb;
-        #pdb.set_trace()
+        # import pdb;
+        # pdb.set_trace()
         computation_time = python_time.time() - starting_time
 
         fit_result = lmarquardt_fit[0].tolist()
@@ -512,15 +540,15 @@ class MLFits(object):
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
         count = 0
-        #import pdb;
-        #pdb.set_trace()
+        # import pdb;
+        # pdb.set_trace()
         for telescope in self.event.telescopes:
 
             if count == 0:
 
                 _jacobi = self.model.model_Jacobian(telescope, pyLIMA_parameters)
 
-            else :
+            else:
 
                 _jacobi = np.c_[_jacobi, self.model.model_Jacobian(telescope, pyLIMA_parameters)]
 
@@ -535,7 +563,6 @@ class MLFits(object):
         start_index = 0
         dresdfs = _jacobi[-2]
         dresdg = _jacobi[-1]
-
 
         for telescope in self.event.telescopes:
             dFS = np.zeros((len(dresdfs)))
@@ -594,32 +621,7 @@ class MLFits(object):
 
         return chichi_list
 
-    def chichi_differential_evolution(self, fit_process_parameters):
-        """Return the chi^2 for the DE method. There is some priors here.
 
-        :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
-
-        :returns: the chi^2
-
-        :rtype: float
-        """
-        residuals = np.array([])
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
-        for telescope in self.event.telescopes:
-
-            # Find the residuals of telescope observation regarding the parameters and model
-
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
-
-            # Little prior here, need to be changed
-            if priors == np.inf:
-                return np.inf
-
-            residuals = np.append(residuals, residus)
-
-        chichi = (residuals ** 2).sum()
-        return chichi
 
     def chichi_MCMC(self, fit_process_parameters):
         """Return the chi^2 for the MCMC method. There is some priors here.
@@ -677,7 +679,7 @@ class MLFits(object):
 
         residuals = (flux - microlensing_model[0]) / errflux
 
-        priors = microlensing_model[1:]
+        priors = microlensing_model[1]
 
         return residuals, priors
 
@@ -705,7 +707,7 @@ class MLFits(object):
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             # Prior here
-            if (f_source < 0) :
+            if (f_source < 0):
 
                 telescopes_fluxes.append(np.min(flux))
                 telescopes_fluxes.append(0.0)

@@ -92,7 +92,8 @@ def MCMC_outputs(fit):
         CHAINS = np.c_[CHAINS, chains[:, :, i].ravel()]
     CHAINS_NO_FLUXES = np.c_[CHAINS, probabilities.ravel()]
 
-    if chains[0].shape[1] - 1 != len(fit.model.model_dictionnary):
+
+    if chains[0].shape[1] != len(fit.model.model_dictionnary):
         fluxes = MCMC_compute_fs_g(fit, CHAINS)
 
         CHAINS = np.c_[CHAINS, fluxes, probabilities.ravel()]
