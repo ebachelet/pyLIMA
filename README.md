@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mnorbury/pyLIMA.svg?branch=travis)](https://travis-ci.org/mnorbury/pyLIMA)
+
 # pyLIMA
 
 Authors : Etienne Bachelet, etibachelet@gmail.com 
