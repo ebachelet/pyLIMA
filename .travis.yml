@@ -5,3 +5,6 @@ python:
 
 install:
     pip install coveralls
+
+script:
+    coverage run --source=. setup.py test
