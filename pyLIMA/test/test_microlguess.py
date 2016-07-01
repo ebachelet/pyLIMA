@@ -1,10 +1,8 @@
-import os.path
-
 import numpy as np
 import mock
 
-
 from pyLIMA import microlguess
+
 
 def _create_event():
     event = mock.MagicMock()
@@ -15,36 +13,33 @@ def _create_event():
     event.telescopes[0].gamma = 0.5
     return event
 
+
 def test_initial_guess_PSPL():
+    event = _create_event()
 
-	event = _create_event()
+    guesses = microlguess.initial_guess_PSPL(event)
 
-	guesses = microlguess.initial_guess_PSPL(event)
-
-	assert len(guesses) == 2
-	assert len(guesses[0]) == 3
-
+    assert len(guesses) == 2
+    assert len(guesses[0]) == 3
 
 
 def test_initial_guess_FSPL():
+    event = _create_event()
 
-	event = _create_event()
+    guesses = microlguess.initial_guess_FSPL(event)
 
-	guesses = microlguess.initial_guess_FSPL(event)
+    assert len(guesses) == 2
+    assert len(guesses[0]) == 4
 
-	assert len(guesses) == 2
-	assert len(guesses[0]) == 4
 
 def test_differential_evolution_parameters_boundaries():
+    event = _create_event()
+    model = mock.MagicMock()
+    model.event = event
+    model.model_type = 'PSPL'
+    model.parallax_model = ['None']
+    model.xallarap_model = ['None']
+    model.parallax_model = ['None']
+    parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(model)
 
-	event = _create_event()
-	model = mock.MagicMock()
-	model.event = event
-	model.paczynski_model.model_type = 'PSPL'
-	model.parallax_model = ['None']
-	model.xallarap_model = ['None']
-	model.parallax_model = ['None']
-	parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(model)
-
-	assert len(parameters_boundaries) == 3
-
+    assert len(parameters_boundaries) == 3
