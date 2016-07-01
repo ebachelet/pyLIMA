@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mnorbury/pyLIMA.svg?branch=travis)](https://travis-ci.org/mnorbury/pyLIMA)
+[![Build Status](https://travis-ci.org/ebachelet/pyLIMA.svg?branch=master)](https://travis-ci.org/ebachelet/pyLIMA)
 
 # pyLIMA
 
