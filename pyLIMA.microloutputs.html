@@ -98,8 +98,10 @@
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple containing the following attributes :<p>fit_parameters : an namedtuple object containing all the fitted parameters</p>
 <p>fit_errors : an namedtuple object containing all the fitted parameters errors</p>
-<p>fit_correlation_matrix : a numpy array representing the fitted parameters correlation matrix</p>
-<p>figure_lightcurve : a two matplotlib figure showing the data and model and the correspoding residuals</p>
+<p>fit_correlation_matrix : a numpy array representing the fitted parameters
+correlation matrix</p>
+<p>figure_lightcurve : a two matplotlib figure showing the data and model and the
+correspoding residuals</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
@@ -211,7 +213,8 @@ on the second subplot figure_axes[1].</p>
 <dl class="function">
 <dt id="pyLIMA.microloutputs.MCMC_compute_fs_g">
 <code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_compute_fs_g</code><span class="sig-paren">(</span><em>fit</em>, <em>mcmc_chains</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_compute_fs_g"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_compute_fs_g" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the corresponding source flux fs and blending factor g corresponding to each mcmc chain.</p>
+<dd><p>Compute the corresponding source flux fs and blending factor g corresponding to each mcmc
+chain.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -258,10 +261,14 @@ on the second subplot figure_axes[1].</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple containing the following attributes :<p>MCMC_chains : a numpy array containing all the parameters chains + the corresponding objective function.</p>
-<p>MCMC_correlations : a numpy array representing the fitted parameters correlation matrix from the MCMC chains</p>
-<p>figure_lightcurve : a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.</p>
-<p>figure_distributions : a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple containing the following attributes :<p>MCMC_chains : a numpy array containing all the parameters chains + the corresponding
+objective function.</p>
+<p>MCMC_correlations : a numpy array representing the fitted parameters correlation
+matrix from the MCMC chains</p>
+<p>figure_lightcurve : a two matplotlib subplot showing the data and 35 models and the
+residuals corresponding to the best model.</p>
+<p>figure_distributions : a multiple matplotlib subplot representing the parameters
+distributions (2D slice + histogram)</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
@@ -304,20 +311,20 @@ in term of objective funtion (~chichi)</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a two matplotlib subplot showing the data and 35 models and the residuals corresponding to the best model.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib_figure</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a two matplotlib subplot showing the data and 35 models and the residuals</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>corresponding to the best model.
+:rtype: matplotlib_figure</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pyLIMA.microloutputs.MCMC_plot_model">
 <code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_model</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>couleurs</em>, <em>figure_axes</em>, <em>scalar_couleur_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot a  model to a given figure, with the color corresponding to the objective function of the model.</p>
+<dd><p>Plot a  model to a given figure, with the color corresponding to the objective function
+of the model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -325,14 +332,16 @@ in term of objective funtion (~chichi)</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
 <li><strong>parameters</strong> &#8211; the parameters [list] of the model you want to plot.</li>
-<li><strong>couleurs</strong> &#8211; the values of the objective function for the model that match the color table scalar_couleur_map</li>
-<li><strong>figure_axes</strong> &#8211; the axes where the plot are draw</li>
-<li><strong>scalar_couleur_map</strong> &#8211; a matplotlib table that return a color given a scalar value (the objective function here)</li>
+<li><strong>couleurs</strong> &#8211; the values of the objective function for the model that match the color</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<p>table scalar_couleur_map
+:param figure_axes: the axes where the plot are draw
+:param scalar_couleur_map: a matplotlib table that return a color given a scalar value (the
+objective function here)</p>
 </dd></dl>
 
 <dl class="function">
@@ -350,14 +359,13 @@ Only plot the best mcmc_chains are plotted.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a multiple matplotlib subplot representing the parameters distributions (2D slice + histogram)</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib_figure</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a multiple matplotlib subplot representing the parameters distributions (2D slice +</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>histogram)
+:rtype: matplotlib_figure</p>
 </dd></dl>
 
 <dl class="function">
@@ -387,20 +395,25 @@ Only plot the best mcmc_chains are plotted.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>lightcurve_telescope_mag</strong> (<em>array_like</em>) &#8211; the survey telescope in magnitude</li>
 <li><strong>fs_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference source flux (i.e the fitted value)</li>
-<li><strong>g_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference blending parameter (i.e the fitted value)</li>
-<li><strong>fs_telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the telescope source flux (i.e the fitted value)</li>
-<li><strong>g_reference</strong> &#8211; the telescope blending parameter (i.e the fitted value)</li>
+<li><strong>g_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference blending parameter (i.e the fitted</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the aligned to survey lightcurve in magnitude</p>
-</td>
+</tbody>
+</table>
+<p>value)
+:param float fs_telescope: the telescope source flux (i.e the fitted value)
+:param float g_reference: the telescope blending parameter (i.e the fitted value)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the aligned to survey lightcurve in magnitude</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
-</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
 </tr>
 </tbody>
 </table>

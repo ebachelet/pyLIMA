@@ -62,63 +62,76 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<div class="viewcode-block" id="amplification_PSPL"><a class="viewcode-back" href="../../pyLIMA.microlmagnification.html#pyLIMA.microlmagnification.amplification_PSPL">[docs]</a><span class="k">def</span> <span class="nf">amplification_PSPL</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+
+<div class="viewcode-block" id="amplification_PSPL"><a class="viewcode-back" href="../../pyLIMA.microlmagnification.html#pyLIMA.microlmagnification.amplification_PSPL">[docs]</a><span class="k">def</span> <span class="nf">amplification_PSPL</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">uo</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The Paczynski magnification.</span>
 <span class="sd">        &quot;Gravitational microlensing by the galactic halo&quot;,Paczynski, B. 1986</span>
 <span class="sd">        http://adsabs.harvard.edu/abs/1986ApJ...304....1P</span>
-<span class="sd">    </span>
-<span class="sd">        :param array_like tau: the tau define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
-<span class="sd">        :param array_like u: the u define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
-<span class="sd">    </span>
+
+<span class="sd">        :param array_like tau: the tau define for example in</span>
+<span class="sd">        http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
+<span class="sd">        :param array_like u: the u define for example in</span>
+<span class="sd">        http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
+
 <span class="sd">        :return: the PSPL magnification A_PSPL(t) and the impact parameter U(t)</span>
 <span class="sd">        :rtype: array_like,array_like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
-    <span class="n">U</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">u</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
-    <span class="n">U_square</span> <span class="o">=</span> <span class="n">U</span> <span class="o">**</span> <span class="mi">2</span>
-    <span class="n">amplification</span> <span class="o">=</span> <span class="p">(</span><span class="n">U_square</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">U</span> <span class="o">*</span> <span class="p">(</span><span class="n">U_square</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
-    
-    <span class="c">#return both magnification and U, required by some methods</span>
-    <span class="k">return</span> <span class="n">amplification</span><span class="p">,</span> <span class="n">U</span>
+
+    <span class="n">impact_parameter</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">uo</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>  <span class="c">#u(t)</span>
+    <span class="n">impact_parameter_square</span> <span class="o">=</span> <span class="n">impact_parameter</span> <span class="o">**</span> <span class="mi">2</span> <span class="c">#u(t)^2</span>
+
+    <span class="n">amplification</span> <span class="o">=</span> <span class="p">(</span><span class="n">impact_parameter_square</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">impact_parameter</span> <span class="o">*</span> <span class="p">(</span><span class="n">impact_parameter_square</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c"># return both magnification and U, required by some methods</span>
+    <span class="k">return</span> <span class="n">amplification</span><span class="p">,</span> <span class="n">impact_parameter</span>
 
 </div>
-<div class="viewcode-block" id="amplification_FSPL"><a class="viewcode-back" href="../../pyLIMA.microlmagnification.html#pyLIMA.microlmagnification.amplification_FSPL">[docs]</a><span class="k">def</span> <span class="nf">amplification_FSPL</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">yoo_table</span><span class="p">):</span>
+<div class="viewcode-block" id="amplification_FSPL"><a class="viewcode-back" href="../../pyLIMA.microlmagnification.html#pyLIMA.microlmagnification.amplification_FSPL">[docs]</a><span class="k">def</span> <span class="nf">amplification_FSPL</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">uo</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">yoo_table</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The Yoo FSPL magnification.</span>
 <span class="sd">        &quot;OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens&quot;,Yoo, J. et al 2004</span>
 <span class="sd">        http://adsabs.harvard.edu/abs/2004ApJ...603..139Y</span>
 
-<span class="sd">        :param array_like tau: the tau define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
-<span class="sd">        :param array_like u: the u define for example in http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
+<span class="sd">        :param array_like tau: the tau define for example in</span>
+<span class="sd">        http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
+<span class="sd">        :param array_like u: the u define for example in</span>
+<span class="sd">        http://adsabs.harvard.edu/abs/2015ApJ...804...20C</span>
 <span class="sd">        :param float rho: the normalised (to :math:`\\theta_E&#39;) angular source star radius</span>
 <span class="sd">        :param array_like yoo_table: the interpolated Yoo et al table.</span>
-<span class="sd">    </span>
+
 <span class="sd">        :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)</span>
 <span class="sd">        :rtype: array_like,array_like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">U</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">u</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
-    <span class="n">U_square</span> <span class="o">=</span> <span class="n">U</span> <span class="o">**</span> <span class="mi">2</span>
-    <span class="n">amplification_PSPL</span> <span class="o">=</span> <span class="p">(</span><span class="n">U_square</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">U</span> <span class="o">*</span> <span class="p">(</span><span class="n">U_square</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
-   
-    <span class="n">z_yoo</span> <span class="o">=</span> <span class="n">U</span> <span class="o">/</span> <span class="n">rho</span>
-    
-    <span class="n">amplification_FSPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">amplification_PSPL</span><span class="p">))</span>
+    <span class="n">impact_parameter</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">uo</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>  <span class="c">#u(t)</span>
+    <span class="n">impact_parameter_square</span> <span class="o">=</span> <span class="n">impact_parameter</span> <span class="o">**</span> <span class="mi">2</span> <span class="c">#u(t)^2</span>
 
-    <span class="c"># Far from the lens (z_yoo&gt;&gt;1), then PSPL.    </span>
+    <span class="n">amplification_pspl</span> <span class="o">=</span> <span class="p">(</span><span class="n">impact_parameter_square</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">impact_parameter</span> <span class="o">*</span> <span class="p">(</span><span class="n">impact_parameter_square</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">z_yoo</span> <span class="o">=</span> <span class="n">impact_parameter</span> <span class="o">/</span> <span class="n">rho</span>
+
+    <span class="n">amplification_fspl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">amplification_pspl</span><span class="p">))</span>
+
+    <span class="c"># Far from the lens (z_yoo&gt;&gt;1), then PSPL.</span>
     <span class="n">indexes_PSPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">z_yoo</span> <span class="o">&gt;</span> <span class="n">yoo_table</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">amplification_FSPL</span><span class="p">[</span><span class="n">indexes_PSPL</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplification_PSPL</span><span class="p">[</span><span class="n">indexes_PSPL</span><span class="p">]</span>
+
+    <span class="n">amplification_fspl</span><span class="p">[</span><span class="n">indexes_PSPL</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplification_pspl</span><span class="p">[</span><span class="n">indexes_PSPL</span><span class="p">]</span>
 
     <span class="c"># Very close to the lens (z_yoo&lt;&lt;1), then Witt&amp;Mao limit.</span>
     <span class="n">indexes_WM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">z_yoo</span> <span class="o">&lt;</span> <span class="n">yoo_table</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">amplification_FSPL</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplification_PSPL</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">]</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">])</span>
-   
+
+    <span class="n">amplification_fspl</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplification_pspl</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">]</span> <span class="o">*</span> \
+    <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">]</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_WM</span><span class="p">])</span>
+
     <span class="c"># FSPL regime (z_yoo~1), then Yoo et al derivatives</span>
     <span class="n">indexes_FSPL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">z_yoo</span> <span class="o">&lt;=</span> <span class="n">yoo_table</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">z_yoo</span> <span class="o">&gt;=</span> <span class="n">yoo_table</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">amplification_FSPL</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplification_PSPL</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">yoo_table</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">])</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">yoo_table</span><span class="p">[</span><span class="mi">2</span><span class="p">](</span><span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">]))</span>
-    
-    <span class="n">amplification</span> <span class="o">=</span> <span class="n">amplification_FSPL</span>
-   
-    <span class="k">return</span> <span class="n">amplification</span><span class="p">,</span> <span class="n">U</span>
-    
+
+    <span class="n">amplification_fspl</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplification_pspl</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">]</span> <span class="o">*</span> \
+    <span class="p">(</span><span class="n">yoo_table</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">])</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">yoo_table</span><span class="p">[</span><span class="mi">2</span><span class="p">](</span><span class="n">z_yoo</span><span class="p">[</span><span class="n">indexes_FSPL</span><span class="p">]))</span>
+
+    <span class="n">amplification</span> <span class="o">=</span> <span class="n">amplification_fspl</span>
+
+    <span class="k">return</span> <span class="n">amplification</span><span class="p">,</span> <span class="n">impact_parameter</span>
+
 
 <span class="c">#### TO DO : the following probably depreciated ####</span>
 
@@ -145,7 +158,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">LEE</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
             <span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="mi">1</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">u</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">rho</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">))</span>
+                <span class="mi">1</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">u</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">rho</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">LEE</span>
 

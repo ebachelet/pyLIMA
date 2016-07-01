@@ -64,6 +64,63 @@
 <p>Created on Mon May 23 16:00:51 2016</p>
 <p>&#64;author: ebachelet</p>
 <dl class="function">
+<dt id="pyLIMA.microlguess.MCMC_parameters_initialization">
+<code class="descclassname">pyLIMA.microlguess.</code><code class="descname">MCMC_parameters_initialization</code><span class="sig-paren">(</span><em>parameter_key</em>, <em>parameters_dictionnary</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlguess.html#MCMC_parameters_initialization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlguess.MCMC_parameters_initialization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlguess.differential_evolution_parameters_boundaries">
+<code class="descclassname">pyLIMA.microlguess.</code><code class="descname">differential_evolution_parameters_boundaries</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlguess.html#differential_evolution_parameters_boundaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlguess.differential_evolution_parameters_boundaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to find initial FSPL guess for Levenberg-Marquardt solver (method==&#8217;LM&#8217;).
+This assumes no blending.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the</td>
+</tr>
+</tbody>
+</table>
+<p>event module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of</td>
+</tr>
+</tbody>
+</table>
+<p>the survey telescope.
+:rtype: list,float</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlguess.initial_guess_DSPL">
+<code class="descclassname">pyLIMA.microlguess.</code><code class="descname">initial_guess_DSPL</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlguess.html#initial_guess_DSPL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlguess.initial_guess_DSPL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to find initial FSPL guess for Levenberg-Marquardt solver (method==&#8217;LM&#8217;).
+This assumes no blending.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the</td>
+</tr>
+</tbody>
+</table>
+<p>event module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list,float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyLIMA.microlguess.initial_guess_FSPL">
 <code class="descclassname">pyLIMA.microlguess.</code><code class="descname">initial_guess_FSPL</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlguess.html#initial_guess_FSPL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlguess.initial_guess_FSPL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to find initial FSPL guess for Levenberg-Marquardt solver (method==&#8217;LM&#8217;).
@@ -72,11 +129,18 @@ This assumes no blending.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the event module.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.</td>
+</tbody>
+</table>
+<p>event module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list,float</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list,float</td>
 </tr>
 </tbody>
 </table>
@@ -91,14 +155,21 @@ This assumes no blending.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the event module.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE) and the source flux of the survey telescope.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list,float</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the</td>
 </tr>
 </tbody>
 </table>
+<p>event module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE) and the</td>
+</tr>
+</tbody>
+</table>
+<p>source flux of the survey telescope.
+:rtype: list,float</p>
 </dd></dl>
 
 </div>

@@ -64,6 +64,35 @@
 <p>Created on Mon May 23 17:18:15 2016</p>
 <p>&#64;author: ebachelet</p>
 <dl class="function">
+<dt id="pyLIMA.microltoolbox.chichi">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">chichi</code><span class="sig-paren">(</span><em>residuals_fn</em>, <em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#chichi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.chichi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chi^2 .</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>residuals_fn</strong> (<em>func</em>) &#8211; a function which compute the residuals</li>
+<li><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyLIMA.microltoolbox.error_flux_to_error_magnitude">
 <code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">error_flux_to_error_magnitude</code><span class="sig-paren">(</span><em>error_flux</em>, <em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#error_flux_to_error_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.error_flux_to_error_magnitude" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform the injected flux error to the the corresponding error in magnitude.</p>

@@ -65,57 +65,79 @@
 <span class="n">MAGNITUDE_CONSTANT</span> <span class="o">=</span> <span class="mf">27.4</span>
 
 
+<div class="viewcode-block" id="chichi"><a class="viewcode-back" href="../../pyLIMA.microltoolbox.html#pyLIMA.microltoolbox.chichi">[docs]</a><span class="k">def</span> <span class="nf">chichi</span><span class="p">(</span><span class="n">residuals_fn</span><span class="p">,</span> <span class="n">fit_process_parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the chi^2 .</span>
+
+
+<span class="sd">    :param func residuals_fn: a function which compute the residuals</span>
+<span class="sd">    :param list fit_process_parameters: the model parameters ingested by the correpsonding</span>
+<span class="sd">    fitting routine.</span>
+
+<span class="sd">    :returns: the chi^2</span>
+
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">residuals_fn</span><span class="p">(</span><span class="n">fit_process_parameters</span><span class="p">)</span>
+    <span class="n">_chichi</span> <span class="o">=</span> <span class="p">(</span><span class="n">residuals</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">_chichi</span>
+
+</div>
 <div class="viewcode-block" id="magnitude_to_flux"><a class="viewcode-back" href="../../pyLIMA.microltoolbox.html#pyLIMA.microltoolbox.magnitude_to_flux">[docs]</a><span class="k">def</span> <span class="nf">magnitude_to_flux</span><span class="p">(</span><span class="n">magnitude</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Transform the injected magnitude to the the corresponding flux.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param array_like magnitude: the magnitude you want to transform.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :return: the transformed magnitude in flux unit</span>
 <span class="sd">    :rtype: array_like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">flux</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">((</span><span class="n">MAGNITUDE_CONSTANT</span> <span class="o">-</span> <span class="n">magnitude</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span><span class="p">)</span>
-    
+
     <span class="k">return</span> <span class="n">flux</span>
-    </div>
+
+</div>
 <div class="viewcode-block" id="flux_to_magnitude"><a class="viewcode-back" href="../../pyLIMA.microltoolbox.html#pyLIMA.microltoolbox.flux_to_magnitude">[docs]</a><span class="k">def</span> <span class="nf">flux_to_magnitude</span><span class="p">(</span><span class="n">flux</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Transform the injected flux to the the corresponding magnitude.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param array_like flux: the flux you want to transform.</span>
-<span class="sd">    </span>
-<span class="sd">    :return: the transformed magnitude </span>
+
+<span class="sd">    :return: the transformed magnitude</span>
 <span class="sd">    :rtype: array_like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-   
-    <span class="n">mag</span> <span class="o">=</span> <span class="n">MAGNITUDE_CONSTANT</span><span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span>
-    
+
+    <span class="n">mag</span> <span class="o">=</span> <span class="n">MAGNITUDE_CONSTANT</span> <span class="o">-</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">mag</span>
+
 </div>
 <div class="viewcode-block" id="error_magnitude_to_error_flux"><a class="viewcode-back" href="../../pyLIMA.microltoolbox.html#pyLIMA.microltoolbox.error_magnitude_to_error_flux">[docs]</a><span class="k">def</span> <span class="nf">error_magnitude_to_error_flux</span><span class="p">(</span><span class="n">error_magnitude</span><span class="p">,</span> <span class="n">flux</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Transform the injected magnitude error to the the corresponding error in flux.</span>
 
 <span class="sd">    :param array_like error_magnitude: the magnitude errors measurements you want to transform.</span>
 <span class="sd">    :param array_like flux: the fluxes corresponding to these errors</span>
-<span class="sd">    </span>
+
 <span class="sd">    :return: the transformed errors in flux units</span>
 <span class="sd">    :rtype: array_like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">error_flux</span> <span class="o">=</span> <span class="o">-</span><span class="n">error_magnitude</span> <span class="o">*</span> <span class="n">flux</span><span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span> 
-    
+    <span class="n">error_flux</span> <span class="o">=</span> <span class="o">-</span><span class="n">error_magnitude</span> <span class="o">*</span> <span class="n">flux</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span>
+
     <span class="k">return</span> <span class="n">error_flux</span>
+
 </div>
 <div class="viewcode-block" id="error_flux_to_error_magnitude"><a class="viewcode-back" href="../../pyLIMA.microltoolbox.html#pyLIMA.microltoolbox.error_flux_to_error_magnitude">[docs]</a><span class="k">def</span> <span class="nf">error_flux_to_error_magnitude</span><span class="p">(</span><span class="n">error_flux</span><span class="p">,</span> <span class="n">flux</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Transform the injected flux error to the the corresponding error in magnitude. </span>
-<span class="sd">    </span>
+    <span class="sd">&quot;&quot;&quot; Transform the injected flux error to the the corresponding error in magnitude.</span>
+
 <span class="sd">    :param array_like error_flux: the flux errors measurements you want to transform.</span>
 <span class="sd">    :param array_like flux: the fluxes corresponding to these errors</span>
-<span class="sd">    </span>
+
 <span class="sd">    :return: the transformed errors in magnitude</span>
 <span class="sd">    :rtype: array_like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">error_magnitude</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">error_flux</span>  <span class="o">/</span> <span class="p">(</span><span class="n">flux</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-    
+    <span class="n">error_magnitude</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">error_flux</span> <span class="o">/</span> <span class="p">(</span><span class="n">flux</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+
     <span class="k">return</span> <span class="n">error_magnitude</span></div>
 </pre></div>
 

@@ -64,62 +64,67 @@
 
 <span class="kn">import</span> <span class="nn">microltoolbox</span>
 
+
 <div class="viewcode-block" id="initial_guess_PSPL"><a class="viewcode-back" href="../../pyLIMA.microlguess.html#pyLIMA.microlguess.initial_guess_PSPL">[docs]</a><span class="k">def</span> <span class="nf">initial_guess_PSPL</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to find initial PSPL guess for Levenberg-Marquardt solver (method==&#39;LM&#39;).</span>
 <span class="sd">       This assumes no blending.</span>
-<span class="sd">       </span>
-<span class="sd">       :param object event: the event object on which you perform the fit on. More details on the event module.</span>
 
-<span class="sd">       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE) and the source flux of the survey telescope.</span>
+<span class="sd">       :param object event: the event object on which you perform the fit on. More details on the</span>
+<span class="sd">       event module.</span>
+
+<span class="sd">       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE) and the</span>
+<span class="sd">       source flux of the survey telescope.</span>
 <span class="sd">       :rtype: list,float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="c"># to estimation</span>
     <span class="n">To</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">Max_flux</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">Errmag</span> <span class="o">=</span> <span class="p">[]</span>
+
     <span class="k">for</span> <span class="n">telescope</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">telescopes</span><span class="p">:</span>
         <span class="c"># Lot of process here, if one fails, just skip</span>
+        <span class="n">lightcurve_magnitude</span> <span class="o">=</span> <span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span>
+        <span class="n">mean_error_magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
 
             <span class="c"># only the best photometry</span>
-            <span class="n">good_photometry_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]))))[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">lightcurve_bis</span> <span class="o">=</span> <span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span><span class="p">[</span><span class="n">good_photometry_indexes</span><span class="p">]</span>
+            <span class="n">good_photometry_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span>
+                                                <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">mean_error_magnitude</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">lightcurve_bis</span> <span class="o">=</span> <span class="n">lightcurve_magnitude</span><span class="p">[</span><span class="n">good_photometry_indexes</span><span class="p">]</span>
 
-            
             <span class="n">lightcurve_bis</span> <span class="o">=</span> <span class="n">lightcurve_bis</span><span class="p">[</span><span class="n">lightcurve_bis</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">(),</span> <span class="p">:]</span>
-        
-            <span class="n">mag</span> <span class="o">=</span> <span class="n">lightcurve_bis</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">flux</span> <span class="o">=</span>  <span class="n">microltoolbox</span><span class="o">.</span><span class="n">magnitude_to_flux</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span>
 
-            <span class="c"># clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1. </span>
+            <span class="n">mag</span> <span class="o">=</span> <span class="n">lightcurve_bis</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">flux</span> <span class="o">=</span> <span class="n">microltoolbox</span><span class="o">.</span><span class="n">magnitude_to_flux</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span>
+
+            <span class="c"># clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1.</span>
             <span class="n">mag_clean</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">savgol_filter</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">time</span> <span class="o">=</span> <span class="n">lightcurve_bis</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
             <span class="n">flux_clean</span> <span class="o">=</span> <span class="n">microltoolbox</span><span class="o">.</span><span class="n">flux_to_magnitude</span><span class="p">(</span><span class="n">mag_clean</span><span class="p">)</span>
             <span class="n">errmag</span> <span class="o">=</span> <span class="n">lightcurve_bis</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
-
 
             <span class="n">fs</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">flux_clean</span><span class="p">)</span>
             <span class="n">good_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flux_clean</span> <span class="o">&gt;</span> <span class="n">fs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">good_points</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">good_points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">):</span>
 
-                <span class="n">indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">flux_clean</span><span class="p">[</span><span class="n">good_points</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux_clean</span><span class="p">[</span><span class="n">good_points</span><span class="p">]))</span> <span class="o">&amp;</span> <span class="p">(</span>
-                <span class="n">errmag</span><span class="p">[</span><span class="n">good_points</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errmag</span><span class="p">[</span><span class="n">good_points</span><span class="p">]))))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">indexes</span> <span class="o">=</span> \
+                    <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">flux_clean</span><span class="p">[</span><span class="n">good_points</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux_clean</span><span class="p">[</span><span class="n">good_points</span><span class="p">]))</span> <span class="o">&amp;</span> <span class="p">(</span>
+                        <span class="n">errmag</span><span class="p">[</span><span class="n">good_points</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errmag</span><span class="p">[</span><span class="n">good_points</span><span class="p">]))))[</span><span class="mi">0</span><span class="p">]</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
 
                     <span class="k">break</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    
+
                     <span class="n">good_points</span> <span class="o">=</span> <span class="n">good_points</span><span class="p">[</span><span class="n">indexes</span><span class="p">]</span>
-                       
 
                     <span class="n">gravity</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">good_points</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux_clean</span><span class="p">[</span><span class="n">good_points</span><span class="p">]),</span>
-                            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errmag</span><span class="p">[</span><span class="n">good_points</span><span class="p">]))</span>
-                       
+                        <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">good_points</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux_clean</span><span class="p">[</span><span class="n">good_points</span><span class="p">]),</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errmag</span><span class="p">[</span><span class="n">good_points</span><span class="p">]))</span>
+
                     <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">time</span><span class="p">[</span><span class="n">good_points</span><span class="p">]</span> <span class="o">-</span> <span class="n">gravity</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">gravity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 
             <span class="n">to</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">good_points</span><span class="p">])</span>
@@ -127,38 +132,34 @@
             <span class="n">To</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
             <span class="n">Max_flux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_flux</span><span class="p">)</span>
             <span class="n">Errmag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">lightcurve_bis</span><span class="p">[</span><span class="n">good_points</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
-            
+
         <span class="k">except</span><span class="p">:</span>
 
-            <span class="n">time</span> <span class="o">=</span> <span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-            <span class="n">flux</span> <span class="o">=</span> <span class="n">microltoolbox</span><span class="o">.</span><span class="n">magnitude_to_flux</span><span class="p">(</span> <span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">flux</span> <span class="o">=</span> <span class="n">microltoolbox</span><span class="o">.</span><span class="n">magnitude_to_flux</span><span class="p">(</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
             <span class="n">to</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
             <span class="n">max_flux</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span>
             <span class="n">To</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
             <span class="n">Max_flux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_flux</span><span class="p">)</span>
-           
-            <span class="n">Errmag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_magnitude</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]))</span>
 
-
-
+            <span class="n">Errmag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_error_magnitude</span><span class="p">)</span>
 
     <span class="n">to_guess</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">To</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Errmag</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Errmag</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">survey</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">telescopes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">lightcurve</span> <span class="o">=</span> <span class="n">survey</span><span class="o">.</span><span class="n">lightcurve_flux</span>
+    <span class="n">lightcurve</span> <span class="o">=</span> <span class="n">survey</span><span class="o">.</span><span class="n">lightcurve_magnitude</span>
     <span class="n">lightcurve</span> <span class="o">=</span> <span class="n">lightcurve</span><span class="p">[</span><span class="n">lightcurve</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">(),</span> <span class="p">:]</span>
-    
-    <span class="c">## fs, uo, tE estimations only one the survey telescope    </span>
+
+    <span class="c">## fs, uo, tE estimations only one the survey telescope</span>
 
 
     <span class="n">time</span> <span class="o">=</span> <span class="n">lightcurve</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">flux</span> <span class="o">=</span> <span class="n">lightcurve</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">errflux</span> <span class="o">=</span> <span class="n">lightcurve</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="n">microltoolbox</span><span class="o">.</span><span class="n">magnitude_to_flux</span><span class="p">(</span><span class="n">lightcurve</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">errflux</span> <span class="o">=</span> <span class="n">microltoolbox</span><span class="o">.</span><span class="n">error_magnitude_to_error_flux</span><span class="p">(</span><span class="n">lightcurve</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">flux</span><span class="p">)</span>
 
     <span class="c"># fs estimation, no blend</span>
 
     <span class="n">baseline_flux_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span>
     <span class="n">baseline_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span>
-    
 
     <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">baseline_flux_0</span> <span class="o">-</span> <span class="n">baseline_flux</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">baseline_flux</span><span class="p">:</span>
 
@@ -168,10 +169,9 @@
         <span class="n">baseline_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux</span><span class="p">[</span><span class="n">indexes</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-
-                <span class="k">print</span> <span class="s">&#39;low&#39;</span>
-                <span class="n">baseline_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux</span><span class="p">[</span><span class="n">flux</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="mi">100</span><span class="p">]])</span>
-                <span class="k">break</span>
+            <span class="k">print</span> <span class="s">&#39;low&#39;</span>
+            <span class="n">baseline_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">flux</span><span class="p">[</span><span class="n">flux</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="mi">100</span><span class="p">]])</span>
+            <span class="k">break</span>
 
     <span class="n">fs_guess</span> <span class="o">=</span> <span class="n">baseline_flux</span>
 
@@ -183,64 +183,63 @@
     <span class="c"># tE estimations</span>
     <span class="n">tE_guesses</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c"># Method 1 : flux(t_demi_amplification) = 0.5 * fs_guess * (Amax + 1) </span>
+    <span class="c"># Method 1 : flux(t_demi_amplification) = 0.5 * fs_guess * (Amax + 1)</span>
 
     <span class="n">flux_demi</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">fs_guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">Amax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">flux_tE</span> <span class="o">=</span> <span class="n">fs_guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">flux_tE</span> <span class="o">=</span> <span class="n">fs_guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> \
+              <span class="p">((</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span><span class="p">))</span>
     <span class="n">index_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">time</span> <span class="o">&gt;</span> <span class="n">to_guess</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">flux</span> <span class="o">&lt;</span> <span class="n">flux_demi</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">index_moins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">time</span> <span class="o">&lt;</span> <span class="n">to_guess</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">flux</span> <span class="o">&lt;</span> <span class="n">flux_demi</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">B</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">Amax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index_plus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index_moins</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">ttE</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">index_plus</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">index_moins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
             <span class="n">tE1</span> <span class="o">=</span> <span class="n">ttE</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">B</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tE1</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ttE</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="n">index_plus</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">-</span> <span class="n">to_guess</span>
             <span class="n">tE1</span> <span class="o">=</span> <span class="n">ttE</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">B</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tE1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
 
-        <span class="n">ttE</span> <span class="o">=</span> <span class="n">to_guess</span><span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">index_moins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
-    <span class="n">tE1</span> <span class="o">=</span> <span class="n">ttE</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">B</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    
-    <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tE1</span><span class="p">)</span>
-    
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index_moins</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ttE</span> <span class="o">=</span> <span class="n">to_guess</span> <span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">index_moins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">tE1</span> <span class="o">=</span> <span class="n">ttE</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">B</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tE1</span><span class="p">)</span>
+
     <span class="c"># Method 2 : flux(t_E) = fs_guess * (uo^+3)/[(uo^2+1)^0.5*(uo^2+5)^0.5]</span>
- 
-    <span class="n">flux_tE</span> <span class="o">=</span> <span class="n">fs_guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span><span class="p">))</span>
+
+    <span class="n">flux_tE</span> <span class="o">=</span> <span class="n">fs_guess</span> <span class="o">*</span> <span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> \
+              <span class="p">((</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">uo_guess</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span><span class="p">))</span>
     <span class="n">indextEplus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">flux</span> <span class="o">&lt;</span> <span class="n">flux_tE</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">time</span> <span class="o">&gt;</span> <span class="n">to</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">indextEmoins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">flux</span> <span class="o">&lt;</span> <span class="n">flux_tE</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">time</span> <span class="o">&lt;</span> <span class="n">to</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-    
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indextEmoins</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-
         <span class="n">indextEmoins</span> <span class="o">=</span> <span class="n">indextEmoins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">tEmoins</span> <span class="o">=</span> <span class="n">to_guess</span><span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">indextEmoins</span><span class="p">]</span>
+        <span class="n">tEmoins</span> <span class="o">=</span> <span class="n">to_guess</span> <span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">indextEmoins</span><span class="p">]</span>
         <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tEmoins</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indextEplus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-
         <span class="n">indextEplus</span> <span class="o">=</span> <span class="n">indextEplus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">tEplus</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="n">indextEplus</span><span class="p">]</span> <span class="o">-</span> <span class="n">to_guess</span>
         <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tEplus</span><span class="p">)</span>
 
-
-    <span class="c"># Method 3 : the first points before/after to_guess that reach the baseline. Very rough approximation ot tE.</span>
+    <span class="c"># Method 3 : the first points before/after to_guess that reach the baseline. Very rough</span>
+    <span class="c"># approximation ot tE.</span>
 
     <span class="n">indextEPlus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">time</span> <span class="o">&gt;</span> <span class="n">to</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">flux</span> <span class="o">-</span> <span class="n">fs_guess</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">errflux</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">indextEMoins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">time</span> <span class="o">&lt;</span> <span class="n">to</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">flux</span> <span class="o">-</span> <span class="n">fs_guess</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">errflux</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
-   
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indextEPlus</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-
         <span class="n">tEPlus</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="n">indextEPlus</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">-</span> <span class="n">to_guess</span>
         <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tEPlus</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indextEMoins</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-
-        <span class="n">tEMoins</span> <span class="o">=</span> <span class="n">to_guess</span><span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">indextEMoins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">tEMoins</span> <span class="o">=</span> <span class="n">to_guess</span> <span class="o">-</span> <span class="n">time</span><span class="p">[</span><span class="n">indextEMoins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">tE_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tEMoins</span><span class="p">)</span>
 
     <span class="n">TE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tE_guesses</span><span class="p">)</span>
@@ -249,16 +248,17 @@
 
     <span class="c"># safety reason, unlikely</span>
     <span class="k">if</span> <span class="n">tE_guess</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
-
         <span class="n">tE_guess</span> <span class="o">=</span> <span class="mf">20.0</span>
-    
-    <span class="k">return</span> <span class="p">[</span><span class="n">to_guess</span><span class="p">,</span><span class="n">uo_guess</span><span class="p">,</span><span class="n">tE_guess</span><span class="p">],</span><span class="n">fs_guess</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">to_guess</span><span class="p">,</span> <span class="n">uo_guess</span><span class="p">,</span> <span class="n">tE_guess</span><span class="p">],</span> <span class="n">fs_guess</span>
+
 </div>
-<div class="viewcode-block" id="initial_guess_FSPL"><a class="viewcode-back" href="../../pyLIMA.microlguess.html#pyLIMA.microlguess.initial_guess_FSPL">[docs]</a><span class="k">def</span> <span class="nf">initial_guess_FSPL</span><span class="p">(</span><span class="n">event</span><span class="p">):</span> 
+<div class="viewcode-block" id="initial_guess_FSPL"><a class="viewcode-back" href="../../pyLIMA.microlguess.html#pyLIMA.microlguess.initial_guess_FSPL">[docs]</a><span class="k">def</span> <span class="nf">initial_guess_FSPL</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to find initial FSPL guess for Levenberg-Marquardt solver (method==&#39;LM&#39;).</span>
 <span class="sd">       This assumes no blending.</span>
-<span class="sd">       </span>
-<span class="sd">       :param object event: the event object on which you perform the fit on. More details on the event module.</span>
+
+<span class="sd">       :param object event: the event object on which you perform the fit on. More details on the</span>
+<span class="sd">       event module.</span>
 
 <span class="sd">       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.</span>
 <span class="sd">       :rtype: list,float</span>
@@ -267,9 +267,120 @@
     <span class="c"># Dummy guess</span>
     <span class="n">rho_guess</span> <span class="o">=</span> <span class="mf">0.05</span>
 
-    <span class="n">FSPL_guess</span> <span class="o">=</span> <span class="n">PSPL_guess</span><span class="o">+</span><span class="p">[</span><span class="n">rho_guess</span><span class="p">]</span>
+    <span class="n">FSPL_guess</span> <span class="o">=</span> <span class="n">PSPL_guess</span> <span class="o">+</span> <span class="p">[</span><span class="n">rho_guess</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">FSPL_guess</span><span class="p">,</span> <span class="n">fs_guess</span></div>
+    <span class="k">return</span> <span class="n">FSPL_guess</span><span class="p">,</span> <span class="n">fs_guess</span>
+
+</div>
+<div class="viewcode-block" id="initial_guess_DSPL"><a class="viewcode-back" href="../../pyLIMA.microlguess.html#pyLIMA.microlguess.initial_guess_DSPL">[docs]</a><span class="k">def</span> <span class="nf">initial_guess_DSPL</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to find initial FSPL guess for Levenberg-Marquardt solver (method==&#39;LM&#39;).</span>
+<span class="sd">       This assumes no blending.</span>
+
+<span class="sd">       :param object event: the event object on which you perform the fit on. More details on the</span>
+<span class="sd">       event module.</span>
+
+<span class="sd">       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.</span>
+<span class="sd">       :rtype: list,float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PSPL_guess</span><span class="p">,</span> <span class="n">fs_guess</span> <span class="o">=</span> <span class="n">initial_guess_PSPL</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+    <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="n">telescope</span><span class="o">.</span><span class="n">filter</span> <span class="k">for</span> <span class="n">telescope</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">telescopes</span><span class="p">]</span>
+
+    <span class="n">unique_filters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="n">DSPL_guess</span> <span class="o">=</span> <span class="n">PSPL_guess</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">PSPL_guess</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">PSPL_guess</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_filters</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">DSPL_guess</span><span class="p">,</span> <span class="n">fs_guess</span>
+
+</div>
+<div class="viewcode-block" id="differential_evolution_parameters_boundaries"><a class="viewcode-back" href="../../pyLIMA.microlguess.html#pyLIMA.microlguess.differential_evolution_parameters_boundaries">[docs]</a><span class="k">def</span> <span class="nf">differential_evolution_parameters_boundaries</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to find initial FSPL guess for Levenberg-Marquardt solver (method==&#39;LM&#39;).</span>
+<span class="sd">       This assumes no blending.</span>
+
+<span class="sd">       :param object event: the event object on which you perform the fit on. More details on the</span>
+<span class="sd">       event module.</span>
+
+<span class="sd">       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of</span>
+<span class="sd">       the survey telescope.</span>
+<span class="sd">       :rtype: list,float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">minimum_observing_time_telescopes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_flux</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">300</span> <span class="k">for</span> <span class="n">telescope</span> <span class="ow">in</span>
+                                         <span class="n">model</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">telescopes</span><span class="p">]</span>
+    <span class="n">maximum_observing_time_telescopes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">telescope</span><span class="o">.</span><span class="n">lightcurve_flux</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">300</span> <span class="k">for</span> <span class="n">telescope</span> <span class="ow">in</span>
+                                         <span class="n">model</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">telescopes</span><span class="p">]</span>
+
+    <span class="n">to_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">minimum_observing_time_telescopes</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">maximum_observing_time_telescopes</span><span class="p">))</span>
+    <span class="n">delta_to_boundaries</span> <span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+    <span class="n">uo_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">tE_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+    <span class="n">rho_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+    <span class="n">q_F_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="n">piEN_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">piEE_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">XiEN_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">XiEE_boundaries</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+
+    <span class="c"># model_xallarap_boundaries = {&#39;None&#39;: [], &#39;True&#39;: [(-2.0, 2.0), (-2.0, 2.0)]}</span>
+
+    <span class="c"># model_orbital_motion_boundaries = {&#39;None&#39;: [], &#39;2D&#39;: [], &#39;3D&#39;: []}</span>
+
+    <span class="c"># model_source_spots_boundaries = {&#39;None&#39;: []}</span>
+
+
+    <span class="c"># Paczynski models boundaries</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s">&#39;PSPL&#39;</span><span class="p">:</span>
+        <span class="n">parameters_boundaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_boundaries</span><span class="p">,</span> <span class="n">uo_boundaries</span><span class="p">,</span> <span class="n">tE_boundaries</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s">&#39;FSPL&#39;</span><span class="p">:</span>
+        <span class="n">parameters_boundaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_boundaries</span><span class="p">,</span> <span class="n">uo_boundaries</span><span class="p">,</span> <span class="n">tE_boundaries</span><span class="p">,</span> <span class="n">rho_boundaries</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s">&#39;DSPL&#39;</span><span class="p">:</span>
+        <span class="n">parameters_boundaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_boundaries</span><span class="p">,</span> <span class="n">uo_boundaries</span><span class="p">,</span> <span class="n">delta_to_boundaries</span><span class="p">,</span>
+                                 <span class="n">uo_boundaries</span><span class="p">,</span> <span class="n">tE_boundaries</span><span class="p">]</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="n">telescope</span><span class="o">.</span><span class="n">filter</span> <span class="k">for</span> <span class="n">telescope</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">telescopes</span><span class="p">]</span>
+
+        <span class="n">unique_filters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+        <span class="n">parameters_boundaries</span> <span class="o">+=</span> <span class="p">[</span><span class="n">q_F_boundaries</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_filters</span><span class="p">)</span>
+        <span class="c"># parameters_boundaries += [q_F_boundaries]</span>
+
+    <span class="c"># Second order boundaries</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">parallax_model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;None&#39;</span><span class="p">:</span>
+        <span class="n">parameters_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">piEN_boundaries</span><span class="p">)</span>
+        <span class="n">parameters_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">piEE_boundaries</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">xallarap_model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;None&#39;</span><span class="p">:</span>
+        <span class="n">parameters_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">XiEN_boundaries</span><span class="p">)</span>
+        <span class="n">parameters_boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">XiEE_boundaries</span><span class="p">)</span>
+
+    <span class="c"># if orbital_motion</span>
+    <span class="c"># if source_spots</span>
+
+    <span class="k">return</span> <span class="n">parameters_boundaries</span>
+
+</div>
+<div class="viewcode-block" id="MCMC_parameters_initialization"><a class="viewcode-back" href="../../pyLIMA.microlguess.html#pyLIMA.microlguess.MCMC_parameters_initialization">[docs]</a><span class="k">def</span> <span class="nf">MCMC_parameters_initialization</span><span class="p">(</span><span class="n">parameter_key</span><span class="p">,</span> <span class="n">parameters_dictionnary</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s">&#39;to&#39;</span> <span class="ow">in</span> <span class="n">parameter_key</span><span class="p">:</span>
+        <span class="n">to_parameters_trial</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">parameters_dictionnary</span><span class="p">[</span><span class="n">parameter_key</span><span class="p">]]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">to_parameters_trial</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s">&#39;fs&#39;</span> <span class="ow">in</span> <span class="n">parameter_key</span><span class="p">:</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
+
+        <span class="n">fs_trial</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">parameters_dictionnary</span><span class="p">[</span><span class="n">parameter_key</span><span class="p">]]</span> <span class="o">*</span> <span class="n">epsilon</span>
+        <span class="n">g_trial</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="n">parameters_dictionnary</span><span class="p">[</span><span class="n">parameter_key</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">epsilon</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">fs_trial</span><span class="p">,</span> <span class="n">g_trial</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s">&#39;g_&#39;</span> <span class="ow">in</span> <span class="n">parameter_key</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">epsilon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
+    <span class="n">all_other_parameter_trial</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">parameters_dictionnary</span><span class="p">[</span><span class="n">parameter_key</span><span class="p">]]</span> <span class="o">*</span> <span class="n">epsilon</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">all_other_parameter_trial</span><span class="p">]</span></div>
 </pre></div>
 
           </div>
