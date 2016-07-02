@@ -100,7 +100,7 @@ def main(command_line):
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('DSPL', current_event, parallax=['None', 2456155.0])
+        Model = microlmodels.create_model('DSPL', current_event, parallax=['Annual', 2456155.0])
         #Model.parameters_guess = [2456154.24, 0.077, 2456137.20, 0.027,
         #                      78.1, 0.08118, 0.125,
         #                      0.163,0.128,-0.37,0.08]
