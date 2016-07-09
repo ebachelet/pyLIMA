@@ -202,7 +202,7 @@ class MLFits(object):
            :return guess_parameters: a list containing parameters guess related to the model.
            :rtype: list
         """
-
+	
         if len(self.model.parameters_guess) == 0:
 
             # Estimate  the Paczynski parameters
@@ -218,7 +218,7 @@ class MLFits(object):
 
             # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
-            fake_model = microlmodels.create_model(self.model.model_type, self.event)
+            fake_model = microlmodels.create_model('PSPL', self.event)
             telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
 
             # The survey fluxes are already known from microlguess
@@ -389,7 +389,7 @@ class MLFits(object):
             mutation=(0.9, 1.9), popsize=15, maxiter=5000,
             tol=0.000001,
             recombination=0.6, polish='True',
-            disp=True
+            disp=False
         )
 
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
