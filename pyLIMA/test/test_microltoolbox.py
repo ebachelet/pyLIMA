@@ -1,9 +1,22 @@
 import os.path
 
 import numpy as np
-
+import mock
 from pyLIMA import microltoolbox
 
+
+def test_chichi():
+
+	magic_residuals = mock.MagicMock()
+	
+	parameters = []
+	magic_residuals.residuals_fn.return_value = np.array([0,1,50])
+ 
+        
+	parameters2 = [0,6,5]                                 
+	chichi = microltoolbox.chichi(magic_residuals.residuals_fn, parameters2)
+	
+	assert chichi == 2501
 
 def test_magnitude_to_flux():
 

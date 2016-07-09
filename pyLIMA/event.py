@@ -92,12 +92,12 @@ class Event(object):
 
         if self.kind not in available_kind:
             print 'ERROR : No possible fit yet for a non microlensing event, sorry :('
-            return
+            raise EventException('Can not fit this event kind')
 
         if method not in available_methods:
-            print 'ERROR : Wrong method request, has to be an integer selected between ' + \
+            print 'ERROR : Wrong method request, has to be a string selected between ' + \
                   ' or '.join(available_methods) + ''
-            return
+            raise EventException('Wrong fit method request')
 
         fit = microlfits.MLFits(self)
         fit.mlfit(model, method, flux_estimation_MCMC=flux_estimation_MCMC)

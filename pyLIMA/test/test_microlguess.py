@@ -8,8 +8,8 @@ def _create_event():
     event = mock.MagicMock()
     event.telescopes = [mock.MagicMock()]
     event.telescopes[0].name = 'Test'
-    event.telescopes[0].lightcurve_magnitude = np.array([[0, 1, 1], [42, 6, 6]])
-    event.telescopes[0].lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
+    event.telescopes[0].lightcurve_magnitude = np.array([[0, 1, 1], [42, 6, 6],[43, 5, 1], [54, 8, 6]])
+    event.telescopes[0].lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6], [43, 5, 1], [54, 8, 6]])
     event.telescopes[0].gamma = 0.5
     return event
 
