@@ -79,54 +79,39 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     return amplification, impact_parameter
 
 
-#### TO DO : the following probably depreciated ####
+#### TO DO : the following is row development# ###
 
 
-def source_trajectory(model, t, parameters):
-    """Not working yet """
-    tau = (t - parameters[model.model_dictionnary['to']]) / parameters[
-        model.model_dictionnary['tE']]
+#def function_LEE(r, v, u, rho, gamma):
+#    """Not working yet"""
+#    if r == 0:
+#        LEE = 1.0
+#    else:
+#        LEE = (r ** 2 + 2) / ((r ** 2 + 4) ** 0.5) * (
+#            1 - gamma * (
+#                1 - 1.5 * (1 - (r ** 2 - 2 * u * r * np.cos(v) + u ** 2) / rho ** 2) ** 0.5))
 
-    if model.paczynski_model is not 'Binary':
-
-        alpha = 0.0
-
-    x = tau * np.cos(alpha) - np.sin(alpha) * parameters[model.model_dictionnary['uo']]
-    y = tau * np.sin(alpha) + np.cos(alpha) * parameters[model.model_dictionnary['uo']]
-
-    return x, y
+#    return LEE
 
 
-def function_LEE(r, v, u, rho, gamma):
-    """Not working yet"""
-    if r == 0:
-        LEE = 1.0
-    else:
-        LEE = (r ** 2 + 2) / ((r ** 2 + 4) ** 0.5) * (
-            1 - gamma * (
-                1 - 1.5 * (1 - (r ** 2 - 2 * u * r * np.cos(v) + u ** 2) / rho ** 2) ** 0.5))
+#def LEE_limit(v, u, rho, gamma):
+#    """Not working yet"""
+#    if u <= rho:
+#        limit_1 = 0.0
+#    else:
+#        if v <= np.arcsin(rho / u):
 
-    return LEE
+#            limit_1 = u * np.cos(v) - (rho ** 2 - u ** 2 * np.sin(v) ** 2) ** 0.5
+#        else:
+#            limit_1 = 0.0
 
+#    if u <= rho:
+#        limit_2 = u * np.cos(v) + (rho ** 2 - u ** 2 * np.sin(v) ** 2) ** 0.5
+#    else:
+#        if v <= np.arcsin(rho / u):
 
-def LEE_limit(v, u, rho, gamma):
-    """Not working yet"""
-    if u <= rho:
-        limit_1 = 0.0
-    else:
-        if v <= np.arcsin(rho / u):
+#            limit_2 = u * np.cos(v) + (rho ** 2 - u ** 2 * np.sin(v) ** 2) ** 0.5
+#        else:
+#            limit_2 = 0.0
 
-            limit_1 = u * np.cos(v) - (rho ** 2 - u ** 2 * np.sin(v) ** 2) ** 0.5
-        else:
-            limit_1 = 0.0
-
-    if u <= rho:
-        limit_2 = u * np.cos(v) + (rho ** 2 - u ** 2 * np.sin(v) ** 2) ** 0.5
-    else:
-        if v <= np.arcsin(rho / u):
-
-            limit_2 = u * np.cos(v) + (rho ** 2 - u ** 2 * np.sin(v) ** 2) ** 0.5
-        else:
-            limit_2 = 0.0
-
-    return [limit_1, limit_2]
+#    return [limit_1, limit_2]

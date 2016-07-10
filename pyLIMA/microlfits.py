@@ -74,7 +74,7 @@ class MLFits(object):
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
 
-    def mlfit(self, model, method, flux_estimation_MCMC):
+    def mlfit(self, model, method, flux_estimation_MCMC='MCMC'):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -148,7 +148,7 @@ class MLFits(object):
                       'method to "DE"'
 
                 self.method = 'DE'
-                self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
+                #self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
             else:
 
