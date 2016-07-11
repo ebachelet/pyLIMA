@@ -119,6 +119,88 @@ def test_FSPL_computate_microlensing_model():
     model, _ = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
     assert np.allclose(model, np.array([10*(10.34817832+1), 10*(1.00+1)]))
 
+def test_no_fancy_parameters_to_pyLIMA_standard_parameters():
+
+    event = _create_event()
+    Model = microlmodels.create_model('PSPL', event)
+    parameters = [42, 51]
+    fancy = Model.fancy_parameters_to_pyLIMA_standard_parameters(parameters)
+    
+    assert parameters == fancy
+
+
+def test_one_fancy_parameters_to_pyLIMA_standard_parameters():
+
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event)
+ 
+    Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
+    Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
+    Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
+    Model.define_model_parameters()
+ 
+
+    Parameters  = [0.28, 0.1, 35.6, -1.30102]
+    pyLIMA_parameters = Model.compute_pyLIMA_parameters(Parameters)
+    
+    assert pyLIMA_parameters.to == 0.28
+    assert pyLIMA_parameters.uo == 0.1	
+    assert pyLIMA_parameters.tE == 35.6
+    assert pyLIMA_parameters.logrho == -1.30102
+    assert np.allclose(pyLIMA_parameters.rho, 0.05, rtol=0.001, atol=0.001)
+
+def test_mixing_fancy_parameters_to_pyLIMA_standard_parameters():
+
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event)
+ 
+    Model.fancy_to_pyLIMA_dictionnary = {'tstar':'tE','logrho': 'rho'}
+    Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho),
+                             'tstar':lambda parameters:(parameters.uo*parameters.tE)}
+    Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho,
+                             'tE':lambda parameters: (parameters.tstar/parameters.uo)}
+    Model.define_model_parameters()
+ 
+    tE = 35.6
+    uo = 0.1
+
+    Parameters  = [0.28, uo, uo*tE, -1.30102]
+    pyLIMA_parameters = Model.compute_pyLIMA_parameters(Parameters)
+    
+    assert pyLIMA_parameters.to == 0.28
+    assert pyLIMA_parameters.uo == uo	
+    assert pyLIMA_parameters.tE == tE
+    assert pyLIMA_parameters.tstar == uo*tE
+    assert pyLIMA_parameters.logrho == -1.30102
+    assert np.allclose(pyLIMA_parameters.rho, 0.05, rtol=0.001, atol=0.001)
+
+
+def test_complicated_mixing_fancy_parameters_to_pyLIMA_standard_parameters():
+
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event)
+ 
+    Model.fancy_to_pyLIMA_dictionnary = {'tstar':'tE','logrho': 'rho'}
+    Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho),
+                             'tstar':lambda parameters:(parameters.logrho*parameters.tE)}
+    Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho,
+                             'tE':lambda parameters: (parameters.tstar/parameters.logrho)}
+    Model.define_model_parameters()
+ 
+    tE = 35.6
+    uo = 0.1
+    logrho = -1.30102
+    Parameters  = [0.28, uo, tE*logrho, logrho]
+    pyLIMA_parameters = Model.compute_pyLIMA_parameters(Parameters)
+    
+    assert pyLIMA_parameters.to == 0.28
+    assert pyLIMA_parameters.uo == uo	
+    assert pyLIMA_parameters.tE == tE
+    assert pyLIMA_parameters.tstar == np.log10(pyLIMA_parameters.rho)*tE
+    assert pyLIMA_parameters.logrho == logrho
+    assert np.allclose(pyLIMA_parameters.rho, 0.05, rtol=0.001, atol=0.001)
+
+
 
 def test_compute_parallax():
 
