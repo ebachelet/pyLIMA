@@ -18,6 +18,7 @@ def _create_event():
     event.telescopes = [mock.MagicMock()]
     event.telescopes[0].name = 'Test'
     event.telescopes[0].lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
+    event.telescopes[0].filter = 'I'
     event.telescopes[0].gamma = 0.5
     return event
 
@@ -37,6 +38,12 @@ def test_create_FSPL_model():
 
     assert isinstance(fspl_model, microlmodels.ModelFSPL)
 
+def test_create_DSPL_model():
+    
+    event = _create_event()
+    dspl_model = microlmodels.create_model('DSPL', event)
+
+    assert isinstance(dspl_model, microlmodels.ModelDSPL)
 
 def test_create_bad_model():
     # Both tests are equivalent
@@ -72,29 +79,59 @@ def test_define_parameters_boundaries():
 
     assert Model.parameters_boundaries == [(-300, 342), (-2.0, 2.0), (1.0, 300), (1e-5, 0.05)]
 
+def test_magnification_DSPL_computation():
+    event = _create_event()
+
+    Model = microlmodels.create_model('DSPL', event)
+    Parameters = collections.namedtuple('parameters', ['to1', 'uo1','delta_to','uo2', 'tE','q_F_I',])
+    to1 = 0.0
+    uo1 = 0.1	
+    delta_to = 42.0 
+    uo2 = 0.05
+    tE = 5.0
+    q_F_I = 0.1
+ 
+    parameters = Parameters(to1, uo1, delta_to, uo2, tE, q_F_I)
+
+    amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
+    
+    assert np.allclose(amplification, np.array([ 9.21590819,  2.72932227]))
+
+    assert np.allclose(impact_parameter, np.array([uo1, (uo1**2+delta_to**2/tE**2)**0.5]))
+
 
 def test_magnification_FSPL_computation():
     event = _create_event()
 
     Model = microlmodels.create_model('FSPL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho'])
-    parameters = Parameters(0, 0.1, 1, 5e-2)
+ 
+    to = 0.0
+    uo = 0.1	
+    tE = 1.0
+    rho = 0.05
+    parameters = Parameters(to, uo, tE, rho)
 
     amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
 
     assert np.allclose(amplification, np.array([ 10.34817883,   1.00000064]))
-    assert np.allclose(impact_parameter, np.array([0.1, 42.0]))
+    assert np.allclose(impact_parameter, np.array([uo, (uo**2+(42.0-to)**2/tE**2)**0.5]))
 
 def test_magnification_PSPL_computation():
     event = _create_event()
 
     Model = microlmodels.create_model('PSPL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE'])
-    parameters = Parameters(0, 0.1, 1)
+
+    to = 0.0
+    uo = 0.1	
+    tE = 1.0
+
+    parameters = Parameters(to, uo, tE)
 
     amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
     assert np.allclose(amplification,np.array([10.03746101, 1.00]))
-    assert np.allclose(impact_parameter, np.array([0.1, 42.0]))
+    assert np.allclose(impact_parameter, np.array([uo, (uo**2+(42.0-to)**2/tE**2)**0.5]))
 
 
 def test_PSPL_computate_microlensing_model():
@@ -102,10 +139,18 @@ def test_PSPL_computate_microlensing_model():
 
     Model = microlmodels.create_model('PSPL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'g_Test'])
-    parameters = Parameters(0, 0.1, 1, 10, 1)
+    
+    to = 0.0
+    uo = 0.1	
+    tE = 1.0
+    fs = 10
+    g = 1
+
+    parameters = Parameters(to, uo, tE, fs, g)
+
 
     model, _ = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
-    assert np.allclose(model, np.array([10*(10.03746101+1), 10*(1.00+1)]))
+    assert np.allclose(model, np.array([fs*(10.03746101+g), fs*(1.00+g)]))
 
 
 def test_FSPL_computate_microlensing_model():
@@ -114,10 +159,46 @@ def test_FSPL_computate_microlensing_model():
     Model = microlmodels.create_model('FSPL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test',
                                                        'g_Test'])
-    parameters = Parameters(0, 0.1, 1, 5e-2, 10, 1)
+    
+    to = 0.0
+    uo = 0.1	
+    tE = 1.0
+    rho = 0.05
+    fs = 10
+    g = 1
+
+    parameters = Parameters(to, uo, tE, rho, fs, g)
+ 
 
     model, _ = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
-    assert np.allclose(model, np.array([10*(10.34817832+1), 10*(1.00+1)]))
+    assert np.allclose(model, np.array([fs*(10.34817832+g), fs*(1.00+g)]))
+
+
+def test_DSPL_computate_microlensing_model():
+    event = _create_event()
+
+    event = _create_event()
+
+    Model = microlmodels.create_model('DSPL', event)
+    Parameters = collections.namedtuple('parameters', ['to1', 'uo1','delta_to','uo2', 'tE','q_F_I','fs_Test',
+                                                       'g_Test'])
+    to1 = 0.0
+    uo1 = 0.1	
+    delta_to = 42.0 
+    uo2 = 0.05
+    tE = 5.0
+    q_F_I = 0.1
+    fs = 10
+    g = 1
+    parameters = Parameters(to1, uo1, delta_to, uo2, tE, q_F_I, fs, g)
+
+    
+    model, _ = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
+    assert np.allclose(model, np.array([fs*(9.21590819+g), fs*(2.72932227+g)]))
+
+
+
+
 
 def test_no_fancy_parameters_to_pyLIMA_standard_parameters():
 
