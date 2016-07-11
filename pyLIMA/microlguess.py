@@ -196,6 +196,7 @@ def initial_guess_PSPL(event):
     if tE_guess < 0.1:
         tE_guess = 20.0
 
+    # [to,uo,tE], fsource
     return [to_guess, uo_guess, tE_guess], fs_guess
 
 
@@ -215,6 +216,7 @@ def initial_guess_FSPL(event):
 
     FSPL_guess = PSPL_guess + [rho_guess]
 
+    # [to,uo,tE,rho], fsource
     return FSPL_guess, fs_guess
 
 
@@ -234,7 +236,13 @@ def initial_guess_DSPL(event):
 
     unique_filters = np.unique(filters)
 
-    DSPL_guess = PSPL_guess[:2] + PSPL_guess[:2] + [PSPL_guess[2]] + [0.5] * len(unique_filters)
+    # Dummy guess
+    delta_to_guess = 5.0 #days
+    q_F_guess = 0.5
+
+    DSPL_guess = PSPL_guess[:2] + [delta_to_guess] + [PSPL_guess[1]] + [PSPL_guess[2]]+ [q_F_guess] * len(unique_filters)
+
+    # [to1,uo1,delta_to,uo2,tE,q_F_i], fsource
     return DSPL_guess, fs_guess
 
 

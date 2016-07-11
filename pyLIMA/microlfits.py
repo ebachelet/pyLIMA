@@ -148,7 +148,7 @@ class MLFits(object):
                       'method to "DE"'
 
                 self.method = 'DE'
-                #self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
+                self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
             else:
 
@@ -202,7 +202,9 @@ class MLFits(object):
            :return guess_parameters: a list containing parameters guess related to the model.
            :rtype: list
         """
-	
+
+
+
         if len(self.model.parameters_guess) == 0:
 
             # Estimate  the Paczynski parameters
