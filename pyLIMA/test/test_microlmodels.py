@@ -283,12 +283,70 @@ def test_complicated_mixing_fancy_parameters_to_pyLIMA_standard_parameters():
 
 
 
-def test_compute_parallax():
-
-    #NEED TO DO PARALLAX FIRST
-    return
-
 def test_compute_parallax_curvature():
 
-    #NEED TO DO PARALLAX FIRST
-    return
+   
+    delta_positions = np.array([[1,2],[3,4]])
+    piE = np.array([0.1,1.8])
+
+    delta_tau, delta_beta = microlmodels.compute_parallax_curvature(piE, delta_positions)
+   
+    assert len(delta_tau) == 2
+    assert len(delta_beta) == 2
+    assert np.allclose(delta_tau,-(piE[0]*delta_positions[0]+piE[1]*delta_positions[1])) # scalar product, geocentric point of view (-)
+    assert np.allclose(delta_beta, -(piE[0]*delta_positions[1]-piE[1]*delta_positions[0])) # vectorial product, geocentric point of view (-)
+
+def test_source_trajectory_with_parallax():
+    
+    to = 0.28
+    tE = 35.6
+    uo = 0.1
+    piEN = 0.1
+    piEE = -0.97
+   
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'piEN', 'piEE'])
+    parameters = Parameters(to, uo, tE, piEN, piEE)
+    
+  
+    telescope = mock.MagicMock()
+    telescope.lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
+    telescope.deltas_positions =  np.array([[1,2],[3,4]])
+
+
+    source_X, source_Y = microlmodels.source_trajectory(telescope, to, uo, tE, parameters)
+
+    assert len(source_X) == len(source_Y) == 2
+
+    tau = (telescope.lightcurve_flux[:,0]-to)/tE
+    piE = np.array([piEN,piEE])
+
+    delta_tau, delta_beta = microlmodels.compute_parallax_curvature(piE, telescope.deltas_positions)
+
+    tau += delta_tau
+    beta = uo + delta_beta
+
+    assert np.allclose(source_X, tau) #rotation of alpha
+    assert np.allclose(source_Y, beta)		
+  
+def test_source_trajectory_with_alpha_non_negative():
+    
+    to = 0.28
+    tE = 35.6
+    uo = 0.1
+    alpha = np.pi/2.0
+   
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'alpha'])
+    parameters = Parameters(to, uo, tE, alpha)
+    telescope = mock.MagicMock()
+    telescope.lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
+    
+    source_X, source_Y = microlmodels.source_trajectory(telescope, to, uo, tE, parameters)
+
+    assert len(source_X) == len(source_Y) == 2
+
+    tau = (telescope.lightcurve_flux[:,0]-to)/tE
+    assert np.allclose(source_X, tau*np.cos(alpha)-uo*np.sin(alpha)) #rotation of alpha
+    assert np.allclose(source_Y, tau*np.sin(alpha)+uo*np.cos(alpha))	
+
+
+  
