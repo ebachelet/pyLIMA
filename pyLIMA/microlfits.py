@@ -683,6 +683,7 @@ class MLFits(object):
 
         priors = microlensing_model[1]
 
+
         return residuals, priors
 
     def find_fluxes(self, fit_process_parameters, model):

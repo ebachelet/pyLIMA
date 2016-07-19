@@ -91,15 +91,15 @@ def test_mlfit_PSPL_LM_with_guess() :
 
 
 
-#def test_mlfit_PSPL_MCMC_with_guess() :
+def test_mlfit_PSPL_MCMC_with_guess() :
 
-	#current_event = _create_event()
-	#model = _create_model('PSPL')
-	#model.parameters_guess = [10,0.1,20]
-	#fit = microlfits.MLFits(current_event)
-	#fit.mlfit(model,'MCMC')
+	current_event = _create_event()
+	model = _create_model('PSPL')
+	model.parameters_guess = [10,0.1,20]
+	fit = microlfits.MLFits(current_event)
+	fit.mlfit(model,'MCMC')
 	
-	#assert fit.MCMC_chains.shape == (200,100,5)	
+	assert fit.MCMC_chains.shape == (200,100,5)	
 	
 	
 def test_check_fit_bad_covariance() :

@@ -12,6 +12,8 @@ import copy
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+
 import numpy as np
 from astropy.time import Time
 from scipy.stats.distributions import t as student
@@ -90,15 +92,15 @@ def MCMC_outputs(fit):
     for i in xrange(chains[0].shape[1] - 1):
         i += 1
         CHAINS = np.c_[CHAINS, chains[:, :, i].ravel()]
-    CHAINS_NO_FLUXES = np.c_[CHAINS, probabilities.ravel()]
 
-
+    BEST_PARAMETERS = CHAINS
     if chains[0].shape[1] != len(fit.model.model_dictionnary):
         fluxes = MCMC_compute_fs_g(fit, CHAINS)
 
-        CHAINS = np.c_[CHAINS, fluxes, probabilities.ravel()]
+        CHAINS = np.c_[CHAINS, fluxes]
 
-
+    CHAINS = np.c_[CHAINS, probabilities.ravel()]
+    BEST_PARAMETERS = np.c_[BEST_PARAMETERS, probabilities.ravel()]
 
     best_proba = np.argmax(CHAINS[:, -1])
 
@@ -107,13 +109,13 @@ def MCMC_outputs(fit):
     BEST = CHAINS[index]
     BEST = BEST[BEST[:, -1].argsort(),]
 
-    BEST_PARAMETERS =  CHAINS_NO_FLUXES[index]
+
     BEST_PARAMETERS = BEST_PARAMETERS[BEST_PARAMETERS[:, -1].argsort(),]
     covariance_matrix = MCMC_covariance(CHAINS)
     correlation_matrix = cov2corr(covariance_matrix)
 
     figure_lightcurve = MCMC_plot_lightcurves(fit, BEST)
-    figure_distributions = MCMC_plot_parameters_distribution(fit,  BEST_PARAMETERS)
+    figure_distributions = MCMC_plot_parameters_distribution(fit, BEST_PARAMETERS)
 
     key_outputs = ['MCMC_chains', 'MCMC_correlations', 'figure_lightcurve', 'figure_distributions']
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
@@ -155,7 +157,6 @@ def MCMC_compute_fs_g(fit, mcmc_chains):
 def MCMC_plot_parameters_distribution(fit, mcmc_best):
     """ Plot the fit parameters distributions.
     Only plot the best mcmc_chains are plotted.
-
     :param fit: a fit object. See the microlfits for more details.
     :param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
     :return: a multiple matplotlib subplot representing the parameters distributions (2D slice +
@@ -167,27 +168,25 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col')
 
     count_i = 0
-    # unique_mcmc_individuals = np.vstack({tuple(row) for row in mcmc_best})
+
     for key_i in fit.model.model_dictionnary.keys()[: dimensions]:
 
-        axes2[count_i, 0].set_ylabel(key_i)
-        axes2[-1, count_i].set_xlabel(key_i)
+        axes2[count_i, 0].set_ylabel(key_i, fontsize=int(100/dimensions))
+        axes2[-1, count_i].set_xlabel(key_i, fontsize=int(100/dimensions))
 
         count_j = 0
         for key_j in fit.model.model_dictionnary.keys()[: dimensions]:
 
             axes2[count_i, count_j].ticklabel_format(useOffset=False, style='plain')
+            axes2[count_i, count_j].ticklabel_format(useOffset=False, style='plain')
 
-            if count_i != dimensions - 1:
-                plt.setp(axes2[count_i, count_j].get_xticklabels(), visible=False)
-
-            if (count_j != 0) and (count_j != count_i):
-                plt.setp(axes2[count_i, count_j].get_yticklabels(), visible=False)
 
             if count_i == count_j:
 
                 axes2[count_i, count_j].hist(mcmc_best[:, fit.model.model_dictionnary[key_i]], 100)
-                axes2[count_i, count_j].locator_params(nbins=dimensions / 2)
+                axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(int(12.0 / dimensions)))
+                axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
+                axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
 
             else:
 
@@ -198,15 +197,28 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
                         mcmc_best[:, fit.model.model_dictionnary[key_i]],
                         c=mcmc_best[:, -1],
                         edgecolor='None')
+
                     axes2[count_i, count_j].set_xlim(
                         [min(mcmc_best[:, fit.model.model_dictionnary[key_j]]),
                          max(mcmc_best[:, fit.model.model_dictionnary[key_j]])])
+                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(int(12.0/dimensions)))
+
                     axes2[count_i, count_j].set_ylim(
                         [min(mcmc_best[:, fit.model.model_dictionnary[key_i]]),
                          max(mcmc_best[:, fit.model.model_dictionnary[key_i]])])
-                    axes2[count_i, count_j].locator_params(nbins=dimensions / 2)
+
+                    axes2[count_i, count_j].tick_params(labelsize=int(75.0/dimensions))
+
                 else:
+
                     axes2[count_i, count_j].axis('off')
+
+                if count_j == 0 :
+
+                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(int(12.0 / dimensions)))
+                else :
+
+                    plt.setp(axes2[count_i, count_j].get_yticklabels(), visible=False)
 
             count_j += 1
 
@@ -243,9 +255,11 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
         MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice, -1], figure_axes[0],
                         scalar_couleur_map)
 
-    plt.colorbar(scalar_couleur_map, ax=figure_axes[0])
-    figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
-                        transform=figure_axes[0].transAxes)
+    cb = plt.colorbar(scalar_couleur_map, ax=figure_axes[0])
+    cb.locator = MaxNLocator(5)
+    cb.update_ticks()
+   # figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
+    #                    transform=figure_axes[0].transAxes)
     figure_axes[0].invert_yaxis()
     MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
 
@@ -312,7 +326,7 @@ def MCMC_plot_align_data(fit, parameters, ax):
         ax.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], fmt='.',
                     label=telescope.name)
 
-    ax.legend(numpoints=1)
+    ax.legend(numpoints=1, fontsize=25)
 
 
 def MCMC_plot_residuals(fit, parameters, ax):
@@ -419,8 +433,8 @@ def LM_plot_lightcurves(fit):
 
     """
     figure, figure_axes = initialize_plot_lightcurve(fit)
-    LM_plot_align_data(fit, figure_axes[0])
     LM_plot_model(fit, figure_axes[0])
+    LM_plot_align_data(fit, figure_axes[0])
     LM_plot_residuals(fit, figure_axes[1])
 
     return figure
@@ -443,10 +457,20 @@ def initialize_plot_lightcurve(fit):
     :rtype: matplotlib_figure,matplotlib_axes
 
     """
-    figure, figure_axes = plt.subplots(2, 1, sharex=True)
+    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]})
     figure_axes[0].grid()
     figure_axes[1].grid()
-    figure.suptitle(fit.event.name, fontsize=30)
+    # figure.suptitle(fit.event.name, fontsize=30)
+    figure_axes[0].set_ylabel('Mag', fontsize=50)
+    figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
+    figure_axes[0].tick_params(labelsize=30)
+
+    figure_axes[1].set_xlabel('Days', fontsize=50)
+    figure_axes[1].xaxis.set_major_locator(MaxNLocator(8))
+    figure_axes[1].yaxis.set_major_locator(MaxNLocator(4))
+
+    figure_axes[1].set_ylabel('Residuals', fontsize=50)
+    figure_axes[1].tick_params(labelsize=30)
 
     return figure, figure_axes
 
@@ -488,12 +512,12 @@ def LM_plot_model(fit, figure_axe):
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, 'r', lw=2)
+    figure_axe.plot(time, magnitude, '--k', lw=1)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.invert_yaxis()
-    figure_axe.text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
-                    transform=figure_axe.transAxes)
+    # figure_axe.text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
+    # transform=figure_axe.transAxes)
 
 
 def LM_plot_residuals(fit, figure_axe):
@@ -545,7 +569,7 @@ def LM_plot_align_data(fit, figure_axe):
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], fmt='.',
                             label=telescope.name)
 
-    figure_axe.legend(numpoints=1)
+    figure_axe.legend(numpoints=1, fontsize=25)
 
 
 def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_reference, fs_telescope,
