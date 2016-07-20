@@ -348,5 +348,57 @@ def test_source_trajectory_with_alpha_non_negative():
     assert np.allclose(source_X, tau*np.cos(alpha)-uo*np.sin(alpha)) #rotation of alpha
     assert np.allclose(source_Y, tau*np.sin(alpha)+uo*np.cos(alpha))	
 
+def test_define_pyLIMA_standard_parameters_with_parallax():
+    
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event, parallax = ['Annual', 598.9])
 
-  
+    assert Model.Jacobian_flag == 'No way'
+    assert  Model.pyLIMA_standards_dictionnary['piEN'] == 4
+    assert  Model.pyLIMA_standards_dictionnary['piEE'] == 5
+
+def test_define_pyLIMA_standard_parameters_with_xallarap():
+    
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event, xallarap = ['Yes', 598.9])
+
+    assert Model.Jacobian_flag == 'No way'
+    assert  Model.pyLIMA_standards_dictionnary['XiEN'] == 4
+    assert  Model.pyLIMA_standards_dictionnary['XiEE'] == 5
+
+def test_define_pyLIMA_standard_parameters_with_orbital_motion():
+    
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event, orbital_motion = ['2D', 598.9])
+
+    assert Model.Jacobian_flag == 'No way'
+    assert  Model.pyLIMA_standards_dictionnary['dsdt'] == 4
+    assert  Model.pyLIMA_standards_dictionnary['dalphadt'] == 5
+
+def test_define_pyLIMA_standard_parameters_with_source_spots():
+    
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event, source_spots='Yes')
+
+    assert Model.Jacobian_flag == 'No way'
+    assert  Model.pyLIMA_standards_dictionnary['spot'] == 4
+
+def test_pyLIMA_standard_parameters_to_fancy_parameters():
+    
+    event = _create_event()
+    Model = microlmodels.create_model('FSPL', event, source_spots='Yes')
+
+    Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
+    Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
+    Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
+    Model.define_model_parameters()
+
+    # to, uo ,tE, log10(0.001), spot
+    Parameters = [42.0,56.9,2.89,-3.0,0.0]
+
+    pyLIMA_parameters = Model.compute_pyLIMA_parameters(Parameters)
+   
+    fancy_parameters = Model.pyLIMA_standard_parameters_to_fancy_parameters(pyLIMA_parameters)
+    assert pyLIMA_parameters.rho == 0.001
+    assert fancy_parameters.logrho == -3.0
+   

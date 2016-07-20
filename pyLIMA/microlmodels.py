@@ -278,7 +278,7 @@ class MLModel(object):
 
         if self.source_spots_model != 'None':
             self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['spot'] = len(self.pyLIMA_standards_dictionnary) + 1
+            self.pyLIMA_standards_dictionnary['spot'] = len(self.pyLIMA_standards_dictionnary)
 
         for telescope in self.event.telescopes:
             self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
@@ -304,8 +304,8 @@ class MLModel(object):
                         self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
                             self.fancy_to_pyLIMA_dictionnary[key_parameter])
                     except:
-                        import pdb;
-                        pdb.set_trace()
+
+                         pass
             self.model_dictionnary = OrderedDict(
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
