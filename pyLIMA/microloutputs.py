@@ -265,8 +265,8 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     cb = plt.colorbar(scalar_couleur_map, ax=figure_axes[0], orientation="horizontal")
     cb.locator = MaxNLocator(5)
     cb.update_ticks()
-   # figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
-    #                    transform=figure_axes[0].transAxes)
+    figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
+                        transform=figure_axes[0].transAxes)
     figure_axes[0].invert_yaxis()
     MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
 
@@ -467,7 +467,7 @@ def initialize_plot_lightcurve(fit):
     figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]})
     figure_axes[0].grid()
     figure_axes[1].grid()
-    # figure.suptitle(fit.event.name, fontsize=30)
+    figure.suptitle(fit.event.name, fontsize=50)
     figure_axes[0].set_ylabel('Mag', fontsize=50)
     figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[0].tick_params(labelsize=30)
@@ -523,8 +523,8 @@ def LM_plot_model(fit, figure_axe):
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.invert_yaxis()
-    # figure_axe.text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
-    # transform=figure_axe.transAxes)
+    figure_axe.text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
+    transform=figure_axe.transAxes)
 
 
 def LM_plot_residuals(fit, figure_axe):
