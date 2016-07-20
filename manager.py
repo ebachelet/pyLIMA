@@ -110,7 +110,7 @@ def main(command_line):
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'MCMC', flux_estimation_MCMC='MCMC')
+        current_event.fit(Model, 'LM', flux_estimation_MCMC='MCMC')
 
 
 

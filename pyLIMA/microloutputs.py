@@ -25,6 +25,7 @@ plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 max_plot_ticks = 3
 
+
 def LM_outputs(fit):
     """Standard 'LM' and 'DE' outputs.
 
@@ -86,42 +87,44 @@ def MCMC_outputs(fit):
     :rtype: object
     """
 
-    chains = fit.MCMC_chains
+    raw_chains = fit.MCMC_chains
     probabilities = fit.MCMC_probabilities
 
-    CHAINS = chains[:, :, 0].ravel()
-    for i in xrange(chains[0].shape[1] - 1):
+    mcmc_chains = raw_chains[:, :, 0].ravel()
+
+    for i in xrange(raw_chains[0].shape[1] - 1):
         i += 1
-        CHAINS = np.c_[CHAINS, chains[:, :, i].ravel()]
+        mcmc_chains = np.c_[mcmc_chains, raw_chains[:, :, i].ravel()]
 
-    BEST_PARAMETERS = CHAINS
-    if chains[0].shape[1] != len(fit.model.model_dictionnary):
-        fluxes = MCMC_compute_fs_g(fit, CHAINS)
+    best_parameters = mcmc_chains
 
-        CHAINS = np.c_[CHAINS, fluxes]
+    if raw_chains[0].shape[1] != len(fit.model.model_dictionnary):
+        fluxes = MCMC_compute_fs_g(fit, mcmc_chains)
 
-    CHAINS = np.c_[CHAINS, probabilities.ravel()]
-    BEST_PARAMETERS = np.c_[BEST_PARAMETERS, probabilities.ravel()]
+        mcmc_chains = np.c_[mcmc_chains, fluxes]
 
-    best_proba = np.argmax(CHAINS[:, -1])
+    mcmc_chains = np.c_[mcmc_chains, probabilities.ravel()]
+    best_parameters = np.c_[best_parameters, probabilities.ravel()]
+
+    best_probability = np.argmax(mcmc_chains[:, -1])
 
     # cut to 6 sigma for plots
-    index = np.where(CHAINS[:, -1] > CHAINS[best_proba, -1] - 36)[0]
-    BEST = CHAINS[index]
-    BEST = BEST[BEST[:, -1].argsort(),]
+    index = np.where(mcmc_chains[:, -1] > mcmc_chains[best_probability, -1] - 36)[0]
+    best_chains = mcmc_chains[index]
+    best_chains = best_chains[best_chains[:, -1].argsort(),]
 
-    BEST_PARAMETERS = BEST_PARAMETERS[index]
-    BEST_PARAMETERS = BEST_PARAMETERS[BEST_PARAMETERS[:, -1].argsort(),]
-    covariance_matrix = MCMC_covariance(CHAINS)
+    best_parameters = best_parameters
+    best_parameters = best_parameters[best_parameters[:, -1].argsort(),]
+    covariance_matrix = MCMC_covariance(mcmc_chains)
     correlation_matrix = cov2corr(covariance_matrix)
 
-    figure_lightcurve = MCMC_plot_lightcurves(fit, BEST)
-    figure_distributions = MCMC_plot_parameters_distribution(fit, BEST_PARAMETERS)
+    figure_lightcurve = MCMC_plot_lightcurves(fit, best_chains)
+    figure_distributions = MCMC_plot_parameters_distribution(fit, best_parameters)
 
     key_outputs = ['MCMC_chains', 'MCMC_correlations', 'figure_lightcurve', 'figure_distributions']
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
 
-    values_outputs = [CHAINS, correlation_matrix, figure_lightcurve, figure_distributions]
+    values_outputs = [mcmc_chains, correlation_matrix, figure_lightcurve, figure_distributions]
 
     count = 0
     for key in key_outputs:
@@ -141,18 +144,18 @@ def MCMC_compute_fs_g(fit, mcmc_chains):
     :rtype: array_type
 
     """
-    Fluxes = np.zeros((len(mcmc_chains), 2 * len(fit.event.telescopes)))
+    fluxes_chains = np.zeros((len(mcmc_chains), 2 * len(fit.event.telescopes)))
 
     for i in xrange(len(mcmc_chains)):
 
-        if Fluxes[i][0] == 0:
+        if fluxes_chains[i][0] == 0:
             index = np.where(mcmc_chains == mcmc_chains[i])[0]
 
             fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
 
-            Fluxes[np.unique(index)] = fluxes
+            fluxes_chains[np.unique(index)] = fluxes
 
-    return Fluxes
+    return fluxes_chains
 
 
 def MCMC_plot_parameters_distribution(fit, mcmc_best):
@@ -169,7 +172,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     mcmc_to_plot = np.unique(mcmc_string_format)
     mcmc_unique = np.array([json.loads(i) for i in mcmc_to_plot])
 
-    mcmc_unique = mcmc_unique[mcmc_unique[:,-1].argsort(),]
+    mcmc_unique = mcmc_unique[mcmc_unique[:, -1].argsort(),]
     dimensions = mcmc_best.shape[1] - 1
 
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col')
@@ -178,15 +181,14 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
 
     for key_i in fit.model.model_dictionnary.keys()[: dimensions]:
 
-        axes2[count_i, 0].set_ylabel(key_i, fontsize=int(100/dimensions))
-        axes2[-1, count_i].set_xlabel(key_i, fontsize=int(100/dimensions))
+        axes2[count_i, 0].set_ylabel(key_i, fontsize=int(100 / dimensions))
+        axes2[-1, count_i].set_xlabel(key_i, fontsize=int(100 / dimensions))
 
         count_j = 0
         for key_j in fit.model.model_dictionnary.keys()[: dimensions]:
 
             axes2[count_i, count_j].ticklabel_format(useOffset=False, style='plain')
             axes2[count_i, count_j].ticklabel_format(useOffset=False, style='plain')
-
 
             if count_i == count_j:
 
@@ -214,16 +216,16 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
                         [min(mcmc_unique[:, fit.model.model_dictionnary[key_i]]),
                          max(mcmc_unique[:, fit.model.model_dictionnary[key_i]])])
 
-                    axes2[count_i, count_j].tick_params(labelsize=int(75.0/dimensions))
+                    axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
 
                 else:
 
                     axes2[count_i, count_j].axis('off')
 
-                if count_j == 0 :
+                if count_j == 0:
 
                     axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(max_plot_ticks))
-                else :
+                else:
 
                     plt.setp(axes2[count_i, count_j].get_yticklabels(), visible=False)
 
@@ -262,9 +264,9 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
         MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice, -1], figure_axes[0],
                         scalar_couleur_map)
 
-    cb = plt.colorbar(scalar_couleur_map, ax=figure_axes[0], orientation="horizontal")
-    cb.locator = MaxNLocator(5)
-    cb.update_ticks()
+    colorbar = plt.colorbar(scalar_couleur_map, ax=figure_axes[0], orientation="horizontal")
+    colorbar.locator = MaxNLocator(5)
+    colorbar.update_ticks()
     figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
                         transform=figure_axes[0].transAxes)
     figure_axes[0].invert_yaxis()
@@ -305,12 +307,12 @@ def MCMC_plot_model(fit, parameters, couleurs, figure_axes, scalar_couleur_map):
                      alpha=0.5)
 
 
-def MCMC_plot_align_data(fit, parameters, ax):
+def MCMC_plot_align_data(fit, parameters, plot_axe):
     """ Plot the data on the figure. Telescopes are aligned to the survey telescope (i.e number 0).
 
     :param fit: a fit object. See the microlfits for more details.
     :param parameters: the parameters [list] of the model you want to plot.
-    :param ax: the matplotlib axes where you plot the data
+    :param plot_axe: the matplotlib axes where you plot the data
     """
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = parameters[fit.model.model_dictionnary['fs_' + reference_telescope]]
@@ -320,20 +322,20 @@ def MCMC_plot_align_data(fit, parameters, ax):
 
         if telescope.name == reference_telescope:
 
-            lightcurve = telescope.lightcurve_magnitude
+            lightcurve_magnitude = telescope.lightcurve_magnitude
 
         else:
 
             fs_telescope = parameters[fit.model.model_dictionnary['fs_' + telescope.name]]
             g_telescope = parameters[fit.model.model_dictionnary['g_' + telescope.name]]
 
-            lightcurve = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
-                                                    g_reference, fs_telescope, g_telescope)
+            lightcurve_magnitude = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
+                                                              g_reference, fs_telescope, g_telescope)
 
-        ax.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], fmt='.',
-                    label=telescope.name)
+        plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2], fmt='.',
+                          label=telescope.name)
 
-    ax.legend(numpoints=1, fontsize=25)
+    plot_axe.legend(numpoints=1, fontsize=25)
 
 
 def MCMC_plot_residuals(fit, parameters, ax):
@@ -357,6 +359,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         ax.errorbar(time, residuals, yerr=err_mag, fmt='.')
     ax.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     ax.invert_yaxis()
+
 
 def LM_parameters_result(fit):
     """ Produce a namedtuple object containing the fitted parameters in the fit.fit_results.
@@ -424,8 +427,8 @@ def cov2corr(covariance_matrix):
 
     """
 
-    d = np.sqrt(covariance_matrix.diagonal())
-    correlation_matrix = ((covariance_matrix.T / d).T) / d
+    covariance_diagonal = np.sqrt(covariance_matrix.diagonal())
+    correlation_matrix = ((covariance_matrix.T / covariance_diagonal).T) / covariance_diagonal
 
     return correlation_matrix
 
@@ -524,7 +527,7 @@ def LM_plot_model(fit, figure_axe):
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.invert_yaxis()
     figure_axe.text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
-    transform=figure_axe.transAxes)
+                    transform=figure_axe.transAxes)
 
 
 def LM_plot_residuals(fit, figure_axe):
@@ -610,245 +613,3 @@ def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_referen
 
     return lightcurve_mag_normalised
 
-
-### TO DO : some parts depreciated ####
-
-def errors_on_fits(self, choice):
-    if len(self.event.fits[choice].fit_covariance) == 0:
-
-        print 'There is no way to produce errors without covariance at this stage'
-
-    else:
-
-        self.event.fits[choice].fit_errors = np.sqrt(
-            self.event.fits[choice].fit_covariance.diagonal())
-
-
-def find_observables(self):
-    count = 0
-    self.observables_dictionnary = {'to': 0, 'Ao': 1, 'tE': 2, 'Anow': 3, 'Ibaseline': 4,
-                                    'Ipeak': 5, 'Inow': 6}
-    self.observables_dictionnary = OrderedDict(
-        sorted(self.observables_dictionnary.items(), key=lambda x: x[1]))
-    for i in self.event.fits_results:
-        observables = []
-        parameters = i[3]
-        to = parameters[self.event.fits_models[count][2].model_dictionnary['to']]
-        uo = parameters[self.event.fits_models[count][2].model_dictionnary['uo']]
-        tE = parameters[self.event.fits_models[count][2].model_dictionnary['tE']]
-
-        t = Time(datetime.utcnow())
-        # tnow=t.jd1+t.jd2
-        tnow = 150
-        Ao = microlmagnification.amplification(self.event.fits_models[count][2], np.array([to]),
-                                               parameters, self.event.telescopes[0].gamma)[0][0]
-        Anow = \
-            microlmagnification.amplification(self.event.fits_models[count][2], np.array([tnow]),
-                                              parameters, self.event.telescopes[0].gamma)[0][0]
-
-        observables.append(to)
-        observables.append(Ao)
-        observables.append(tE)
-        observables.append(Anow)
-
-        Ibaseline = 27.4 - 2.5 * np.log10(
-            parameters[self.event.fits_models[count][2].model_dictionnary[
-                'fs_' + self.event.telescopes[0].name]] * (
-                1 + parameters[self.event.fits_models[count][2].model_dictionnary[
-                    'g_' + self.event.telescopes[0].name]]))
-
-        Ipeak = 27.4 - 2.5 * np.log10(
-            parameters[self.event.fits_models[count][2].model_dictionnary[
-                'fs_' + self.event.telescopes[0].name]] * (
-                Ao + parameters[self.event.fits_models[count][2].model_dictionnary[
-                    'g_' + self.event.telescopes[0].name]]))
-
-        Inow = 27.4 - 2.5 * np.log10(
-            parameters[self.event.fits_models[count][2].model_dictionnary[
-                'fs_' + self.event.telescopes[0].name]] * (
-                Anow + parameters[self.event.fits_models[count][2].model_dictionnary[
-                    'g_' + self.event.telescopes[0].name]]))
-
-        observables.append(Ibaseline)
-        observables.append(Ipeak)
-        observables.append(Inow)
-
-        self.observables.append([i[0], i[1], i[2], observables])
-
-
-def find_observables_errors(self):
-    for i in xrange(len(self.event.fits_results)):
-
-        parameters = self.observables[i][2]
-        parameters_errors = self.error_parameters[i][2]
-
-        to = self.event.fits_results[i][2][0]
-        uo = self.event.fits_results[i][2][1]
-        tE = self.event.fits_results[i][2][2]
-
-        Ao = parameters[1]
-        err_Ao = parameters_errors[1] * 8 / (
-            parameters[1] ** 2 * (parameters[1] ** 2 + 4) ** 1.5)
-        Anow = parameters[3]
-        jd1, jd2 = Time(datetime.datetime.utcnow())
-        tnow = jd1 + jd2
-        unow = np.sqrt(uo ** 2 + (tnow - to) ** 2 / tE ** 2)
-        err_Anow = (uo * parameters_errors[1] * np.abs((tnow - to)) / tE ** 3 * (
-            tE * parameters_errors[0] + np.abs((tnow - to)) * parameters_errors[2])) / unow
-        observables_errors = []
-        observables = []
-        observables_errors.append(parameters_errors[0])
-        observables_errors.append(err_Ao)
-        observables_errors.append(parameters_errors[2])
-        observables_errors.append(err_Anow)
-
-        start = len(parameters) - 2 * len(self.event.telescopes) - 1
-        for j in xrange(len(self.event.telescopes)):
-            Ibaseline = 27.4 - 2.5 * np.log10(parameters[start] * (1 + parameters[start]))
-            Ipeak = 27.4 - 2.5 * np.log10(parameters[start] * (Ao + parameters[start]))
-
-            observables.append(Ibaseline)
-            observables.append(Ipeak)
-
-            start += 2
-
-        self.observables.append([i[0], i[1], observables])
-
-
-def errors_on_observables(self):
-    for i in self.event.fits_covariance:
-        self.error_parameters.append([i[0], i[1], np.sqrt(i[2].diagonal)])
-
-
-def student_errors(self):
-    alpha = 0.05
-    ndata = len(self.event.telescopes[0].lightcurve_flux)
-    npar = 5
-    dof = ndata - npar
-    tval = student.ppf(1 - alpha / 2, dof)
-
-    lower = []
-    upper = []
-
-    for i in xrange(len(self.event.fits_covariance[0][2].diagonal())):
-        sigma = self.event.fits_covariance[0][2].diagonal()[i] ** 0.5
-        lower.append(self.event.fits_results[0][2][i] - sigma * tval)
-        upper.append(self.event.fits_results[0][2][i] + sigma * tval)
-
-    self.upper = upper
-    self.lower = lower
-
-
-def K2_C9_outputs(self):
-    import matplotlib.pyplot as plt
-
-    # first produce aligned lightcurve#
-
-    time = []
-    mag = []
-    err_mag = []
-    groups = []
-
-    time = time + self.event.telescopes[0].lightcurve[:, 0].tolist()
-    mag = mag + self.event.telescopes[0].lightcurve[:, 1].tolist()
-    err_mag = err_mag + self.event.telescopes[0].lightcurve[:, 2].tolist()
-    groups = groups + [self.event.telescopes[0].name] * len(self.event.telescopes[0].lightcurve)
-
-    for i in self.event.telescopes[1:]:
-        time = time + i.lightcurve[:, 0].tolist()
-        Mag = i.lightcurve[:, 1]
-        flux = 10 ** ((27.4 - Mag) / 2.5)
-        err_flux = np.abs(-i.lightcurve[:, 2] * flux / (2.5) * np.log(10))
-        flux_normalised = self.event.fits[0].fit_results[
-                              self.event.fits[0].model.model_dictionnary[
-                                  'fs_' + self.event.telescopes[0].name]] * ((
-                                                                                 flux /
-                                                                                 self.event.fits[
-                                                                                     0].fit_results[
-                                                                                     self.event.fits[
-                                                                                         0].model.model_dictionnary[
-                                                                                         'fs_' +
-                                                                                         i.name]] -
-                                                                                 self.event.fits[
-                                                                                     0].fit_results[
-                                                                                     self.event.fits[
-                                                                                         0].model.model_dictionnary[
-                                                                                         'g_'
-                                                                                         +
-                                                                                         i.name]]) +
-                                                                             self.event.fits[
-                                                                                 0].fit_results[
-                                                                                 self.event.fits[
-                                                                                     0].model.model_dictionnary[
-                                                                                     'g_' +
-                                                                                     self.event.telescopes[
-                                                                                         0].name]])
-        err_flux_norm = err_flux / flux * flux_normalised
-        mag_norm = 27.4 - 2.5 * np.log10(flux_normalised)
-        err_mag_norm = 2.5 * err_flux_norm / (flux_normalised * np.log(10))
-
-        mag = mag + mag_norm.tolist()
-        err_mag = err_mag + err_mag_norm.tolist()
-        groups = groups + [i.name] * len(i.lightcurve)
-
-    lightcurve_data = np.array([time, mag, err_mag, groups]).T
-
-    # produce model lightcurve
-
-    time = np.arange(min(self.event.telescopes[0].lightcurve[:, 0]), max(time) + 100, 0.01)
-    ampli = microlmagnification.amplification(self.event.fits[0].model, time,
-                                              self.event.fits[0].fit_results, 0.5)[0]
-    flux = self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary[
-        'fs_' + self.event.telescopes[0].name]] * (
-               ampli + self.event.fits[0].fit_results[
-                   self.event.fits[0].model.model_dictionnary[
-                       'g_' + self.event.telescopes[0].name]])
-    mag = (27.4 - 2.5 * np.log10(flux)).tolist()
-    err_mag = [0.001] * len(time)
-    time = time.tolist()
-    lightcurve_model = np.array([time, mag, err_mag]).T
-
-    # produce parameters
-    Parameters = []
-    Names = []
-
-    Uo = self.event.fits[0].fit_results[self.event.fits[0].model.model_dictionnary['uo']]
-    Ao = (Uo ** 2 + 2) / (Uo * (Uo ** 2 + 4) ** 0.5)
-    err_Ao = (8) / (Uo ** 2 * (Uo ** 2 + 4) ** 1.5) * \
-             (self.event.fits[0].fit_covariance.diagonal() ** 0.5)[1]
-
-    Parameters.append(Ao)
-    Parameters.append(err_Ao)
-
-    Names.append('PYLIMA.AO')
-    Names.append('PYLIMA.SIG_AO')
-
-    names = ['TE', 'TO', 'UO']
-    Official = ['tE', 'to', 'uo']
-
-    for i in xrange(len(Official)):
-        index = self.event.fits[0].model.model_dictionnary[Official[i]]
-        Parameters.append(self.event.fits[0].fit_results[index])
-        Parameters.append((self.event.fits[0].fit_covariance.diagonal() ** 0.5)[index])
-
-        Names.append('PYLIMA.' + names[i])
-        Names.append('PYLIMA.SIG_' + names[i])
-    Parameters = np.array([Names, Parameters]).T
-    count = 0
-    for i in self.event.telescopes:
-        index = np.where(lightcurve_data[:, 3] == i.name)[0]
-        colors = np.random.uniform(0, 10)
-        plt.scatter(lightcurve_data[index, 0].astype(float),
-                    lightcurve_data[index, 1].astype(float), c=(
-                np.random.randint(0, float(len(self.event.telescopes))) / float(
-                    len(self.event.telescopes)),
-                np.random.randint(0, float(len(self.event.telescopes))) / float(
-                    len(self.event.telescopes)),
-                np.random.randint(0, float(len(self.event.telescopes))) / float(
-                    len(self.event.telescopes)), 1), label=i.name, s=25)
-        count += 1
-    plt.legend(scatterpoints=1)
-    plt.plot(lightcurve_model[:, 0], lightcurve_model[:, 1], 'g')
-    plt.show()
-
-    return Parameters, lightcurve_model, lightcurve_data

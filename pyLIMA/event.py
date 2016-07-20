@@ -62,7 +62,7 @@ class Event(object):
         self.survey = 'None'
         self.fits = []
 
-    def fit(self, model, method, flux_estimation_MCMC = 'MCMC'):
+    def fit(self, model, method, flux_estimation_MCMC='MCMC'):
         """Function to fit the event with a model and a method.
 
 

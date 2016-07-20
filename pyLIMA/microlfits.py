@@ -365,6 +365,44 @@ class MLFits(object):
 
         return MCMC_chains, MCMC_probabilities
 
+    def chichi_MCMC(self, fit_process_parameters):
+        """Return the chi^2 for the MCMC method. There is some priors here.
+
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding
+        fitting routine.
+
+        :returns: the chi^2
+
+        :rtype: float
+        """
+        # prior_limit = microlpriors.microlensing_parameters_limits_priors(
+        # fit_process_parameters, self.model.parameters_boundaries)
+
+        # if prior_limit == np.inf:
+
+        # return -np.inf
+
+        chichi = 0
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        for telescope in self.event.telescopes:
+
+            # Find the residuals of telescope observation regarding the parameters and model
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+
+            # Little prior here, need to be chaneged
+            if priors == np.inf:
+
+                return -np.inf
+
+            else:
+
+                chichi += (residus ** 2).sum()
+                # Little prior here, need to be changed
+
+                chichi += priors
+
+        return -chichi
+
     def differential_evolution(self):
         """  The DE method. Differential evolution algorithm. The objective function is
         :func:`chichi_differential_evolution`.
@@ -531,6 +569,29 @@ class MLFits(object):
         #import pdb; pdb.set_trace()
         return fit_result, covariance_matrix, computation_time
 
+    def residuals_LM(self, fit_process_parameters):
+        """The normalized residuals associated to the model and parameters.
+
+           :param list fit_process_parameters: the model parameters ingested by the correpsonding
+           fitting routine.
+
+           :return: a numpy array which represents the residuals_i for each telescope,
+           residuals_i=(data_i-model_i)/sigma_i
+           :rtype: array_like
+           The sum of square residuals gives chi^2.
+        """
+
+        # Construct an np.array with each telescope residuals
+        residuals = np.array([])
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        for telescope in self.event.telescopes:
+            # Find the residuals of telescope observation regarding the parameters and model
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+            # no prior here
+            residuals = np.append(residuals, residus)
+
+        return residuals
+
     def LM_Jacobian(self, fit_process_parameters):
         """Return the analytical Jacobian matrix, if requested by method LM.
         Available only for PSPL and FSPL without second_order.
@@ -569,12 +630,12 @@ class MLFits(object):
         dresdg = _jacobi[-1]
 
         for telescope in self.event.telescopes:
-            dFS = np.zeros((len(dresdfs)))
-            dG = np.zeros((len(dresdg)))
+            derivative_fs = np.zeros((len(dresdfs)))
+            derivative_g = np.zeros((len(dresdg)))
             index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))
-            dFS[index] = dresdfs[index]
-            dG[index] = dresdg[index]
-            jacobi = np.r_[jacobi, np.array([dFS, dG])]
+            derivative_fs[index] = dresdfs[index]
+            derivative_g[index] = dresdg[index]
+            jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
 
             start_index = index[-1] + 1
 
@@ -626,44 +687,6 @@ class MLFits(object):
         return chichi_list
 
 
-
-    def chichi_MCMC(self, fit_process_parameters):
-        """Return the chi^2 for the MCMC method. There is some priors here.
-
-        :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
-
-        :returns: the chi^2
-
-        :rtype: float
-        """
-        # prior_limit = microlpriors.microlensing_parameters_limits_priors(fit_process_parameters, self.model.parameters_boundaries)
-
-        # if prior_limit == np.inf:
-
-        # return -np.inf
-
-        chichi = 0
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
-        for telescope in self.event.telescopes:
-
-            # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
-
-            # Little prior here, need to be chaneged
-            if priors == np.inf:
-
-                return -np.inf
-
-            else:
-
-                chichi += (residus ** 2).sum()
-                # Little prior here, need to be changed
-
-                chichi += priors
-
-        return -chichi
-
     def model_residuals(self, telescope, fit_process_parameters):
         """ Compute the residuals and the priors of a telescope lightcurve according to the model.
 
@@ -713,7 +736,7 @@ class MLFits(object):
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             # Prior here
-            if (f_source < 0):
+            if f_source < 0:
 
                 telescopes_fluxes.append(np.min(flux))
                 telescopes_fluxes.append(0.0)

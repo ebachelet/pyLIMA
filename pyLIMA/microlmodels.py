@@ -637,7 +637,7 @@ class ModelDSPL(MLModel):
         unique_filters = np.unique(filters)
 
         for filter in unique_filters:
-            model_dictionary['q_F_' + filter] = len(model_dictionary)
+            model_dictionary['q_flux_' + filter] = len(model_dictionary)
 
         self.Jacobian_flag = 'No way'
         return model_dictionary

@@ -24,9 +24,9 @@ def initial_guess_PSPL(event):
     """
 
     # to estimation
-    To = []
-    Max_flux = []
-    Errmag = []
+    to_estimations = []
+    maximum_flux_estimations = []
+    errors_magnitude = []
 
     for telescope in event.telescopes:
         # Lot of process here, if one fails, just skip
@@ -50,8 +50,8 @@ def initial_guess_PSPL(event):
             flux_clean = microltoolbox.flux_to_magnitude(mag_clean)
             errmag = lightcurve_bis[:, 2]
 
-            fs = min(flux_clean)
-            good_points = np.where(flux_clean > fs)[0]
+            flux_source = min(flux_clean)
+            good_points = np.where(flux_clean > flux_source)[0]
 
             while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
 
@@ -67,17 +67,17 @@ def initial_guess_PSPL(event):
 
                     good_points = good_points[indexes]
 
-                    gravity = (
-                        np.median(time[good_points]), np.median(flux_clean[good_points]),
-                        np.mean(errmag[good_points]))
+                    #gravity = (
+                    #   np.median(time[good_points]), np.median(flux_clean[good_points]),
+                    #    np.mean(errmag[good_points]))
 
-                    distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
+                    #distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
 
             to = np.median(time[good_points])
             max_flux = max(flux[good_points])
-            To.append(to)
-            Max_flux.append(max_flux)
-            Errmag.append(np.mean(lightcurve_bis[good_points, 2]))
+            to_estimations.append(to)
+            maximum_flux_estimations.append(max_flux)
+            errors_magnitude.append(np.mean(lightcurve_bis[good_points, 2]))
 
         except:
 
@@ -85,12 +85,13 @@ def initial_guess_PSPL(event):
             flux = microltoolbox.magnitude_to_flux(lightcurve_magnitude[:, 1])
             to = np.median(time)
             max_flux = max(flux)
-            To.append(to)
-            Max_flux.append(max_flux)
+            to_estimations.append(to)
+            maximum_flux_estimations.append(max_flux)
 
-            Errmag.append(mean_error_magnitude)
+            errors_magnitude.append(mean_error_magnitude)
 
-    to_guess = sum(np.array(To) / np.array(Errmag) ** 2) / sum(1 / np.array(Errmag) ** 2)
+    to_guess = sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) / sum(
+        1 / np.array(errors_magnitude) ** 2)
     survey = event.telescopes[0]
     lightcurve = survey.lightcurve_magnitude
     lightcurve = lightcurve[lightcurve[:, 0].argsort(), :]
@@ -122,7 +123,7 @@ def initial_guess_PSPL(event):
     fs_guess = baseline_flux
 
     # uo estimation
-    max_flux = Max_flux[0]
+    max_flux = maximum_flux_estimations[0]
     Amax = max_flux / fs_guess
     uo_guess = np.sqrt(-2 + 2 * np.sqrt(1 - 1 / (1 - Amax ** 2)))
 
@@ -131,66 +132,74 @@ def initial_guess_PSPL(event):
 
     # Method 1 : flux(t_demi_amplification) = 0.5 * fs_guess * (Amax + 1)
 
-    flux_demi = 0.5 * fs_guess * (Amax + 1)
-    flux_tE = fs_guess * (uo_guess ** 2 + 3) / \
-              ((uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
-    index_plus = np.where((time > to_guess) & (flux < flux_demi))[0]
-    index_moins = np.where((time < to_guess) & (flux < flux_demi))[0]
+    half_magnification = 0.5 * (Amax + 1)
 
-    B = 0.5 * (Amax + 1)
+    flux_demi_amplification = fs_guess * half_magnification
+
+    index_plus = np.where((time > to_guess) & (flux < flux_demi_amplification))[0]
+    index_moins = np.where((time < to_guess) & (flux < flux_demi_amplification))[0]
 
     if len(index_plus) != 0:
 
         if len(index_moins) != 0:
-            ttE = (time[index_plus[0]] - time[index_moins[-1]])
-            tE1 = ttE / (2 * np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2))
-            tE_guesses.append(tE1)
+            t_demi_amplification = (time[index_plus[0]] - time[index_moins[-1]])
+            tE_demi_amplification = t_demi_amplification / (
+                2 * np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (half_magnification ** 2 - 1)) - uo_guess ** 2))
+
+            tE_guesses.append(tE_demi_amplification)
 
         else:
-            ttE = time[index_plus[0]] - to_guess
-            tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2)
-            tE_guesses.append(tE1)
+            t_demi_amplification = time[index_plus[0]] - to_guess
+            tE_demi_amplification = t_demi_amplification / np.sqrt(
+                -2 + 2 * np.sqrt(1 + 1 / (half_magnification ** 2 - 1)) - uo_guess ** 2)
+
+            tE_guesses.append(tE_demi_amplification)
     else:
 
         if len(index_moins) != 0:
-            ttE = to_guess - time[index_moins[-1]]
-            tE1 = ttE / np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (B ** 2 - 1)) - uo_guess ** 2)
-            tE_guesses.append(tE1)
+            t_demi_amplification = to_guess - time[index_moins[-1]]
+            tE_demi_amplification = t_demi_amplification / np.sqrt(
+                -2 + 2 * np.sqrt(1 + 1 / (half_magnification ** 2 - 1)) - uo_guess ** 2)
+
+            tE_guesses.append(tE_demi_amplification)
 
     # Method 2 : flux(t_E) = fs_guess * (uo^+3)/[(uo^2+1)^0.5*(uo^2+5)^0.5]
 
-    flux_tE = fs_guess * (uo_guess ** 2 + 3) / \
-              ((uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
-    indextEplus = np.where((flux < flux_tE) & (time > to))[0]
-    indextEmoins = np.where((flux < flux_tE) & (time < to))[0]
+    amplification_tE = (uo_guess ** 2 + 3) / ((uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
+    flux_tE = fs_guess * amplification_tE
 
-    if len(indextEmoins) != 0:
-        indextEmoins = indextEmoins[-1]
-        tEmoins = to_guess - time[indextEmoins]
-        tE_guesses.append(tEmoins)
+    index_tE_plus = np.where((flux < flux_tE) & (time > to))[0]
+    index_tE_moins = np.where((flux < flux_tE) & (time < to))[0]
 
-    if len(indextEplus) != 0:
-        indextEplus = indextEplus[0]
-        tEplus = time[indextEplus] - to_guess
-        tE_guesses.append(tEplus)
+    if len(index_tE_moins) != 0:
+        index_tE_moins = index_tE_moins[-1]
+        tE_moins = to_guess - time[index_tE_moins]
+
+        tE_guesses.append(tE_moins)
+
+    if len(index_tE_plus) != 0:
+        index_tE_plus = index_tE_plus[0]
+        tE_plus = time[index_tE_plus] - to_guess
+
+        tE_guesses.append(tE_plus)
 
     # Method 3 : the first points before/after to_guess that reach the baseline. Very rough
     # approximation ot tE.
 
-    indextEPlus = np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
-    indextEMoins = np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+    index_tE_baseline_plus = np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+    index_tE_baseline_moins = np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
 
-    if len(indextEPlus) != 0:
-        tEPlus = time[indextEPlus[0]] - to_guess
+    if len(index_tE_baseline_plus) != 0:
+        tEPlus = time[index_tE_baseline_plus[0]] - to_guess
+
         tE_guesses.append(tEPlus)
 
-    if len(indextEMoins) != 0:
-        tEMoins = to_guess - time[indextEMoins[-1]]
+    if len(index_tE_baseline_moins) != 0:
+        tEMoins = to_guess - time[index_tE_baseline_moins[-1]]
+
         tE_guesses.append(tEMoins)
 
-    TE = np.array(tE_guesses)
-
-    tE_guess = np.median(TE)
+    tE_guess = np.median(tE_guesses)
 
     # safety reason, unlikely
     if tE_guess < 0.1:
@@ -207,7 +216,8 @@ def initial_guess_FSPL(event):
        :param object event: the event object on which you perform the fit on. More details on the
        event module.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and
+       the source flux of the survey telescope.
        :rtype: list,float
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
@@ -227,7 +237,8 @@ def initial_guess_DSPL(event):
        :param object event: the event object on which you perform the fit on. More details on the
        event module.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of the survey telescope.
+       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of
+       the survey telescope.
        :rtype: list,float
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
@@ -237,10 +248,11 @@ def initial_guess_DSPL(event):
     unique_filters = np.unique(filters)
 
     # Dummy guess
-    delta_to_guess = 5.0 #days
-    q_F_guess = 0.5
+    delta_to_guess = 5.0  # days
+    q_flux_guess = 0.5
 
-    DSPL_guess = PSPL_guess[:2] + [delta_to_guess] + [PSPL_guess[1]] + [PSPL_guess[2]]+ [q_F_guess] * len(unique_filters)
+    DSPL_guess = PSPL_guess[:2] + [delta_to_guess] + [PSPL_guess[1]] + \
+                 [PSPL_guess[2]] + [q_flux_guess] * len(unique_filters)
 
     # [to1,uo1,delta_to,uo2,tE,q_F_i], fsource
     return DSPL_guess, fs_guess
@@ -264,11 +276,11 @@ def differential_evolution_parameters_boundaries(model):
                                          model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
-    delta_to_boundaries =(-300, 300)
+    delta_to_boundaries = (-300, 300)
     uo_boundaries = (-2.0, 2.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (10 ** -5, 0.05)
-    q_F_boundaries = (0.0, 1.0)
+    q_flux_boundaries = (0.0, 1.0)
 
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
@@ -296,7 +308,7 @@ def differential_evolution_parameters_boundaries(model):
 
         unique_filters = np.unique(filters)
 
-        parameters_boundaries += [q_F_boundaries] * len(unique_filters)
+        parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
         # parameters_boundaries += [q_F_boundaries]
 
     # Second order boundaries
@@ -315,6 +327,15 @@ def differential_evolution_parameters_boundaries(model):
 
 
 def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parameters):
+    """Function to construc MCMC first population.
+
+        :param str parameter_key: the parameter on which we apply the function
+        :param dict parameters_dictionnary: the dictionnary of parameters keys associared to the parameters input
+        :param list parameters: a list of float which indicate the model parameters
+
+        :return: a list containing the trial(s) associated to the parameter_key string
+        :rtype: list of float
+     """
     if 'to' in parameter_key:
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + np.random.uniform(-1, 1)
 
