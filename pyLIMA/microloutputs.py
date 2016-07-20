@@ -9,6 +9,7 @@ from datetime import datetime
 from collections import OrderedDict
 import collections
 import copy
+import json
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ import microltoolbox
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
-
+max_plot_ticks = 3
 
 def LM_outputs(fit):
     """Standard 'LM' and 'DE' outputs.
@@ -109,7 +110,7 @@ def MCMC_outputs(fit):
     BEST = CHAINS[index]
     BEST = BEST[BEST[:, -1].argsort(),]
 
-
+    BEST_PARAMETERS = BEST_PARAMETERS[index]
     BEST_PARAMETERS = BEST_PARAMETERS[BEST_PARAMETERS[:, -1].argsort(),]
     covariance_matrix = MCMC_covariance(CHAINS)
     correlation_matrix = cov2corr(covariance_matrix)
@@ -163,6 +164,12 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     histogram)
     :rtype: matplotlib_figure
     """
+
+    mcmc_string_format = np.array([str(i) for i in mcmc_best.tolist()])
+    mcmc_to_plot = np.unique(mcmc_string_format)
+    mcmc_unique = np.array([json.loads(i) for i in mcmc_to_plot])
+
+    mcmc_unique = mcmc_unique[mcmc_unique[:,-1].argsort(),]
     dimensions = mcmc_best.shape[1] - 1
 
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col')
@@ -184,8 +191,8 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
             if count_i == count_j:
 
                 axes2[count_i, count_j].hist(mcmc_best[:, fit.model.model_dictionnary[key_i]], 100)
-                axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(int(12.0 / dimensions)))
-                axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
+                axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks))
+                axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(max_plot_ticks))
                 axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
 
             else:
@@ -193,19 +200,19 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
                 if count_j < count_i:
 
                     axes2[count_i, count_j].scatter(
-                        mcmc_best[:, fit.model.model_dictionnary[key_j]],
-                        mcmc_best[:, fit.model.model_dictionnary[key_i]],
-                        c=mcmc_best[:, -1],
+                        mcmc_unique[:, fit.model.model_dictionnary[key_j]],
+                        mcmc_unique[:, fit.model.model_dictionnary[key_i]],
+                        c=mcmc_unique[:, -1],
                         edgecolor='None')
 
                     axes2[count_i, count_j].set_xlim(
-                        [min(mcmc_best[:, fit.model.model_dictionnary[key_j]]),
-                         max(mcmc_best[:, fit.model.model_dictionnary[key_j]])])
-                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(int(12.0/dimensions)))
+                        [min(mcmc_unique[:, fit.model.model_dictionnary[key_j]]),
+                         max(mcmc_unique[:, fit.model.model_dictionnary[key_j]])])
+                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks))
 
                     axes2[count_i, count_j].set_ylim(
-                        [min(mcmc_best[:, fit.model.model_dictionnary[key_i]]),
-                         max(mcmc_best[:, fit.model.model_dictionnary[key_i]])])
+                        [min(mcmc_unique[:, fit.model.model_dictionnary[key_i]]),
+                         max(mcmc_unique[:, fit.model.model_dictionnary[key_i]])])
 
                     axes2[count_i, count_j].tick_params(labelsize=int(75.0/dimensions))
 
@@ -215,7 +222,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
 
                 if count_j == 0 :
 
-                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(int(12.0 / dimensions)))
+                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(max_plot_ticks))
                 else :
 
                     plt.setp(axes2[count_i, count_j].get_yticklabels(), visible=False)
@@ -255,7 +262,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
         MCMC_plot_model(fit, mcmc_best[indice], mcmc_best[indice, -1], figure_axes[0],
                         scalar_couleur_map)
 
-    cb = plt.colorbar(scalar_couleur_map, ax=figure_axes[0])
+    cb = plt.colorbar(scalar_couleur_map, ax=figure_axes[0], orientation="horizontal")
     cb.locator = MaxNLocator(5)
     cb.update_ticks()
    # figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
@@ -349,7 +356,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         residuals = 2.5 * np.log10(flux_model / flux)
         ax.errorbar(time, residuals, yerr=err_mag, fmt='.')
     ax.set_ylim([-plot_residuals_windows, plot_residuals_windows])
-
+    ax.invert_yaxis()
 
 def LM_parameters_result(fit):
     """ Produce a namedtuple object containing the fitted parameters in the fit.fit_results.

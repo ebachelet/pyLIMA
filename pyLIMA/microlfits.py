@@ -10,7 +10,7 @@ import time as python_time
 import numpy as np
 import scipy.optimize
 import collections
-
+import warnings
 import emcee
 
 import microlmodels
@@ -18,6 +18,7 @@ import microloutputs
 import microlguess
 import microltoolbox
 
+warnings.filterwarnings("ignore")
 
 class MLFits(object):
     """
@@ -221,6 +222,7 @@ class MLFits(object):
             # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
 
             fake_model = microlmodels.create_model('PSPL', self.event)
+            fake_model.define_model_parameters()
             telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
 
             # The survey fluxes are already known from microlguess
@@ -243,7 +245,7 @@ class MLFits(object):
 
         else:
 
-            guess_paczynski_parameters = self.model.parameters_guess
+            guess_paczynski_parameters = list(self.model.parameters_guess)
 
             telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
 
@@ -300,7 +302,7 @@ class MLFits(object):
 
         else:
 
-            self.guess = self.model.parameters_guess
+            self.guess = list(self.model.parameters_guess)
 
         self.guess += self.find_fluxes(self.guess, self.model)
         print 'pre MCMC done'
@@ -526,7 +528,7 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return fit_result, covariance_matrix, computation_time
 
     def LM_Jacobian(self, fit_process_parameters):
@@ -700,6 +702,7 @@ class MLFits(object):
 
         telescopes_fluxes = []
         pyLIMA_parameters = model.compute_pyLIMA_parameters(fit_process_parameters)
+
         for telescope in self.event.telescopes:
             lightcurve = telescope.lightcurve_flux
 

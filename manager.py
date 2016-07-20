@@ -35,7 +35,7 @@ def main(command_line):
 
     for event_name in events_names[0:]:
 
-        name='Lightcurve_'+str(5928)
+        name='Lightcurve_'+str(17)+'_'
        # name = 'KB120486'
         #name = 'Lightcurve_9_'
         current_event = event.Event()
@@ -100,7 +100,7 @@ def main(command_line):
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('PSPL', current_event)
+        Model = microlmodels.create_model('FSPL', current_event)
         #Model.parameters_guess = [2456154.24, 0.077, 2456137.20, 0.027,
         #                      78.1, 0.08118, 0.125,
         #                      0.163,0.128,-0.37,0.08]
@@ -110,7 +110,7 @@ def main(command_line):
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'MCMC', flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'MCMC', flux_estimation_MCMC='MCMC')
 
 
 
@@ -121,8 +121,7 @@ def main(command_line):
         results.append(current_event.fits[0].fit_results+[current_event.fits[0].fit_time])
         errors.append(current_event.fits[0].fit_covariance.diagonal()**0.5)
     end = time.time()
-    import pdb;
-    pdb.set_trace()
+    mcmc_unique = mcmc_best
     print end - start
 
     all_results = [('Fits.txt', results),
@@ -140,7 +139,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/Short_tE/Lightcurves/')
+                                'SimulationML/Lightcurves_FSPL/Lightcurves/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

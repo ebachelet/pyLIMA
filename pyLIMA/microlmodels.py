@@ -257,53 +257,58 @@ class MLModel(object):
     def define_pyLIMA_standard_parameters(self):
         """ Define the standard pyLIMA parameters dictionnary."""
 
-        self.model_dictionnary = self.paczynski_model_parameters()
+        self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
 
         if self.parallax_model[0] != 'None':
             self.Jacobian_flag = 'No way'
-            self.model_dictionnary['piEN'] = len(self.model_dictionnary)
-            self.model_dictionnary['piEE'] = len(self.model_dictionnary)
+            self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
 
         if self.xallarap_model[0] != 'None':
             self.Jacobian_flag = 'No way'
-            self.model_dictionnary['XiEN'] = len(self.model_dictionnary)
-            self.model_dictionnary['XiEE'] = len(self.model_dictionnary)
+            self.pyLIMA_standards_dictionnary['XiEN'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['XiEE'] = len(self.pyLIMA_standards_dictionnary)
 
         if self.orbital_motion_model[0] != 'None':
             self.Jacobian_flag = 'No way'
-            self.model_dictionnary['dsdt'] = len(self.model_dictionnary)
-            self.model_dictionnary['dalphadt'] = len(self.model_dictionnary)
+            self.pyLIMA_standards_dictionnary['dsdt'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['dalphadt'] = len(self.pyLIMA_standards_dictionnary)
 
         if self.source_spots_model != 'None':
             self.Jacobian_flag = 'No way'
-            self.model_dictionnary['spot'] = len(self.model_dictionnary) + 1
+            self.pyLIMA_standards_dictionnary['spot'] = len(self.pyLIMA_standards_dictionnary) + 1
 
         for telescope in self.event.telescopes:
-            self.model_dictionnary['fs_' + telescope.name] = len(self.model_dictionnary)
-            self.model_dictionnary['g_' + telescope.name] = len(self.model_dictionnary)
+            self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['g_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
 
-        self.model_dictionnary = OrderedDict(
-            sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+        self.pyLIMA_standards_dictionnary = OrderedDict(
+            sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
 
-        self.pyLIMA_standards_dictionnary = self.model_dictionnary.copy()
 
         self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
+
 
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
          if you have some fancy parameters request.
         """
+        self.model_dictionnary = self.pyLIMA_standards_dictionnary.copy()
         if len(self.pyLIMA_to_fancy) != 0:
 
             self.Jacobian_flag = 'No way'
             for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
-                self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
-                    self.fancy_to_pyLIMA_dictionnary[key_parameter])
-
+                    try :
+                        self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
+                            self.fancy_to_pyLIMA_dictionnary[key_parameter])
+                    except:
+                        import pdb;
+                        pdb.set_trace()
             self.model_dictionnary = OrderedDict(
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
         """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
@@ -542,7 +547,7 @@ class ModelFSPL(MLModel):
         # Derivatives of the residuals_LM objective function, FSPL version
 
         fake_model = ModelPSPL(self.event)
-
+        fake_model.define_model_parameters()
         lightcurve = telescope.lightcurve_flux
         time = lightcurve[:, 0]
         errflux = lightcurve[:, 2]
