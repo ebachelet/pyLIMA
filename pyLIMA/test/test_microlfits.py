@@ -49,34 +49,34 @@ def _create_model(kind):
 
 
 
-def test_mlfit_FSPL_LM_without_guess() :
+#def test_mlfit_FSPL_LM_without_guess() :
 
-	current_event = _create_event()
-	model = _create_model('FSPL')
-	model.model_dictionnary = {'to':0,'uo':1,'tE':2, 'rho' :3, 'fs_Test':4, 'g_Test':5}
-	fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
-    	model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0,0.1,20,0.05,10,5)
-        model.parameters_boundaries = [[0,100],[0,1],[0,300],[0,1]]
-	fit = microlfits.MLFits(current_event)
-	fit.mlfit(model,'LM')
+#	current_event = _create_event()
+#	model = _create_model('FSPL')
+#	model.model_dictionnary = {'to':0,'uo':1,'tE':2, 'rho' :3, 'fs_Test':4, 'g_Test':5}
+#	fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
+ #   	model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0,0.1,20,0.05,10,5)
+ #       model.parameters_boundaries = [[0,100],[0,1],[0,300],[0,1]]
+#	fit = microlfits.MLFits(current_event)
+#	fit.mlfit(model,'LM')
 	
-	assert fit.fit_covariance.shape == (4+2*len(current_event.telescopes),4+2*len(current_event.telescopes))	
-	assert len(fit.fit_results) == 4+2*len(current_event.telescopes)+1
+#	assert fit.fit_covariance.shape == (4+2*len(current_event.telescopes),4+2*len(current_event.telescopes))
+#	assert len(fit.fit_results) == 4+2*len(current_event.telescopes)+1
 
 
-def test_mlfit_DSPL_LM_without_guess() :
+#def test_mlfit_DSPL_LM_without_guess() :
 
-	current_event = _create_event()
-	model = _create_model('DSPL')
-	model.model_dictionnary = {'to1':0,'uo1':1,'delta_to':2,'uo2':3,'tE':4, 'q_F_I' :5, 'fs_Test':6, 'g_Test':7}
-	fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
-    	model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0,0.1,20,0.05,20,0.1,10,5)
-        model.parameters_boundaries = [[0,100],[0,1],[0,100],[0,1],[0,300],[0,1]]
-	fit = microlfits.MLFits(current_event)
-	fit.mlfit(model,'LM')
+#	current_event = _create_event()
+#	model = _create_model('DSPL')
+#	model.model_dictionnary = {'to1':0,'uo1':1,'delta_to':2,'uo2':3,'tE':4, 'q_F_I' :5, 'fs_Test':6, 'g_Test':7}
+#	fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
+ #   	model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0,0.1,20,0.05,20,0.1,10,5)
+  #      model.parameters_boundaries = [[0,100],[0,1],[0,100],[0,1],[0,300],[0,1]]
+	#fit = microlfits.MLFits(current_event)
+	#fit.mlfit(model,'LM')
 	
-	assert fit.fit_covariance.shape == (6+2*len(current_event.telescopes),6+2*len(current_event.telescopes))	
-	assert len(fit.fit_results) == 6+2*len(current_event.telescopes)+1
+	#assert fit.fit_covariance.shape == (6+2*len(current_event.telescopes),6+2*len(current_event.telescopes))
+	#assert len(fit.fit_results) == 6+2*len(current_event.telescopes)+1
 
 def test_mlfit_PSPL_LM_with_guess() :
 
