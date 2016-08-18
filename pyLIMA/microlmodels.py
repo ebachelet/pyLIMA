@@ -631,7 +631,7 @@ class ModelDSPL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'to1': 0, 'uo1': 1, 'delta_to': 2, 'uo2': 3, 'tE': 4}
+        model_dictionary = {'to1': 0, 'uo1': 1, 'delta_to': 2, 'delta_uo': 3, 'tE': 4}
         filters = [telescope.filter for telescope in self.event.telescopes]
 
         unique_filters = np.unique(filters)
@@ -656,18 +656,20 @@ class ModelDSPL(MLModel):
         source1_trajectory = source_trajectory(telescope, pyLIMA_parameters.to1, pyLIMA_parameters.uo1,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        to2 = pyLIMA_parameters.to1+pyLIMA_parameters.delta_to
-        source2_trajectory = source_trajectory(telescope, to2, pyLIMA_parameters.uo2,
+        to2 = pyLIMA_parameters.to1 + pyLIMA_parameters.delta_to
+        uo2 = pyLIMA_parameters.delta_uo + pyLIMA_parameters.uo1
+        source2_trajectory = source_trajectory(telescope, to2, uo2,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
         source1_magnification = microlmagnification.amplification_PSPL(*source1_trajectory)[0]
 
         source2_magnification = microlmagnification.amplification_PSPL(*source2_trajectory)[0]
 
-        blend_magnification_factor = getattr(pyLIMA_parameters, 'q_F_' + telescope.filter)
-        #blend_magnification_factor = pyLIMA_parameters.q_F
+
+        blend_magnification_factor = getattr(pyLIMA_parameters, 'q_flux_' + telescope.filter)
+
         effective_magnification = (source1_magnification + source2_magnification * blend_magnification_factor) / (
             1 + blend_magnification_factor)
 
 
-        return effective_magnification, (source1_trajectory[0]**2+source1_trajectory[1]**2)**0.5
+        return effective_magnification, 1

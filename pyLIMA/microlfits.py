@@ -418,7 +418,7 @@ class MLFits(object):
                    tol (relative standard deviation of the objective function) is set to 10^-6
                    popsize (the total number of individuals is :
                    popsize*number_of_paczynski_parameters)
-                   is set to 20 mutation is set to (0.5, 1.5)
+                   is set to 15 mutation is set to (0.9, 1.5)
                    recombination is set to 0.6
                    These parameters can avoid the fit to properly converge (expected to be rare :)).
                    Just relaunch should be fine.
@@ -428,10 +428,10 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.9, 1.9), popsize=15, maxiter=5000,
+            mutation=(0.5, 1.0), popsize=15, maxiter=5000,
             tol=0.000001,
             recombination=0.6, polish='True',
-            disp=False
+            disp=True
         )
 
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
@@ -469,8 +469,8 @@ class MLFits(object):
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
 
             # Little prior here, need to be changed
-            # if priors == np.inf:
-            # return np.inf
+            #if priors == np.inf:
+            #  return np.inf
 
             # else:
             #    chichi += (residus**2).sum()+priors
@@ -566,7 +566,7 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return fit_result, covariance_matrix, computation_time
 
     def residuals_LM(self, fit_process_parameters):

@@ -113,7 +113,7 @@ def MCMC_outputs(fit):
     best_chains = mcmc_chains[index]
     best_chains = best_chains[best_chains[:, -1].argsort(),]
 
-    best_parameters = best_parameters
+    best_parameters = best_parameters[index]
     best_parameters = best_parameters[best_parameters[:, -1].argsort(),]
     covariance_matrix = MCMC_covariance(mcmc_chains)
     correlation_matrix = cov2corr(covariance_matrix)

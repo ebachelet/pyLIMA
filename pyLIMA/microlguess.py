@@ -248,10 +248,11 @@ def initial_guess_DSPL(event):
     unique_filters = np.unique(filters)
 
     # Dummy guess
-    delta_to_guess = 5.0  # days
+    delta_to_guess = 5 # days
+    delta_uo_guess = 0.01
     q_flux_guess = 0.5
 
-    DSPL_guess = PSPL_guess[:2] + [delta_to_guess] + [PSPL_guess[1]] + \
+    DSPL_guess = PSPL_guess[:2] + [delta_to_guess] + [delta_uo_guess] + \
                  [PSPL_guess[2]] + [q_flux_guess] * len(unique_filters)
 
     # [to1,uo1,delta_to,uo2,tE,q_F_i], fsource
@@ -276,11 +277,12 @@ def differential_evolution_parameters_boundaries(model):
                                          model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
-    delta_to_boundaries = (-300, 300)
-    uo_boundaries = (-2.0, 2.0)
+    delta_to_boundaries = (-100,100)
+    delta_uo_boundaries = (-0.1,0.1)
+    uo_boundaries = (-1.0,1.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (10 ** -5, 0.05)
-    q_flux_boundaries = (0.0, 1.0)
+    q_flux_boundaries = (0.001, 1.0)
 
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
@@ -303,7 +305,7 @@ def differential_evolution_parameters_boundaries(model):
 
     if model.model_type == 'DSPL':
         parameters_boundaries = [to_boundaries, uo_boundaries, delta_to_boundaries,
-                                 uo_boundaries, tE_boundaries]
+                                 delta_uo_boundaries, tE_boundaries]
         filters = [telescope.filter for telescope in model.event.telescopes]
 
         unique_filters = np.unique(filters)
