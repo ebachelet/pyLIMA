@@ -672,4 +672,4 @@ class ModelDSPL(MLModel):
             1 + blend_magnification_factor)
 
 
-        return effective_magnification, 1
+        return effective_magnification,  source1_trajectory
