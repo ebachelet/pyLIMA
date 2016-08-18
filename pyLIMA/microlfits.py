@@ -566,7 +566,7 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return fit_result, covariance_matrix, computation_time
 
     def residuals_LM(self, fit_process_parameters):
