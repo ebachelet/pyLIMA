@@ -38,14 +38,14 @@ def _create_model(kind):
    
     return model
 
-def test_mlfit_PSPL_LM_without_guess() :
-	current_event = _create_event()
-	model = _create_model('PSPL')
-	fit = microlfits.MLFits(current_event)
-	fit.mlfit(model,'LM')
+#def test_mlfit_PSPL_LM_without_guess() :
+#	current_event = _create_event()
+#	model = _create_model('PSPL')
+#	fit = microlfits.MLFits(current_event)
+#	fit.mlfit(model,'LM')
 	
-	assert fit.fit_covariance.shape == (3+2*len(current_event.telescopes),3+2*len(current_event.telescopes))	
-	assert len(fit.fit_results) == 3+2*len(current_event.telescopes)+1
+#	assert fit.fit_covariance.shape == (3+2*len(current_event.telescopes),3+2*len(current_event.telescopes))
+#	assert len(fit.fit_results) == 3+2*len(current_event.telescopes)+1
 
 
 
