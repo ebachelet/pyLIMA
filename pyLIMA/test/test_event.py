@@ -169,3 +169,18 @@ def test_lightcurves_in_flux_sets_telescope_lightcurve_flux():
     for telescope in telescopes:
         assert np.allclose(telescope.lightcurve_flux, results[count])
         count += 1
+
+def test_find_survey_no_survey() :
+    current_event = event.Event()
+
+    telescope1 = mock.MagicMock()
+    telescope2 = mock.MagicMock()
+
+    telescope1.name = 'telescope1'
+    telescope2.name = 'telescope2'
+
+    current_event.telescopes.append(telescope1)
+    current_event.telescopes.append(telescope2)
+
+    assert current_event.find_survey('NDG') == None
+

@@ -383,7 +383,9 @@ class MLFits(object):
         # return -np.inf
 
         chichi = 0
+
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
         for telescope in self.event.telescopes:
 
             # Find the residuals of telescope observation regarding the parameters and model

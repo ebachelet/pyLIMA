@@ -353,7 +353,6 @@ class MLModel(object):
         priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
         # print 'the microl model', python_time.time() - start_time
 
-
         return microlensing_model, priors
 
     def compute_pyLIMA_parameters(self, fancy_parameters):

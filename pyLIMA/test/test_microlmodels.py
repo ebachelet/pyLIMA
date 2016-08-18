@@ -395,4 +395,21 @@ def test_pyLIMA_standard_parameters_to_fancy_parameters():
     fancy_parameters = Model.pyLIMA_standard_parameters_to_fancy_parameters(pyLIMA_parameters)
     assert pyLIMA_parameters.rho == 0.001
     assert fancy_parameters.logrho == -3.0
-   
+
+
+def test_default_microlensing_model_no_fluxes():
+    event = _create_event()
+
+    Model = microlmodels.create_model('PSPL', event)
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE','fs_Test','g_Test'])
+
+    to = 0.0
+    uo = 0.1
+    tE = 1.0
+
+    parameters = Parameters(to, uo, tE, 'ihih', None)
+
+
+    microlensing_model, priors = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
+
+    assert np.allclose(microlensing_model, np.array([1,6]))
