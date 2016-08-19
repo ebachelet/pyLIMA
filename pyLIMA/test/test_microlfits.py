@@ -36,27 +36,26 @@ def _create_model(kind):
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
     model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 10, 5)
     model.model_type = kind
-
+    model.model_Jacobian.return_value = np.random.random((100,6)).T
     return model
 
 
-def test_mlfit_PSPL_LM_without_guess() :
-	current_event = _create_event()
-	model = _create_model('PSPL')
-	fit = microlfits.MLFits(current_event)
-	fit.mlfit(model,'LM')
+def test_mlfit_PSPL_LM_without_guess():
+    current_event = _create_event()
+    model = _create_model('PSPL')
+    fit = microlfits.MLFits(current_event)
+    fit.mlfit(model, 'LM')
 
-	assert fit.fit_covariance.shape == (3+2*len(current_event.telescopes),3+2*len(current_event.telescopes))
-	assert len(fit.fit_results) == 3+2*len(current_event.telescopes)+1
+    assert fit.fit_covariance.shape == (3 + 2 * len(current_event.telescopes), 3 + 2 * len(current_event.telescopes))
+    assert len(fit.fit_results) == 3 + 2 * len(current_event.telescopes) + 1
+
 
 def test_mlfit_FSPL_LM_without_guess():
-
     current_event = _create_event()
     model = _create_model('FSPL')
     model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
     model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 0.05, 10, 5)
-
 
     model.parameters_boundaries = [[0, 100], [0, 1], [0, 300], [0, 1]]
     fit = microlfits.MLFits(current_event)
@@ -156,3 +155,48 @@ def test_check_fit_source_flux():
     flag = fit.check_fit()
 
     assert flag == 'Bad Fit'
+
+
+def test_LM_Jacobian():
+    current_event = _create_event()
+    model = _create_model('FSPL')
+    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    fit = microlfits.MLFits(current_event)
+    fit.model = model
+
+    to = 0.0
+    uo = 0.1
+    tE = 1.0
+    rho = 0.26
+    fs = 10
+    g = 1.0
+
+    parameters = [to, uo, tE, rho, fs, g]
+
+    Jacobian = fit.LM_Jacobian(parameters)
+
+    assert Jacobian.shape == (6, len(current_event.telescopes[0].lightcurve_flux))
+
+
+def test_chichi_telescopes():
+
+    current_event = _create_event()
+    model = _create_model('FSPL')
+    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    fit = microlfits.MLFits(current_event)
+    fit.model = model
+
+    to = 0.0
+    uo = 0.1
+    tE = 1.0
+    rho = 0.26
+    fs = 10
+    g = 1.0
+
+    parameters = [to, uo, tE, rho, fs, g]
+
+    chichi_telescopes = fit.chichi_telescopes(parameters)
+    chichi = sum(fit.residuals_LM(parameters)**2)
+
+    assert len(chichi_telescopes) == 1
+    assert np.allclose(chichi,chichi_telescopes[0])
