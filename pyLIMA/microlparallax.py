@@ -342,7 +342,7 @@ class MLParallaxes(object):
     def produce_horizons_ephem(self, body, start_time, end_time, observatory='ELP', step_size='60m',
                                verbose=False):
         """
-        Write by Tim Lister.
+        Write by Tim Lister. Thanks for sharing :)
         example interactive session:
         telnet://horizons.jpl.nasa.gov:6775
         606 # = Titan

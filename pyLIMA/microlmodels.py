@@ -630,7 +630,7 @@ class ModelDSPL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'to1': 0, 'uo1': 1, 'delta_to': 2, 'delta_uo': 3, 'tE': 4}
+        model_dictionary = {'to': 0, 'uo': 1, 'delta_to': 2, 'delta_uo': 3, 'tE': 4}
         filters = [telescope.filter for telescope in self.event.telescopes]
 
         unique_filters = np.unique(filters)
@@ -652,11 +652,11 @@ class ModelDSPL(MLModel):
         """
 
 
-        source1_trajectory = source_trajectory(telescope, pyLIMA_parameters.to1, pyLIMA_parameters.uo1,
+        source1_trajectory = source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        to2 = pyLIMA_parameters.to1 + pyLIMA_parameters.delta_to
-        uo2 = pyLIMA_parameters.delta_uo + pyLIMA_parameters.uo1
+        to2 = pyLIMA_parameters.to + pyLIMA_parameters.delta_to
+        uo2 = pyLIMA_parameters.delta_uo + pyLIMA_parameters.uo
         source2_trajectory = source_trajectory(telescope, to2, uo2,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 

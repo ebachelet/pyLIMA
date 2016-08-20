@@ -82,8 +82,8 @@ def main(command_line):
                 telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter=event_telescope[-5],
                                                  light_curve_flux=lightcurve)
             else:
-                #if lightcurve[0,0] <2450000:
-                    #lightcurve[:, 0] = lightcurve[:, 0] + 2450000
+                if lightcurve[0,0] <2450000:
+                    lightcurve[:, 0] = lightcurve[:, 0] + 2450000
                 telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,light_curve_magnitude_dictionnary={'time':0 ,'mag': 1, 'err_mag': 2})
             telescope.gamma = 0.5
@@ -99,17 +99,17 @@ def main(command_line):
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('DSPL', current_event, parallax=['None', 50.0])
-        #Model.parameters_guess = [6154.275488267936, -0.0834453322309635, -17.20396676117045,
-                                 #  0.06672684321672316, 74.22066348937663, 0.0800422081771788, 0.11890880280146672,
-                                 #  0.12578269216160143, 0.1672057916275690]
+        Model = microlmodels.create_model('DSPL', current_event, parallax=['Annual', 2456154.0])
+        #Model.parameters_guess = [2456154.275488267936, -0.0834453322309635, -17.20396676117045,
+         #                          0.06672684321672316, 74.22066348937663, 0.0800422081771788, 0.11890880280146672,
+         #                          0.12578269216160143, 0.1672057916275690,-0.37,0.08]
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'LM', flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'DE', flux_estimation_MCMC='polyfit')
 
         import pdb;
         pdb.set_trace()

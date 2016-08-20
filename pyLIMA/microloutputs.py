@@ -20,6 +20,7 @@ from astropy.time import Time
 from scipy.stats.distributions import t as student
 
 import microltoolbox
+import microlmodels
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
@@ -51,11 +52,11 @@ def LM_outputs(fit):
     errors = LM_fit_errors(fit)
     correlation_matrix = cov2corr(covariance_matrix)
     figure_lightcurve = LM_plot_lightcurves(fit)
-    # figure_parameters = LM_plot_parameters(fit)
-    key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve']
+    figure_trajectory = plot_ML_geometry(fit, fit.fit_results)
+    key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve', 'figure_geometry']
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
 
-    values_outputs = [results, errors, correlation_matrix, figure_lightcurve]
+    values_outputs = [results, errors, correlation_matrix, figure_lightcurve, figure_trajectory]
 
     count = 0
     for key in key_outputs:
@@ -332,7 +333,8 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
             lightcurve_magnitude = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
                                                               g_reference, fs_telescope, g_telescope)
 
-        plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2], fmt='.',
+        plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2],
+                          fmt='.',
                           label=telescope.name)
 
     plot_axe.legend(numpoints=1, fontsize=25)
@@ -613,3 +615,70 @@ def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_referen
 
     return lightcurve_mag_normalised
 
+
+def plot_ML_geometry(fit, best_parameters):
+    """Plot the lensing geometry (i.e source trajectory).
+    :param object fit: a fit object. See the microlfits for more details.
+    :param list best_parameters: a list containing the model you want to plot the trajectory
+    """
+
+    # Limits of the plot
+
+    figure_trajectory_xlimit = 1.5
+    figure_trajectory_ylimit = 1.5
+
+    figure_trajectory, figure_axes = plt.subplots()
+
+    einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
+    figure_axes.add_artist(einstein_ring)
+
+    min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
+    max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
+
+    time = np.linspace(min_time, max_time + 100, 30000)
+
+    reference_telescope = copy.copy(fit.event.telescopes[0])
+    reference_telescope.lightcurve_magnitude = np.array(
+        [time, [0] * len(time), [0] * len(time)]).T
+
+    reference_telescope.lightcurve_flux = np.array(
+        [time, [0] * len(time), [0] * len(time)]).T
+    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
+    trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
+                                                                pyLIMA_parameters.uo, pyLIMA_parameters.tE,
+                                                                pyLIMA_parameters)
+
+    figure_axes.plot(trajectory_x, trajectory_y, 'b')
+
+    index_trajectory_limits = \
+        np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
+            0]
+
+    figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 100], trajectory_y[index_trajectory_limits[0] + 100],
+                      trajectory_x[index_trajectory_limits[0] + 150] - trajectory_x[index_trajectory_limits[0] + 100],
+                      trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[index_trajectory_limits[0] + 100],
+                      color='b')
+
+    if fit.model.model_type == 'DSPL':
+        best_parameters_source_2 = copy.copy(best_parameters)
+        best_parameters_source_2[0] += pyLIMA_parameters.delta_to
+        best_parameters_source_2[1] += pyLIMA_parameters.delta_uo
+        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters_source_2)
+        trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
+                                                                    pyLIMA_parameters.uo, pyLIMA_parameters.tE,
+                                                                    pyLIMA_parameters)
+
+        index_trajectory_limits = np.where(
+            (np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
+            0]
+        figure_axes.plot(trajectory_x, trajectory_y, 'r')
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 100], trajectory_y[index_trajectory_limits[0] + 100],
+                          trajectory_x[index_trajectory_limits[0] + 150] - trajectory_x[index_trajectory_limits[0] + 100],
+                          trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[index_trajectory_limits[0] + 100],
+                          color='r')
+    figure_axes.scatter(0,0,s=10,c='k')
+    figure_axes.axis(
+        [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_xlimit])
+
+    return figure_trajectory
