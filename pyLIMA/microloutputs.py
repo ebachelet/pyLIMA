@@ -477,10 +477,11 @@ def initialize_plot_lightcurve(fit):
     figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[0].tick_params(labelsize=30)
 
-    figure_axes[1].set_xlabel('Days', fontsize=50)
-    figure_axes[1].xaxis.set_major_locator(MaxNLocator(8))
+    figure_axes[1].set_xlabel('HJD', fontsize=50)
+    figure_axes[1].xaxis.set_major_locator(MaxNLocator(6))
     figure_axes[1].yaxis.set_major_locator(MaxNLocator(4))
-
+    figure_axes[1].xaxis.get_major_ticks()[0].draw = lambda *args: None
+    figure_axes[1].ticklabel_format(useOffset=False, style='plain')
     figure_axes[1].set_ylabel('Residuals', fontsize=50)
     figure_axes[1].tick_params(labelsize=30)
 
@@ -553,6 +554,9 @@ def LM_plot_residuals(fit, figure_axe):
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
 
+    # xticks_labels = figure_axe.get_xticks()
+    # figure_axe.set_xticklabels(xticks_labels, rotation=45)
+
 
 def LM_plot_align_data(fit, figure_axe):
     """Plot the aligned data.
@@ -617,7 +621,7 @@ def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_referen
 
 
 def plot_ML_geometry(fit, best_parameters):
-    """Plot the lensing geometry (i.e source trajectory).
+    """Plot the lensing geometry (i.e source trajectory) and the table of best parameters.
     :param object fit: a fit object. See the microlfits for more details.
     :param list best_parameters: a list containing the model you want to plot the trajectory
     """
@@ -627,8 +631,10 @@ def plot_ML_geometry(fit, best_parameters):
     figure_trajectory_xlimit = 1.5
     figure_trajectory_ylimit = 1.5
 
-    figure_trajectory, figure_axes = plt.subplots()
+    figure_trajectory = plt.figure()
 
+    figure_axes = figure_trajectory.add_subplot(121)
+    figure_axes.axis('equal')
     einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
     figure_axes.add_artist(einstein_ring)
 
@@ -673,12 +679,50 @@ def plot_ML_geometry(fit, best_parameters):
             (np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
             0]
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 100], trajectory_y[index_trajectory_limits[0] + 100],
-                          trajectory_x[index_trajectory_limits[0] + 150] - trajectory_x[index_trajectory_limits[0] + 100],
-                          trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[index_trajectory_limits[0] + 100],
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 100],
+                          trajectory_y[index_trajectory_limits[0] + 100],
+                          trajectory_x[index_trajectory_limits[0] + 150] - trajectory_x[
+                              index_trajectory_limits[0] + 100],
+                          trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[
+                              index_trajectory_limits[0] + 100],
                           color='r')
-    figure_axes.scatter(0,0,s=10,c='k')
+    figure_axes.scatter(0, 0, s=10, c='k')
     figure_axes.axis(
         [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_xlimit])
+
+    raw_labels = fit.model.model_dictionnary.keys() + ['Chi^2']
+    column_labels = ['Parameters', 'Errors']
+
+    table_val = [fit.fit_results, (fit.fit_covariance.diagonal() ** 0.5).tolist() + [0.0]]
+    table_val = np.round(table_val, 5).tolist()
+    table_val = np.array(table_val).T.tolist()
+
+
+
+    table_colors = []
+    raw_colors = []
+    last_color = 'dodgerblue'
+    for i in xrange(len(table_val)):
+
+        table_colors.append([last_color, last_color])
+        raw_colors.append(last_color)
+
+        if last_color == 'dodgerblue':
+
+            last_color = 'white'
+
+        else:
+
+            last_color = 'dodgerblue'
+
+    table_axes = figure_trajectory.add_subplot(122, frameon=False)
+
+    the_table = table_axes.table(cellText=table_val, cellColours=table_colors, rowColours=raw_colors,
+                                 rowLabels=raw_labels,
+                                 colLabels=column_labels, loc='center')
+    table_axes.get_yaxis().set_visible(False)
+    table_axes.get_xaxis().set_visible(False)
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(20)
 
     return figure_trajectory

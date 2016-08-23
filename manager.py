@@ -25,9 +25,9 @@ from pyLIMA import microlmodels
 
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('I_MOA_R.dat' in event_name) and ('Follow' not in event_name)]
+                    ('.dat' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
-                     ('I_' in event_name) and ('~' not in event_name)]
+                     ('.dat' in event_name) and ('~' not in event_name)]
 
     start = time.time()
     results = []
@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names[0:]:
 
         #name='Lightcurve_'+str(17)+'_'
-        name = 'KB120486'
+        name = 'OB160022'
         #name = 'Lightcurve_9_'
         current_event = event.Event()
         current_event.name = name
@@ -48,8 +48,8 @@ def main(command_line):
         # Names = ['OGLE','Kepler']
         # Locations = ['Earth','Space']
 
-        current_event.ra = 270.0617499999999
-        current_event.dec = -30.21836111111
+        current_event.ra = 266.25625
+        current_event.dec =-22.26197222222222
         Names = ['Survey', 'Follow']
         Locations = ['Earth', 'Earth']
         # event_telescopes = ['Lightcurve_1_Survey.dat','Lightcurve_1_Follow.dat']
@@ -84,7 +84,7 @@ def main(command_line):
             else:
                 if lightcurve[0,0] <2450000:
                     lightcurve[:, 0] = lightcurve[:, 0] + 2450000
-                telescope = telescopes.Telescope(name=event_telescope[2:-4], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,light_curve_magnitude_dictionnary={'time':0 ,'mag': 1, 'err_mag': 2})
             telescope.gamma = 0.5
             telescope.location = 'Earth'
@@ -93,23 +93,21 @@ def main(command_line):
 
         print 'Start;', current_event.name
 
-        current_event.find_survey('MOA_R')
+        current_event.find_survey('OGLE_I')
         #current_event.check_event()
 
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('DSPL', current_event, parallax=['Annual', 2456154.0])
-        #Model.parameters_guess = [2456154.275488267936, -0.0834453322309635, -17.20396676117045,
-         #                          0.06672684321672316, 74.22066348937663, 0.0800422081771788, 0.11890880280146672,
-         #                          0.12578269216160143, 0.1672057916275690,-0.37,0.08]
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457435.0])
+        Model.parameters_guess = [2457435.742426651, -0.021581699361250605, -100.29239281698116, 0,0]
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'DE', flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'LM', flux_estimation_MCMC='MCMC')
 
         import pdb;
         pdb.set_trace()
@@ -120,6 +118,8 @@ def main(command_line):
         errors.append(current_event.fits[0].fit_covariance.diagonal()**0.5)
     end = time.time()
 
+    import pdb;
+    pdb.set_trace()
     print end - start
 
     all_results = [('Fits.txt', results),
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/KB12486/han/')
+                                'SimulationML/OB160022/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

@@ -231,7 +231,7 @@ def initial_guess_FSPL(event):
 
 
 def initial_guess_DSPL(event):
-    """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
+    """Function to find initial DSPL guess for Levenberg-Marquardt solver (method=='LM').
        This assumes no blending.
 
        :param object event: the event object on which you perform the fit on. More details on the
@@ -339,9 +339,26 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :rtype: list of float
      """
     if 'to' in parameter_key:
-        to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + np.random.uniform(-1, 1)
+        epsilon = np.random.uniform(-1, 1)
+        to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
         return [to_parameters_trial]
+
+    #if 'uo' in parameter_key:
+    #   epsilon = np.random.uniform(0.9, 1.1)
+    #    sign = np.random.choice([-1, 1])
+
+    #    uo_trial = sign * parameters[parameters_dictionnary[parameter_key]] * epsilon
+
+    #    return [uo_trial]
+
+    #if 'tE' in parameter_key:
+    #    epsilon = np.random.uniform(0.9, 1.1)
+    #    sign = np.random.choice([-1, 1])
+
+    #    tE_trial = sign * parameters[parameters_dictionnary[parameter_key]] * epsilon
+
+    #    return [tE_trial]
 
     if 'fs' in parameter_key:
         epsilon = np.random.uniform(0.9, 1.1)
@@ -353,6 +370,15 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
     if 'g_' in parameter_key:
         return
+
+    #if 'pi' in parameter_key:
+
+    #    epsilon = np.random.uniform(0.9, 1.1)
+    #    sign = np.random.choice([-1,1])
+
+    #    pi_trial = sign*parameters[parameters_dictionnary[parameter_key]] * epsilon
+
+    #    return [pi_trial]
 
     epsilon = np.random.uniform(0.9, 1.1)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
