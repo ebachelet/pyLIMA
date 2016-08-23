@@ -346,7 +346,7 @@ class MLFits(object):
                 count_walkers += 1
         # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
         # number_of_parameters = number_of_paczynski_parameters
-      
+
         number_of_parameters = len(individual)
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
 

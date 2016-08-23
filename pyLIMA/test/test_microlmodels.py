@@ -81,15 +81,15 @@ def test_magnification_DSPL_computation():
     event = _create_event()
 
     Model = microlmodels.create_model('DSPL', event)
-    Parameters = collections.namedtuple('parameters', ['to1', 'uo1', 'delta_to', 'delta_uo', 'tE', 'q_flux_I'])
-    to1 = 0.0
-    uo1 = 0.1
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'delta_to', 'delta_uo', 'tE', 'q_flux_I'])
+    to = 0.0
+    uo = 0.1
     delta_to = 42.0
     delta_uo = -0.05
     tE = 5.0
     q_flux_I = 0.1
 
-    parameters = Parameters(to1, uo1, delta_to, delta_uo, tE, q_flux_I)
+    parameters = Parameters(to, uo, delta_to, delta_uo, tE, q_flux_I)
 
     amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
 
@@ -173,16 +173,16 @@ def test_DSPL_computate_microlensing_model():
     event = _create_event()
     Model = microlmodels.create_model('DSPL', event)
     Parameters = collections.namedtuple('parameters',
-                                        ['to1', 'uo1', 'delta_to', 'delta_uo', 'tE', 'q_flux_I', 'fs_Test', 'g_Test'])
-    to1 = 0.0
-    uo1 = 0.1
+                                        ['to', 'uo', 'delta_to', 'delta_uo', 'tE', 'q_flux_I', 'fs_Test', 'g_Test'])
+    to = 0.0
+    uo = 0.1
     delta_to = 42.0
     delta_uo = -0.05
     tE = 5.0
     q_flux_I = 0.1
     fs = 10
     g = 1
-    parameters = Parameters(to1, uo1, delta_to, delta_uo, tE, q_flux_I, fs, g)
+    parameters = Parameters(to, uo, delta_to, delta_uo, tE, q_flux_I, fs, g)
 
     model, _ = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
     assert np.allclose(model, np.array([fs * (9.21590819 + g), fs * (2.72932227 + g)]))
