@@ -633,15 +633,15 @@ def plot_ML_geometry(fit, best_parameters):
 
     figure_trajectory = plt.figure()
 
-    figure_axes = figure_trajectory.add_subplot(121)
-    figure_axes.axis('equal')
+    figure_axes = figure_trajectory.add_subplot(121,aspect=1)
+
     einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
     figure_axes.add_artist(einstein_ring)
 
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
-    time = np.linspace(min_time, max_time + 100, 30000)
+    time = np.linspace(min_time, max_time + 100, 3000)
 
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -661,10 +661,10 @@ def plot_ML_geometry(fit, best_parameters):
         np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
             0]
 
-    figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 100], trajectory_y[index_trajectory_limits[0] + 100],
-                      trajectory_x[index_trajectory_limits[0] + 150] - trajectory_x[index_trajectory_limits[0] + 100],
-                      trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[index_trajectory_limits[0] + 100],
-                      color='b')
+    figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 10], trajectory_y[index_trajectory_limits[0] + 10],
+                      trajectory_x[index_trajectory_limits[0] + 15] - trajectory_x[index_trajectory_limits[0] + 10],
+                      trajectory_y[index_trajectory_limits[0] + 15] - trajectory_y[index_trajectory_limits[0] + 10],
+                      head_width=0.1, head_length=0.2, color='b')
 
     if fit.model.model_type == 'DSPL':
         best_parameters_source_2 = copy.copy(best_parameters)
@@ -686,9 +686,17 @@ def plot_ML_geometry(fit, best_parameters):
                           trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[
                               index_trajectory_limits[0] + 100],
                           color='r')
-    figure_axes.scatter(0, 0, s=10, c='k')
+    if 'BL' not in fit.model.model_type:
+
+        figure_axes.scatter(0, 0, s=10, c='k')
+    if 'PS' not in fit.model.model_type:
+
+        index_source = np.where((trajectory_x**2+trajectory_y**2)**0.5<max(1,pyLIMA_parameters.uo+0.1))[0][0]
+        source_disk = plt.Circle((trajectory_x[ index_source],trajectory_y[ index_source]), pyLIMA_parameters.rho,  color='y')
+        figure_axes.add_artist(source_disk)
+
     figure_axes.axis(
-        [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_xlimit])
+        [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_ylimit])
 
     raw_labels = fit.model.model_dictionnary.keys() + ['Chi^2']
     column_labels = ['Parameters', 'Errors']
@@ -719,7 +727,7 @@ def plot_ML_geometry(fit, best_parameters):
 
     the_table = table_axes.table(cellText=table_val, cellColours=table_colors, rowColours=raw_colors,
                                  rowLabels=raw_labels,
-                                 colLabels=column_labels, loc='center')
+                                 colLabels=column_labels, loc='center left')
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
