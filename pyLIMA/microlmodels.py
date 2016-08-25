@@ -105,7 +105,8 @@ def source_trajectory(telescope, to, uo, tE, pyLIMA_parameters):
     if 'piEN' in pyLIMA_parameters._fields:
         piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
         parallax_delta_tau, parallax_delta_beta = compute_parallax_curvature(piE, telescope.deltas_positions)
-
+        #import pdb;
+        #pdb.set_trace()
         tau += parallax_delta_tau
         beta += parallax_delta_beta
 

@@ -15,12 +15,14 @@ from pyslalib import slalib
 
 
 def horizons_obscodes(observatory):
-    """Map LCOGT sitecodes to those needed for JPL HORIZONS.
-    McDonald Observatory (ELP/V37) is used as a default if the look-up fails"""
+    """Transform observatory names to JPL horizon codes.
+    Write by Tim Lister, thanks :)
+    """
 
     JPL_HORIZONS_ID = {
         'Geocentric': '500',
-        'Kepler': '-227'
+        'Kepler': '-227',
+        'Spitzer':'-79'
     }
 
     # Check if we were passed the JPL site code directly
@@ -308,6 +310,7 @@ class MLParallaxes(object):
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
 
+
         satellite_positions = \
         self.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
                                     step_size='60m', verbose=False)[1]
@@ -321,6 +324,7 @@ class MLParallaxes(object):
         interpolated_ra = interpolate.interp1d(dates, ra)
         interpolated_dec = interpolate.interp1d(dates, dec)
         interpolated_distance = interpolate.interp1d(dates, distances)
+
 
         ra_interpolated = interpolated_ra(time_to_treat)
         dec_interpolated = interpolated_dec(time_to_treat)
@@ -359,9 +363,10 @@ class MLParallaxes(object):
         space  # to get to next prompt
         q   # quit
         """
-        body = str(-227)
+        #body = str(-227)
         # Lookup observatory name
         OBSERVATORY_ID = horizons_obscodes(observatory)
+        body =  horizons_obscodes(body)
         if (verbose):
             print "Observatory ID= ", OBSERVATORY_ID
             # import pdb; pdb.set_trace()
