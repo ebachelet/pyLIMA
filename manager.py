@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names[0:]:
 
         #name='Lightcurve_'+str(17)+'_'
-        name = 'OB160813'
+        name = 'O150448'
         #name = 'Lightcurve_9_'
         current_event = event.Event()
         current_event.name = name
@@ -48,8 +48,8 @@ def main(command_line):
         # Names = ['OGLE','Kepler']
         # Locations = ['Earth','Space']
 
-        current_event.ra = 269.8865416666667
-        current_event.dec = -28.40741
+        current_event.ra = 272.559916
+        current_event.dec = -31.75261
         Names = ['Survey', 'Follow']
         Locations = ['Earth', 'Space']
         # event_telescopes = ['Lightcurve_1_Survey.dat','Lightcurve_1_Follow.dat']
@@ -72,37 +72,43 @@ def main(command_line):
                 lightcurve = np.array(
                     [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
 
-
+                if lightcurve[0,0]<2450000 :
+                    lightcurve[:, 0] += 2450000
 
             except:
                 pass
 
-            if (event_telescope[:-4] == 'Kepler_R'):
+            if (event_telescope[:-4] == 'Spitzer_H'):
 
                 #good =  np.where(lightcurve[:,1]>-22181.96)[0]
                 #lightcurve = lightcurve[good]
-                telescope = telescopes.Telescope(name='Kepler', camera_filter=event_telescope[-5],
-                                                 light_curve_flux=lightcurve,light_curve_flux_dictionnary={'time':0 ,'flux': 1, 'err_flux': 2}, reference_flux= 100)
+                lightcurve[:,2] = lightcurve[:,2]*4.3
+                telescope = telescopes.Telescope(name='Spitzer', camera_filter=event_telescope[-5],
+                                                 light_curve_flux=lightcurve,light_curve_flux_dictionnary={'time':0 ,'flux': 1, 'err_flux': 2}, reference_flux = 0)
+                telescope.location = 'Space'
+
             else:
-                if lightcurve[0,0] <2450000:
-                    lightcurve[:,2] = lightcurve[:, 2] + 2450000
-                telescope = telescopes.Telescope(name='OGLE', camera_filter=event_telescope[-5],
+                #if lightcurve[0,0] <2450000:
+                    #lightcurve[:,2] = lightcurve[:, 2] + 2450000
+                lightcurve[:, 2] = lightcurve[:, 2] * 1.8
+                telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,light_curve_magnitude_dictionnary={'time':0 ,'mag': 1, 'err_mag': 2})
-            telescope.gamma = 0.0
-            telescope.location = Locations[count]
+                telescope.location = 'Earth'
+
+            telescope.gamma = -0.0
             current_event.telescopes.append(telescope)
             count += 1
 
         print 'Start;', current_event.name
 
-        current_event.find_survey('OGLE')
+        current_event.find_survey('OGLE_I')
         #current_event.check_event()
 
         #Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457511])
-        Model.parameters_guess = [2457511.346, 0.06263, 6.32,0.0,0.11438]
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457213])
+        Model.parameters_guess = [2457213.153, -0.0874, 60,-0.13,-0.06]
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
@@ -138,7 +144,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB160813/')
+                                'SimulationML/OB150448/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',
