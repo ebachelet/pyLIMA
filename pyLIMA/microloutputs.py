@@ -519,7 +519,7 @@ def LM_plot_model(fit, figure_axe):
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
-    time = np.linspace(min_time, max_time + 100, 30000)
+    time = np.linspace(min_time, max_time + 100, 60000)
 
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -697,7 +697,7 @@ def plot_LM_ML_geometry(fit):
                           color='r')
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
-    if 'PS' not in fit.model.model_type:
+    if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type):
         index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
             0]
         source_disk = plt.Circle((trajectory_x[index_source], trajectory_y[index_source]), pyLIMA_parameters.rho,

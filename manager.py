@@ -35,13 +35,13 @@ def main(command_line):
 
     for event_name in events_names[0:]:
 
-        #name='Lightcurve_'+str(17)+'_'
-        name = 'O150448'
-        #name = 'Lightcurve_9_'
+        # name='Lightcurve_'+str(17)+'_'
+        name = 'O161604'
+        # name = 'Lightcurve_9_'
         current_event = event.Event()
         current_event.name = name
 
-        event_telescopes = [i for i in events_names2 ]
+        event_telescopes = [i for i in events_names2]
         # event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat',
         # 'MOA-2016-BLG-215_transformed.dat']
         # event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
@@ -67,55 +67,65 @@ def main(command_line):
                 raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
                                                 usecols=(0, 1, 2))
                 # good = np.where(raw_light_curve[:,1]<24)[0]
-                #good = np.where(raw_light_curve[:, 0] > -1)[0]
-                #raw_light_curve = raw_light_curve[good]
+                # good = np.where(raw_light_curve[:, 0] > -1)[0]
+                # raw_light_curve = raw_light_curve[good]
+
+                if 'CPT' in event_telescope:
+                    raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
+                                                    usecols=(1, 6, 7))
                 lightcurve = np.array(
                     [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
 
-                if lightcurve[0,0]<2450000 :
+                if lightcurve[0, 0] < 2450000:
                     lightcurve[:, 0] += 2450000
 
             except:
                 pass
 
-            if (event_telescope[:-4] == 'Spitzer_H'):
+            if (event_telescope[:-4] == 'MOA_R'):
 
-                #good =  np.where(lightcurve[:,1]>-22181.96)[0]
-                #lightcurve = lightcurve[good]
-                lightcurve[:,2] = lightcurve[:,2]*4.3
-                telescope = telescopes.Telescope(name='Spitzer', camera_filter=event_telescope[-5],
-                                                 light_curve_flux=lightcurve,light_curve_flux_dictionnary={'time':0 ,'flux': 1, 'err_flux': 2}, reference_flux = 0)
-                telescope.location = 'Space'
-
-            else:
-                #if lightcurve[0,0] <2450000:
-                    #lightcurve[:,2] = lightcurve[:, 2] + 2450000
-                lightcurve[:, 2] = lightcurve[:, 2] * 1.8
-                telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
-                                                 light_curve_magnitude=lightcurve,light_curve_magnitude_dictionnary={'time':0 ,'mag': 1, 'err_mag': 2})
+                # good =  np.where(lightcurve[:,1]>-22181.96)[0]
+                # lightcurve = lightcurve[good]
+                # lightcurve[:,2] = lightcurve[:,2]*4.3
+                import pdb;
+                pdb.set_trace()
+                telescope = telescopes.Telescope(name='MOA_R', camera_filter=event_telescope[-5],
+                                                 light_curve_flux=lightcurve,
+                                                 light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
+                                                 reference_flux=-2 * (min(lightcurve[:, 1])))
                 telescope.location = 'Earth'
 
-            telescope.gamma = -0.0
+            else:
+                # if lightcurve[0,0] <2450000:
+                # lightcurve[:,2] = lightcurve[:, 2] + 2450000
+                # lightcurve[:, 2] = lightcurve[:, 2] * 1.8
+                telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
+                                                 light_curve_magnitude=lightcurve,
+                                                 light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
+                telescope.location = 'Earth'
+
+            telescope.gamma = 0.5
             current_event.telescopes.append(telescope)
             count += 1
 
         print 'Start;', current_event.name
 
         current_event.find_survey('OGLE_I')
-        #current_event.check_event()
+        # current_event.check_event()
 
-        #Model = microlmodels.MLModels(current_event, command_line.model,
+        # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457213])
-        Model.parameters_guess = [2457213.153, -0.0874, 60,-0.13,-0.06]
-        #Model.parameters_boundaries[3] = (-5.0, -1.0)
+        Model = microlmodels.create_model('DSPL', current_event, parallax=['None', 2457213])
+        Model.parameters_guess = [2457655.290477438, -0.499514126928966, -25.00058102551373, 0.4999899840253345,
+                                  31.182637679193185, 0.023385010604492416, 0.009214941267131084]
+        # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
-        #Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
-        #Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
+        # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
+        # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
-        #Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'LM', flux_estimation_MCMC='MCMC')
+        # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
+        current_event.fit(Model, 'DE', flux_estimation_MCMC='MCMC')
 
         import pdb;
         pdb.set_trace()
@@ -144,7 +154,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB150448/')
+                                'SimulationML/OB161604/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',
