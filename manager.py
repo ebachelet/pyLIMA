@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names[0:]:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'O161604'
+        name = 'OB160795'
         # name = 'Lightcurve_9_'
         current_event = event.Event()
         current_event.name = name
@@ -48,8 +48,8 @@ def main(command_line):
         # Names = ['OGLE','Kepler']
         # Locations = ['Earth','Space']
 
-        current_event.ra = 272.559916
-        current_event.dec = -31.75261
+        current_event.ra = 271.0010
+        current_event.dec = -28.15511
         Names = ['Survey', 'Follow']
         Locations = ['Earth', 'Space']
         # event_telescopes = ['Lightcurve_1_Survey.dat','Lightcurve_1_Follow.dat']
@@ -70,9 +70,11 @@ def main(command_line):
                 # good = np.where(raw_light_curve[:, 0] > -1)[0]
                 # raw_light_curve = raw_light_curve[good]
 
-                if 'CPT' in event_telescope:
+                if 'COJA' in event_telescope:
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(1, 6, 7))
+                                                    usecols=(0,2, 3))
+                    #raw_light_curve = np.array(
+                    #[raw_light_curve[:, 2], raw_light_curve[:, 0], raw_light_curve[:, 1]]).T
                 lightcurve = np.array(
                     [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
 
@@ -80,20 +82,23 @@ def main(command_line):
                     lightcurve[:, 0] += 2450000
 
             except:
-                pass
+                raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
+                                                usecols=(0, 1))
+                #noise = 7.5*(raw_light_curve[:,1]+1000)**0.5
+                noise = 0.3*(raw_light_curve[:,1]+200)
+                raw_light_curve = np.c_[raw_light_curve,noise]
 
-            if (event_telescope[:-4] == 'MOA_R'):
+            if (event_telescope[:-4] == 'Kepler_R'):
 
                 # good =  np.where(lightcurve[:,1]>-22181.96)[0]
                 # lightcurve = lightcurve[good]
                 # lightcurve[:,2] = lightcurve[:,2]*4.3
-                import pdb;
-                pdb.set_trace()
-                telescope = telescopes.Telescope(name='MOA_R', camera_filter=event_telescope[-5],
+                lightcurve = np.array(
+                    [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
+                telescope = telescopes.Telescope(name='Kepler', camera_filter=event_telescope[-5],
                                                  light_curve_flux=lightcurve,
-                                                 light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
-                                                 reference_flux=-2 * (min(lightcurve[:, 1])))
-                telescope.location = 'Earth'
+                                                 light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},reference_flux = 200)
+                telescope.location = 'Space'
 
             else:
                 # if lightcurve[0,0] <2450000:
@@ -116,16 +121,15 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('DSPL', current_event, parallax=['None', 2457213])
-        Model.parameters_guess = [2457655.290477438, -0.499514126928966, -25.00058102551373, 0.4999899840253345,
-                                  31.182637679193185, 0.023385010604492416, 0.009214941267131084]
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457512])
+        Model.parameters_guess = [2457512, 0.142,4,0,0]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'DE', flux_estimation_MCMC='MCMC')
+        current_event.fit(Model, 'LM', flux_estimation_MCMC='MCMC')
 
         import pdb;
         pdb.set_trace()
@@ -154,7 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB161604/')
+                                'SimulationML/OB160795/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

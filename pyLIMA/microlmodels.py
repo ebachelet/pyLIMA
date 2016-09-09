@@ -340,7 +340,8 @@ class MLModel(object):
             f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
         except TypeError:
-
+            #import pdb;
+            #pdb.set_trace()
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
