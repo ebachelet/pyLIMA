@@ -128,7 +128,7 @@ class MLFits(object):
 
         if self.method == 'LM':
             number_of_data = self.event.total_number_of_data_points()
-            if number_of_data <= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
+            if number_of_data <= (len(self.model.model_dictionnary)):
 
                 print "You do not have enough data points to use this method (LM), please switch to other methods."
                 return
@@ -458,7 +458,7 @@ class MLFits(object):
         # method should be very close.
 
         number_of_data = self.event.total_number_of_data_points()
-        if number_of_data <= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
+        if number_of_data <= (len(self.model.model_dictionnary)):
 
             print "You do not have enough data points to use LM method, we can not estimate the covariance matrix => " \
                   "set to 0.0. please switch to MCMC if you need errors estimation."

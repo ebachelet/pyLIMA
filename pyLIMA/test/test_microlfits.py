@@ -20,6 +20,7 @@ def _create_event():
     event.telescopes[0].lightcurve_magnitude = np.random.random((100, 3))
 
     event.telescopes[0].gamma = 0.5
+    event.total_number_of_data_points.return_value = sum([len(i.lightcurve_flux) for i in event.telescopes])
     return event
 
 
