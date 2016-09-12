@@ -193,3 +193,16 @@ class Event(object):
 
             if len(telescope.deltas_positions) == 0:
                 telescope.compute_parallax(self, parallax_model)
+
+    def total_number_of_data_points(self):
+        """ Compute the parallax displacement for all the telescopes, if this is desired in
+            the second order parameter.
+            :return: n_data, the total number of points
+            :rtype: float
+        """
+        n_data = 0.0
+
+        for telescope in self.telescopes:
+            n_data = n_data + telescope.n_data('flux')
+
+        return n_data

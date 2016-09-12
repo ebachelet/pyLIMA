@@ -20,6 +20,7 @@ import microltoolbox
 
 warnings.filterwarnings("ignore")
 
+
 class MLFits(object):
     """
     ######## Fitter module ########
@@ -126,8 +127,16 @@ class MLFits(object):
         self.model.define_model_parameters()
 
         if self.method == 'LM':
-            self.guess = self.initial_guess()
-            self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
+            number_of_data = self.event.total_number_of_data_points()
+            if number_of_data <= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
+
+                print "You do not have enough data points to use this method, please switch to other methods."
+                return
+
+            else:
+
+                self.guess = self.initial_guess()
+                self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
         if self.method == 'DE':
             self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
@@ -171,8 +180,15 @@ class MLFits(object):
 
         flag_quality = 'Good Fit'
         negative_covariance_diagonal = np.diag(self.fit_covariance) < 0
+        number_of_data = self.event.total_number_of_data_points()
+        if number_of_data >= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
 
-        if (0.0 in self.fit_covariance) | (True in negative_covariance_diagonal) | \
+            if (0.0 in self.fit_covariance):
+                print 'Your fit probably wrong. Cause ==> bad covariance matrix'
+                flag_quality = 'Bad Fit'
+                return flag_quality
+
+        if (True in negative_covariance_diagonal) | \
                 (np.isnan(self.fit_covariance).any()) | (np.isinf(self.fit_covariance).any()):
             print 'Your fit probably wrong. Cause ==> bad covariance matrix'
             flag_quality = 'Bad Fit'
@@ -203,8 +219,6 @@ class MLFits(object):
            :return guess_parameters: a list containing parameters guess related to the model.
            :rtype: list
         """
-
-
 
         if len(self.model.parameters_guess) == 0:
 
@@ -443,10 +457,19 @@ class MLFits(object):
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
 
+        number_of_data = self.event.total_number_of_data_points()
+        if number_of_data <= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
 
-        self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
+            print "You do not have enough data points to use LM method, we can not estimate the covariance matrix +> " \
+                  "set to 0.0. please switch to other methods."
+            fit_results = paczynski_parameters + +[differential_evolution_estimation['fun']]
+            fit_covariance = np.zeros((len(paczynski_parameters) + 2 * len(self.event.telescopes),
+                                       len(paczynski_parameters) + 2 * len(self.event.telescopes)))
 
-        fit_results, fit_covariance, fit_time = self.lmarquardt()
+        else:
+            self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
+
+            fit_results, fit_covariance, fit_time = self.lmarquardt()
 
         computation_time = python_time.time() - starting_time
 
@@ -471,7 +494,7 @@ class MLFits(object):
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
 
             # Little prior here, need to be changed
-            #if priors == np.inf:
+            # if priors == np.inf:
             #  return np.inf
 
             # else:
@@ -480,8 +503,6 @@ class MLFits(object):
             chichi += (residus ** 2).sum()
 
         return chichi
-
-
 
     def lmarquardt(self):
         """The LM method. This is based on the Levenberg-Marquardt algorithm:
@@ -568,7 +589,7 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         return fit_result, covariance_matrix, computation_time
 
     def residuals_LM(self, fit_process_parameters):
@@ -688,7 +709,6 @@ class MLFits(object):
 
         return chichi_list
 
-
     def model_residuals(self, telescope, fit_process_parameters):
         """ Compute the residuals and the priors of a telescope lightcurve according to the model.
 
@@ -709,7 +729,6 @@ class MLFits(object):
         residuals = (flux - microlensing_model[0]) / errflux
 
         priors = microlensing_model[1]
-
 
         return residuals, priors
 
