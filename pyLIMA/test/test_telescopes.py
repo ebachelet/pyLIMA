@@ -51,7 +51,7 @@ def test_clean_data_already_clean():
     telescope = telescopes.Telescope(
         light_curve_magnitude=np.array([[0, 1, 0.1], [3, 4, 0.1], [5, 6, 0.1]]))
 
-    clean_lightcurve = telescope.clean_data()
+    clean_lightcurve = telescope.clean_data_magnitude()
     assert np.allclose(clean_lightcurve, np.array([[0, 1, 0.1], [3, 4, 0.1], [5, 6, 0.1]]))
 
 
@@ -59,13 +59,13 @@ def test_clean_data_not_clean():
     telescope = telescopes.Telescope(light_curve_magnitude=np.array(
         [[0, 1, 0.1], [3, np.nan, 0.1], [5, 6, 0.1], [7, np.nan, np.nan], [8, 1, 27.0],
          [9, 2, 0.03]]))
-    clean_lightcurve = telescope.clean_data()
+    clean_lightcurve = telescope.clean_data_magnitude()
     assert np.allclose(clean_lightcurve, np.array([[0, 1, 0.1], [5, 6, 0.1], [9, 2, 0.03]]))
 
 
 def test_clean_data_not_clean_but_2_points():
     telescope = telescopes.Telescope(light_curve_magnitude=np.array([[0, 1, 0.1], [2, 3, -28.0]]))
-    clean_lightcurve = telescope.clean_data()
+    clean_lightcurve = telescope.clean_data_magnitude()
     assert np.alltrue(clean_lightcurve == np.array([[0, 1, 0.1], [2, 3, -28.0]]))
 
 

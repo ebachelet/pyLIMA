@@ -130,7 +130,7 @@ class MLFits(object):
             number_of_data = self.event.total_number_of_data_points()
             if number_of_data <= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
 
-                print "You do not have enough data points to use this method, please switch to other methods."
+                print "You do not have enough data points to use this method (LM), please switch to other methods."
                 return
 
             else:
@@ -460,9 +460,13 @@ class MLFits(object):
         number_of_data = self.event.total_number_of_data_points()
         if number_of_data <= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
 
-            print "You do not have enough data points to use LM method, we can not estimate the covariance matrix +> " \
-                  "set to 0.0. please switch to other methods."
-            fit_results = paczynski_parameters + +[differential_evolution_estimation['fun']]
+            print "You do not have enough data points to use LM method, we can not estimate the covariance matrix => " \
+                  "set to 0.0. please switch to MCMC if you need errors estimation."
+
+            import pdb;
+            pdb.set_trace()
+            fit_results = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model) + \
+                          [differential_evolution_estimation['fun']]
             fit_covariance = np.zeros((len(paczynski_parameters) + 2 * len(self.event.telescopes),
                                        len(paczynski_parameters) + 2 * len(self.event.telescopes)))
 
