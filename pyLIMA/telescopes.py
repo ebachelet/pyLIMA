@@ -226,7 +226,7 @@ class Telescope(object):
         para = microlparallax.MLParallaxes(event, parallax)
         para.parallax_combination(self)
 
-    def clean_data(self):
+    def clean_data_magnitude(self):
         """
         Clean outliers of the telescope for the fits. Points are considered as outliers if they
         are 10 mag brighter
@@ -254,6 +254,30 @@ class Telescope(object):
 
         return lightcurve
 
+    def clean_data_flux(self):
+        """
+        Clean outliers of the telescope for the fits. Points are considered as outliers if they
+        are 10 mag brighter
+        or fainter than the lightcurve median or if nan appears in any columns or errobar higher
+        than a 1 mag.
+
+        :return: the cleaned magnitude lightcurve
+        :rtype: array_like
+        """
+
+
+        index = np.where((~np.isnan(self.lightcurve_flux).any(axis=1)))[0]
+        # Should return at least 2 points
+        if len(index) > 2:
+
+            lightcurve = self.lightcurve_flux[index]
+
+        else:
+
+            lightcurve = self.lightcurve_flux
+
+        return lightcurve
+
     def lightcurve_in_flux(self, clean='Yes'):
         """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
@@ -266,7 +290,7 @@ class Telescope(object):
         """
         if clean is 'Yes':
 
-            lightcurve = self.clean_data()
+            lightcurve = self.clean_data_magnitude()
 
         else:
 
@@ -282,7 +306,7 @@ class Telescope(object):
 
         return lightcurve_in_flux
 
-    def lightcurve_in_magnitude(self):
+    def lightcurve_in_magnitude(self, clean='Yes'):
         """
         Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
@@ -290,8 +314,15 @@ class Telescope(object):
         :return: the lightcurve in magnitude, lightcurve_magnitude.
         :rtype: array_like
         """
+        if clean is 'Yes':
 
-        lightcurve = self.lightcurve_flux
+            lightcurve = self.clean_data_flux()
+
+        else:
+
+            lightcurve = self.lightcurve_flux
+
+
 
         time = lightcurve[:, 0]
         flux = lightcurve[:, 1]

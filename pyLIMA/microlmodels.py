@@ -346,6 +346,7 @@ class MLModel(object):
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
+
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
 
         microlensing_model = f_source * amplification + f_blending

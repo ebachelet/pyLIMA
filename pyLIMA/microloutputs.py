@@ -25,7 +25,7 @@ import microlmodels
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 max_plot_ticks = 3
-matplotlib.rcParams['axes.color_cycle'] = ['b', 'r']
+#matplotlib.rcParams['axes.color_cycle'] = ['b', 'r']
 
 
 def LM_outputs(fit):
@@ -558,6 +558,7 @@ def LM_plot_residuals(fit, figure_axe):
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
         residuals = 2.5 * np.log10(flux_model / flux)
+
         figure_axe.errorbar(time, residuals, yerr=err_mag, fmt='.')
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
@@ -589,10 +590,8 @@ def LM_plot_align_data(fit, figure_axe):
 
             lightcurve = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
                                                     g_reference, fs_telescope, g_telescope)
-
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], fmt='.',
-                            label=telescope.name)
-
+                        label=telescope.name)
     figure_axe.legend(numpoints=1, fontsize=25)
 
 
@@ -671,6 +670,8 @@ def plot_LM_ML_geometry(fit):
     #    np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
     #        0]
     index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
+
+
     figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
                       trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
                       trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
@@ -684,18 +685,15 @@ def plot_LM_ML_geometry(fit):
         trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
                                                                 pyLIMA_parameters.uo, pyLIMA_parameters.tE,
                                                                 pyLIMA_parameters)
-
-        index_trajectory_limits = np.where(
-        (np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
-        0]
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]],
-                      trajectory_y[index_trajectory_limits[0]],
-                      trajectory_x[index_trajectory_limits[1]] - trajectory_x[
-                          index_trajectory_limits[0]],
-                      trajectory_y[index_trajectory_limits[1]] - trajectory_y[
-                          index_trajectory_limits[0]],
-                      color='r')
+        index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
+
+
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+                          trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
+                          trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
+                          head_width=0.1, head_length=0.2, color='r')
+
 
     if 'BL' not in fit.model.model_type:
 
@@ -787,13 +785,11 @@ def plot_MCMC_ML_geometry(fit, best_chains):
 
     figure_axes.plot(trajectory_x, trajectory_y, 'b')
 
-    index_trajectory_limits = \
-        np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
-            0]
+    index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
 
-    figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 10], trajectory_y[index_trajectory_limits[0] + 10],
-                      trajectory_x[index_trajectory_limits[0] + 15] - trajectory_x[index_trajectory_limits[0] + 10],
-                      trajectory_y[index_trajectory_limits[0] + 15] - trajectory_y[index_trajectory_limits[0] + 10],
+    figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+                      trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
+                      trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
                       head_width=0.1, head_length=0.2, color='b')
 
     if fit.model.model_type == 'DSPL':
@@ -804,18 +800,13 @@ def plot_MCMC_ML_geometry(fit, best_chains):
         trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
                                                                     pyLIMA_parameters.uo, pyLIMA_parameters.tE,
                                                                     pyLIMA_parameters)
-
-        index_trajectory_limits = np.where(
-            (np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
-            0]
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0] + 100],
-                          trajectory_y[index_trajectory_limits[0] + 100],
-                          trajectory_x[index_trajectory_limits[0] + 150] - trajectory_x[
-                              index_trajectory_limits[0] + 100],
-                          trajectory_y[index_trajectory_limits[0] + 150] - trajectory_y[
-                              index_trajectory_limits[0] + 100],
-                          color='r')
+        index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
+
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+                          trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
+                          trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
+                          head_width=0.1, head_length=0.2, color='r')
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
     if 'PS' not in fit.model.model_type:
