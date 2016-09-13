@@ -127,14 +127,14 @@ def main(command_line):
         #                              parallax=['None', 50.0])
 
         Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457511])
-        Model.parameters_guess = [2457734.218806649, 0.10088315374050105, 61.345332296098746, 0.6152632349282077, 1.710640588742819]
+        Model.parameters_guess = [2457511.32, -0.05, 33, 0.08, -0.05]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
 
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'MCMC', flux_estimation_MCMC='MCMC')
+        current_event.fit(Model, 'LM', flux_estimation_MCMC='polyfit')
 
         import pdb;
         pdb.set_trace()
