@@ -132,7 +132,7 @@ class MLFits(object):
 
                 print "You do not have enough data points to use this method (LM), please switch to other methods." \
                       " Given the requested total model " + str(self.model.model_dictionnary.keys()) +\
-                      " you need at least " + str(len(self.model.model_dictionnary)) + ' data points !'
+                      " you need at least " + str(len(self.model.model_dictionnary)) + ' data points to use the method LM!'
                 return
 
             else:

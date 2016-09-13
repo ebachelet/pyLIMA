@@ -669,10 +669,11 @@ def plot_LM_ML_geometry(fit):
     # index_trajectory_limits = \
     #    np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
     #        0]
+
     index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
 
-
-    figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+    if len(index_trajectory_limits)>=2:
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
                       trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
                       trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
                       head_width=0.1, head_length=0.2, color='b')
@@ -688,8 +689,8 @@ def plot_LM_ML_geometry(fit):
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
         index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
 
-
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+        if len(index_trajectory_limits) >= 2:
+            figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
                           trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
                           trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
                           head_width=0.1, head_length=0.2, color='r')
@@ -769,7 +770,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
-    time = np.linspace(min_time, max_time + 100, 3000)
+    time = np.linspace(min_time, max_time + 100, 30000)
 
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -786,8 +787,8 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     figure_axes.plot(trajectory_x, trajectory_y, 'b')
 
     index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
-
-    figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+    if len(index_trajectory_limits) >= 2:
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
                       trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
                       trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
                       head_width=0.1, head_length=0.2, color='b')
@@ -802,11 +803,13 @@ def plot_MCMC_ML_geometry(fit, best_chains):
                                                                     pyLIMA_parameters)
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
         index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
-
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
+        if len(index_trajectory_limits) >= 2:
+            figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
                           trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
                           trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
                           head_width=0.1, head_length=0.2, color='r')
+        except:
+            pass
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
     if 'PS' not in fit.model.model_type:
