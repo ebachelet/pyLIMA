@@ -808,8 +808,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
                           trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
                           trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
                           head_width=0.1, head_length=0.2, color='r')
-        except:
-            pass
+    
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
     if 'PS' not in fit.model.model_type:

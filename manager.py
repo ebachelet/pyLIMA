@@ -127,7 +127,7 @@ def main(command_line):
         #                              parallax=['None', 50.0])
 
         Model = microlmodels.create_model('PSPL', current_event, parallax=['None', 2457511])
-        Model.parameters_guess = [2457511.32, -0.05, 33, 0.08, -0.05]
+        Model.parameters_guess = [2457511.32, -0.05, 33, 0.08, -0.0,0.0]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
