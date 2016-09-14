@@ -449,7 +449,7 @@ class MLFits(object):
             mutation=(0.5, 1.0), popsize=15, maxiter=5000,
             tol=0.000001,
             recombination=0.6, polish='True',
-            disp=True
+            disp=False
         )
 
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.

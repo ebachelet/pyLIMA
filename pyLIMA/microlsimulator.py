@@ -1,4 +1,9 @@
 import numpy as np
+import astropy
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun
+from astropy.time import Time
+import matplotlib.pyplot as plt
+
 import microlmodels
 import microltoolbox
 import telescopes
@@ -6,22 +11,26 @@ import event
 
 MOON_PERIOD = 29  # days
 RED_NOISE = 'Yes'
-def gaussian_noise(flux):
+SOURCE_MAGNITUDE = [14, 22]
+BLEND_LIMITS = [0, 1]
 
-    error_flux = flux**0.5
+
+def gaussian_noise(flux):
+    error_flux = flux ** 0.5
 
     return error_flux
 
-def noisy_observations(flux, error_flux):
 
-    flux_observed = np.random.nornal(flux, error_flux)
+def noisy_observations(flux, error_flux):
+    flux_observed = np.random.normal(flux, error_flux)
 
     return flux_observed
 
-def time_simulation(time_start, time_end, sampling, observing_windows, bad_weather_percentage,
+
+def time_simulation(time_start, time_end, sampling, bad_weather_percentage,
                     moon_windows_avoidance):
     total_number_of_days = int(time_end - time_start)
-    time_step_observations = observing_windows / sampling
+    time_step_observations = 1.0 / sampling
     night_begin = time_start
 
     moon_phase = 0
@@ -33,8 +42,10 @@ def time_simulation(time_start, time_end, sampling, observing_windows, bad_weath
         if good_weather > bad_weather_percentage:
 
             if np.abs(moon_phase - MOON_PERIOD) > moon_windows_avoidance:
-                night_end = night_begin + observing_windows
-                time_observed += np.arange(night_begin, night_end, time_step_observations).tolist()
+                random_begin_of_the_night = np.random.uniform(0, 1)
+                night_end = night_begin + 1.0
+                time_observed += np.arange(night_begin + random_begin_of_the_night, night_end,
+                                           time_step_observations).tolist()
 
         night_begin += 1
         moon_phase += 1
@@ -61,125 +72,137 @@ def red_noise(time):
     return red_noise
 
 
-def simulate_a_microlensing_event(ra=270, dec=-30):
+def simulate_a_microlensing_event(name, ra=270, dec=-30):
     # fake event
 
     fake_event = event.Event()
+    fake_event.name = name
     fake_event.ra = ra
     fake_event.dec = dec
 
     return fake_event
 
 
-def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start, time_end, sampling, observing_windows,
-                         bad_weather_percentage=0.0, moon_windows_avoidance=2):
+def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start, time_end, sampling,
+                         bad_weather_percentage=0.0, moon_windows_avoidance=2, minimum_alt=20):
     # fake lightcurve
-    time_of_observations = time_simulation(time_start, time_end, sampling, observing_windows,
+
+    earth_location = EarthLocation(lon=longitude * astropy.units.deg,
+                                   lat=latitude * astropy.units.deg,
+                                   height=altitude * astropy.units.m)
+    target = SkyCoord(270, -30, unit='deg')
+
+    time_of_observations = time_simulation(time_start, time_end, sampling,
                                            bad_weather_percentage,
                                            moon_windows_avoidance)
+
+    time_convertion = Time(time_of_observations, format='jd').isot
+
+    telescope_altaz = target.transform_to(AltAz(obstime=time_convertion, location=earth_location))
+
+    observing_windows = np.where(telescope_altaz.alt > minimum_alt * astropy.units.deg)[0]
+
+    time_of_observations = time_of_observations[observing_windows]
+
     lightcurveflux = np.zeros((len(time_of_observations), 3))
     lightcurveflux[:, 0] = time_of_observations
 
-    telescope = telescopes.Telescope(name='SIMULATOR', light_curve_flux=lightcurveflux)
+    telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve_flux=lightcurveflux)
 
     return telescope
 
 
 def simulate_a_microlensing_model(event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
                                   orbital_motion=['None', 0.0], source_spots='None'):
-
-    fake_model = microlmodels.create_model(model,event , parallax, xallarap,
-                                  orbital_motion, source_spots)
+    fake_model = microlmodels.create_model(model, event, parallax, xallarap,
+                                           orbital_motion, source_spots)
+    fake_model.define_model_parameters()
 
     return fake_model
 
 
-def simulate_microlensing_model_parameters(model, parameters = None):
-
+def simulate_microlensing_model_parameters(model):
     fake_parameters = []
-    if parameters == None:
 
-        for boundaries in model.parameters_boundaries:
+    for key in model.pyLIMA_standards_dictionnary.keys()[:len(model.parameters_boundaries)]:
 
-            fake_parameters.append(np.random.uniform(boundaries[0],boundaries[1]))
+        if key == 'to':
 
-    else:
+            minimum_acceptable_time = max([min(i.lightcurve_flux[:, 0]) for i in model.event.telescopes])
+            maximum_acceptable_time = min([max(i.lightcurve_flux[:, 0]) for i in model.event.telescopes])
 
-        fake_parameters = parameters
+            fake_parameters.append(np.random.uniform(minimum_acceptable_time, maximum_acceptable_time))
 
+        else:
+
+            boundaries = model.parameters_boundaries[model.pyLIMA_standards_dictionnary[key]]
+            fake_parameters.append(np.random.uniform(boundaries[0], boundaries[1]))
+
+    if model.model_type == 'FSPL':
+
+        if np.abs(fake_parameters[1]/fake_parameters[3])>10:
+
+            fake_parameters[1] = np.abs(fake_parameters[1])*np.random.uniform(0, fake_parameters[3])
+
+    if model.model_type == 'DSPL':
+
+        if np.abs(fake_parameters[2])>100 :
+
+            fake_parameters[2] = np.random.uniform(10,15)
+
+        if np.abs(fake_parameters[1]+fake_parameters[3]) > 0.05 :
+
+                fake_parameters[3] = -fake_parameters[1]+0.05
     return fake_parameters
 
-def simulate_fluxes_parameters(telescopes, fluxes_parameters):
 
+def simulate_fluxes_parameters(telescopes):
     fake_fluxes_parameters = []
-    if fluxes_parameters == None:
 
-        for telescope in telescopes :
+    for telescope in telescopes:
+        magnitude_source = np.random.uniform(SOURCE_MAGNITUDE[0], SOURCE_MAGNITUDE[1])
+        flux_source = microltoolbox.magnitude_to_flux(magnitude_source)
+        blending_ratio = np.random.uniform(BLEND_LIMITS[0], BLEND_LIMITS[1])
 
-                magnitude_source = np.random.uniform(18,22)
-                blending_ratio = np.random.uniform(0.0,100)
+        fake_fluxes_parameters.append(flux_source)
+        fake_fluxes_parameters.append(blending_ratio)
 
-    else :
-
-        fake_fluxes_parameters = fluxes_parameters
 
     return fake_fluxes_parameters
-#Create your event
-
-my_own_creation = simulate_a_microlensing_event(ra=270, dec=-30)
-
-# Create some telescopes
-my_own_telescope = simulate_a_telescope('MOUAHAHAHAH', 0, 0, 0, 'I', 0.0, 250, 35, 0.33,
-                         bad_weather_percentage=50.0, moon_windows_avoidance=6)
-#Add them to your event
-my_own_creation.telescopes.append(my_own_telescope)
-import pdb;
-
-pdb.set_trace()
-
-#What model you want?
-my_own_model = simulate_a_microlensing_model( my_own_creation, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
-                                  orbital_motion=['None', 0.0], source_spots='None')
-
-# Find some model parameters
-my_own_parameters = simulate_microlensing_model_parameters(my_own_model)
-
-#Transform into pyLIMA standards
-pyLIMA_parameters =my_own_model.compute_pyLIMA_parameters(my_own_parameters)
 
 
-#Which source magnitude? Which blending?
+def simulate_lightcurve_flux(model, pylima_parameters, red_noise_apply='Yes'):
+    count = 0
 
-my_own_flux_parameters = simulate_microlensing_model_parameters(event.telescopes)
+    for telescope in model.event.telescopes:
 
-# update the lightcurves in your event :
-count = 0
-for telescope in my_own_creation.telescopes:
+        theoritical_flux = model.compute_the_microlensing_model(telescope, pylima_parameters)[0]
+
+        flux_error = gaussian_noise(theoritical_flux)
+
+        observed_flux = noisy_observations(theoritical_flux, flux_error)
+
+        if red_noise_apply == 'Yes':
+            red = red_noise(telescope.lightcurve_flux[:, 0])
+
+            redded_flux = (1 - np.log(10) / 2.5 * red) * observed_flux
+            error_on_redded_flux = gaussian_noise(redded_flux)
+
+        else:
+
+            redded_flux = observed_flux
+            error_on_redded_flux = gaussian_noise(redded_flux)
+
+        telescope.lightcurve_flux[:, 1] = redded_flux
+        telescope.lightcurve_flux[:, 2] = error_on_redded_flux
+
+        telescope.lightcurve_magnitude = telescope.lightcurve_in_magnitude()
+
+        count += 1
 
 
-    amplification = my_own_model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
-
-    flux_source = microltoolbox.magnitude_to_flux(my_own_flux_parameters[count][0])
-    blending_ratio = my_own_flux_parameters[count][1]
-
-    theoritical_flux = flux_source*(amplification+blending_ratio)
-
-    flux_error = gaussian_noise(theoritical_flux)
 
 
-    observed_flux = noisy_observations(theoritical_flux, flux_error)
 
-    if RED_NOISE == 'Yes' :
 
-        red = red_noise(telescope.lightcurve_flux[:,0])
 
-        redded_flux = (1-np.log(10)/2.5*red)*observed_flux
-        error_on_redded_flux = gaussian_noise(redded_flux)
-
-        telescope.lightcurve_flux[:,1] = redded_flux
-        telescope.lightcurve_flux[:,2] = error_on_redded_flux
-    count += 1
-
-import pdb;
-
-pdb.set_trace()

@@ -97,8 +97,8 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('FSPL', current_event, parallax=['Annual', 2454221])
-        Model.parameters_guess = [2454221.97185,0.00204, 67.300, 0.00454,0.40,0.07985]
+        Model = microlmodels.create_model('DSPL', current_event, parallax=['Annual', 2454221])
+        #Model.parameters_guess = [2454221.97185,0.00204, 67.300, 0.00454,0.40,0.07985]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}

@@ -540,7 +540,7 @@ def LM_plot_model(fit, figure_axe):
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, '--k', lw=1)
+    figure_axe.plot(time, magnitude, '--k', label=fit.model.model_type, lw=1)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.invert_yaxis()
@@ -679,28 +679,33 @@ def plot_LM_ML_geometry(fit):
 
     index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
 
-    if len(index_trajectory_limits) >= 2:
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
-                          trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
-                          trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
+    if len(index_trajectory_limits) >= 3:
+        midle = int(len(index_trajectory_limits) / 2)
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[midle]], trajectory_y[index_trajectory_limits[midle]],
+                          trajectory_x[index_trajectory_limits[midle + 1]] - trajectory_x[
+                              index_trajectory_limits[midle]],
+                          trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
+                              index_trajectory_limits[midle]],
                           head_width=0.1, head_length=0.2, color='b')
 
     if fit.model.model_type == 'DSPL':
-        best_parameters_source_2 = copy.copy(best_parameters)
-        best_parameters_source_2[0] += pyLIMA_parameters.delta_to
-        best_parameters_source_2[1] += pyLIMA_parameters.delta_uo
-        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters_source_2)
-        trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
-                                                                    pyLIMA_parameters.uo, pyLIMA_parameters.tE,
+        trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope,
+                                                                    pyLIMA_parameters.to + pyLIMA_parameters.delta_to,
+                                                                    pyLIMA_parameters.uo + pyLIMA_parameters.delta_uo,
+                                                                    pyLIMA_parameters.tE,
                                                                     pyLIMA_parameters)
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
         index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
 
-        if len(index_trajectory_limits) >= 2:
-            figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
-                              trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
-                              trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
-                              head_width=0.1, head_length=0.2, color='r')
+        if len(index_trajectory_limits) >= 3:
+            midle = int(len(index_trajectory_limits) / 2)
+            figure_axes.arrow(trajectory_x[index_trajectory_limits[midle]],
+                          trajectory_y[index_trajectory_limits[midle]],
+                          trajectory_x[index_trajectory_limits[midle + 1]] - trajectory_x[
+                              index_trajectory_limits[midle]],
+                          trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
+                              index_trajectory_limits[midle]],
+                          head_width=0.1, head_length=0.2, color='r')
 
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
@@ -746,7 +751,7 @@ def plot_LM_ML_geometry(fit):
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
     the_table.set_fontsize(20)
-
+    figure_trajectory.suptitle(fit.model.event.name+' : '+fit.model.model_type, fontsize=50)
     return figure_trajectory
 
 
@@ -790,26 +795,31 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     figure_axes.plot(trajectory_x, trajectory_y, 'b')
 
     index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
-    if len(index_trajectory_limits) >= 2:
-        figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
-                          trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
-                          trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
+    if len(index_trajectory_limits) >= 3:
+        midle = int(len(index_trajectory_limits)/2)
+        figure_axes.arrow(trajectory_x[index_trajectory_limits[midle]], trajectory_y[index_trajectory_limits[midle]],
+                          trajectory_x[index_trajectory_limits[midle+1]] - trajectory_x[index_trajectory_limits[midle]],
+                          trajectory_y[index_trajectory_limits[midle+1]] - trajectory_y[index_trajectory_limits[midle]],
                           head_width=0.1, head_length=0.2, color='b')
 
     if fit.model.model_type == 'DSPL':
-        best_parameters_source_2 = copy.copy(best_parameters)
-        best_parameters_source_2[0] += pyLIMA_parameters.delta_to
-        best_parameters_source_2[1] += pyLIMA_parameters.delta_uo
-        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters_source_2)
-        trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
-                                                                    pyLIMA_parameters.uo, pyLIMA_parameters.tE,
+
+        trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope,
+                                                                    pyLIMA_parameters.to + pyLIMA_parameters.delta_to,
+                                                                    pyLIMA_parameters.uo + pyLIMA_parameters.delta_uo,
+                                                                    pyLIMA_parameters.tE,
                                                                     pyLIMA_parameters)
         figure_axes.plot(trajectory_x, trajectory_y, 'r')
         index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
-        if len(index_trajectory_limits) >= 2:
-            figure_axes.arrow(trajectory_x[index_trajectory_limits[0]], trajectory_y[index_trajectory_limits[0]],
-                              trajectory_x[index_trajectory_limits[1]] - trajectory_x[index_trajectory_limits[0]],
-                              trajectory_y[index_trajectory_limits[1]] - trajectory_y[index_trajectory_limits[0]],
+
+        if len(index_trajectory_limits) >= 3:
+            midle = int(len(index_trajectory_limits) / 2)
+            figure_axes.arrow(trajectory_x[index_trajectory_limits[midle]],
+                              trajectory_y[index_trajectory_limits[midle]],
+                              trajectory_x[index_trajectory_limits[midle + 1]] - trajectory_x[
+                                  index_trajectory_limits[midle]],
+                              trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
+                                  index_trajectory_limits[midle]],
                               head_width=0.1, head_length=0.2, color='r')
 
     if 'BL' not in fit.model.model_type:
@@ -858,5 +868,5 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
     the_table.set_fontsize(20)
-
+    figure_trajectory.suptitle(fit.model.event.name + ' : ' + fit.model.model_type, fontsize=50)
     return figure_trajectory
