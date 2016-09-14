@@ -17,12 +17,18 @@ from pyslalib import slalib
 def horizons_obscodes(observatory):
     """Transform observatory names to JPL horizon codes.
     Write by Tim Lister, thanks :)
+
+    :param str observatory: the satellite name you would like to obtain ephemeris. As to be in the dictionnary
+           JPL_HORIZONS_ID (exact name matching!).
+
+    :return: the JPL ID of your satellite.
+    :rtype: int
     """
 
     JPL_HORIZONS_ID = {
         'Geocentric': '500',
         'Kepler': '-227',
-        'Spitzer':'-79'
+        'Spitzer': '-79'
     }
 
     # Check if we were passed the JPL site code directly
@@ -36,6 +42,8 @@ def horizons_obscodes(observatory):
 
 
 def optcallback(socket, command, option):
+    """Write by Tim Lister, thanks :)
+    """
     cnum = ord(command)
     onum = ord(option)
     if cnum == telnetlib.WILL:  # and onum == ECHO:
@@ -123,7 +131,6 @@ class MLParallaxes(object):
             jd = np.copy(time)
 
             while count < 3:
-
                 Earth_position = slalib.sla_epv(jd)
                 Sun_position = -Earth_position[0]
 
@@ -138,7 +145,7 @@ class MLParallaxes(object):
                                           Sun_angles[1]) * np.cos(
                                           target_angles_in_the_sky[1]) * np.cos(
                                           target_angles_in_the_sky[0] - Sun_angles[0])) / (
-                                  3600 * 24.0)
+                                      3600 * 24.0)
                 count = count + 1
 
         # DTT.append(slalib.sla_dtt(jd)/(3600*24))
@@ -168,14 +175,12 @@ class MLParallaxes(object):
         if location == 'Earth':
 
             if (self.parallax_model == 'Annual'):
-
                 telescope_positions = self.annual_parallax(time)
 
                 delta_North = np.append(delta_North, telescope_positions[0])
                 delta_East = np.append(delta_East, telescope_positions[1])
 
             if (self.parallax_model == 'Terrestrial'):
-
                 altitude = telescope.altitude
                 longitude = telescope.longitude
                 latitude = telescope.latitude
@@ -186,7 +191,6 @@ class MLParallaxes(object):
                 delta_East = np.append(delta_East, telescope_positions[1])
 
             if (self.parallax_model == 'Full'):
-
                 telescope_positions = self.annual_parallax(time)
 
                 delta_North = np.append(delta_North, telescope_positions[0])
@@ -217,7 +221,7 @@ class MLParallaxes(object):
 
         # set the attributes deltas_positions for the telescope object
         telescope.deltas_positions = deltas_position
-       
+
     def annual_parallax(self, time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
@@ -239,7 +243,6 @@ class MLParallaxes(object):
         delta_Sun = []
 
         for time in time_to_treat:
-
             time_mjd = time - 2400000.5
 
             Earth_position = slalib.sla_epv(time_mjd)
@@ -279,12 +282,11 @@ class MLParallaxes(object):
 
         delta_telescope = []
         for time in time_to_treat:
-
             time_mjd = time - 2400000.5
             sideral_time = slalib.sla_gmst(time_mjd)
             telescope_longitude = - Longitude - self.target_angles_in_the_sky[
-                                                    0]  + sideral_time 
-       
+                0] + sideral_time
+
             delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
 
         delta_telescope = np.array(delta_telescope)
@@ -310,10 +312,8 @@ class MLParallaxes(object):
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
 
-
-        satellite_positions = \
-        self.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
-                                    step_size='60m', verbose=False)[1]
+        satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
+                                        step_size='60m', verbose=False)[1]
 
         satellite_positions = np.array(satellite_positions)
         dates = satellite_positions[:, 0].astype(float)
@@ -325,14 +325,12 @@ class MLParallaxes(object):
         interpolated_dec = interpolate.interp1d(dates, dec)
         interpolated_distance = interpolate.interp1d(dates, distances)
 
-
         ra_interpolated = interpolated_ra(time_to_treat)
         dec_interpolated = interpolated_dec(time_to_treat)
         distance_interpolated = interpolated_distance(time_to_treat)
 
         delta_satellite = []
         for index_time in xrange(len(time_to_treat)):
-
             delta_satellite.append(distance_interpolated[index_time] * slalib.sla_dcs2c(
                 ra_interpolated[index_time] * np.pi / 180,
                 dec_interpolated[index_time] * np.pi / 180))
@@ -343,260 +341,235 @@ class MLParallaxes(object):
 
         return delta_satellite_projected
 
-    def produce_horizons_ephem(self, body, start_time, end_time, observatory='ELP', step_size='60m',
+def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_size='60m',
                                verbose=False):
-        """
-        Write by Tim Lister. Thanks for sharing :)
-        example interactive session:
-        telnet://horizons.jpl.nasa.gov:6775
-        606 # = Titan
-        e  # for ephemeris
-        o  # for observables
-        -7 # for ALMA
-        y  # confirm
-        2011-Apr-23 00:00  #  UT
-        2011-Apr-23 01:00  #  UT
-        10m #  interval
-        y  # default output
-        1,3,4,9,19,20,23 # RA/DEC and rates (Rarcsec/hour), Az & El, Vis. mag, Helio. range (r),
-        Earth range (delta), Elong.
-        space  # to get to next prompt
-        q   # quit
-        """
-        #body = str(-227)
-        # Lookup observatory name
-        OBSERVATORY_ID = horizons_obscodes(observatory)
-        body =  horizons_obscodes(body)
-        if (verbose):
-            print "Observatory ID= ", OBSERVATORY_ID
-            # import pdb; pdb.set_trace()
+    """
+    Write by Tim Lister. Thanks for sharing :) Produe RA,DEC and distance from the Geocentric Center.
 
-        tstart = 'JD' + str(start_time)
+    """
+    # Lookup observatory name
+    OBSERVATORY_ID = horizons_obscodes(observatory)
+    body = horizons_obscodes(body)
+    if (verbose):
+        print "Observatory ID= ", OBSERVATORY_ID
+        # import pdb; pdb.set_trace()
 
-        if (verbose):
-            print "tstart = ", tstart
-        # tstop = end_time.strftime('%Y-%m-%d %H:%M')
-        # tstop = Time(end_time,format='jd')
+    tstart = 'JD' + str(start_time)
 
-        tstop = 'JD' + str(end_time)
-        # tstop = tstop[:12]+' '+tstop[13:-7]
-        timeout = 5  # seconds
-        t = telnetlib.Telnet('horizons.jpl.nasa.gov', 6775)
-        t.set_option_negotiation_callback(optcallback)
+    if (verbose):
+        print "tstart = ", tstart
+
+    tstop = 'JD' + str(end_time)
+    timeout = 5  # seconds
+    t = telnetlib.Telnet('horizons.jpl.nasa.gov', 6775)
+    t.set_option_negotiation_callback(optcallback)
+    data = t.read_until('Horizons> ')
+    if (verbose):
+        print "data = ", data
+        #        print "hex string = %s\n\n" % binascii.hexlify(data)
+    while (data.find('Horizons>') < 0):
+        t.write('\n')
         data = t.read_until('Horizons> ')
         if (verbose):
             print "data = ", data
-            #        print "hex string = %s\n\n" % binascii.hexlify(data)
-        while (data.find('Horizons>') < 0):
-            t.write('\n')
-            data = t.read_until('Horizons> ')
-            if (verbose):
-                print "data = ", data
-        t.write(body + '\n')
-        data = t.read_until('Select ... [E]phemeris, [F]tp, [M]ail, [R]edisplay, ?, <cr>: ',
-                            timeout)
-        if len(data) == 0:
-            print 'No connection to JPL, sorry :('
-            flag = 'No connection to JPL'
-            return flag
+    t.write(body + '\n')
+    data = t.read_until('Select ... [E]phemeris, [F]tp, [M]ail, [R]edisplay, ?, <cr>: ',
+                        timeout)
+    if len(data) == 0:
+        print 'No connection to JPL, sorry :('
+        flag = 'No connection to JPL'
+        return flag
 
-        if (verbose):
-            print "data = ", data
-        if (data.find('phemeris') < 0):
-            if (data.find('EXACT') >= 0):
-                t.write('\n')
-                data = t.read_until('Select ... [E]phemeris, [F]tp, [M]ail, [R]edisplay, ?, <cr>: ',
-                                    timeout)
+    if (verbose):
+        print "data = ", data
+    if (data.find('phemeris') < 0):
+        if (data.find('EXACT') >= 0):
+            t.write('\n')
+            data = t.read_until('Select ... [E]phemeris, [F]tp, [M]ail, [R]edisplay, ?, <cr>: ',
+                                timeout)
+            if (verbose):
+                print data
+            useID = ''
+        else:
+            # then we have a conflict in the name.
+            # e.g. Titan vs. Titania, or Mars vs. Mars Barycenter
+            # Try to resolve by forcing an exact match.
+            lines = data.split('\n')
+            if (verbose):
+                print "Multiple entries found, using exact match"
+                print "nlines = %d" % (len(lines))
+            firstline = -1
+            lastvalidline = -1
+            l = 0
+            useID = -1
+            for line in lines:
                 if (verbose):
-                    print data
-                useID = ''
-            else:
-                # then we have a conflict in the name.
-                # e.g. Titan vs. Titania, or Mars vs. Mars Barycenter
-                # Try to resolve by forcing an exact match.
-                lines = data.split('\n')
-                if (verbose):
-                    print "Multiple entries found, using exact match"
-                    print "nlines = %d" % (len(lines))
+                    print line
+                if (line.find('-----') >= 0):
+                    if (firstline == -1):
+                        firstline = l + 1
+                else:
+                    tokens = line.split()
+                    if (firstline >= 0 and lastvalidline == -1):
+                        if (len(tokens) < 2):
+                            lastvalidline = l - 1
+                        elif (tokens[1] == body and len(tokens) < 3):
+                            # The <3 is necessary to filter out entries for a planet's
+                            # barycenter
+                            useID = int(tokens[0])
+                            useBody = tokens[1]
+                            if (verbose):
+                                print "Use instead the id = %s = %d" % (tokens[0], useID)
+                l = l + 1
+            if (useID == -1):
+                # Try again with only the first letter capitalized, Probably not necessary
+                body = str.upper(body[0]) + str.lower(body[1:])
+                #          print "Try the exact match search again with body = ", body
                 firstline = -1
                 lastvalidline = -1
                 l = 0
-                useID = -1
                 for line in lines:
                     if (verbose):
                         print line
                     if (line.find('-----') >= 0):
                         if (firstline == -1):
                             firstline = l + 1
-                    else:
+                    elif (firstline > 0):
+                        if (verbose):
+                            print "Splitting this line = %s" % (line)
                         tokens = line.split()
+                        if (verbose):
+                            print "length=%d,  %d tokens found" % (len(line), len(tokens))
                         if (firstline >= 0 and lastvalidline == -1):
                             if (len(tokens) < 2):
+                                # this is the final (i.e. blank) line in the list
                                 lastvalidline = l - 1
-                            elif (tokens[1] == body and len(tokens) < 3):
-                                # The <3 is necessary to filter out entries for a planet's
-                                # barycenter
+                            elif (tokens[1] == body):
+                                #                  print "%s %s is equal to %s." % (tokens[
+                                # 0],tokens[1],body)
                                 useID = int(tokens[0])
                                 useBody = tokens[1]
-                                if (verbose):
-                                    print "Use instead the id = %s = %d" % (tokens[0], useID)
-                    l = l + 1
-                if (useID == -1):
-                    # Try again with only the first letter capitalized, Probably not necessary
-                    body = str.upper(body[0]) + str.lower(body[1:])
-                    #          print "Try the exact match search again with body = ", body
-                    firstline = -1
-                    lastvalidline = -1
-                    l = 0
-                    for line in lines:
-                        if (verbose):
-                            print line
-                        if (line.find('-----') >= 0):
-                            if (firstline == -1):
-                                firstline = l + 1
-                        elif (firstline > 0):
-                            if (verbose):
-                                print "Splitting this line = %s" % (line)
-                            tokens = line.split()
-                            if (verbose):
-                                print "length=%d,  %d tokens found" % (len(line), len(tokens))
-                            if (firstline >= 0 and lastvalidline == -1):
-                                if (len(tokens) < 2):
-                                    # this is the final (i.e. blank) line in the list
-                                    lastvalidline = l - 1
-                                elif (tokens[1] == body):
-                                    #                  print "%s %s is equal to %s." % (tokens[
-                                    # 0],tokens[1],body)
-                                    useID = int(tokens[0])
-                                    useBody = tokens[1]
-                                    if (len(tokens) < 3):
-                                        if (verbose):
-                                            print "Use instead the id = %s = %d" % (
-                                                tokens[0], useID)
-                                    elif (len(tokens[2].split()) < 1):
-                                        if (verbose):
-                                            print "Use instead the id = ", tokens[0]
-                                else:
+                                if (len(tokens) < 3):
                                     if (verbose):
-                                        print "%s %s is not equal to %s." % (
-                                            tokens[0], tokens[1], body)
-                        l = l + 1
-                if (verbose):
-                    print "line with first possible source = ", firstline
-                    print "line with last possible source = ", lastvalidline
-                    print "first possible source = ", (lines[firstline].split())[1]
-                    print "last possible source = ", (lines[lastvalidline].split())[1]
-                    print "Writing ", useID
-                t.write(str(useID) + '\n')
-                data = t.read_until('Select ... [E]phemeris, [F]tp, [M]ail, [R]edisplay, ?, <cr>: ')
-                if (verbose):
-                    print data
-        else:
-            useID = ''
-        t.write('e\n')
-        data = t.read_until('Observe, Elements, Vectors  [o,e,v,?] : ')
-        if (verbose):
-            print data
-        t.write('o\n')
-        data = t.read_until('Coordinate center [ <id>,coord,geo  ] : ')
-        if (verbose):
-            print data
-        t.write('%s\n' % OBSERVATORY_ID)
-        data = t.read_until('[ y/n ] --> ')
-        pointer = data.find('----------------')
-        ending = data[pointer:]
-        lines = ending.split('\n')
-        try:
+                                        print "Use instead the id = %s = %d" % (
+                                            tokens[0], useID)
+                                elif (len(tokens[2].split()) < 1):
+                                    if (verbose):
+                                        print "Use instead the id = ", tokens[0]
+                            else:
+                                if (verbose):
+                                    print "%s %s is not equal to %s." % (
+                                        tokens[0], tokens[1], body)
+                    l = l + 1
             if (verbose):
-                print "Parsing line = %s" % (lines)
-            tokens = lines[1].split()
-        except:
-            print "Telescope code unrecognized by JPL."
-            return ([], [], [])
-
-        if (verbose):
-            print data
-        obsname = ''
-        for i in range(4, len(tokens)):
-            obsname += tokens[i]
-            if (i < len(tokens) + 1):
-                obsname += ' '
-        print "Confirmed Observatory name = ", obsname
-        if (useID != ''):
-            print "Confirmed Target ID = %d = %s" % (useID, useBody)
-        t.write('y\n')
-        data = t.read_until('] : ', 1)
-        if (verbose):
-            print data
-
-        t.write(tstart + '\n')
-        data = t.read_until('] : ', 1)
-        if (verbose):
-            print data
-        t.write(tstop + '\n')
-        data = t.read_until(' ? ] : ', timeout)
-        if (verbose):
-            print data
-        t.write(step_size + '\n')
-        data = t.read_until(', ?] : ', timeout)
-        if (verbose):
-            print data
-        if (1 == 1):
-            # t.write('n\n1,3,4,9,19,20,23,\nJ2000\n\n\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
-            t.write('n\n1,20,\nJ2000\n\n\JD\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
-        else:
-            t.write('y\n')  # accept default output?
-            data = t.read_until(', ?] : ')  # ,timeout)
+                print "line with first possible source = ", firstline
+                print "line with last possible source = ", lastvalidline
+                print "first possible source = ", (lines[firstline].split())[1]
+                print "last possible source = ", (lines[lastvalidline].split())[1]
+                print "Writing ", useID
+            t.write(str(useID) + '\n')
+            data = t.read_until('Select ... [E]phemeris, [F]tp, [M]ail, [R]edisplay, ?, <cr>: ')
             if (verbose):
                 print data
-            t.write('1,3\n')
+    else:
+        useID = ''
+    t.write('e\n')
+    data = t.read_until('Observe, Elements, Vectors  [o,e,v,?] : ')
+    if (verbose):
+        print data
+    t.write('o\n')
+    data = t.read_until('Coordinate center [ <id>,coord,geo  ] : ')
+    if (verbose):
+        print data
+    t.write('%s\n' % OBSERVATORY_ID)
+    data = t.read_until('[ y/n ] --> ')
+    pointer = data.find('----------------')
+    ending = data[pointer:]
+    lines = ending.split('\n')
+    try:
+        if (verbose):
+            print "Parsing line = %s" % (lines)
+        tokens = lines[1].split()
+    except:
+        print "Telescope code unrecognized by JPL."
+        return ([], [], [])
 
-        t.read_until('$$SOE', timeout)
-        data = t.read_until('$$EOE', timeout)
+    if (verbose):
+        print data
+    obsname = ''
+    for i in range(4, len(tokens)):
+        obsname += tokens[i]
+        if (i < len(tokens) + 1):
+            obsname += ' '
+    print "Confirmed Observatory name = ", obsname
+    if (useID != ''):
+        print "Confirmed Target ID = %d = %s" % (useID, useBody)
+    t.write('y\n')
+    data = t.read_until('] : ', 1)
+    if (verbose):
+        print data
+
+    t.write(tstart + '\n')
+    data = t.read_until('] : ', 1)
+    if (verbose):
+        print data
+    t.write(tstop + '\n')
+    data = t.read_until(' ? ] : ', timeout)
+    if (verbose):
+        print data
+    t.write(step_size + '\n')
+    data = t.read_until(', ?] : ', timeout)
+    if (verbose):
+        print data
+    if (1 == 1):
+        # t.write('n\n1,3,4,9,19,20,23,\nJ2000\n\n\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
+        t.write('n\n1,20,\nJ2000\n\n\JD\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
+    else:
+        t.write('y\n')  # accept default output?
+        data = t.read_until(', ?] : ')  # ,timeout)
         if (verbose):
             print data
+        t.write('1,3\n')
 
-        t.close()
-        lines = data.split('\n')
-        horemp = []
-        for hor_line in lines:
+    t.read_until('$$SOE', timeout)
+    data = t.read_until('$$EOE', timeout)
+    if (verbose):
+        print data
+
+    t.close()
+    lines = data.split('\n')
+    horemp = []
+    for hor_line in lines:
+        if (verbose):
+            print "hor_line = ", hor_line
+            print len(hor_line.split())
+        data_line = True
+        # print hor_line
+
+
+        if (len(hor_line.split()) == 4):
+
+            (time, raDegrees, decDegrees, light_dist) = hor_line.split()
+
+        elif (len(hor_line.split()) == 0 or len(hor_line.split()) == 1):
+            data_line = False
+        else:
+            data_line = False
+            print "Wrong number of fields (", len(hor_line.split()), ")"
+            print "hor_line=", hor_line
+        if (data_line == True):
+
+            horemp_line = [time, raDegrees, decDegrees, light_dist]
             if (verbose):
-                print "hor_line = ", hor_line
-                print len(hor_line.split())
-            data_line = True
-            # print hor_line
+                print horemp_line
+            horemp.append(horemp_line)
 
-
-            if (len(hor_line.split()) == 4):
-
-                (time, raDegrees, decDegrees, light_dist) = hor_line.split()
-
-            elif (len(hor_line.split()) == 0 or len(hor_line.split()) == 1):
-                data_line = False
-            else:
-                data_line = False
-                print "Wrong number of fields (", len(hor_line.split()), ")"
-                print "hor_line=", hor_line
-            if (data_line == True):
-
-                horemp_line = [time, raDegrees, decDegrees, light_dist]
-                if (verbose):
-                    print horemp_line
-                horemp.append(horemp_line)
-
-                # Construct ephem_info
-        ephem_info = {'obj_id': body,
-                      'emp_sitecode': OBSERVATORY_ID,
-                      'emp_timesys': '(UT)',
-                      'emp_rateunits': '"/min'
-                      }
-        flag = 'Succes connection to JPL'
-        return flag, horemp
-
-    def parallax_outputs(self, PiE):
-        '''Depreciated '''
-        piE = np.array(PiE)
-        delta_tau = np.dot(piE, self.delta_position)
-        delta_u = np.cross(piE, self.delta_position.T)
-
-        return delta_tau, delta_u
+            # Construct ephem_info
+    ephem_info = {'obj_id': body,
+                  'emp_sitecode': OBSERVATORY_ID,
+                  'emp_timesys': '(UT)',
+                  'emp_rateunits': '"/min'
+                  }
+    flag = 'Succes connection to JPL'
+    print 'Successfully ephemeris from JPL!'
+    return flag, horemp
