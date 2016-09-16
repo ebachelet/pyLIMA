@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from pyLIMA import microlmodels
-
+from pyLIMA import microlparallax
 
 def _create_event():
     event = mock.MagicMock()
@@ -270,7 +270,7 @@ def test_compute_parallax_curvature():
     delta_positions = np.array([[1, 2], [3, 4]])
     piE = np.array([0.1, 1.8])
 
-    delta_tau, delta_beta = microlmodels.compute_parallax_curvature(piE, delta_positions)
+    delta_tau, delta_beta = microlparallax.compute_parallax_curvature(piE, delta_positions)
 
     assert len(delta_tau) == 2
     assert len(delta_beta) == 2
@@ -301,7 +301,7 @@ def test_source_trajectory_with_parallax():
     tau = (telescope.lightcurve_flux[:, 0] - to) / tE
     piE = np.array([piEN, piEE])
 
-    delta_tau, delta_beta = microlmodels.compute_parallax_curvature(piE, telescope.deltas_positions)
+    delta_tau, delta_beta = microlparallax.compute_parallax_curvature(piE, telescope.deltas_positions)
 
     tau += delta_tau
     beta = uo + delta_beta
