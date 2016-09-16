@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names[0:]:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'KB16221'
+        name = 'OB161688'
         # name = 'Lightcurve_9_'
         current_event = event.Event()
         current_event.name = name
@@ -61,12 +61,6 @@ def main(command_line):
                                                 usecols=(0, 1, 2))
 
 
-                if ('OGLE' not in event_telescope) and ('Auck' not in event_telescope) :
-                    raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(1,2, 3))
-                    raw_light_curve = np.array(
-                    [raw_light_curve[:, -1], raw_light_curve[:,-3], raw_light_curve[:, -2]]).T
-
 
                 lightcurve = np.array(
                     [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
@@ -76,8 +70,13 @@ def main(command_line):
             except:
                 pass
 
+            if 'MOA_R' in event_telescope:
+                telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
+                                                 light_curve_flux=lightcurve,
+                                                 light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2}, reference_flux=13304.54)
+            else:
 
-            telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,
                                                  light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
             telescope.location = 'Earth'
@@ -97,8 +96,8 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('DSPL', current_event, parallax=['Annual', 2454221])
-        #Model.parameters_guess = [2454221.97185,0.00204, 67.300, 0.00454,0.40,0.07985]
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['Full', 2454221])
+        Model.parameters_guess = [2457642,0.97911, 4.622574,-0.0, 0.0]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
@@ -134,7 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB070050/')
+                                'SimulationML/OB161688/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

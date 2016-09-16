@@ -225,7 +225,7 @@ class Telescope(object):
         """
         para = microlparallax.MLParallaxes(event, parallax)
         para.parallax_combination(self)
-
+        print 'Parallax('+parallax[0]+') estimated for the telescope '+self.name+ ': SUCCESS'
     def clean_data_magnitude(self):
         """
         Clean outliers of the telescope for the fits. Points are considered as outliers if they
