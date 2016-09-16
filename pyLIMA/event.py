@@ -148,7 +148,7 @@ class Event(object):
                     raise EventException('There is no lightcurve associated to the  telescope ' + str(
                         telescope.name) + ', no fit possible!')
 
-        print 'Everything is fine, this event can be treat'
+        print sys._getframe().f_code.co_name, ' : Everything looks fine, this event can be fitted'
 
     def find_survey(self, choice=None):
         """Function to find the survey telescope in the telescopes list,

@@ -276,7 +276,9 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     reference_telescope.lightcurve_magnitude = np.array(
         [time_of_model, [0] * len(time_of_model), [0] * len(time_of_model)]).T
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
-    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+
+    if fit.model.parallax_model[0] != 'None':
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     for model_chichi in model_panel_chichi:
         indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
@@ -289,7 +291,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     colorbar.formatter.set_useOffset(False)
     colorbar.update_ticks()
 
-    figure_axes[0].text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
+    figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                         transform=figure_axes[0].transAxes)
     figure_axes[0].invert_yaxis()
     MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
@@ -483,22 +485,29 @@ def initialize_plot_lightcurve(fit):
     :rtype: matplotlib_figure,matplotlib_axes
 
     """
-    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+    fig_size=[10,10]
+    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},figsize=(fig_size[0], fig_size[1]))
+    plt.subplots_adjust(top = 0.9, bottom = 0.15, left = 0.15, right = 0.9,  wspace = 0.2, hspace = 0.1 )
     figure_axes[0].grid()
     figure_axes[1].grid()
-    figure.suptitle(fit.event.name, fontsize=50)
-    figure_axes[0].set_ylabel('Mag', fontsize=50)
-    figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
-    figure_axes[0].tick_params(labelsize=30)
+    #fig_size = plt.rcParams["figure.figsize"]
+    figure.suptitle(fit.event.name,fontsize=30*fig_size[0]/len(fit.event.name))
 
-    figure_axes[1].set_xlabel('HJD', fontsize=50)
+    figure_axes[0].set_ylabel('Mag', fontsize=5*fig_size[1]*3/4.0)
+    figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
+    figure_axes[0].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
+
+    figure_axes[1].set_xlabel('HJD', fontsize=5*fig_size[0]*3/4.0)
     figure_axes[1].xaxis.set_major_locator(MaxNLocator(6))
     figure_axes[1].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[1].xaxis.get_major_ticks()[0].draw = lambda *args: None
     figure_axes[1].ticklabel_format(useOffset=False, style='plain')
-    figure_axes[1].set_ylabel('Residuals', fontsize=50)
-    figure_axes[1].tick_params(labelsize=30)
-
+    figure_axes[1].set_ylabel('Residuals', fontsize=5*fig_size[1]*3/4.0)
+    figure_axes[1].tick_params(axis='x', labelsize= 1.5*fig_size[0] * 3 / 4.0)
+    figure_axes[1].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
+    import pdb;
+    pdb.set_trace()
+    #figure.tight_layout()
     return figure, figure_axes
 
 
@@ -535,7 +544,9 @@ def LM_plot_model(fit, figure_axe):
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
-    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+
+    if fit.model.parallax_model[0] != 'None':
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
@@ -544,7 +555,7 @@ def LM_plot_model(fit, figure_axe):
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.invert_yaxis()
-    figure_axe.text(0.01, 0.97, 'provided by pyLIMA', style='italic', fontsize=10,
+    figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                     transform=figure_axe.transAxes)
 
 
@@ -599,7 +610,7 @@ def LM_plot_align_data(fit, figure_axe):
                                                     g_reference, fs_telescope, g_telescope)
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], fmt='.',
                             label=telescope.name)
-    figure_axe.legend(numpoints=1, fontsize=25)
+    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
 
 def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_reference, fs_telescope,
@@ -646,11 +657,11 @@ def plot_LM_ML_geometry(fit):
     figure_trajectory_ylimit = 1.5
 
     best_parameters = fit.fit_results
-
-    figure_trajectory = plt.figure()
+    fig_size = [15, 5]
+    figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]))
 
     figure_axes = figure_trajectory.add_subplot(121, aspect=1)
-
+    plt.subplots_adjust(top=0.8, bottom=0.1, wspace=0.5, hspace=0.2)
     einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
     figure_axes.add_artist(einstein_ring)
 
@@ -665,7 +676,10 @@ def plot_LM_ML_geometry(fit):
 
     reference_telescope.lightcurve_flux = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
-    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+
+    if fit.model.parallax_model[0] != 'None':
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
                                                                 pyLIMA_parameters.uo, pyLIMA_parameters.tE,
@@ -750,8 +764,9 @@ def plot_LM_ML_geometry(fit):
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(20)
-    figure_trajectory.suptitle(fit.model.event.name+' : '+fit.model.model_type, fontsize=50)
+    the_table.set_fontsize(fig_size[0]*3/4.0)
+    title = fit.model.event.name+' : '+fit.model.model_type
+    figure_trajectory.suptitle(title, fontsize=30*fig_size[0]/len(title))
     return figure_trajectory
 
 
@@ -786,7 +801,10 @@ def plot_MCMC_ML_geometry(fit, best_chains):
 
     reference_telescope.lightcurve_flux = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
-    reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+
+    if fit.model.parallax_model[0] != 'None':
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
                                                                 pyLIMA_parameters.uo, pyLIMA_parameters.tE,

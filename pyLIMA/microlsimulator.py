@@ -72,7 +72,7 @@ def red_noise(time):
     return red_noise
 
 
-def simulate_a_microlensing_event(name, ra=270, dec=-30):
+def simulate_a_microlensing_event(name = 'Microlensing pyLIMA simulation', ra=270, dec=-30):
     # fake event
 
     fake_event = event.Event()
