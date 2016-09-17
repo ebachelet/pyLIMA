@@ -12,6 +12,7 @@ import scipy.optimize
 import collections
 import warnings
 import emcee
+import sys
 
 import microlmodels
 import microloutputs
@@ -131,8 +132,9 @@ class MLFits(object):
             if number_of_data <= (len(self.model.model_dictionnary)):
 
                 print "You do not have enough data points to use this method (LM), please switch to other methods." \
-                      " Given the requested total model " + str(self.model.model_dictionnary.keys()) +\
-                      " you need at least " + str(len(self.model.model_dictionnary)) + ' data points to use the method LM!'
+                      " Given the requested total model " + str(self.model.model_dictionnary.keys()) + \
+                      " you need at least " + str(
+                    len(self.model.model_dictionnary)) + ' data points to use the method LM!'
                 return
 
             else:
@@ -198,7 +200,8 @@ class MLFits(object):
 
         for i in self.event.telescopes:
 
-            if self.fit_results[self.model.model_dictionnary['fs_' + i.name]] < 0:
+            if self.fit_results[self.model.model_dictionnary['fs_' + i.name]]  < 0:
+
                 print 'Your fit probably wrong. Cause ==> negative source flux for telescope ' + \
                       i.name
                 flag_quality = 'Bad Fit'
@@ -287,6 +290,7 @@ class MLFits(object):
         for key_parameter in self.model.model_dictionnary.keys():
             model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
 
+        print sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS'
         return model_guess_parameters
 
     def MCMC(self):
@@ -379,6 +383,7 @@ class MLFits(object):
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
 
+        print sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS'
         return MCMC_chains, MCMC_probabilities
 
     def chichi_MCMC(self, fit_process_parameters):
@@ -477,6 +482,7 @@ class MLFits(object):
 
         computation_time = python_time.time() - starting_time
 
+        print sys._getframe().f_code.co_name, ' : Differential evolution fit SUCCESS'
         return fit_results, fit_covariance, computation_time
 
     def chichi_differential_evolution(self, fit_process_parameters):
@@ -594,6 +600,7 @@ class MLFits(object):
                                           len(self.model.model_dictionnary)))
 
         # import pdb; pdb.set_trace()
+        print sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS'
         return fit_result, covariance_matrix, computation_time
 
     def residuals_LM(self, fit_process_parameters):

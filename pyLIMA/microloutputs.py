@@ -27,7 +27,8 @@ plot_residuals_windows = 0.2
 max_plot_ticks = 3
 
 
-# matplotlib.rcParams['axes.color_cycle'] = ['b', 'r']
+
+
 
 
 def LM_outputs(fit):
@@ -49,6 +50,14 @@ def LM_outputs(fit):
 
     :rtype: object
     """
+    #Change matplotlib default colors
+
+    n = len(fit.event.telescopes)
+    color = plt.cm.jet(np.linspace(0.1, 0.99, n))  # This returns RGBA; convert:
+    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
+                   tuple(color[:, 0:-1]))
+    hexcolor[0] = '#000000'
+    matplotlib.rcParams['axes.color_cycle'] = hexcolor
 
     results = LM_parameters_result(fit)
     covariance_matrix = fit.fit_covariance
@@ -91,6 +100,14 @@ def MCMC_outputs(fit):
     :rtype: object
     """
 
+    # Change matplotlib default colors
+
+    n = len(fit.event.telescopes)
+    color = plt.cm.jet(np.linspace(0.01, 0.99, n))  # This returns RGBA; convert:
+    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
+                   tuple(color[:, 0:-1]))
+    matplotlib.rcParams['axes.color_cycle'] = hexcolor
+    hexcolor[0] = '#000000'
     raw_chains = fit.MCMC_chains
     probabilities = fit.MCMC_probabilities
 
@@ -505,9 +522,7 @@ def initialize_plot_lightcurve(fit):
     figure_axes[1].set_ylabel('Residuals', fontsize=5*fig_size[1]*3/4.0)
     figure_axes[1].tick_params(axis='x', labelsize= 1.5*fig_size[0] * 3 / 4.0)
     figure_axes[1].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
-    import pdb;
-    pdb.set_trace()
-    #figure.tight_layout()
+
     return figure, figure_axes
 
 
