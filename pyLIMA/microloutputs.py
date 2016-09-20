@@ -13,7 +13,7 @@ import json
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, MultipleLocator
 
 import numpy as np
 from astropy.time import Time
@@ -24,11 +24,7 @@ import microlmodels
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
-max_plot_ticks = 3
-
-
-
-
+MAX_PLOT_TICKS = 2
 
 
 def LM_outputs(fit):
@@ -50,7 +46,7 @@ def LM_outputs(fit):
 
     :rtype: object
     """
-    #Change matplotlib default colors
+    # Change matplotlib default colors
 
     n = len(fit.event.telescopes)
     color = plt.cm.jet(np.linspace(0.1, 0.99, n))  # This returns RGBA; convert:
@@ -196,15 +192,18 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
 
     mcmc_unique = mcmc_unique[mcmc_unique[:, -1].argsort(),]
     dimensions = mcmc_best.shape[1] - 1
+    fig_size = [10, 10]
 
-    figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col')
+    max_plot_ticks = MAX_PLOT_TICKS
 
+    figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col', figsize=(fig_size[0], fig_size[1]))
+    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.10, right=0.9, wspace=0.3, hspace=0.3)
     count_i = 0
 
     for key_i in fit.model.model_dictionnary.keys()[: dimensions]:
 
-        axes2[count_i, 0].set_ylabel(key_i, fontsize=int(100 / dimensions))
-        axes2[-1, count_i].set_xlabel(key_i, fontsize=int(100 / dimensions))
+        axes2[count_i, 0].set_ylabel(key_i, fontsize=5 * fig_size[0] * 3 / 2.0 / dimensions)
+        axes2[-1, count_i].set_xlabel(key_i, fontsize=5 * fig_size[0] * 3 / 2.0 / dimensions)
 
         count_j = 0
         for key_j in fit.model.model_dictionnary.keys()[: dimensions]:
@@ -215,11 +214,12 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
             if count_i == count_j:
 
                 axes2[count_i, count_j].hist(mcmc_best[:, fit.model.model_dictionnary[key_i]], 100)
-                axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks))
+                axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks,prune='both'))
                 axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(max_plot_ticks))
-                axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
+                axes2[count_i, count_j].tick_params(labelsize=5 * fig_size[0] * 3 / 3.0 / dimensions * 3 / 4.0)
 
             else:
+
 
                 if count_j < count_i:
 
@@ -232,13 +232,13 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
                     axes2[count_i, count_j].set_xlim(
                         [min(mcmc_unique[:, fit.model.model_dictionnary[key_j]]),
                          max(mcmc_unique[:, fit.model.model_dictionnary[key_j]])])
-                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks))
+                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(nbins = max_plot_ticks,prune='both'))
 
                     axes2[count_i, count_j].set_ylim(
                         [min(mcmc_unique[:, fit.model.model_dictionnary[key_i]]),
                          max(mcmc_unique[:, fit.model.model_dictionnary[key_i]])])
 
-                    axes2[count_i, count_j].tick_params(labelsize=int(75.0 / dimensions))
+                    axes2[count_i, count_j].tick_params(labelsize=5 * fig_size[0] * 3 / 3.0 / dimensions * 3 / 4.0)
 
                 else:
 
@@ -246,7 +246,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
 
                 if count_j == 0:
 
-                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(max_plot_ticks))
+                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(nbins = max_plot_ticks))
                 else:
 
                     plt.setp(axes2[count_i, count_j].get_yticklabels(), visible=False)
@@ -297,7 +297,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
-    for model_chichi in model_panel_chichi:
+    for model_chichi in model_panel_chichi[0:]:
         indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
 
         MCMC_plot_model(fit, reference_telescope, mcmc_best[indice], mcmc_best[indice, -1], figure_axes[0],
@@ -310,6 +310,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
 
     figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                         transform=figure_axes[0].transAxes)
+
     figure_axes[0].invert_yaxis()
     MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
 
@@ -368,7 +369,10 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
                           fmt='.',
                           label=telescope.name)
 
-    plot_axe.legend(numpoints=1, fontsize=25)
+    plot_axe.plot(fit.event.telescopes[0].lightcurve_magnitude[0, 0],
+                  fit.event.telescopes[0].lightcurve_magnitude[0, 1],
+                  '--k', label=fit.model.model_type, lw=1)
+    plot_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
 
 def MCMC_plot_residuals(fit, parameters, ax):
@@ -502,25 +506,26 @@ def initialize_plot_lightcurve(fit):
     :rtype: matplotlib_figure,matplotlib_axes
 
     """
-    fig_size=[10,10]
-    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},figsize=(fig_size[0], fig_size[1]))
-    plt.subplots_adjust(top = 0.9, bottom = 0.15, left = 0.15, right = 0.9,  wspace = 0.2, hspace = 0.1 )
+    fig_size = [10, 10]
+    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
+                                       figsize=(fig_size[0], fig_size[1]))
+    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.9, wspace=0.2, hspace=0.1)
     figure_axes[0].grid()
     figure_axes[1].grid()
-    #fig_size = plt.rcParams["figure.figsize"]
-    figure.suptitle(fit.event.name,fontsize=30*fig_size[0]/len(fit.event.name))
+    # fig_size = plt.rcParams["figure.figsize"]
+    figure.suptitle(fit.event.name, fontsize=30 * fig_size[0] / len(fit.event.name))
 
-    figure_axes[0].set_ylabel('Mag', fontsize=5*fig_size[1]*3/4.0)
+    figure_axes[0].set_ylabel('Mag', fontsize=5 * fig_size[1] * 3 / 4.0)
     figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[0].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
 
-    figure_axes[1].set_xlabel('HJD', fontsize=5*fig_size[0]*3/4.0)
+    figure_axes[1].set_xlabel('HJD', fontsize=5 * fig_size[0] * 3 / 4.0)
     figure_axes[1].xaxis.set_major_locator(MaxNLocator(6))
     figure_axes[1].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[1].xaxis.get_major_ticks()[0].draw = lambda *args: None
     figure_axes[1].ticklabel_format(useOffset=False, style='plain')
-    figure_axes[1].set_ylabel('Residuals', fontsize=5*fig_size[1]*3/4.0)
-    figure_axes[1].tick_params(axis='x', labelsize= 1.5*fig_size[0] * 3 / 4.0)
+    figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 3 / 4.0)
+    figure_axes[1].tick_params(axis='x', labelsize=1.5 * fig_size[0] * 3 / 4.0)
     figure_axes[1].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
 
     return figure, figure_axes
@@ -533,11 +538,14 @@ def initialize_plot_parameters(fit):
     :return: a matplotlib figure  and the corresponding matplotlib axes.
     :rtype: matplotlib_figure,matplotlib_axes
     """
+
+    fig_size = [10, 10]
+
     dimension_y = np.floor(len(fit.fits_result) / 3)
     dimension_x = len(fit.fits_result) - 3 * dimension_y
 
-    figure, figure_axes = plt.subplots(dimension_x, dimension_y)
-
+    figure, figure_axes = plt.subplots(dimension_x, dimension_y, figsize=(fig_size[0], fig_size[1]))
+    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.20, right=0.9, wspace=0.6, hspace=0.5)
     return figure, figure_axes
 
 
@@ -729,12 +737,12 @@ def plot_LM_ML_geometry(fit):
         if len(index_trajectory_limits) >= 3:
             midle = int(len(index_trajectory_limits) / 2)
             figure_axes.arrow(trajectory_x[index_trajectory_limits[midle]],
-                          trajectory_y[index_trajectory_limits[midle]],
-                          trajectory_x[index_trajectory_limits[midle + 1]] - trajectory_x[
-                              index_trajectory_limits[midle]],
-                          trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
-                              index_trajectory_limits[midle]],
-                          head_width=0.1, head_length=0.2, color='r')
+                              trajectory_y[index_trajectory_limits[midle]],
+                              trajectory_x[index_trajectory_limits[midle + 1]] - trajectory_x[
+                                  index_trajectory_limits[midle]],
+                              trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
+                                  index_trajectory_limits[midle]],
+                              head_width=0.1, head_length=0.2, color='r')
 
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
@@ -779,9 +787,9 @@ def plot_LM_ML_geometry(fit):
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(fig_size[0]*3/4.0)
-    title = fit.model.event.name+' : '+fit.model.model_type
-    figure_trajectory.suptitle(title, fontsize=30*fig_size[0]/len(title))
+    the_table.set_fontsize(fig_size[0] * 3 / 4.0)
+    title = fit.model.event.name + ' : ' + fit.model.model_type
+    figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
     return figure_trajectory
 
 
@@ -797,11 +805,11 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     figure_trajectory_ylimit = 1.5
 
     best_parameters = best_chains[0]
+    fig_size = [15, 5]
+    figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]))
 
-    figure_trajectory = plt.figure()
-
-    figure_axes = figure_trajectory.add_subplot(121, aspect=1)
-
+    figure_axes = figure_trajectory.add_subplot(121, aspect=1, )
+    plt.subplots_adjust(top=0.8, bottom=0.1, wspace=0.5, hspace=0.2)
     einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
     figure_axes.add_artist(einstein_ring)
 
@@ -829,10 +837,12 @@ def plot_MCMC_ML_geometry(fit, best_chains):
 
     index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
     if len(index_trajectory_limits) >= 3:
-        midle = int(len(index_trajectory_limits)/2)
+        midle = int(len(index_trajectory_limits) / 2)
         figure_axes.arrow(trajectory_x[index_trajectory_limits[midle]], trajectory_y[index_trajectory_limits[midle]],
-                          trajectory_x[index_trajectory_limits[midle+1]] - trajectory_x[index_trajectory_limits[midle]],
-                          trajectory_y[index_trajectory_limits[midle+1]] - trajectory_y[index_trajectory_limits[midle]],
+                          trajectory_x[index_trajectory_limits[midle + 1]] - trajectory_x[
+                              index_trajectory_limits[midle]],
+                          trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
+                              index_trajectory_limits[midle]],
                           head_width=0.1, head_length=0.2, color='b')
 
     if fit.model.model_type == 'DSPL':
@@ -900,6 +910,8 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(20)
-    figure_trajectory.suptitle(fit.model.event.name + ' : ' + fit.model.model_type, fontsize=50)
+    the_table.set_fontsize(fig_size[0] * 3 / 4.0)
+    title = fit.model.event.name + ' : ' + fit.model.model_type
+    figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
+
     return figure_trajectory

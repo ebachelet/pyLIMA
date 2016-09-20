@@ -118,7 +118,8 @@ class MLFits(object):
         Note that a sanity check is done post-fit to assess the fit quality with the check_fit
         function.
         """
-
+        print ''
+        print 'Start fit on '+self.event.name+', with model '+model.model_type+' and method '+method
         self.event.check_event()
 
         self.model = model
