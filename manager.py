@@ -22,7 +22,7 @@ from pyLIMA import event
 from pyLIMA import telescopes
 from pyLIMA import microlmodels
 
-
+from pyLIMA import microlsimulator
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
                     ('OGLE' in event_name) and ('Follow' not in event_name)]
@@ -48,9 +48,8 @@ def main(command_line):
         # Names = ['OGLE','Kepler']
         # Locations = ['Earth','Space']
 
-        current_event.ra = 269.88654166
-        current_event.dec = -28.40741666
-
+        current_event.ra = 268.36254166
+        current_event.dec = -29.7928055
         count = 0
         import pdb;
         pdb.set_trace()
@@ -58,7 +57,7 @@ def main(command_line):
         for event_telescope in event_telescopes:
             try:
                 raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                usecols=(0, 1, 2))
+                                                usecols=(1, 2, 3))
 
 
 
@@ -67,6 +66,11 @@ def main(command_line):
 
                 if lightcurve[0, 0] < 2450000:
                     lightcurve[:, 0] += 2450000
+
+                good = np.where((lightcurve[:,0]<2456565) | (lightcurve[:,0]>2456580))[0]
+
+
+                lightcurve = lightcurve[good]
             except:
                 pass
 
@@ -77,7 +81,7 @@ def main(command_line):
                 telescope.location = 'Space'
             else:
 
-                telescope = telescopes.Telescope(name=event_telescope[0:-4], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[0:-6]+'_'+event_telescope[-5], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,
                                                  light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
                 telescope.location = 'Earth'
@@ -97,8 +101,8 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('PSPL', current_event, parallax=['None', 2457511])
-        Model.parameters_guess = [2457511, 0.06267,6.38]
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2456564])
+        #Model.parameters_guess = [2457511, 0.06267,6.38,0.0,0.0]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
@@ -107,8 +111,10 @@ def main(command_line):
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
         current_event.fit(Model, 'LM', flux_estimation_MCMC='polyfit')
 
-        import pdb;
-        pdb.set_trace()
+
+
+
+
         current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results
         plt.show()
@@ -134,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB160813/')
+                                'SimulationML/OB131125/Data/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

@@ -11,6 +11,7 @@ import collections
 import copy
 import json
 
+
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, MultipleLocator
@@ -25,6 +26,8 @@ import microlmodels
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
+
+MARKER_SYMBOLS = np.nditer([['.', 'o','*', 'v', '^', '<', '>', 's','p','d','x']])
 
 
 def LM_outputs(fit):
@@ -214,12 +217,11 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
             if count_i == count_j:
 
                 axes2[count_i, count_j].hist(mcmc_best[:, fit.model.model_dictionnary[key_i]], 100)
-                axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks,prune='both'))
+                axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(max_plot_ticks, prune='both'))
                 axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(max_plot_ticks))
                 axes2[count_i, count_j].tick_params(labelsize=5 * fig_size[0] * 3 / 3.0 / dimensions * 3 / 4.0)
 
             else:
-
 
                 if count_j < count_i:
 
@@ -232,7 +234,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
                     axes2[count_i, count_j].set_xlim(
                         [min(mcmc_unique[:, fit.model.model_dictionnary[key_j]]),
                          max(mcmc_unique[:, fit.model.model_dictionnary[key_j]])])
-                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(nbins = max_plot_ticks,prune='both'))
+                    axes2[count_i, count_j].xaxis.set_major_locator(MaxNLocator(nbins=max_plot_ticks, prune='both'))
 
                     axes2[count_i, count_j].set_ylim(
                         [min(mcmc_unique[:, fit.model.model_dictionnary[key_i]]),
@@ -246,7 +248,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
 
                 if count_j == 0:
 
-                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(nbins = max_plot_ticks))
+                    axes2[count_i, count_j].yaxis.set_major_locator(MaxNLocator(nbins=max_plot_ticks))
                 else:
 
                     plt.setp(axes2[count_i, count_j].get_yticklabels(), visible=False)
@@ -347,6 +349,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
     :param parameters: the parameters [list] of the model you want to plot.
     :param plot_axe: the matplotlib axes where you plot the data
     """
+    MARKER_SYMBOLS.reset()
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = parameters[fit.model.model_dictionnary['fs_' + reference_telescope]]
     g_reference = parameters[fit.model.model_dictionnary['g_' + reference_telescope]]
@@ -366,8 +369,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
                                                               g_reference, fs_telescope, g_telescope)
 
         plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2],
-                          fmt='.',
-                          label=telescope.name)
+                          ls='None',marker=str(MARKER_SYMBOLS.next()),label=telescope.name)
 
     plot_axe.plot(fit.event.telescopes[0].lightcurve_magnitude[0, 0],
                   fit.event.telescopes[0].lightcurve_magnitude[0, 1],
@@ -382,6 +384,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
     :param parameters: the parameters [list] of the model you want to plot.
     :param ax: the matplotlib axes where you plot the data
     """
+    MARKER_SYMBOLS.reset()
 
     for telescope in fit.event.telescopes:
         time = telescope.lightcurve_flux[:, 0]
@@ -393,7 +396,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
         residuals = 2.5 * np.log10(flux_model / flux)
-        ax.errorbar(time, residuals, yerr=err_mag, fmt='.')
+        ax.errorbar(time, residuals, yerr=err_mag, ls='None', marker= str(MARKER_SYMBOLS.next()))
     ax.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     ax.invert_yaxis()
     ax.xaxis.get_major_ticks()[0].draw = lambda *args: None
@@ -588,6 +591,7 @@ def LM_plot_residuals(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
+    MARKER_SYMBOLS.reset()
 
     for telescope in fit.event.telescopes:
         time = telescope.lightcurve_flux[:, 0]
@@ -600,7 +604,8 @@ def LM_plot_residuals(fit, figure_axe):
 
         residuals = 2.5 * np.log10(flux_model / flux)
 
-        figure_axe.errorbar(time, residuals, yerr=err_mag, fmt='.')
+        figure_axe.errorbar(time, residuals, yerr=err_mag, ls='None',
+                            marker= str(MARKER_SYMBOLS.next()))
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
 
@@ -614,6 +619,8 @@ def LM_plot_align_data(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
+    MARKER_SYMBOLS.reset()
+
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_' + reference_telescope]]
     g_reference = fit.fit_results[fit.model.model_dictionnary['g_' + reference_telescope]]
@@ -631,7 +638,9 @@ def LM_plot_align_data(fit, figure_axe):
 
             lightcurve = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
                                                     g_reference, fs_telescope, g_telescope)
-        figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], fmt='.',
+
+        figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
+                            marker= str(MARKER_SYMBOLS.next()),
                             label=telescope.name)
     figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
@@ -641,7 +650,7 @@ def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_referen
     """Align data to the survey telescope (i.e telescope 0).
 
     :param array_like lightcurve_telescope_mag: the survey telescope in magnitude
-    :param float fs_reference: the survey telescope reference source flux (i.e the fitted value)
+    :param float fs_reference: thce survey telescope reference source flux (i.e the fitted value)
     :param float g_reference: the survey telescope reference blending parameter (i.e the fitted
     value)
     :param float fs_telescope: the telescope source flux (i.e the fitted value)
