@@ -142,3 +142,24 @@ def test_parallax_combination_on_Space():
     parallax.parallax_combination(event.telescopes[0])
 
     np.allclose(positions_annual+positions_space,event.telescopes[0].deltas_positions)
+
+def test_compute_parallax_curvature():
+
+    event = _create_event()
+    event.telescopes[0].location = 'Earth'
+    event.telescopes[0].altitude = 0
+    event.telescopes[0].longitude = 0
+    event.telescopes[0].latitude = 0
+
+
+    parallax_model = ['Full', 1664.51]
+    parallax = microlparallax.MLParallaxes(event, parallax_model)
+
+
+    parallax.parallax_combination(event.telescopes[0])
+    piE = [0.5,0.5]
+    curvature  = microlparallax.compute_parallax_curvature(piE,event.telescopes[0].deltas_positions)
+
+    dtau = piE[0]* event.telescopes[0].deltas_positions[0]+piE[1]* event.telescopes[0].deltas_positions[1]
+    du = piE[1]* event.telescopes[0].deltas_positions[0]-piE[0]* event.telescopes[0].deltas_positions[1]
+    np.allclose([dtau,du],curvature)

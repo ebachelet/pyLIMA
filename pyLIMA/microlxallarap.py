@@ -1,6 +1,25 @@
 import numpy as np
 
 
+
+def compute_xallarap_curvature(XiE, delta_positions):
+    """ Compute the curvature induce by the xallarap
+    deltas_positions of a telescope.
+
+    :param array_like piE: the microlensing parallax vector. Have a look :
+                           http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+    :param array_like delta_positions: the delta_positions of the telescope. More details in microlparallax module.
+    :return: delta_tau and delta_u, the shift introduce by parallax
+    :rtype: array_like,array_like
+    """
+
+    delta_tau = np.dot(XiE, delta_positions)
+    delta_beta = np.cross(XiE, delta_positions.T)
+
+    return -delta_tau, -delta_beta
+
+
+
 def North_East_vectors_target(ra_xallarap, dec_xallarap):
     """This function define the North and East vectors projected on the sky plane
     perpendicular to the line
@@ -75,5 +94,5 @@ def xallarap(time_to_treat, ra_xallarap, dec_xallarap, orbital_period, eccentric
 
         delta_positions_projected.append([np.dot(delta_positions_source, North), np.dot(delta_positions_source, East)])
 
-    deltas_position = np.array(delta_positions_projected)
+    deltas_positions = np.array(delta_positions_projected)
     return deltas_positions
