@@ -284,6 +284,10 @@ def differential_evolution_parameters_boundaries(model):
     rho_boundaries = (10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
+    s_boundaries = (0.1,10.0)
+    q_boundaries = (0.00001, 1.0)
+    alpha_boundaries = (0.0, 2*np.pi)
+
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
     XiEN_boundaries = (-2.0, 2.0)
@@ -312,7 +316,13 @@ def differential_evolution_parameters_boundaries(model):
 
         parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
         # parameters_boundaries += [q_F_boundaries]
+    if model.model_type == 'USBL':
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, s_boundaries,
+                                 q_boundaries, alpha_boundaries]
 
+
+        parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
+        # parameters_boundaries += [q_F_boundaries]
     # Second order boundaries
     if model.parallax_model[0] != 'None':
         parameters_boundaries.append(piEN_boundaries)

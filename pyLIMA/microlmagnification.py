@@ -9,6 +9,9 @@ from __future__ import division
 import numpy as np
 
 
+import pyLIMA.subroutines.VBBinaryLensingLibrary as VBBinary
+
+
 def amplification_PSPL(tau, uo):
     """ The Paczynski magnification.
         "Gravitational microlensing by the galactic halo",Paczynski, B. 1986
@@ -78,6 +81,37 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
 
     return amplification, impact_parameter
 
+def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
+    """ The uniform source binary lens amplification, based on the work of Valerio Bozza, thanks :)
+        "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
+         optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
+        http://mnras.oxfordjournals.org/content/408/4/2188
+
+        :param float s: the projected normalised angular distance between the two bodies
+        :param float q: the mass ratio of the two bodies
+        :param float Xs: the horizontal position of the source center in the source plane
+        :param float Ys: the vertical position of the source center in the source plane
+        :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
+        :param float tolerance: the relative precision desired in the magnification
+
+        :return: the USBL magnification A_USBL(t) and the impact parameter U(t)
+        :rtype: array_like,array_like
+    """
+
+    # ensure all inputs are in float format to garantuee numerical stability
+    s = float(s)
+    q = float(q)
+    Xs = float(Xs)
+    Ys = float(Ys)
+    rho = float(rho)
+    tolerance = float(tolerance)
+
+
+
+    amplification = VBBinary.BinaryMag(s, q, Xs, Ys, rho, tolerance)
+    impact_parameter = (Xs**2+Ys**2)**0.5
+
+    return amplification, impact_parameter
 
 #### TO DO : the following is row development# ###
 

@@ -67,10 +67,10 @@ def main(command_line):
                 if lightcurve[0, 0] < 2450000:
                     lightcurve[:, 0] += 2450000
 
-                good = np.where((lightcurve[:,0]<2456565) | (lightcurve[:,0]>2456580))[0]
+                #good = np.where((lightcurve[:,0]<2456565) | (lightcurve[:,0]>2456580))[0]
 
 
-                lightcurve = lightcurve[good]
+               # lightcurve = lightcurve[good]
             except:
                 pass
 
@@ -101,8 +101,8 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2456564])
-        #Model.parameters_guess = [2457511, 0.06267,6.38,0.0,0.0]
+        Model = microlmodels.create_model('USBL', current_event, parallax=['None', 2456564])
+        Model.parameters_guess = [2456563.99, 0.186619,31.13,0.0044,1.06,0.002365,2.40]
         # Model.parameters_boundaries[3] = (-5.0, -1.0)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}

@@ -649,3 +649,44 @@ class ModelDSPL(MLModel):
             1 + blend_magnification_factor)
 
         return effective_magnification, source1_trajectory
+
+
+class ModelUSBL(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: DSPL
+        :rtype: string
+        """
+        return 'USBL'
+
+    def paczynski_model_parameters(self):
+        """ Define the USBL standard parameters, [to,uo,tE,rho, s,q,alpha]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 's': 4, 'q': 5, 'alpha': 6}
+
+        self.Jacobian_flag = 'No way'
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a DSPL model.
+        From Hwang et al 2013 : http://iopscience.iop.org/article/10.1088/0004-637X/778/1/55/pdf
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectory = source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                              pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        Xs, Ys = source_trajectory
+        magnification = microlmagnification.amplification_USBL(pyLIMA_parameters.s, pyLIMA_parameters.q,
+                                                               Xs, Ys, pyLIMA_parameters.rho, tolerance=0.001)[0]
+
+        return magnification, source_trajectory
