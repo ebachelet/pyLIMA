@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names[0:]:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'OB160813'
+        name = 'OB161125'
         # name = 'Lightcurve_9_'
         current_event = event.Event()
         current_event.name = name
@@ -67,10 +67,10 @@ def main(command_line):
                 if lightcurve[0, 0] < 2450000:
                     lightcurve[:, 0] += 2450000
 
-                #good = np.where((lightcurve[:,0]<2456565) | (lightcurve[:,0]>2456580))[0]
+                good = np.where((lightcurve[:,0]>2456000))[0]
 
 
-               # lightcurve = lightcurve[good]
+                lightcurve = lightcurve[good]
             except:
                 pass
 
@@ -90,6 +90,7 @@ def main(command_line):
                 telescope.gamma = 0.44
             else :
                 telescope.gamma = 0.53
+           
             current_event.telescopes.append(telescope)
             count += 1
 
@@ -101,13 +102,17 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('USBL', current_event, parallax=['None', 2456564])
-        Model.parameters_guess = [2456563.99, 0.186619,31.13,0.0044,1.06,0.002365,2.40]
-        # Model.parameters_boundaries[3] = (-5.0, -1.0)
+        Model = microlmodels.create_model('USBL', current_event, parallax = ["Annual", 2456560])
+        Model.USBL_windows = [2456560, 2456580]
+
+        Model.parameters_guess = [2456563.99, 0.186619,31.13,0.0044,0.026,-2.62,-0.74,0,0]
+        Model.parameters_boundaries[0] = (2456560,2456565)
+        Model.parameters_boundaries[1] = (0, 1)
+        Model.parameters_boundaries[2] = (0, 50)
 
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
-
+        #Model.parameters_boundaries[3] = (-5.0, -1.0)
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
         current_event.fit(Model, 'LM', flux_estimation_MCMC='polyfit')
 
@@ -118,7 +123,8 @@ def main(command_line):
         current_event.fits[0].produce_outputs()
         # print current_event.fits[0].fit_results
         plt.show()
-
+        import pdb;
+        pdb.set_trace()
     end = time.time()
 
     import pdb;

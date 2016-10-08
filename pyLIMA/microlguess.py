@@ -284,9 +284,9 @@ def differential_evolution_parameters_boundaries(model):
     rho_boundaries = (10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    s_boundaries = (0.1,10.0)
-    q_boundaries = (0.00001, 1.0)
-    alpha_boundaries = (0.0, 2*np.pi)
+    s_boundaries = (-1.0,1.0)
+    q_boundaries = (-5.0,0.0)
+    alpha_boundaries = (-np.pi, np.pi)
 
     piEN_boundaries = (-2.0, 2.0)
     piEE_boundaries = (-2.0, 2.0)
@@ -321,7 +321,7 @@ def differential_evolution_parameters_boundaries(model):
                                  q_boundaries, alpha_boundaries]
 
 
-        parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
+
         # parameters_boundaries += [q_F_boundaries]
     # Second order boundaries
     if model.parallax_model[0] != 'None':

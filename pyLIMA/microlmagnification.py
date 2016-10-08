@@ -8,8 +8,10 @@ Created on Tue Dec  8 14:37:33 2015
 from __future__ import division
 import numpy as np
 
+import sys
+sys.path.insert(0, '/path/to/application/app/folder')
 
-import pyLIMA.subroutines.VBBinaryLensingLibrary as VBBinary
+from subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinary
 
 
 def amplification_PSPL(tau, uo):
@@ -89,8 +91,8 @@ def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
 
         :param float s: the projected normalised angular distance between the two bodies
         :param float q: the mass ratio of the two bodies
-        :param float Xs: the horizontal position of the source center in the source plane
-        :param float Ys: the vertical position of the source center in the source plane
+        :param array_like Xs: the horizontal positions of the source center in the source plane
+        :param array_like Ys: the vertical positions of the source center in the source plane
         :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
         :param float tolerance: the relative precision desired in the magnification
 
@@ -99,19 +101,22 @@ def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
     """
 
     # ensure all inputs are in float format to garantuee numerical stability
-    s = float(s)
-    q = float(q)
-    Xs = float(Xs)
-    Ys = float(Ys)
-    rho = float(rho)
-    tolerance = float(tolerance)
 
+    s = np.float64(s)
+    q = np.float64(q)
+    Xs = np.float64(Xs)
+    Ys = np.float64(Ys)
+    rho = np.float64(rho)
+    tolerance = np.float64(tolerance)
 
+    binary_magnification = VBBinary.VBBinaryLensing()
 
-    amplification = VBBinary.BinaryMag(s, q, Xs, Ys, rho, tolerance)
-    impact_parameter = (Xs**2+Ys**2)**0.5
+    amplification = np.array([])
+    for xs, ys in zip(Xs, Ys):
 
-    return amplification, impact_parameter
+        amplification = np.append(amplification, binary_magnification.BinaryMag(s, q, xs, ys, rho, tolerance))
+
+    return amplification, Xs
 
 #### TO DO : the following is row development# ###
 

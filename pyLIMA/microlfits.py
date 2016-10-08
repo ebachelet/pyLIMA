@@ -452,10 +452,10 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5, 1.0), popsize=15, maxiter=5000,
+            mutation=(0.5, 1.0), popsize=int(15/len(self.model.parameters_boundaries)**0.5), maxiter=5000,
             tol=0.000001,
             recombination=0.6, polish='True',
-            disp=False
+            disp=True
         )
 
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
@@ -546,7 +546,7 @@ class MLFits(object):
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
 
-        # import pdb; pdb.set_trace()
+
 
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
@@ -618,6 +618,7 @@ class MLFits(object):
 
         # Construct an np.array with each telescope residuals
         residuals = np.array([])
+
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
@@ -676,28 +677,6 @@ class MLFits(object):
 
         return jacobi
 
-    def residuals_LM(self, fit_process_parameters):
-        """The normalized residuals associated to the model and parameters.
-
-           :param list fit_process_parameters: the model parameters ingested by the correpsonding
-           fitting routine.
-
-           :return: a numpy array which represents the residuals_i for each telescope,
-           residuals_i=(data_i-model_i)/sigma_i
-           :rtype: array_like
-           The sum of square residuals gives chi^2.
-        """
-
-        # Construct an np.array with each telescope residuals
-        residuals = np.array([])
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
-        for telescope in self.event.telescopes:
-            # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
-            # no prior here
-            residuals = np.append(residuals, residus)
-
-        return residuals
 
     def chichi_telescopes(self, fit_process_parameters):
         """Return a list of chi^2 (float) for individuals telescopes.

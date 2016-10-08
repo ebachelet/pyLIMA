@@ -27,7 +27,7 @@ plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 
-MARKER_SYMBOLS = np.nditer([['.', 'o','*', 'v', '^', '<', '>', 's','p','d','x']])
+MARKER_SYMBOLS = np.nditer([[',', '.','*', 'v', '^', '<', '>', 's','p','d','x']])
 
 
 def LM_outputs(fit):
@@ -796,7 +796,8 @@ def plot_LM_ML_geometry(fit):
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(fig_size[0] * 3 / 4.0)
+    the_table.set_fontsize(fig_size[0] * 3 / 4.0/np.log10(len(fit.model.model_dictionnary.keys())))
+    the_table.scale(0.75,0.75)
     title = fit.model.event.name + ' : ' + fit.model.model_type
     figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
     return figure_trajectory
