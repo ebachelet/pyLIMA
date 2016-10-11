@@ -90,7 +90,7 @@ def main(command_line):
                 telescope.gamma = 0.44
             else :
                 telescope.gamma = 0.53
-           
+
             current_event.telescopes.append(telescope)
             count += 1
 
@@ -106,10 +106,15 @@ def main(command_line):
         Model.USBL_windows = [2456560, 2456580]
 
         Model.parameters_guess = [2456563.99, 0.186619,31.13,0.0044,0.026,-2.62,-0.74,0,0]
+        #Model.parameters_guess = [2456564.1283911862, 0.1765146179801177, 33.20464723620369, 0.004495208942803647, 0.02259959415083381, -2.6703927651910977, -0.7277483988308704, -0.0516354846939327, -0.7142906608445804]
         Model.parameters_boundaries[0] = (2456560,2456565)
-        Model.parameters_boundaries[1] = (0, 1)
-        Model.parameters_boundaries[2] = (0, 50)
-
+        Model.parameters_boundaries[1] = (0.05, 0.5)
+        Model.parameters_boundaries[2] = (20, 60)
+        Model.parameters_boundaries[3] = (0.001 ,0.01)
+        Model.parameters_boundaries[4] = (-0.05,0.05)
+        Model.parameters_boundaries[5] = (-3.0,-2.0)
+        Model.parameters_boundaries[6] = (-0.8, -0.6)
+        #Model.parameters_boundaries[3] = (20, 40)
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
         #Model.parameters_boundaries[3] = (-5.0, -1.0)

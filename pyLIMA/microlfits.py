@@ -453,7 +453,7 @@ class MLFits(object):
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
             mutation=(0.5, 1.0), popsize=int(15/len(self.model.parameters_boundaries)**0.5), maxiter=5000,
-            tol=0.000001,
+            tol=0.0001,
             recombination=0.6, polish='True',
             disp=True
         )
@@ -618,14 +618,12 @@ class MLFits(object):
 
         # Construct an np.array with each telescope residuals
         residuals = np.array([])
-
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
             # no prior here
             residuals = np.append(residuals, residus)
-
         return residuals
 
     def LM_Jacobian(self, fit_process_parameters):
