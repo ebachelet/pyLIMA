@@ -670,6 +670,7 @@ class ModelUSBL(MLModel):
         model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 's': 4, 'q': 5, 'alpha': 6}
 
         self.Jacobian_flag = 'No way'
+        self.USBL_windows = None
         return model_dictionary
 
     def model_magnification(self, telescope, pyLIMA_parameters):

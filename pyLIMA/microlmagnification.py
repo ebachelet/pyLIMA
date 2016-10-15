@@ -32,10 +32,10 @@ def amplification_PSPL(tau, uo):
     impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  #u(t)
     impact_parameter_square = impact_parameter ** 2 #u(t)^2
 
-    amplification = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
+    amplification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
 
     # return both magnification and U, required by some methods
-    return amplification, impact_parameter
+    return amplification_pspl, impact_parameter
 
 
 def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
@@ -79,9 +79,9 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     amplification_fspl[indexes_FSPL] = amplification_pspl[indexes_FSPL] * \
     (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
 
-    amplification = amplification_fspl
 
-    return amplification, impact_parameter
+
+    return amplification_fspl, impact_parameter
 
 def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
     """ The uniform source binary lens amplification, based on the work of Valerio Bozza, thanks :)
@@ -111,12 +111,11 @@ def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
 
     binary_magnification = VBBinary.VBBinaryLensing()
 
-    amplification = np.array([])
+    amplification_usbl = np.array([])
     for xs, ys in zip(Xs, Ys):
+        amplification_usbl = np.append( amplification_usbl, binary_magnification.BinaryMag(s, q, xs, ys, rho, tolerance))
 
-        amplification = np.append(amplification, binary_magnification.BinaryMag(s, q, xs, ys, rho, tolerance))
-
-    return amplification, Xs
+    return  amplification_usbl, Xs
 
 #### TO DO : the following is row development# ###
 
