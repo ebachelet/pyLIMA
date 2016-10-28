@@ -206,3 +206,4 @@ class Event(object):
             n_data = n_data + telescope.n_data('flux')
 
         return n_data
+

@@ -452,7 +452,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5, 1.5), popsize=int(15/len(self.model.parameters_boundaries)**0.5), maxiter=5000,
+            mutation=(1.1, 1.9), popsize=int(15/len(self.model.parameters_boundaries)**0.5), maxiter=5000,
             tol=0.0001,
             recombination=0.6, polish='True',
             disp=True
@@ -547,7 +547,7 @@ class MLFits(object):
         # algorithm find it.
 
 
-
+        print self.guess
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
                                                     Dfun=self.LM_Jacobian, col_deriv=1, full_output=1, ftol=10 ** -6,
@@ -618,14 +618,14 @@ class MLFits(object):
 
         # Construct an np.array with each telescope residuals
         residuals = np.array([])
-        start = python_time.time()
+        #start = python_time.time()
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
             # no prior here
             residuals = np.append(residuals, residus)
-        print python_time.time()-start
+        #print python_time.time()-start
         return residuals
 
     def LM_Jacobian(self, fit_process_parameters):
@@ -771,3 +771,7 @@ class MLFits(object):
             outputs = microloutputs.MCMC_outputs(self)
 
         self.outputs = outputs
+
+    def produce_pdf(self, output_directory):
+
+       microloutputs.pdf_output(self, output_directory)

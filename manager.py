@@ -25,7 +25,7 @@ from pyLIMA import microlmodels
 from pyLIMA import microlsimulator
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('Survey' in event_name) and ('Follow' not in event_name)]
+                    ('.dat' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
                      ('.dat' in event_name) and ('~' not in event_name)]
 
@@ -33,15 +33,16 @@ def main(command_line):
     results = []
     errors = []
 
-    for event_name in events_names[9:]:
+    for event_name in events_names:
 
         # name='Lightcurve_'+str(17)+'_'
-       # name = 'OB161125'
-        name = 'Lightcurve_9_'
+        name = 'OB161737'
+
+        #name = 'Lightcurve_'+str(event_name)+'.'
         current_event = event.Event()
         current_event.name = name
 
-        event_telescopes = [i for i in events_names2 if name in i ]
+        event_telescopes = [i for i in events_names2 ]
         # event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat',
         # 'MOA-2016-BLG-215_transformed.dat']
         # event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
@@ -56,13 +57,13 @@ def main(command_line):
         start = time.time()
         for event_telescope in event_telescopes:
             try:
-                tel_name = event_telescope[13:-4]
-                if event_telescope == 'VVOB131125K.dat':
+                tel_name = event_telescope[14:-4]
+                if event_telescope == 'COJA_I.dat':
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(0, 1, 2))
+                                                    usecols=(0, 2, 3))
 
                     lightcurve = np.array(
-                        [raw_light_curve[:, 2], raw_light_curve[:, 0], raw_light_curve[:, 1]]).T
+                        [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
 
                 else:
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
@@ -74,25 +75,25 @@ def main(command_line):
                         [raw_light_curve[:, 0], raw_light_curve[:,1], raw_light_curve[:, 2]]).T
                 print event_telescope
 
-                #if lightcurve[0, 0] < 2450000:
-                #    lightcurve[:, 0] += 2450000
+                if lightcurve[0, 0] < 2450000:
+                    lightcurve[:, 0] += 2450000
 
-                #good = np.where((lightcurve[:,0]>2456000))[0]
+                good = np.where((lightcurve[:,0]>2457400))[0]
 
 
-                #lightcurve = lightcurve[good]
+                lightcurve = lightcurve[good]
             except:
                 pass
 
-            if 'MO_R' in event_telescope:
+            if 'MOA_R' in event_telescope:
                 telescope = telescopes.Telescope(name=event_telescope[0:-6]+'_'+event_telescope[-5], camera_filter=event_telescope[-5],
                                                  light_curve_flux=lightcurve,
                                                  light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
-                                                 reference_flux=3767.04)
+                                                 reference_flux=0.0)
                 telescope.location = 'Earth'
             else:
 
-                telescope = telescopes.Telescope(name=tel_name, camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[0:-6]+'_'+event_telescope[-5], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,
                                                  light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
                 telescope.location = 'Earth'
@@ -108,16 +109,16 @@ def main(command_line):
         print 'Start;', current_event.name
         import pdb;
         pdb.set_trace()
-        current_event.find_survey('Survey')
+        current_event.find_survey('OGLE_I')
         # current_event.check_event()
         print [i.name for i in current_event.telescopes]
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('FSPL', current_event, parallax = ["None", 2456560])
-        #Model.USBL_windows = [2456560, 2456580]
+        Model = microlmodels.create_model('USBL', current_event, parallax = ["None", 2456560])
+        Model.USBL_windows = [2457460, 2457520]
 
-        #Model.parameters_guess = [2457628.63, 0.0264,22.72,0.0164,0.221,-0.08,3.11]
+        Model.parameters_guess = [2457493.41, 0.0107945, 36.5994,0.0087,0.35,-1.52,-0.229]
         #Model.parameters_guess = [2456564.0900798775, 0.1790694203068852, 32.705879568338815, 0.004594498996447764,
                                   #0.022960052669346608, -2.656611362460817, -0.7149806227504553, 0.1460871915644311,
                                   #-0.742834734653029]
@@ -140,6 +141,7 @@ def main(command_line):
 
 
         current_event.fits[0].produce_outputs()
+        current_event.fits[0].produce_pdf(command_line.input_directory)
         # print current_event.fits[0].fit_results
         plt.show()
         import pdb;
@@ -165,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/Lightcurves_FSPL/Lightcurves/')
+                                'SimulationML/OB160241/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

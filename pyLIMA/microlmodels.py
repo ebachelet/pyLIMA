@@ -691,6 +691,7 @@ class ModelUSBL(MLModel):
             index_USBL = np.where((telescope.lightcurve_flux[:, 0] < self.USBL_windows[1]) & (
                                      telescope.lightcurve_flux[:, 0] > self.USBL_windows[0]))[0]
 
+
             Xs = source_trajectoire[0][index_USBL]
             Ys = source_trajectoire[1][index_USBL]
 

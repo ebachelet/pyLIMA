@@ -28,6 +28,26 @@ plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 
 MARKER_SYMBOLS = np.nditer([[',', '.','*', 'v', '^', '<', '>', 's','p','d','x']])
+def pdf_output(fit,output_directory):
+
+    from matplotlib.backends.backend_pdf import PdfPages
+    with PdfPages(output_directory+fit.event.name+'.pdf') as pdf:
+        figure_1 = fit.outputs.figure_lightcurve
+        pdf.savefig(figure_1)
+
+        figure_2 = fit.outputs.figure_geometry
+        pdf.savefig(figure_2 )
+
+        if 'figure_distributions' in fit.outputs._fields:
+
+            figure_3 = fit.outputs.figure_distributions
+            pdf.savefig(figure_3)
+        pdf_details = pdf.infodict()
+        pdf_details['Title'] = fit.event.name+'_pyLIMA'
+        pdf_details['Author'] = 'Produced by pyLIMA'
+        pdf_details['Subject'] = 'A microlensing fit'
+
+        pdf_details['CreationDate'] = datetime.today()
 
 
 def LM_outputs(fit):
