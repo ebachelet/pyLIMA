@@ -74,7 +74,7 @@ def test_define_parameters_boundaries():
 
     Model = microlmodels.create_model('FSPL', event)
 
-    assert Model.parameters_boundaries == [(-300, 342), (-1.0, 1.0), (1.0, 300), (1e-5, 0.05)]
+    assert Model.parameters_boundaries == [(-300, 342), (0.0, 2.0), (1.0, 300), (1e-5, 0.05)]
 
 
 def test_magnification_DSPL_computation():

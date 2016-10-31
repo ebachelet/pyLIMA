@@ -58,12 +58,12 @@ def main(command_line):
         for event_telescope in event_telescopes:
             try:
                 tel_name = event_telescope[14:-4]
-                if event_telescope == 'COJA_I.dat':
+                if event_telescope == 'LOB161589Z.dat':
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(0, 2, 3))
+                                                    usecols=(0, 1, 2))
 
                     lightcurve = np.array(
-                        [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
+                        [raw_light_curve[:, 2], raw_light_curve[:, 0], raw_light_curve[:, 1]]).T
 
                 else:
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
@@ -116,9 +116,9 @@ def main(command_line):
         #                              parallax=['None', 50.0])
 
         Model = microlmodels.create_model('USBL', current_event, parallax = ["None", 2456560])
-        Model.USBL_windows = [2457460, 2457520]
+        Model.USBL_windows = [2457600, 2457650]
 
-        Model.parameters_guess = [2457493.41, 0.0107945, 36.5994,0.0087,0.35,-1.52,-0.229]
+#        Model.parameters_guess = [2457493.41, 0.0107945, 36.5994,0.0087,0.35,-1.52,-0.229]
         #Model.parameters_guess = [2456564.0900798775, 0.1790694203068852, 32.705879568338815, 0.004594498996447764,
                                   #0.022960052669346608, -2.656611362460817, -0.7149806227504553, 0.1460871915644311,
                                   #-0.742834734653029]
@@ -134,7 +134,7 @@ def main(command_line):
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'LM',flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'DE',flux_estimation_MCMC='polyfit')
 
 
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB160241/')
+                                'SimulationML/OB161589/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',
