@@ -13,6 +13,8 @@ import collections
 import warnings
 import emcee
 import sys
+import copy
+from collections import OrderedDict
 
 import microlmodels
 import microloutputs
@@ -77,7 +79,7 @@ class MLFits(object):
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
 
-    def mlfit(self, model, method, flux_estimation_MCMC='MCMC'):
+    def mlfit(self, model, method, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None, grid_resolution=10):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -119,7 +121,7 @@ class MLFits(object):
         function.
         """
         print ''
-        print 'Start fit on '+self.event.name+', with model '+model.model_type+' and method '+method
+        print 'Start fit on ' + self.event.name + ', with model ' + model.model_type + ' and method ' + method
         self.event.check_event()
 
         self.model = model
@@ -148,6 +150,12 @@ class MLFits(object):
 
         if self.method == 'MCMC':
             self.MCMC_chains, self.MCMC_probabilities = self.MCMC()
+
+        if self.method == 'GRIDS':
+            self.fix_parameters_dictionnary = OrderedDict(
+            sorted(fix_parameters_dictionnary.items(), key=lambda x: x[1]))
+            self.grid_resolution = grid_resolution
+            self.grids()
 
         fit_quality_flag = 'Good Fit'
 
@@ -201,8 +209,7 @@ class MLFits(object):
 
         for i in self.event.telescopes:
 
-            if self.fit_results[self.model.model_dictionnary['fs_' + i.name]]  < 0:
-
+            if self.fit_results[self.model.model_dictionnary['fs_' + i.name]] < 0:
                 print 'Your fit probably wrong. Cause ==> negative source flux for telescope ' + \
                       i.name
                 flag_quality = 'Bad Fit'
@@ -452,7 +459,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(1.1, 1.9), popsize=int(15/len(self.model.parameters_boundaries)**0.5), maxiter=5000,
+            mutation=(1.1, 1.9), popsize=int(15 / len(self.model.parameters_boundaries) ** 0.5), maxiter=5000,
             tol=0.0001,
             recombination=0.6, polish='True',
             disp=True
@@ -600,7 +607,7 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         print sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS'
         return fit_result, covariance_matrix, computation_time
 
@@ -618,14 +625,14 @@ class MLFits(object):
 
         # Construct an np.array with each telescope residuals
         residuals = np.array([])
-        #start = python_time.time()
+        # start = python_time.time()
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
             # no prior here
             residuals = np.append(residuals, residus)
-        #print python_time.time()-start
+        # print python_time.time()-start
         return residuals
 
     def LM_Jacobian(self, fit_process_parameters):
@@ -676,7 +683,6 @@ class MLFits(object):
             start_index = index[-1] + 1
 
         return jacobi
-
 
     def chichi_telescopes(self, fit_process_parameters):
         """Return a list of chi^2 (float) for individuals telescopes.
@@ -757,6 +763,94 @@ class MLFits(object):
                 telescopes_fluxes.append(f_blending / f_source)
         return telescopes_fluxes
 
+    def grids(self):
+        """ Compute models on a grid
+        """
+
+        parameters_on_the_grid = []
+
+        for parameter_name in self.fix_parameters_dictionnary:
+            parameter_range = self.model.parameters_boundaries[self.model.model_dictionnary[parameter_name]]
+
+            parameters_on_the_grid.append(
+                np.linspace(parameter_range[0], parameter_range[1],
+                            self.grid_resolution))
+
+        hyper_grid = self.construct_the_hyper_grid(parameters_on_the_grid)
+
+        parameters_boundaries = self.redefine_parameters_boundaries(self.fix_parameters_dictionnary)
+
+        for grid_parameters_pixel in hyper_grid:
+
+
+
+            differential_evolution_estimation = scipy.optimize.differential_evolution(
+                self.chichi_grids,
+                bounds=parameters_boundaries, args=[grid_parameters_pixel],
+                mutation=(1.1, 1.9), popsize=int(15 / len(parameters_boundaries) ** 0.5), maxiter=10,
+                tol=0.0001,
+                recombination=0.6, polish='True',
+                disp=True
+            )
+
+            import pdb;
+            pdb.set_trace()
+
+    def chichi_grids(self, moving_parameters, fix_parameters):
+
+        fit_process_parameters = self.reconstruct_fit_process_parameters( moving_parameters, fix_parameters)
+        print  fit_process_parameters
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        chichi = 0.0
+        for telescope in self.event.telescopes:
+            # Find the residuals of telescope observation regarding the parameters and model
+
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+
+            chichi += (residus ** 2).sum()
+
+        return chichi
+
+    def reconstruct_fit_process_parameters(self, moving_parameters, fix_parameters):
+
+        fit_process_parameters = [0] * len(self.model.parameters_boundaries)
+
+        for indice, key in enumerate(self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]):
+
+            if key in self.moving_parameters_dictionnary:
+
+                fit_process_parameters[indice] = moving_parameters[self.moving_parameters_dictionnary[key]]
+
+            else:
+
+                fit_process_parameters[indice] = fix_parameters[self.fix_parameters_dictionnary[key]]
+
+
+        return fit_process_parameters
+
+    def redefine_parameters_boundaries(self, parameters):
+
+        parameters_boundaries = []
+        self.moving_parameters_dictionnary = {}
+        count = 0
+
+        for indice,key in enumerate(self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]):
+
+            if key not in self.fix_parameters_dictionnary.keys():
+
+                parameters_boundaries.append(self.model.parameters_boundaries[indice])
+                self.moving_parameters_dictionnary[key] = count
+                count +=1
+        return parameters_boundaries
+
+    def construct_the_hyper_grid(self, parameters):
+
+        params = map(np.asarray, parameters)
+        grid = np.broadcast_arrays(*[x[(slice(None),) + (None,) * i] for i, x in enumerate(params)])
+
+        reformate_grid = np.vstack(grid).reshape(len(parameters), -1).T
+        return reformate_grid
+
     def produce_outputs(self):
         """ Produce the standard outputs for a fit.
         More details in microloutputs module.
@@ -774,4 +868,4 @@ class MLFits(object):
 
     def produce_pdf(self, output_directory):
 
-       microloutputs.pdf_output(self, output_directory)
+        microloutputs.pdf_output(self, output_directory)

@@ -62,7 +62,7 @@ class Event(object):
         self.survey = 'None'
         self.fits = []
 
-    def fit(self, model, method, flux_estimation_MCMC='MCMC'):
+    def fit(self, model, method, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None, grid_resolution=10):
         """Function to fit the event with a model and a method.
 
 
@@ -88,7 +88,7 @@ class Event(object):
 
         """
         available_kind = ['Microlensing']
-        available_methods = ['LM', 'DE', 'MCMC']
+        available_methods = ['LM', 'DE', 'MCMC','GRIDS']
 
         if self.kind not in available_kind:
             print 'ERROR : No possible fit yet for a non microlensing event, sorry :('
@@ -100,7 +100,9 @@ class Event(object):
             raise EventException('Wrong fit method request')
 
         fit = microlfits.MLFits(self)
-        fit.mlfit(model, method, flux_estimation_MCMC=flux_estimation_MCMC)
+        fit.mlfit(model, method, flux_estimation_MCMC=flux_estimation_MCMC,
+                  fix_parameters_dictionnary=fix_parameters_dictionnary,
+                  grid_resolution=grid_resolution)
 
         self.fits.append(fit)
 
@@ -206,4 +208,3 @@ class Event(object):
             n_data = n_data + telescope.n_data('flux')
 
         return n_data
-

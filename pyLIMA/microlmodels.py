@@ -667,7 +667,7 @@ class ModelUSBL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 's': 4, 'q': 5, 'alpha': 6}
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'logs': 4, 'logq': 5, 'alpha': 6}
 
         self.Jacobian_flag = 'No way'
         self.USBL_windows = None
@@ -689,29 +689,31 @@ class ModelUSBL(MLModel):
 
         if self.USBL_windows:
             index_USBL = np.where((telescope.lightcurve_flux[:, 0] < self.USBL_windows[1]) & (
-                                     telescope.lightcurve_flux[:, 0] > self.USBL_windows[0]))[0]
-
+                telescope.lightcurve_flux[:, 0] > self.USBL_windows[0]))[0]
 
             Xs = source_trajectoire[0][index_USBL]
             Ys = source_trajectoire[1][index_USBL]
 
-            magnification_USBL = microlmagnification.amplification_USBL(10**pyLIMA_parameters.s, 10**pyLIMA_parameters.q,
-                                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                                        tolerance=0.01)[0]
+            magnification_USBL = \
+                microlmagnification.amplification_USBL(10 ** pyLIMA_parameters.logs, 10 ** pyLIMA_parameters.logq,
+                                                       Xs, Ys, pyLIMA_parameters.rho,
+                                                       tolerance=0.01)[0]
+
             magnification[index_USBL] = magnification_USBL
 
             index_PSPL = np.where((telescope.lightcurve_flux[:, 0] > self.USBL_windows[1]) | (
-                        telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
+                telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
 
             magnification_PSPL = microlmagnification.amplification_PSPL(source_trajectoire[0][index_PSPL],
                                                                         source_trajectoire[1][index_PSPL])[0]
 
             magnification[index_PSPL] = magnification_PSPL
 
-        else :
+        else:
             Xs, Ys = source_trajectoire
-            magnification = microlmagnification.amplification_USBL(10**pyLIMA_parameters.s, 10**pyLIMA_parameters.q,
-                                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                                       tolerance=0.001)[0]
+            magnification = \
+            microlmagnification.amplification_USBL(10 ** pyLIMA_parameters.logs, 10 ** pyLIMA_parameters.logq,
+                                                   Xs, Ys, pyLIMA_parameters.rho,
+                                                   tolerance=0.001)[0]
 
         return magnification, source_trajectoire

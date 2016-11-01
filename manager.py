@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'OB161737'
+        name = 'OB161921'
 
         #name = 'Lightcurve_'+str(event_name)+'.'
         current_event = event.Event()
@@ -58,7 +58,7 @@ def main(command_line):
         for event_telescope in event_telescopes:
             try:
                 tel_name = event_telescope[14:-4]
-                if event_telescope == 'LOB161589Z.dat':
+                if 'LOB160399' in event_telescope:
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
                                                     usecols=(0, 1, 2))
 
@@ -116,7 +116,7 @@ def main(command_line):
         #                              parallax=['None', 50.0])
 
         Model = microlmodels.create_model('USBL', current_event, parallax = ["None", 2456560])
-        Model.USBL_windows = [2457600, 2457650]
+        Model.USBL_windows = [2457495, 2457498]
 
 #        Model.parameters_guess = [2457493.41, 0.0107945, 36.5994,0.0087,0.35,-1.52,-0.229]
         #Model.parameters_guess = [2456564.0900798775, 0.1790694203068852, 32.705879568338815, 0.004594498996447764,
@@ -134,7 +134,7 @@ def main(command_line):
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'DE',flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'GRIDS', fix_parameters_dictionnary={'logs':0})
 
 
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB161589/')
+                                'SimulationML/OB160722/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',
