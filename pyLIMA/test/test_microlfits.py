@@ -28,16 +28,18 @@ def _create_model(kind):
     model = mock.MagicMock()
     model.parameters_guess = []
     model.parameters_boundaries = [[0, 100], [0, 1], [0, 300]]
-    model.compute_pyLIMA_parameters.return_value = []
     model.Jacobian_flag = 'Not OK'
     model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'fs_Test': 3, 'g_Test': 4}
     model.pyLIMA_standards_dictionnary = model.model_dictionnary
-    model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0
+    model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0,0.0,0.0
     model.model_magnification.return_value = np.random.random(100).tolist(), 0.0
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
     model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 10, 5)
     model.model_type = kind
     model.model_Jacobian.return_value = np.random.random((100,6)).T
+    model.derive_telescope_flux.return_value = 42, 69
+    model.compute_pyLIMA_parameters.return_value = np.random.uniform(0,2,len(model.model_dictionnary.keys()))
+
     return model
 
 
@@ -57,7 +59,7 @@ def test_mlfit_FSPL_LM_without_guess():
     model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
     model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 0.05, 10, 5)
-
+    model.model_parameters = collections.namedtuple('parameters',model.model_dictionnary)
     model.parameters_boundaries = [[0, 100], [0, 1], [0, 300], [0, 1]]
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
@@ -92,6 +94,22 @@ def test_mlfit_PSPL_LM_with_guess():
     assert fit.fit_covariance.shape == (3 + 2 * len(current_event.telescopes), 3 + 2 * len(current_event.telescopes))
     assert len(fit.fit_results) == 3 + 2 * len(current_event.telescopes) + 1
 
+def test_mlfit_FSPL_LM_with_guess():
+    current_event = _create_event()
+    model = _create_model('FSPL')
+
+    model.parameters_guess = [10, 0.1, 20, 0.02]
+    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
+    model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 0.05, 10, 5)
+    model.model_parameters = collections.namedtuple('parameters', model.model_dictionnary)
+    model.parameters_boundaries = [[0, 100], [0, 1], [0, 300], [0, 1]]
+    fit = microlfits.MLFits(current_event)
+    fit.mlfit(model, 'LM')
+   
+    print fit.fit_results
+    assert fit.fit_covariance.shape == (4 + 2 * len(current_event.telescopes), 4 + 2 * len(current_event.telescopes))
+    assert len(fit.fit_results) == 4 + 2 * len(current_event.telescopes) + 1
 
 def test_mlfit_PSPL_MCMC_with_guess():
     current_event = _create_event()

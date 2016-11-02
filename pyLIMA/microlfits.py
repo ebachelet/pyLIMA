@@ -708,12 +708,11 @@ class MLFits(object):
 
         return chichi_list
 
-    def model_residuals(self, telescope, fit_process_parameters):
+    def model_residuals(self, telescope, pyLIMA_parameters):
         """ Compute the residuals and the priors of a telescope lightcurve according to the model.
 
         :param object telescope: a telescope object. More details in telescopes module.
-        :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
+        :param object pyLIMA_parameters: object containing pyLIMA_parameters
 
         :return: the residuals in flux, the priors
         :rtype: array_like, float
@@ -723,7 +722,7 @@ class MLFits(object):
         flux = lightcurve[:, 1]
         errflux = lightcurve[:, 2]
 
-        microlensing_model = self.model.compute_the_microlensing_model(telescope, fit_process_parameters)
+        microlensing_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
         residuals = (flux - microlensing_model[0]) / errflux
 

@@ -11,7 +11,6 @@ import collections
 import copy
 import json
 
-
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, MultipleLocator
@@ -27,23 +26,23 @@ plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 
-MARKER_SYMBOLS = np.nditer([[',', '.','*', 'v', '^', '<', '>', 's','p','d','x']])
-def pdf_output(fit,output_directory):
+MARKER_SYMBOLS = np.nditer([[',', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']])
 
+
+def pdf_output(fit, output_directory):
     from matplotlib.backends.backend_pdf import PdfPages
-    with PdfPages(output_directory+fit.event.name+'.pdf') as pdf:
+    with PdfPages(output_directory + fit.event.name + '.pdf') as pdf:
         figure_1 = fit.outputs.figure_lightcurve
         pdf.savefig(figure_1)
 
         figure_2 = fit.outputs.figure_geometry
-        pdf.savefig(figure_2 )
+        pdf.savefig(figure_2)
 
         if 'figure_distributions' in fit.outputs._fields:
-
             figure_3 = fit.outputs.figure_distributions
             pdf.savefig(figure_3)
         pdf_details = pdf.infodict()
-        pdf_details['Title'] = fit.event.name+'_pyLIMA'
+        pdf_details['Title'] = fit.event.name + '_pyLIMA'
         pdf_details['Author'] = 'Produced by pyLIMA'
         pdf_details['Subject'] = 'A microlensing fit'
 
@@ -389,7 +388,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
                                                               g_reference, fs_telescope, g_telescope)
 
         plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2],
-                          ls='None',marker=str(MARKER_SYMBOLS.next()),label=telescope.name)
+                          ls='None', marker=str(MARKER_SYMBOLS.next()), label=telescope.name)
 
     plot_axe.plot(fit.event.telescopes[0].lightcurve_magnitude[0, 0],
                   fit.event.telescopes[0].lightcurve_magnitude[0, 1],
@@ -416,7 +415,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
         residuals = 2.5 * np.log10(flux_model / flux)
-        ax.errorbar(time, residuals, yerr=err_mag, ls='None', marker= str(MARKER_SYMBOLS.next()))
+        ax.errorbar(time, residuals, yerr=err_mag, ls='None', marker=str(MARKER_SYMBOLS.next()))
     ax.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     ax.invert_yaxis()
     ax.xaxis.get_major_ticks()[0].draw = lambda *args: None
@@ -626,7 +625,7 @@ def LM_plot_residuals(fit, figure_axe):
         residuals = 2.5 * np.log10(flux_model / flux)
 
         figure_axe.errorbar(time, residuals, yerr=err_mag, ls='None',
-                            marker= str(MARKER_SYMBOLS.next()))
+                            marker=str(MARKER_SYMBOLS.next()))
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
 
@@ -641,11 +640,10 @@ def LM_plot_align_data(fit, figure_axe):
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
     MARKER_SYMBOLS.reset()
-    import pdb;
-    pdb.set_trace()
-    reference_telescope = fit.event.telescopes[0].name
-    fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_' + reference_telescope]]
-    g_reference = fit.fit_results[fit.model.model_dictionnary['g_' + reference_telescope]]
+
+    reference_telescope = fit.event.telescopes[0]
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+
 
     for telescope in fit.event.telescopes:
 
@@ -655,20 +653,20 @@ def LM_plot_align_data(fit, figure_axe):
 
         else:
 
-            fs_telescope = fit.fit_results[fit.model.model_dictionnary['fs_' + telescope.name]]
-            g_telescope = fit.fit_results[fit.model.model_dictionnary['g_' + telescope.name]]
+            telescope_ghost = copy.copy(telescope)
+            telescope_ghost.name = reference_telescope.name
 
-            lightcurve = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
-                                                    g_reference, fs_telescope, g_telescope)
+            model_ghost = fit.model.compute_the_microlensing_model( telescope_ghost, pyLIMA_parameters)[0]
+            model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+            lightcurve = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost,model_telescope)
 
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
-                            marker= str(MARKER_SYMBOLS.next()),
+                            marker=str(MARKER_SYMBOLS.next()),
                             label=telescope.name)
     figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
 
-def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_reference, fs_telescope,
-                               g_telescope):
+def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_telescope):
     """Align data to the survey telescope (i.e telescope 0).
 
     :param array_like lightcurve_telescope_mag: the survey telescope in magnitude
@@ -681,17 +679,16 @@ def align_telescope_lightcurve(lightcurve_telescope_mag, fs_reference, g_referen
     :return: the aligned to survey lightcurve in magnitude
     :rtype: array_like
     """
-    time = lightcurve_telescope_mag[:, 0]
-    magnitude = lightcurve_telescope_mag[:, 1]
-    err_mag = lightcurve_telescope_mag[:, 2]
+    time = lightcurve_telescope_flux[:, 0]
+    flux = lightcurve_telescope_flux[:, 1]
+    err_flux = lightcurve_telescope_flux[:, 2]
 
-    flux = microltoolbox.magnitude_to_flux(magnitude)
+    residus = (flux-model_telescope)/model_telescope
+    flux_ghost = model_ghost*(1+residus)
 
-    flux_normalised = (flux - (fs_telescope * g_telescope)) / (
-        fs_telescope) * fs_reference + fs_reference * g_reference
 
-    magnitude_normalised = microltoolbox.flux_to_magnitude(flux_normalised)
-
+    magnitude_normalised = microltoolbox.flux_to_magnitude(flux_ghost)
+    err_mag = 2.5/np.log(10)*err_flux/flux
     lightcurve_normalised = [time, magnitude_normalised, err_mag]
 
     lightcurve_mag_normalised = np.array(lightcurve_normalised).T
@@ -778,7 +775,7 @@ def plot_LM_ML_geometry(fit):
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
 
-    if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type):
+    if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('VS' not in fit.model.model_type):
         index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
             0]
         source_disk = plt.Circle((trajectory_x[index_source], trajectory_y[index_source]), pyLIMA_parameters.rho,
@@ -818,8 +815,8 @@ def plot_LM_ML_geometry(fit):
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(fig_size[0] * 3 / 4.0/np.log10(len(fit.model.model_dictionnary.keys())))
-    the_table.scale(0.75,0.75)
+    the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
+    the_table.scale(0.75, 0.75)
     title = fit.model.event.name + ' : ' + fit.model.model_type
     figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
     return figure_trajectory

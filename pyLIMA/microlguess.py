@@ -301,7 +301,7 @@ def differential_evolution_parameters_boundaries(model):
 
     Period = (0.01, 2.0)
     phis = (0.0, 2 * np.pi)
-    fs = (0.001, 1.0)
+    fs = (0.1, 1.0)
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
