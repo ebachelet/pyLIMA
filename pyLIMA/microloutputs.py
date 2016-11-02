@@ -504,6 +504,7 @@ def LM_plot_lightcurves(fit):
     :rtype: matplotlib_figure
 
     """
+
     figure, figure_axes = initialize_plot_lightcurve(fit)
     LM_plot_model(fit, figure_axes[0])
     LM_plot_align_data(fit, figure_axes[0])
@@ -640,7 +641,8 @@ def LM_plot_align_data(fit, figure_axe):
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
     MARKER_SYMBOLS.reset()
-
+    import pdb;
+    pdb.set_trace()
     reference_telescope = fit.event.telescopes[0].name
     fs_reference = fit.fit_results[fit.model.model_dictionnary['fs_' + reference_telescope]]
     g_reference = fit.fit_results[fit.model.model_dictionnary['g_' + reference_telescope]]

@@ -153,7 +153,7 @@ class MLFits(object):
 
         if self.method == 'GRIDS':
             self.fix_parameters_dictionnary = OrderedDict(
-            sorted(fix_parameters_dictionnary.items(), key=lambda x: x[1]))
+                sorted(fix_parameters_dictionnary.items(), key=lambda x: x[1]))
             self.grid_resolution = grid_resolution
             self.grids()
 
@@ -509,7 +509,9 @@ class MLFits(object):
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
 
+
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+
 
             # Little prior here, need to be changed
             # if priors == np.inf:
@@ -745,14 +747,11 @@ class MLFits(object):
         pyLIMA_parameters = model.compute_pyLIMA_parameters(fit_process_parameters)
 
         for telescope in self.event.telescopes:
-            lightcurve = telescope.lightcurve_flux
 
-            flux = lightcurve[:, 1]
-            errflux = lightcurve[:, 2]
+            flux = telescope.lightcurve_flux[:,1]
 
-            amplification = model.model_magnification(telescope, pyLIMA_parameters)[0]
 
-            f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+            ml_model, prior, f_source, f_blending = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
             # Prior here
             if f_source < 0:
 
@@ -760,7 +759,7 @@ class MLFits(object):
                 telescopes_fluxes.append(0.0)
             else:
                 telescopes_fluxes.append(f_source)
-                telescopes_fluxes.append(f_blending / f_source)
+                telescopes_fluxes.append(f_blending)
         return telescopes_fluxes
 
     def grids(self):
@@ -778,29 +777,36 @@ class MLFits(object):
 
         hyper_grid = self.construct_the_hyper_grid(parameters_on_the_grid)
 
-        parameters_boundaries = self.redefine_parameters_boundaries(self.fix_parameters_dictionnary)
+        parameters_boundaries = self.redefine_parameters_boundaries()
 
+        grid_results = []
         for grid_parameters_pixel in hyper_grid:
-
-
 
             differential_evolution_estimation = scipy.optimize.differential_evolution(
                 self.chichi_grids,
-                bounds=parameters_boundaries, args=[grid_parameters_pixel],
-                mutation=(1.1, 1.9), popsize=int(15 / len(parameters_boundaries) ** 0.5), maxiter=10,
+                bounds=parameters_boundaries, args=tuple(grid_parameters_pixel.tolist()),
+                mutation=(1.1, 1.9), popsize=int(15 / len(parameters_boundaries) ** 0.5), maxiter=100,
                 tol=0.0001,
-                recombination=0.6, polish='True',
+                recombination=0.6, polish='None',
                 disp=True
             )
 
-            import pdb;
-            pdb.set_trace()
+            best_parameters = self.reconstruct_fit_process_parameters(differential_evolution_estimation['x'],
+                                                                      grid_parameters_pixel)
+            best_parameters += [differential_evolution_estimation['fun']]
 
-    def chichi_grids(self, moving_parameters, fix_parameters):
+            grid_results.append(best_parameters)
+            print sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_parameters_pixel).strip(
+                '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun'])
+        import pdb;
+        pdb.set_trace()
 
-        fit_process_parameters = self.reconstruct_fit_process_parameters( moving_parameters, fix_parameters)
-        print  fit_process_parameters
+    def chichi_grids(self, moving_parameters, *fix_parameters):
+
+        fit_process_parameters = self.reconstruct_fit_process_parameters(moving_parameters, fix_parameters)
+
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
         chichi = 0.0
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
@@ -813,34 +819,32 @@ class MLFits(object):
 
     def reconstruct_fit_process_parameters(self, moving_parameters, fix_parameters):
 
-        fit_process_parameters = [0] * len(self.model.parameters_boundaries)
+        fit_process_parameters = []
 
-        for indice, key in enumerate(self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]):
+        for key in self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]:
 
             if key in self.moving_parameters_dictionnary:
 
-                fit_process_parameters[indice] = moving_parameters[self.moving_parameters_dictionnary[key]]
+                fit_process_parameters.append(moving_parameters[self.moving_parameters_dictionnary[key]])
 
             else:
 
-                fit_process_parameters[indice] = fix_parameters[self.fix_parameters_dictionnary[key]]
-
+                fit_process_parameters.append(fix_parameters[self.fix_parameters_dictionnary[key]])
 
         return fit_process_parameters
 
-    def redefine_parameters_boundaries(self, parameters):
+    def redefine_parameters_boundaries(self):
 
         parameters_boundaries = []
         self.moving_parameters_dictionnary = {}
         count = 0
 
-        for indice,key in enumerate(self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]):
+        for indice, key in enumerate(self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]):
 
             if key not in self.fix_parameters_dictionnary.keys():
-
                 parameters_boundaries.append(self.model.parameters_boundaries[indice])
                 self.moving_parameters_dictionnary[key] = count
-                count +=1
+                count += 1
         return parameters_boundaries
 
     def construct_the_hyper_grid(self, parameters):

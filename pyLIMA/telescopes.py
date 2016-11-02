@@ -12,7 +12,6 @@ import astropy.io.fits as fits
 import microltoolbox
 import microlparallax
 
-
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected lightcurve format differs, please
 # indicate this in the correponding lightcurve_magnitude_dictionnary or lightcurve_flux_dictionnary, see below.
 PYLIMA_LIGHTCURVE_MAGNITUDE_CONVENTION = ['time', 'mag', 'err_mag']
@@ -140,7 +139,6 @@ class Telescope(object):
             :rtype: array_like
         """
 
-
         if choice == 'magnitude':
 
             lightcurve = []
@@ -225,7 +223,8 @@ class Telescope(object):
         """
         para = microlparallax.MLParallaxes(event, parallax)
         para.parallax_combination(self)
-        print 'Parallax('+parallax[0]+') estimated for the telescope '+self.name+ ': SUCCESS'
+        print 'Parallax(' + parallax[0] + ') estimated for the telescope ' + self.name + ': SUCCESS'
+
     def clean_data_magnitude(self):
         """
         Clean outliers of the telescope for the fits. Points are considered as outliers if they
@@ -237,7 +236,7 @@ class Telescope(object):
         :rtype: array_like
         """
 
-        maximum_accepted_precision = 10.0
+        maximum_accepted_precision = 1.0
         outliers_in_mag = 5.0
 
         index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) &
@@ -265,8 +264,11 @@ class Telescope(object):
         :rtype: array_like
         """
 
-
-        index = np.where((~np.isnan(self.lightcurve_flux).any(axis=1)))[0]
+        maximum_accepted_precision = 1.0
+        flux = self.lightcurve_flux[:, 1]
+        error_flux = self.lightcurve_flux[:, 2]
+        index = np.where(
+            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) < maximum_accepted_precision))[0]
         # Should return at least 2 points
         if len(index) > 2:
 
@@ -276,6 +278,7 @@ class Telescope(object):
 
             lightcurve = self.lightcurve_flux
 
+        self.lightcurve_flux = lightcurve
         return lightcurve
 
     def lightcurve_in_flux(self, clean='Yes'):
@@ -321,8 +324,6 @@ class Telescope(object):
         else:
 
             lightcurve = self.lightcurve_flux
-
-
 
         time = lightcurve[:, 0]
         flux = lightcurve[:, 1]

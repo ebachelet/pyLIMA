@@ -67,11 +67,11 @@ def initial_guess_PSPL(event):
 
                     good_points = good_points[indexes]
 
-                    #gravity = (
+                    # gravity = (
                     #   np.median(time[good_points]), np.median(flux_clean[good_points]),
                     #    np.mean(errmag[good_points]))
 
-                    #distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
+                    # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
 
             to = np.median(time[good_points])
             max_flux = max(flux[good_points])
@@ -248,7 +248,7 @@ def initial_guess_DSPL(event):
     unique_filters = np.unique(filters)
 
     # Dummy guess
-    delta_to_guess = 5 # days
+    delta_to_guess = 5  # days
     delta_uo_guess = 0.01
     q_flux_guess = 0.5
 
@@ -277,15 +277,15 @@ def differential_evolution_parameters_boundaries(model):
                                          model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
-    delta_to_boundaries = (-100,100)
-    delta_uo_boundaries = (-1.0,1.0)
-    uo_boundaries = (0.00001,2.0)
+    delta_to_boundaries = (-100, 100)
+    delta_uo_boundaries = (-1.0, 1.0)
+    uo_boundaries = (0.0, 2.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    logs_boundaries = (-1.0,1.0)
-    logq_boundaries = (-5.0,0.0)
+    logs_boundaries = (-1.0, 1.0)
+    logq_boundaries = (-5.0, 0.0)
     alpha_boundaries = (-np.pi, np.pi)
 
     piEN_boundaries = (-2.0, 2.0)
@@ -299,7 +299,9 @@ def differential_evolution_parameters_boundaries(model):
 
     # model_source_spots_boundaries = {'None': []}
 
-
+    Period = (0.01, 2.0)
+    phis = (0.0, 2 * np.pi)
+    fs = (0.001, 1.0)
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
@@ -320,7 +322,9 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, logs_boundaries,
                                  logq_boundaries, alpha_boundaries]
 
-
+    if model.model_type == 'VSPL':
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period, fs, fs, fs, fs, fs, fs, phis,
+                                 phis, phis, phis, phis]
 
         # parameters_boundaries += [q_F_boundaries]
     # Second order boundaries
@@ -354,7 +358,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         return [to_parameters_trial]
 
-    #if 'uo' in parameter_key:
+    # if 'uo' in parameter_key:
     #   epsilon = np.random.uniform(0.9, 1.1)
     #    sign = np.random.choice([-1, 1])
 
@@ -362,7 +366,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
     #    return [uo_trial]
 
-    #if 'tE' in parameter_key:
+    # if 'tE' in parameter_key:
     #    epsilon = np.random.uniform(0.9, 1.1)
     #    sign = np.random.choice([-1, 1])
 
@@ -381,7 +385,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
     if 'g_' in parameter_key:
         return
 
-    #if 'pi' in parameter_key:
+    # if 'pi' in parameter_key:
 
     #    epsilon = np.random.uniform(0.9, 1.1)
     #    sign = np.random.choice([-1,1])

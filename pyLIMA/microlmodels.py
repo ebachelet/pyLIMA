@@ -291,6 +291,8 @@ class MLModel(object):
             self.model_dictionnary = OrderedDict(
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
+        self.model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
+
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
         """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
         if not the default microlensing model is returned.
@@ -314,29 +316,49 @@ class MLModel(object):
         :returns: the microlensing model, the microlensing priors
         :rtype: array_like, float
         """
-        try:
 
+        f_source, g_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
+
+        microlensing_model = f_source * (amplification + g_blending)
+
+        # Prior here
+        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, g_blending)
+        # print 'the microl model', python_time.time() - start_time
+
+        return microlensing_model, priors, f_source, g_blending
+
+    def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification):
+
+        try:
             # Fluxes parameters are fitted
             f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
-            f_blending = f_source * getattr(pyLIMA_parameters, 'g_' + telescope.name)
+            if f_source is None:
+                raise TypeError
+            g_blending = getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
         except TypeError:
-            # import pdb;
-            # pdb.set_trace()
+
             # Fluxes parameters are estimated through np.polyfit
+
+
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+            g_blending = f_blending / f_source
 
-        microlensing_model = f_source * amplification + f_blending
+        return f_source, g_blending
 
-        # Prior here
-        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending)
-        # print 'the microl model', python_time.time() - start_time
+    def flux_baseline(self, telescope, pyLIMA_parameters):
 
-        return microlensing_model, priors
+        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
+
+        f_source, g_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
+
+        f_baseline = f_source*(1+g_blending)
+
+        return f_baseline
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the
@@ -347,21 +369,21 @@ class MLModel(object):
         :rtype: object (namedtuple)
         """
         # start_time = python_time.time()
-        model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
+
 
         for key_parameter in self.model_dictionnary.keys():
 
             try:
 
-                setattr(model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
+                setattr(self.model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
 
             except:
 
-                pass
+                setattr(self.model_parameters, key_parameter, None)
 
         # print 'arange', python_time.time() - start_time
 
-        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
+        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(self.model_parameters)
 
         # print 'conversion', python_time.time() - start_time
         return pyLIMA_parameters
@@ -712,8 +734,130 @@ class ModelUSBL(MLModel):
         else:
             Xs, Ys = source_trajectoire
             magnification = \
-            microlmagnification.amplification_USBL(10 ** pyLIMA_parameters.logs, 10 ** pyLIMA_parameters.logq,
-                                                   Xs, Ys, pyLIMA_parameters.rho,
-                                                   tolerance=0.001)[0]
+                microlmagnification.amplification_USBL(10 ** pyLIMA_parameters.logs, 10 ** pyLIMA_parameters.logq,
+                                                       Xs, Ys, pyLIMA_parameters.rho,
+                                                       tolerance=0.001)[0]
 
         return magnification, source_trajectoire
+
+
+class ModelVSPL(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: PSPL
+        :rtype: string
+        """
+        return 'VSPL'
+
+    def define_pyLIMA_standard_parameters(self):
+        """ Define the standard pyLIMA parameters dictionnary."""
+
+        self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
+
+        for telescope in self.event.telescopes:
+            self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+
+        self.pyLIMA_standards_dictionnary = OrderedDict(
+            sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
+
+        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
+
+    def paczynski_model_parameters(self):
+        """ Define the PSPL standard parameters, [to,uo,tE]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'Period': 3, 'A1': 4, 'A2': 5, 'A3': 6, 'A4': 7, 'A5': 8,
+                            'A6': 9,
+                            'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
+
+        self.Jacobian_flag = 'No way'
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a PSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectoire = source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                               pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        return microlmagnification.amplification_PSPL(*source_trajectoire)
+
+    def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
+        """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
+        if not the default microlensing model is returned.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :returns: the microlensing model
+        :rtype: array_like
+        """
+        lightcurve = telescope.lightcurve_flux
+        time = lightcurve[:,0]
+
+
+        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
+
+        period = getattr(pyLIMA_parameters, 'Period')
+
+        pulsations = 0.0
+
+        for i in (1, 2, 3, 4, 5, 6):
+
+            amplitude = getattr(pyLIMA_parameters, 'A' + str(i))
+            if i == 1:
+                phase = 0.0
+            else:
+                phase = getattr(pyLIMA_parameters, 'phi_' + str(i) + '1')+i*np.pi/2.0
+
+            pulsations -= amplitude * np.cos(
+                2 * np.pi * (i + 1) / period * time + phase)
+
+        pulsations /= 2.5
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,amplification,pulsations)
+
+        microlensing_model = (f_source*10**pulsations)*amplification + f_blending
+        # Prior here.
+
+        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending/f_source)
+        return microlensing_model,priors, f_source, f_blending
+
+    def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
+
+        try:
+            # Fluxes parameters are fitted
+            f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
+            if f_source is None:
+                raise TypeError
+            f_blending = getattr(pyLIMA_parameters, 'fb_' + telescope.name)
+
+        except TypeError:
+
+            # Fluxes parameters are estimated through np.polyfit
+
+
+            lightcurve = telescope.lightcurve_flux
+            flux = lightcurve[:, 1]
+            errflux = lightcurve[:, 2]
+            f_source, f_blending = np.polyfit(amplification*10**pulsations, flux, 1, w=1 / errflux)
+
+        return f_source, f_blending
+
+    def flux_baseline(self, telescope, pyLIMA_parameters):
+
+        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
+
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
+
+        f_baseline = f_source +f_blending
+
+        return f_baseline

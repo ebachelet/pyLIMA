@@ -116,13 +116,13 @@ def main(command_line):
         #                              parallax=['None', 50.0])
 
         Model = microlmodels.create_model('USBL', current_event, parallax = ["None", 2456560])
-        Model.USBL_windows = [2457495, 2457498]
+        Model.USBL_windows = [2457495, 2457515]
 
 #        Model.parameters_guess = [2457493.41, 0.0107945, 36.5994,0.0087,0.35,-1.52,-0.229]
         #Model.parameters_guess = [2456564.0900798775, 0.1790694203068852, 32.705879568338815, 0.004594498996447764,
                                   #0.022960052669346608, -2.656611362460817, -0.7149806227504553, 0.1460871915644311,
                                   #-0.742834734653029]
-        #Model.parameters_boundaries[0] = (2456560,2456565)
+        Model.parameters_boundaries[0] = (2457480, 2457520)
         #Model.parameters_boundaries[1] = (0.1, 0.2)
         #Model.parameters_boundaries[2] = (25, 40)
         #Model.parameters_boundaries[3] = (0.001 ,0.01)
@@ -134,7 +134,7 @@ def main(command_line):
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'GRIDS', fix_parameters_dictionnary={'logs':0})
+        current_event.fit(Model, 'DE')
 
 
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
                         default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB160722/')
+                                'SimulationML/OB160559/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',
