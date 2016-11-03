@@ -331,11 +331,11 @@ class MLModel(object):
 
         try:
             # Fluxes parameters are fitted
-            f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
+            f_source = 2*getattr(pyLIMA_parameters, 'fs_' + telescope.name)/2
 
-            g_blending = getattr(pyLIMA_parameters, 'g_' + telescope.name)
-            if (f_source is None) | (g_blending is None):
-                raise TypeError
+            g_blending = 2*getattr(pyLIMA_parameters, 'g_' + telescope.name)/2
+
+
         except TypeError:
 
             # Fluxes parameters are estimated through np.polyfit
@@ -369,7 +369,7 @@ class MLModel(object):
                 setattr(self.model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
 
             except:
-                setattr(self.model_parameters, key_parameter, None)
+                pass
 
         # print 'arange', python_time.time() - start_time
 
@@ -807,14 +807,18 @@ class ModelVSPL(MLModel):
             if i == 1:
                 phase = 0.0
             else:
-                phase = getattr(pyLIMA_parameters, 'phi_' + str(i) + '1')+i*np.pi/2.0
+                phase = getattr(pyLIMA_parameters, 'phi_' + str(i) + '1')
 
             pulsations += amplitude * np.cos(
                 2 * np.pi * i / period * time + phase)
 
-        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,amplification,-pulsations)
+        #import pdb;
+        #pdb.set_trace()
 
-        microlensing_model = (f_source*10**pulsations)*amplification + f_blending
+        pulsations = 10**pulsations/2.5
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,amplification, pulsations)
+
+        microlensing_model = f_source*pulsations*amplification + f_blending
         # Prior here.
 
         priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending/f_source)
@@ -837,7 +841,7 @@ class ModelVSPL(MLModel):
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            f_source, f_blending = np.polyfit(amplification*10**pulsations, flux, 1, w=1 / errflux)
+            f_source, f_blending = np.polyfit(amplification*pulsations, flux, 1, w=1 / errflux)
 
         return f_source, f_blending
 

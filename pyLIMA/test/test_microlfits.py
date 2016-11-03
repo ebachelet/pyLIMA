@@ -106,7 +106,7 @@ def test_mlfit_FSPL_LM_with_guess():
     model.parameters_boundaries = [[0, 100], [0, 1], [0, 300], [0, 1]]
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
-   
+
     print fit.fit_results
     assert fit.fit_covariance.shape == (4 + 2 * len(current_event.telescopes), 4 + 2 * len(current_event.telescopes))
     assert len(fit.fit_results) == 4 + 2 * len(current_event.telescopes) + 1

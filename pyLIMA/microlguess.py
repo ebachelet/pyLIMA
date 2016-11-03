@@ -299,9 +299,9 @@ def differential_evolution_parameters_boundaries(model):
 
     # model_source_spots_boundaries = {'None': []}
 
-    Period = (0.01, 2.0)
-    phis = (0.0, 2 * np.pi)
-    fs = (0.1, 1.0)
+    Period = (0.01, 1.0)
+    phis = (-np.pi, np.pi)
+    amplitude = (-0.1, 0.1)
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
@@ -323,7 +323,8 @@ def differential_evolution_parameters_boundaries(model):
                                  logq_boundaries, alpha_boundaries]
 
     if model.model_type == 'VSPL':
-        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period, fs, fs, fs, fs, fs, fs, phis,
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period, amplitude, amplitude, amplitude,
+                                 amplitude, amplitude, amplitude, phis,
                                  phis, phis, phis, phis]
 
         # parameters_boundaries += [q_F_boundaries]

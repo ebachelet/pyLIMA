@@ -63,7 +63,7 @@ your_event.check_event()
 
 ### Construct the model you want to fit. Let's go basic with a PSPL, without second_order effects :
 
-model_1 = microlmodels.MLModels(your_event, 'PSPL')
+model_1 = microlmodels.create_model('PSPL', your_event)
 
 ### Let's try with the simplest Levenvberg_Marquardt algorithm :
 
@@ -73,7 +73,7 @@ your_event.fit(model_1,'LM')
 
 your_event.fits[0].produce_outputs()
 
-print 'Chi2_LM :',your_event.fits[0].outputs.fit_parameters._chichi
+print 'Chi2_LM :',your_event.fits[0].outputs.fit_parameters.chichi
 
 plt.show()
 
@@ -83,13 +83,13 @@ your_event.fit(model_1,'DE')
 
 your_event.fits[1].produce_outputs()
 
-print 'Chi2_DE :',your_event.fits[1].outputs.fit_parameters._chichi
+print 'Chi2_DE :',your_event.fits[1].outputs.fit_parameters.chichi
 
 plt.show()
 
 ### Let's go basic for FSPL :
 
-model_2 = microlmodels.MLModels(your_event, 'FSPL')
+model_2 = microlmodels.create_model('FSPL', your_event)
 
 your_event.fit(model_2,'LM')
 
@@ -97,7 +97,7 @@ your_event.fit(model_2,'LM')
 
 your_event.fits[-1].produce_outputs()
 
-print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters._chichi
+print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi
 
 plt.show()
 
@@ -112,7 +112,7 @@ your_event.fit(model_2,'LM')
 
 your_event.fits[-1].produce_outputs()
 
-print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters._chichi
+print 'Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi
 
 plt.show()
 
@@ -122,7 +122,7 @@ your_event.fit(model_2,'DE')
 
 your_event.fits[-1].produce_outputs()
 
-print 'Chi2_DE :',your_event.fits[-1].outputs.fit_parameters._chichi
+print 'Chi2_DE :',your_event.fits[-1].outputs.fit_parameters.chichi
 
 plt.show()
 

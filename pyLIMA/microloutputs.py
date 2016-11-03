@@ -27,7 +27,7 @@ plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 
 MARKER_SYMBOLS = np.nditer([[',', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']])
-
+#plt.style.use('ggplot')
 
 def pdf_output(fit, output_directory):
     from matplotlib.backends.backend_pdf import PdfPages
@@ -369,23 +369,23 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
     :param plot_axe: the matplotlib axes where you plot the data
     """
     MARKER_SYMBOLS.reset()
-    reference_telescope = fit.event.telescopes[0].name
-    fs_reference = parameters[fit.model.model_dictionnary['fs_' + reference_telescope]]
-    g_reference = parameters[fit.model.model_dictionnary['g_' + reference_telescope]]
+    reference_telescope = fit.event.telescopes[0]
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
 
     for telescope in fit.event.telescopes:
 
         if telescope.name == reference_telescope:
 
-            lightcurve_magnitude = telescope.lightcurve_magnitude
+            lightcurve = telescope.lightcurve_magnitude
 
         else:
 
-            fs_telescope = parameters[fit.model.model_dictionnary['fs_' + telescope.name]]
-            g_telescope = parameters[fit.model.model_dictionnary['g_' + telescope.name]]
+            telescope_ghost = copy.copy(telescope)
+            telescope_ghost.name = reference_telescope.name
 
-            lightcurve_magnitude = align_telescope_lightcurve(telescope.lightcurve_magnitude, fs_reference,
-                                                              g_reference, fs_telescope, g_telescope)
+            model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
+            model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+            lightcurve_magnitude = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
 
         plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2],
                           ls='None', marker=str(MARKER_SYMBOLS.next()), label=telescope.name)

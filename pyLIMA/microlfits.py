@@ -459,7 +459,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(1.1, 1.9), popsize=int(15 / len(self.model.parameters_boundaries) ** 0.5), maxiter=5000,
+            mutation=(1.1, 1.9), popsize=int(15), maxiter=5000,
             tol=0.0001,
             recombination=0.6, polish='True',
             disp=True
