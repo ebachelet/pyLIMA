@@ -25,7 +25,7 @@ from pyLIMA import microlmodels
 from pyLIMA import microlsimulator
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('.dat' in event_name) and ('Follow' not in event_name)]
+                    ('2015-BLG-1795' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
                      ('.dat' in event_name) and ('~' not in event_name)]
 
@@ -36,13 +36,13 @@ def main(command_line):
     for event_name in events_names:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'OB161921'
+        name = '2015-BLG-1795'
 
         #name = 'Lightcurve_'+str(event_name)+'.'
         current_event = event.Event()
         current_event.name = name
 
-        event_telescopes = [i for i in events_names2 ]
+        event_telescopes = [i for i in events_names2 if name in i ]
         # event_telescopes = ['OGLE-2016-BLG-0676.dat','MOA-2016-BLG-215_MOA_transformed.dat',
         # 'MOA-2016-BLG-215_transformed.dat']
         # event_telescopes = ['MOA-2016-BLG-215_transformed.dat']
@@ -77,8 +77,10 @@ def main(command_line):
 
                 if lightcurve[0, 0] < 2450000:
                     lightcurve[:, 0] += 2450000
-
-                good = np.where((lightcurve[:,0]>2457400))[0]
+                START = 2456906
+                END = 2458998
+                good = np.where((lightcurve[:, 0] < END) & (lightcurve[:, 0] > START))[0]
+                #good = np.where((lightcurve[:,0]>2457400))[0]
 
 
                 lightcurve = lightcurve[good]
@@ -86,14 +88,14 @@ def main(command_line):
                 pass
 
             if 'MOA_R' in event_telescope:
-                telescope = telescopes.Telescope(name=event_telescope[0:-6]+'_'+event_telescope[-5], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[-9:-4]+'_'+event_telescope[-5], camera_filter=event_telescope[-5],
                                                  light_curve_flux=lightcurve,
                                                  light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
                                                  reference_flux=0.0)
                 telescope.location = 'Earth'
             else:
 
-                telescope = telescopes.Telescope(name=event_telescope[0:-6]+'_'+event_telescope[-5], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[-9:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,
                                                  light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
                 telescope.location = 'Earth'
@@ -115,7 +117,7 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('USBL', current_event, parallax = ["None", 2456560])
+        Model = microlmodels.create_model('PSPL', current_event, parallax = ["None", 2456560])
         Model.USBL_windows = [2457495, 2457515]
 
 #        Model.parameters_guess = [2457493.41, 0.0107945, 36.5994,0.0087,0.35,-1.52,-0.229]
@@ -134,14 +136,14 @@ def main(command_line):
         # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
         #Model.parameters_boundaries[3] = (-5.0, -1.0)
         # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'DE')
+        current_event.fit(Model, 'LM')
 
 
 
 
 
         current_event.fits[0].produce_outputs()
-        current_event.fits[0].produce_pdf(command_line.input_directory)
+        #current_event.fits[0].produce_pdf(command_line.input_directory)
         # print current_event.fits[0].fit_results
         plt.show()
         import pdb;
@@ -166,8 +168,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
-                        default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/'
-                                'SimulationML/OB160559/')
+                        default='/nethome/ebachelet/Desktop/RoboNET/Survey_Strategy/Simulations/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

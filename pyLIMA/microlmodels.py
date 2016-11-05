@@ -331,9 +331,9 @@ class MLModel(object):
 
         try:
             # Fluxes parameters are fitted
-            f_source = 2*getattr(pyLIMA_parameters, 'fs_' + telescope.name)/2
+            f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
 
-            g_blending = 2*getattr(pyLIMA_parameters, 'g_' + telescope.name)/2
+            g_blending = 2 * getattr(pyLIMA_parameters, 'g_' + telescope.name) / 2
 
 
         except TypeError:
@@ -349,7 +349,6 @@ class MLModel(object):
             g_blending = f_blending / f_source
 
         return f_source, g_blending
-
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the
@@ -761,9 +760,23 @@ class ModelVSPL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3, 'A1': 4, 'A2': 5, 'A3': 6, 'A4': 7, 'A5': 8,
-                            'A6': 9,
-                            'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
+        #model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3, 'A1': 4, 'A2': 5, 'A3': 6, 'A4': 7, 'A5': 8,
+        #'A6': 9,
+        # 'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
+
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3}
+
+        filters = [telescope.filter for telescope in self.event.telescopes]
+
+        unique_filters = np.unique(filters)
+
+        self.number_of_harmonics = 2
+        for i in xrange(self.number_of_harmonics):
+
+            for filter in unique_filters:
+                model_dictionary['A'+str(i+1)+'_' + filter] = len(model_dictionary)
+                model_dictionary['phi'+str(i+1)+'_' + filter] = len(model_dictionary)
+
 
         self.Jacobian_flag = 'No way'
         return model_dictionary
@@ -792,8 +805,7 @@ class ModelVSPL(MLModel):
         :rtype: array_like
         """
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:,0]
-
+        time = lightcurve[:, 0]
 
         amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
 
@@ -801,37 +813,42 @@ class ModelVSPL(MLModel):
 
         pulsations = 0.0
 
-        for i in (1, 2, 3, 4, 5, 6):
+        #factor = 0.0
+        for i in xrange(self.number_of_harmonics):
 
-            amplitude = getattr(pyLIMA_parameters, 'A' + str(i))
-            if i == 1:
+            #mplitude = getattr(pyLIMA_parameters, 'A_' + str(i))
+            #factor = getattr(pyLIMA_parameters, 'q_' + telescope.filter)
+            #factor2 = getattr(pyLIMA_parameters, 'phi_' + telescope.filter)
+            amplitude = getattr(pyLIMA_parameters, 'A'+str(i+1)+'_' + telescope.filter)
+            if i == 89:
                 phase = 0.0
             else:
-                phase = getattr(pyLIMA_parameters, 'phi_' + str(i) + '1')
+                #phase = getattr(pyLIMA_parameters, 'phi_' + str(i) + '1')
+                phase = getattr(pyLIMA_parameters, 'phi'+str(i+1)+'_' + telescope.filter)
+                # import pdb;
+                # pdb.set_trace()
+                #phase *=(1+factor2)
+                pulsations += amplitude * np.cos(2 * np.pi * i / period * time + phase)
 
-            pulsations += amplitude * np.cos(
-                2 * np.pi * i / period * time + phase)
+        # import pdb;
+        # pdb.set_trace()
 
-        #import pdb;
-        #pdb.set_trace()
+        pulsations = 10 ** -pulsations / 2.5
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
 
-        pulsations = 10**pulsations/2.5
-        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,amplification, pulsations)
-
-        microlensing_model = f_source*pulsations*amplification + f_blending
+        #microlensing_model = f_source * pulsations * amplification + f_blending
+        microlensing_model = f_source * pulsations * amplification + f_blending
         # Prior here.
 
-        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending/f_source)
-        return microlensing_model,priors, f_source, f_blending
+        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending / f_source)
+        return microlensing_model, priors, f_source, f_blending
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
 
         try:
             # Fluxes parameters are fitted
-            f_source = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
-            if f_source is None:
-                raise TypeError
-            f_blending = getattr(pyLIMA_parameters, 'fb_' + telescope.name)
+            f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
+            f_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
 
         except TypeError:
 
@@ -841,7 +858,6 @@ class ModelVSPL(MLModel):
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            f_source, f_blending = np.polyfit(amplification*pulsations, flux, 1, w=1 / errflux)
+            f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
 
         return f_source, f_blending
-

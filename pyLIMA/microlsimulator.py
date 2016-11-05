@@ -60,7 +60,7 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
     """
 
     total_number_of_days = int(time_end - time_start)
-    time_step_observations = 1.0 / (24 * sampling)
+    time_step_observations = sampling / 24.0
     night_begin = time_start
 
     time_observed = []
@@ -69,10 +69,10 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
         good_weather = np.random.uniform(0, 1)
 
         if good_weather > bad_weather_percentage:
-            random_begin_of_the_night = np.random.uniform(0, 0.1)
+            random_begin_of_the_night = 0.0
             night_end = night_begin + 1.0
-            time_observed += np.arange(night_begin + random_begin_of_the_night, night_end,
-                                       time_step_observations).tolist()
+            time_observed += np.arange(night_begin+time_step_observations + random_begin_of_the_night, night_end,
+                                           time_step_observations).tolist()
 
         night_begin += 1
 
@@ -139,7 +139,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
         :param str filter: the filter used for observations
         :param float time_start: the start of observations in JD
         :param float time_end: the end of observations in JD
-        :param float sampling: the number of points observed per hour.
+        :param float sampling: the hour sampling.
         :param object event: the microlensing event you look at
         :param str location: the location of the telescope. If it is 'Space', then the observations are made
                              continuously given the observing windows and the sampling.
@@ -159,7 +159,10 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
 
         target = SkyCoord(event.ra, event.dec, unit='deg')
 
-        time_of_observations = time_simulation(time_start, time_end, sampling,
+        minimum_sampling = min(4.0, sampling)
+        ratio_sampling = np.round(sampling/minimum_sampling)
+
+        time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
                                                bad_weather_percentage)
 
         time_convertion = Time(time_of_observations, format='jd').isot
@@ -174,11 +177,11 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
                                      & (Sun.alt < -18 * astropy.units.deg)
                                      & (Moon_separation > moon_windows_avoidance * astropy.units.deg))[0]
 
-        time_of_observations = time_of_observations[observing_windows]
+        time_of_observations = time_of_observations[observing_windows][::ratio_sampling]
 
     else:
 
-        time_of_observations = np.arange(time_start, time_end, 1 / (sampling * 24.0))
+        time_of_observations = np.arange(time_start, time_end, sampling/ ( 24.0))
 
     lightcurveflux = np.zeros((len(time_of_observations), 3))
     lightcurveflux[:, 0] = time_of_observations

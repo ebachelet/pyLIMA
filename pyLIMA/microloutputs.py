@@ -382,6 +382,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
 
             telescope_ghost = copy.copy(telescope)
             telescope_ghost.name = reference_telescope.name
+            telescope_ghost.filter = reference_telescope.filter
 
             model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
             model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
@@ -647,7 +648,7 @@ def LM_plot_align_data(fit, figure_axe):
 
     for telescope in fit.event.telescopes:
 
-        if telescope.name == reference_telescope:
+        if telescope.name == reference_telescope.name:
 
             lightcurve = telescope.lightcurve_magnitude
 
@@ -655,10 +656,12 @@ def LM_plot_align_data(fit, figure_axe):
 
             telescope_ghost = copy.copy(telescope)
             telescope_ghost.name = reference_telescope.name
-
-            model_ghost = fit.model.compute_the_microlensing_model( telescope_ghost, pyLIMA_parameters)[0]
+            telescope_ghost.filter = reference_telescope.filter
+           # import pdb;
+            #pdb.set_trace()
+            model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
             model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
-            lightcurve = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost,model_telescope)
+            lightcurve = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
 
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
                             marker=str(MARKER_SYMBOLS.next()),
@@ -681,14 +684,14 @@ def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_tel
     """
     time = lightcurve_telescope_flux[:, 0]
     flux = lightcurve_telescope_flux[:, 1]
-    err_flux = lightcurve_telescope_flux[:, 2]
+    error_flux = lightcurve_telescope_flux[:, 2]
+    err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
 
-    residus = (flux-model_telescope)/model_telescope
-    flux_ghost = model_ghost*(1+residus)
+    residuals = 2.5 * np.log10(model_telescope / flux)
 
 
-    magnitude_normalised = microltoolbox.flux_to_magnitude(flux_ghost)
-    err_mag = 2.5/np.log(10)*err_flux/flux
+    magnitude_normalised = microltoolbox.flux_to_magnitude(model_ghost)+residuals
+
     lightcurve_normalised = [time, magnitude_normalised, err_mag]
 
     lightcurve_mag_normalised = np.array(lightcurve_normalised).T

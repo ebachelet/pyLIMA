@@ -170,8 +170,8 @@ class MLFits(object):
                       '' \
                       'method to "DE"'
 
-                self.method = 'DE'
-                self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
+                #self.method = 'DE'
+                #self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
             else:
 
@@ -609,8 +609,9 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         print sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS'
+        print fit_result
         return fit_result, covariance_matrix, computation_time
 
     def residuals_LM(self, fit_process_parameters):
@@ -749,8 +750,8 @@ class MLFits(object):
 
             flux = telescope.lightcurve_flux[:,1]
 
-
             ml_model, prior, f_source, f_blending = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+
             # Prior here
             if f_source < 0:
 
