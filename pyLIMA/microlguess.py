@@ -316,12 +316,12 @@ def differential_evolution_parameters_boundaries(model):
     if model.model_type == 'DSPL':
         parameters_boundaries = [to_boundaries, uo_boundaries, delta_to_boundaries,
                                  delta_uo_boundaries, tE_boundaries]
-        # filters = [telescope.filter for telescope in model.event.telescopes]
+        filters = [telescope.filter for telescope in model.event.telescopes]
 
-        # unique_filters = np.unique(filters)
+        unique_filters = np.unique(filters)
 
-        # parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
-        # parameters_boundaries += [q_F_boundaries]
+        parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
+
     if model.model_type == 'USBL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, logs_boundaries,
                                  logq_boundaries, alpha_boundaries]
