@@ -556,7 +556,6 @@ class MLFits(object):
         # algorithm find it.
 
 
-        print self.guess
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
                                                     Dfun=self.LM_Jacobian, col_deriv=1, full_output=1, ftol=10 ** -6,

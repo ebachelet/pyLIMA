@@ -25,7 +25,7 @@ from pyLIMA import microlmodels
 from pyLIMA import microlsimulator
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('2015-BLG-1795' in event_name) and ('Follow' not in event_name)]
+                    ('2015-BLG-2095' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
                      ('.dat' in event_name) and ('~' not in event_name)]
 
@@ -36,7 +36,7 @@ def main(command_line):
     for event_name in events_names:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = '2015-BLG-1795'
+        name = '2015-BLG-2095'
 
         #name = 'Lightcurve_'+str(event_name)+'.'
         current_event = event.Event()
