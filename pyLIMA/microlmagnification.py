@@ -83,7 +83,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
 
     return amplification_fspl, impact_parameter
 
-def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
+def amplification_USBL(separation, q, Xs, Ys, rho, tolerance = 0.001):
     """ The uniform source binary lens amplification, based on the work of Valerio Bozza, thanks :)
         "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
          optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
@@ -108,13 +108,16 @@ def amplification_USBL(s, q, Xs, Ys, rho, tolerance = 0.001):
     #Ys = np.float64(Ys)
     #rho = np.float64(rho)
     #tolerance = np.float64(tolerance)
-
     binary_magnification = VBBinary.VBBinaryLensing()
 
     amplification_usbl = np.array([])
 
-    for xs, ys in zip(Xs, Ys):
-        amplification_usbl = np.append( amplification_usbl, binary_magnification.BinaryMag(s, q, xs, ys, abs(rho), tolerance))
+    for index in xrange(len(Xs)):
+        xs = Xs[index]
+        ys = Ys[index]
+        s = separation[index]
+
+        amplification_usbl = np.append( amplification_usbl, binary_magnification.BinaryMag(s, q, xs, ys, rho, tolerance))
 
     return  amplification_usbl, Xs
 
