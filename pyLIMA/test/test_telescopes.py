@@ -63,12 +63,6 @@ def test_clean_data_not_clean():
     assert np.allclose(clean_lightcurve, np.array([[0, 1, 0.1], [5, 6, 0.1], [9, 2, 0.03]]))
 
 
-def test_clean_data_not_clean_but_2_points():
-    telescope = telescopes.Telescope(light_curve_magnitude=np.array([[0, 1, 0.1], [2, 3, -28.0]]))
-    clean_lightcurve = telescope.clean_data_magnitude()
-    assert np.alltrue(clean_lightcurve == np.array([[0, 1, 0.1], [2, 3, -28.0]]))
-
-
 def test_lightcurve_in_flux():
     telescope = telescopes.Telescope(
         light_curve_magnitude=np.array([[0, 1, 0.1], [3, 4, 0.1], [5, 6, 0.1]]))
@@ -98,15 +92,15 @@ def test_n_data():
          [9, 2, 0.03]]))
     telescope.lightcurve_flux = telescope.lightcurve_in_flux()
 
-    assert telescope.n_data() == 6
+    assert telescope.n_data() == 3
     assert telescope.n_data('flux') == 3
 
 
 def test_arrange_the_lightcurve_columns_good_columns():
     telescope = telescopes.Telescope(light_curve_magnitude=np.array(
         [[0, 1, 0.1], [3, 0.0, 0.1], [5, 6, 0.1], [7, 0.0, 0.0], [8, 1, 27.0], [9, 2, 0.03]]),
-                                     light_curve_magnitude_dictionnary={'time': 0, 'mag': 1,
-                                                                        'err_mag': 2})
+        light_curve_magnitude_dictionnary={'time': 0, 'mag': 1,
+                                           'err_mag': 2}, clean_the_lightcurve='No')
 
     assert np.allclose(telescope.lightcurve_magnitude, np.array(
         [[0, 1, 0.1], [3, 0.0, 0.1], [5, 6, 0.1], [7, 0.0, 0.0], [8, 1, 27.0], [9, 2, 0.03]]))
@@ -115,8 +109,8 @@ def test_arrange_the_lightcurve_columns_good_columns():
 def test_arrange_the_lightcurve_columns_invert_time_magnitude():
     telescope = telescopes.Telescope(light_curve_magnitude=np.array(
         [[0, 1, 0.1], [3, 0.0, 0.1], [5, 6, 0.1], [7, 0.0, 0.0], [8, 1, 27.0], [9, 2, 0.03]]),
-                                     light_curve_magnitude_dictionnary={'time': 1, 'mag': 0,
-                                                                        'err_mag': 2})
+        light_curve_magnitude_dictionnary={'time': 1, 'mag': 0,
+                                           'err_mag': 2}, clean_the_lightcurve='No')
 
     assert np.allclose(telescope.lightcurve_magnitude, np.array(
         [[1, 0, 0.1], [0.0, 3, 0.1], [6, 5, 0.1], [0.0, 7, 0.0], [1, 8, 27.0], [2, 9, 0.03]]))
@@ -125,9 +119,8 @@ def test_arrange_the_lightcurve_columns_invert_time_magnitude():
 def test_input_lightcurve_flux():
     telescope = telescopes.Telescope(light_curve_flux=np.array(
         [[0, 10.0, 0.1], [3, 5.0, 0.1], [5, 7.0, 0.1], [7, 5.0, 0.0], [8, 1.0, 27.0],
-         [9, 2.0, 0.03]]),
-                                     light_curve_flux_dictionnary={'time': 1, 'flux': 0,
-                                                                   'err_flux': 2})
+         [9, 2.0, 0.03]]), light_curve_flux_dictionnary={'time': 1, 'flux': 0,
+                                      'err_flux': 2}, reference_flux=10000.0, clean_the_lightcurve='Yes')
 
     assert np.allclose(telescope.lightcurve_magnitude,
                        np.array([[1.00000000e+01, 1.74000000e+01, -1.08573620e-05],

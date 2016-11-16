@@ -67,7 +67,7 @@ def main(command_line):
 
                     lightcurve = np.array(
                         [raw_light_curve[:, 0], raw_light_curve[:, 1],
-                         2.33 * (raw_light_curve[:, 2] ** 2 + 0.005 ** 2) ** 0.5]).T
+                         1.0 * (raw_light_curve[:, 2] ** 2 + 0.00 ** 2) ** 0.5]).T
                 elif ('Spitzer' in event_telescope):
 
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
@@ -124,27 +124,37 @@ def main(command_line):
         import pdb;
         pdb.set_trace()
         current_event.find_survey('OOB150196I')
-        # current_event.check_event()
+        current_event.check_event()
         print [i.name for i in current_event.telescopes]
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('USBL', current_event, parallax=["Annual", 2457121],
-                                          orbital_motion=["2D", 2457121])
+        Model = microlmodels.create_model('USBL', current_event, parallax=['Annual', 2457120],
+                                          orbital_motion=['None', 2457120])
         Model.USBL_windows = [2456900, 2457300]
 
-        Model.parameters_guess = [2457124.8648720165, 0.05087890409693893, 91.73208043047485, 0.0076081975458405365,
-                                  0.21238283769339375, -0.10463980545672134, -2.8938338520787865, 0.23125922595225648,
-                                  -0.08570629277441434, -0.0003936674943793056, -0.0003000986621273718]
-        # Model.parameters_guess = [2456564.0900798775, 0.1790694203068852, 32.705879568338815, 0.004594498996447764,
-        # 0.022960052669346608, -2.656611362460817, -0.7149806227504553, 0.1460871915644311,
-        # -0.742834734653029]
-        Model.parameters_boundaries[0] = (2457100, 245730)
-        Model.parameters_boundaries[1] = (0.01, 0.1)
-        Model.parameters_boundaries[2] = (90, 100)
-        Model.parameters_boundaries[3] = (0.001, 0.01)
-        Model.parameters_boundaries[4] = (-0.05, 0.05)
-        Model.parameters_boundaries[5] = (-1.0, 0.0)
+        Model.parameters_guess = [2457123.7393666035, 0.07377374912968027, 100.19567145132673,
+                                  0.00781922126907861, 0.1891170236894218, -0.08522691762768343, -2.751077942426451,
+                                  0.1,
+                                  -0.1]
+        #Model.parameters_guess = [2457121.718802689, 0.044874912769544036, 92.42670084982296, 0.007699897220068091,
+        #                          0.21064050918430152, -0.06865864981640608, -2.888118768836607, 0,0]
+        # Model.parameters_guess = [2457123.339606512, 0.07127476937284467, 98.29935489284918, 0.007789733755782033,
+        #                          0.19294303151201372, -0.07806259861571774, -2.7967866875047314, -0.04708553491145748,
+        #                          -0.011182419093513155, 2.6840603557907263e-05, 0.0012152762867827978]
+
+        # Model.parameters_guess = [2457124.8648720165, 0.05087890409693893, 91.73208043047485, 0.0076081975458405365,
+        #                          0.21238283769339375, -0.10463980545672134, -2.8938338520787865, 0.23125922595225648,
+        #                          -0.08570629277441434, -0.0003936674943793056, -0.0003000986621273718]
+
+        Model.parameters_boundaries[0] = (2457120, 2457125)
+        Model.parameters_boundaries[1] = (0.05, 0.1)
+        Model.parameters_boundaries[2] = (90, 110)
+        Model.parameters_boundaries[3] = (0.005, 0.01)
+        Model.parameters_boundaries[4] = (0.15, 0.25)
+        Model.parameters_boundaries[5] = (-0.2, 0.0)
+        Model.parameters_boundaries[6] = (-3.0, -2.5)
+
         # Model.parameters_boundaries[6] = (-0.8, -0.6)
         # Model.parameters_boundaries[3] = (20, 40)
         # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
@@ -160,18 +170,18 @@ def main(command_line):
         plt.show()
         import pdb;
         pdb.set_trace()
-    end = time.time()
+        end = time.time()
 
-    import pdb;
-    pdb.set_trace()
-    print end - start
+        import pdb;
+        pdb.set_trace()
+        print end - start
 
-    all_results = [('Fits.txt', results),
-                   ('Fits_Error.txt', errors)]
+        all_results = [('Fits.txt', results),
+                       ('Fits_Error.txt', errors)]
 
-    for file_name, values in all_results:
-        np.savetxt(os.path.join(command_line.output_directory, file_name), np.array(values),
-                   fmt="%s")
+        for file_name, values in all_results:
+            np.savetxt(os.path.join(command_line.output_directory, file_name), np.array(values),
+                       fmt="%s")
 
 
 if __name__ == '__main__':

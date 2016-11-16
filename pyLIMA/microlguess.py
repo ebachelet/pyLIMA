@@ -296,6 +296,8 @@ def differential_evolution_parameters_boundaries(model):
     XiEN_boundaries = (-2.0, 2.0)
     XiEE_boundaries = (-2.0, 2.0)
 
+    dsdt_boundaries = (-1*10**-2, 1*10**-2)
+    dalphadt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
     # model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
     # model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
@@ -348,7 +350,9 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries.append(XiEN_boundaries)
         parameters_boundaries.append(XiEE_boundaries)
 
-    # if orbital_motion
+    if model.orbital_motion_model[0] != 'None':
+        parameters_boundaries.append(dsdt_boundaries)
+        parameters_boundaries.append(dalphadt_boundaries)
     # if source_spots
 
     return parameters_boundaries

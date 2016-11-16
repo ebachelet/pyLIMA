@@ -79,13 +79,15 @@ class Telescope(object):
                                               Default is {'time': 0, 'flux' : 1, 'err_flux' : 2 }
 
     :param float reference_flux: a float used for the transformation of difference fluxes to real fluxes.
-                                 Default is 10000.0 .
+                                 Default is 0.0 .
+
+    :param str clean_the_lightcurve : a string indicated if you want pyLIMA to clean your lightcurves. Highly recommanded!
     """
 
     def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None,
                  light_curve_magnitude_dictionnary=None,
                  light_curve_flux=None, light_curve_flux_dictionnary=None,
-                 reference_flux=10000.0, clean_lightcurve='Yes'):
+                 reference_flux=0.0, clean_the_lightcurve='Yes'):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -101,16 +103,25 @@ class Telescope(object):
         self.lightcurve_flux_dictionnary = light_curve_flux_dictionnary
         self.reference_flux = reference_flux
 
+        self.lightcurve_magnitude = []
+        self.lightcurve_flux = []
+
         if light_curve_magnitude is None:
 
-            self.lightcurve_magnitude = []
-            self.lightcurve_flux = []
+            pass
 
         else:
 
             self.lightcurve_magnitude = light_curve_magnitude
             self.lightcurve_magnitude = self.arrange_the_lightcurve_columns('magnitude')
-            self.lightcurve_flux = self.lightcurve_in_flux(clean_lightcurve)
+
+            if clean_the_lightcurve == 'Yes':
+                self.lightcurve_magnitude = self.clean_data_magnitude()
+
+            self.lightcurve_flux = self.lightcurve_in_flux()
+
+            if clean_the_lightcurve == 'Yes':
+                 self.lightcurve_flux = self.clean_data_flux()
 
         if light_curve_flux is None:
 
@@ -120,7 +131,16 @@ class Telescope(object):
 
             self.lightcurve_flux = light_curve_flux
             self.lightcurve_flux = self.arrange_the_lightcurve_columns('flux')
-            self.lightcurve_magnitude = self.lightcurve_in_magnitude(clean_lightcurve)
+
+            if clean_the_lightcurve == 'Yes':
+                self.lightcurve_flux = self.clean_data_flux()
+
+
+            self.lightcurve_magnitude = self.lightcurve_in_magnitude()
+
+            if clean_the_lightcurve == 'Yes':
+                self.lightcurve_magnitude = self.clean_data_magnitude()
+
 
         self.location = 'Earth'
         self.altitude = 0.0  # meters
@@ -237,7 +257,6 @@ class Telescope(object):
         """
 
         maximum_accepted_precision = 1.0
-        outliers_in_mag = 5.0
 
         index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) &
                          (np.abs(self.lightcurve_magnitude[:, 2]) < maximum_accepted_precision))[0]
@@ -283,7 +302,7 @@ class Telescope(object):
                                                                              'bad_points_flux attribute.'
         return lightcurve
 
-    def lightcurve_in_flux(self, clean='Yes'):
+    def lightcurve_in_flux(self):
         """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
@@ -293,13 +312,8 @@ class Telescope(object):
         :return: the lightcurve in flux, lightcurve_flux.
         :rtype: array_like
         """
-        if clean is 'Yes':
 
-            lightcurve = self.clean_data_magnitude()
-
-        else:
-
-            lightcurve = self.lightcurve_magnitude
+        lightcurve = self.lightcurve_magnitude
 
         time = lightcurve[:, 0]
         mag = lightcurve[:, 1]
@@ -311,7 +325,7 @@ class Telescope(object):
 
         return lightcurve_in_flux
 
-    def lightcurve_in_magnitude(self, clean='Yes'):
+    def lightcurve_in_magnitude(self):
         """
         Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
@@ -319,13 +333,7 @@ class Telescope(object):
         :return: the lightcurve in magnitude, lightcurve_magnitude.
         :rtype: array_like
         """
-        if clean is 'Yes':
-
-            lightcurve = self.clean_data_flux()
-
-        else:
-
-            lightcurve = self.lightcurve_flux
+        lightcurve = self.lightcurve_flux
 
         time = lightcurve[:, 0]
         flux = lightcurve[:, 1]
@@ -336,6 +344,6 @@ class Telescope(object):
 
         ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T
 
-        index = np.where((~np.isnan(ligthcurve_magnitude).any(axis=1)))[0]  # prevent nan magnitude
 
-        return ligthcurve_magnitude[index]
+
+        return ligthcurve_magnitude

@@ -792,7 +792,7 @@ class ModelUSBL(MLModel):
 
         return magnification, source_trajectoire
 
-    class ModelVSPL(MLModel):
+class ModelVSPL(MLModel):
         @property
         def model_type(self):
             """ Return the kind of microlensing model.
