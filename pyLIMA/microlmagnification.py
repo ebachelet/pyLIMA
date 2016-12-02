@@ -111,7 +111,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance = 0.001):
     binary_magnification = VBBinary.VBBinaryLensing()
 
     amplification_usbl = np.array([])
-   
+
     for index in xrange(len(Xs)):
         xs = Xs[index]
         ys = Ys[index]
