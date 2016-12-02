@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyLIMA.microltoolbox module &mdash; pyLIMA 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
+    <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
+    <link rel="next" title="pyLIMA.telescopes module" href="pyLIMA.telescopes.html" />
+    <link rel="prev" title="pyLIMA.microlparallax module" href="pyLIMA.microlparallax.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyLIMA.telescopes.html" title="pyLIMA.telescopes module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyLIMA.microlparallax.html" title="pyLIMA.microlparallax module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyLIMA 0.0.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="pyLIMA.html" accesskey="U">pyLIMA package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyLIMA.microltoolbox">
+<span id="pylima-microltoolbox-module"></span><h1>pyLIMA.microltoolbox module<a class="headerlink" href="#module-pyLIMA.microltoolbox" title="Permalink to this headline">¶</a></h1>
+<p>Created on Mon May 23 17:18:15 2016</p>
+<p>&#64;author: ebachelet</p>
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.chichi">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">chichi</code><span class="sig-paren">(</span><em>residuals_fn</em>, <em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#chichi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.chichi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chi^2 .</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>residuals_fn</strong> (<em>func</em>) &#8211; a function which compute the residuals</li>
+<li><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.error_flux_to_error_magnitude">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">error_flux_to_error_magnitude</code><span class="sig-paren">(</span><em>error_flux</em>, <em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#error_flux_to_error_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.error_flux_to_error_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected flux error to the the corresponding error in magnitude.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>error_flux</strong> (<em>array_like</em>) &#8211; the flux errors measurements you want to transform.</li>
+<li><strong>flux</strong> (<em>array_like</em>) &#8211; the fluxes corresponding to these errors</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the transformed errors in magnitude</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.error_magnitude_to_error_flux">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">error_magnitude_to_error_flux</code><span class="sig-paren">(</span><em>error_magnitude</em>, <em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#error_magnitude_to_error_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.error_magnitude_to_error_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected magnitude error to the the corresponding error in flux.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>error_magnitude</strong> (<em>array_like</em>) &#8211; the magnitude errors measurements you want to transform.</li>
+<li><strong>flux</strong> (<em>array_like</em>) &#8211; the fluxes corresponding to these errors</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the transformed errors in flux units</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.flux_to_magnitude">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">flux_to_magnitude</code><span class="sig-paren">(</span><em>flux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#flux_to_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.flux_to_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected flux to the the corresponding magnitude.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flux</strong> (<em>array_like</em>) &#8211; the flux you want to transform.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the transformed magnitude</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microltoolbox.magnitude_to_flux">
+<code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">magnitude_to_flux</code><span class="sig-paren">(</span><em>magnitude</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#magnitude_to_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.magnitude_to_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the injected magnitude to the the corresponding flux.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>magnitude</strong> (<em>array_like</em>) &#8211; the magnitude you want to transform.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the transformed magnitude in flux unit</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyLIMA.microlparallax.html"
+                        title="previous chapter">pyLIMA.microlparallax module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyLIMA.telescopes.html"
+                        title="next chapter">pyLIMA.telescopes module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyLIMA.microltoolbox.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Etienne Bachelet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      
+      |
+      <a href="_sources/pyLIMA.microltoolbox.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
