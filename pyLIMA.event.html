@@ -26,41 +26,150 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
     <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
-    <link rel="next" title="pyLIMA.manager module" href="pyLIMA.manager.html" />
-    <link rel="prev" title="pyLIMA package" href="pyLIMA.html" />
+    <link rel="next" title="pyLIMA.telescopes module" href="pyLIMA.telescopes.html" />
+    <link rel="prev" title="pyLIMA.test package" href="pyLIMA.test.html" />
    
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.manager.html" title="pyLIMA.manager module"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.html" title="pyLIMA package"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLIMA 0.0.0 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="pyLIMA.html" accesskey="U">pyLIMA package</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pylima-event-module">
-<h1>pyLIMA.event module<a class="headerlink" href="#pylima-event-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pyLIMA.event">
+<span id="pylima-event-module"></span><h1>pyLIMA.event module<a class="headerlink" href="#module-pyLIMA.event" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Aug 27 16:39:32 2015</p>
+<p>&#64;author: ebachelet</p>
+<dl class="class">
+<dt id="pyLIMA.event.Event">
+<em class="property">class </em><code class="descclassname">pyLIMA.event.</code><code class="descname">Event</code><a class="reference internal" href="_modules/pyLIMA/event.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>######## Event module ########</p>
+<p>This module create an event object with the informations (attributes) needed for the fits.</p>
+<p>Attributes :</p>
+<blockquote>
+<div><p>kind : type of event. In general, should be &#8216;Microlensing&#8217; (default)</p>
+<p>name : name of the event. Should be a string. Default is &#8216;Sagittarius A*&#8217;</p>
+<p>ra : right ascension of the event (J2000). Should be a float in degree between 0.0 and
+360.0. Default is ra of Sagittarius A, <span class="math">\(\alpha\)</span> = 266.416792 from Baker &amp; Sramek
+1999ApJ...524..805B</p>
+<p>dec : declination of the event (J2000). Should be a float in degree between -90 and 90.
+Default is dec of Sagittarius A, <span class="math">\(\delta\)</span> = -29.007806 from Baker &amp; Sramek
+1999ApJ...524..805B</p>
+<p>Teff : effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K</p>
+<p>log_g : surface gravity in log10 cgs unit. Should be a float. Default is 4.5</p>
+<p>telescopes : list of telescopes names (strings). Default is an empty list. Have to be
+fill with some telescopes class instances.</p>
+<p>survey : the reference telescope. Has to be a string, default is &#8216;None&#8217;.</p>
+<p>fits : list of microlfits objects.</p>
+</div></blockquote>
+<dl class="method">
+<dt id="pyLIMA.event.Event.check_event">
+<code class="descname">check_event</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.check_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.check_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to check if everything is correctly set before the fit.
+An ERROR is returned if the check is not successful
+Should be used before any event_fit function calls</p>
+<p>First check if the event name is a string.
+Then check if the right ascension (event.ra) is between 0 and 360 degrees.
+Then check if the declination (event.dec) is between -90 and 90 degrees.
+Then check if you have any telescopes ingested.
+Finally check if your telescopes have a lightcurve attributes different from None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.event.Event.compute_parallax_all_telescopes">
+<code class="descname">compute_parallax_all_telescopes</code><span class="sig-paren">(</span><em>parallax_model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.compute_parallax_all_telescopes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.compute_parallax_all_telescopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the parallax displacement for all the telescopes, if this is desired in
+the second order parameter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.event.Event.find_survey">
+<code class="descname">find_survey</code><span class="sig-paren">(</span><em>choice=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.find_survey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.find_survey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to find the survey telescope in the telescopes list,
+and put it on the first place (useful for some fits functions).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> &#8211; the name of the telescope choosing as the survey. Has to be a string.
+Default is the first telescope.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.event.Event.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>model</em>, <em>method</em>, <em>flux_estimation_MCMC='MCMC'</em>, <em>fix_parameters_dictionnary=None</em>, <em>grid_resolution=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to fit the event with a model and a method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> &#8211; the model you want to fit. More details in the microlfits module</li>
+<li><strong>method</strong> &#8211; the fitting method you want to use. Has to be a string in the</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>available_methods parameter:</p>
+<blockquote>
+<div><p>&#8216;LM&#8217; : Levenberg-Marquardt algorithm</p>
+<p>&#8216;DE&#8217; : Differential Evolution algorithm</p>
+<p>&#8216;MCMC&#8217; : Monte-Carlo Markov Chain algorithm</p>
+<p>More details in the microlfits module</p>
+</div></blockquote>
+<p>A microlfits object is added in the event.fits list. For example, if you request two fits,
+you will obtain :</p>
+<p>event.fits=[fit1,fit2]</p>
+<p>More details in the microlfits module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.event.Event.lightcurves_in_flux">
+<code class="descname">lightcurves_in_flux</code><span class="sig-paren">(</span><em>choice='Yes'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.lightcurves_in_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.lightcurves_in_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform all telescopes magnitude lightcurves in flux units.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> &#8211; to clean your lightcurve or not. Has to be a string &#8216;Yes&#8217; or &#8216;No&#8217;.</td>
+</tr>
+</tbody>
+</table>
+<p>Defaul is &#8216;Yes&#8217;. More details in the telescope module</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.event.Event.telescopes_names">
+<code class="descname">telescopes_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.telescopes_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.telescopes_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the the telescope&#8217;s names contain in the event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.event.Event.total_number_of_data_points">
+<code class="descname">total_number_of_data_points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.total_number_of_data_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.total_number_of_data_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the parallax displacement for all the telescopes, if this is desired in
+the second order parameter.
+:return: n_data, the total number of points
+:rtype: float</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="pyLIMA.event.EventException">
+<em class="property">exception </em><code class="descclassname">pyLIMA.event.</code><code class="descname">EventException</code><a class="reference internal" href="_modules/pyLIMA/event.html#EventException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.EventException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></a></p>
+</dd></dl>
+
 </div>
 
 
@@ -68,13 +177,17 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="pyLIMA.html"
-                        title="previous chapter">pyLIMA package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pyLIMA.manager.html"
-                        title="next chapter">pyLIMA.manager module</a></p>
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.test.html" title="previous chapter">pyLIMA.test package</a></li>
+      <li>Next: <a href="pyLIMA.telescopes.html" title="next chapter">pyLIMA.telescopes module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -103,12 +216,12 @@
       &copy;2016, Etienne Bachelet.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
       <a href="_sources/pyLIMA.event.txt"
-          rel="nofollow">Page source</a></li>
+          rel="nofollow">Page source</a>
     </div>
 
     

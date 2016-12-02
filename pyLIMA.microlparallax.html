@@ -26,41 +26,231 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
     <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
-    <link rel="next" title="pyLIMA.microltoolbox module" href="pyLIMA.microltoolbox.html" />
+    <link rel="next" title="pyLIMA.microlsimulator module" href="pyLIMA.microlsimulator.html" />
     <link rel="prev" title="pyLIMA.microloutputs module" href="pyLIMA.microloutputs.html" />
    
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.microltoolbox.html" title="pyLIMA.microltoolbox module"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.microloutputs.html" title="pyLIMA.microloutputs module"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLIMA 0.0.0 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="pyLIMA.html" accesskey="U">pyLIMA package</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pylima-microlparallax-module">
-<h1>pyLIMA.microlparallax module<a class="headerlink" href="#pylima-microlparallax-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pyLIMA.microlparallax">
+<span id="pylima-microlparallax-module"></span><h1>pyLIMA.microlparallax module<a class="headerlink" href="#module-pyLIMA.microlparallax" title="Permalink to this headline">¶</a></h1>
+<p>Created on Wed Oct 28 11:49:44 2015</p>
+<p>&#64;author: ebachelet</p>
+<dl class="class">
+<dt id="pyLIMA.microlparallax.MLParallaxes">
+<em class="property">class </em><code class="descclassname">pyLIMA.microlparallax.</code><code class="descname">MLParallaxes</code><span class="sig-paren">(</span><em>event</em>, <em>parallax_model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<blockquote>
+<div><p>######## Parallax module ########</p>
+<p>This module compute the parallax shifts due to different parallax effects.</p>
+<p>Attributes :</p>
+<p>event : the event object on which you perform the fit on. More details on the event module.</p>
+<p>parallax_model : The parallax effect you want to fit. Have to be a list containing the
+parallax model name
+and the reference time to_par (in JD unit). Example : [&#8216;Annual&#8217;,2457000.0]</p>
+<p>AU : the astronomical unit,  as defined by astropy (in meter)</p>
+<p>speed_of_light : the speed light c,  as defined by astropy (in meter/second)</p>
+<p>Earth_radius : the Earth equatorial radius,  as defined by astropy (in meter)</p>
+<p>target_angles_in_the_sky : a list containing [RA,DEC] of the target in radians unit.</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>event</strong> &#8211; the event object on which you perform the fit on. More details on the event module.</li>
+<li><strong>parallax_model</strong> &#8211; The parallax effect you want to fit. Have to be a list containing the</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>parallax model name</dt>
+<dd>and the to_par value. Example : [&#8216;Annual&#8217;,2457000.0]</dd>
+</dl>
+<dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.HJD_to_JD">
+<code class="descname">HJD_to_JD</code><span class="sig-paren">(</span><em>time_to_transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.HJD_to_JD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.HJD_to_JD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the input time from HJD to JD.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>time_to_transform</strong> (<em>array_like</em>) &#8211; the numpy array containing the time in HJD you want</td>
+</tr>
+</tbody>
+</table>
+<p>to transform in JD.
+:return: the time in JD
+:rtype: array_like</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.North_East_vectors_target">
+<code class="descname">North_East_vectors_target</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.North_East_vectors_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.North_East_vectors_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function define the North and East vectors projected on the sky plane
+perpendicular to the line
+of sight (i.e the line define by RA,DEC of the event).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.annual_parallax">
+<code class="descname">annual_parallax</code><span class="sig-paren">(</span><em>time_to_treat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.annual_parallax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.annual_parallax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the position shift due to the Earth movement. Please have a look on :
+&#8220;Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy&#8221;
+Gould, Andrew 2004. <a class="reference external" href="http://adsabs.harvard.edu/abs/2004ApJ...606..319G">http://adsabs.harvard.edu/abs/2004ApJ...606..319G</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>time_to_treat</strong> &#8211; a numpy array containing the time where you want to compute this</td>
+</tr>
+</tbody>
+</table>
+<p>effect.
+:return: the shift induce by the Earth motion around the Sun
+:rtype: array_like</p>
+<dl class="docutils">
+<dt><strong>WARNING</strong> <span class="classifier-delimiter">:</span> <span class="classifier">this is a geocentric point of view.</span></dt>
+<dd>slalib use MJD time definition, which is MJD = JD-2400000.5</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.parallax_combination">
+<code class="descname">parallax_combination</code><span class="sig-paren">(</span><em>telescope</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.parallax_combination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.parallax_combination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute, and set, the deltas_positions attributes of the telescope object
+inside the list of telescopes. deltas_positions is the offset between the position of the
+observatory at the time t, and the
+center of the Earth at the date to_par. More details on each parallax functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object on which you want to set the deltas_positions</td>
+</tr>
+</tbody>
+</table>
+<p>due to parallax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.space_parallax">
+<code class="descname">space_parallax</code><span class="sig-paren">(</span><em>time_to_treat</em>, <em>satellite_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.space_parallax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.space_parallax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the position shift due to the distance of the obervatories from the Earth
+center.
+Please have a look on :
+&#8220;Parallax effects in binary microlensing events&#8221;
+Hardy, S.J and Walker, M.A. 1995. <a class="reference external" href="http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H">http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>time_to_treat</strong> &#8211; a numpy array containing the time where you want to compute this</td>
+</tr>
+</tbody>
+</table>
+<p>effect.
+:param satellite_name: the name of the observatory. Have to be recognize by JPL HORIZON.
+:return: the shift induce by the distance of the telescope to the Earth center.
+:rtype: array_like
+<strong>WARNING</strong> : slalib use MJD time definition, which is MJD = JD-2400000.5</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.terrestrial_parallax">
+<code class="descname">terrestrial_parallax</code><span class="sig-paren">(</span><em>time_to_treat</em>, <em>altitude</em>, <em>longitude</em>, <em>latitude</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.terrestrial_parallax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.terrestrial_parallax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the position shift due to the distance of the obervatories from the Earth
+center.
+Please have a look on :
+&#8220;Parallax effects in binary microlensing events&#8221;
+Hardy, S.J and Walker, M.A. 1995. <a class="reference external" href="http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H">http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>time_to_treat</strong> &#8211; a numpy array containing the time where you want to compute this</td>
+</tr>
+</tbody>
+</table>
+<p>effect.
+:param altitude: the altitude of the telescope in meter
+:param longitude: the longitude of the telescope in degree
+:param latitude: the latitude of the telescope in degree
+:return: the shift induce by the distance of the telescope to the Earth center.
+:rtype: array_like</p>
+<p><strong>WARNING</strong> : slalib use MJD time definition, which is MJD = JD-2400000.5</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlparallax.compute_parallax_curvature">
+<code class="descclassname">pyLIMA.microlparallax.</code><code class="descname">compute_parallax_curvature</code><span class="sig-paren">(</span><em>piE</em>, <em>delta_positions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#compute_parallax_curvature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.compute_parallax_curvature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the curvature induce by the parallax of from
+deltas_positions of a telescope.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>piE</strong> (<em>array_like</em>) &#8211; the microlensing parallax vector. Have a look :
+<a class="reference external" href="http://adsabs.harvard.edu/abs/2004ApJ...606..319G">http://adsabs.harvard.edu/abs/2004ApJ...606..319G</a></li>
+<li><strong>delta_positions</strong> (<em>array_like</em>) &#8211; the delta_positions of the telescope. More details in microlparallax module.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">delta_tau and delta_u, the shift introduce by parallax</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like,array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlparallax.horizons_obscodes">
+<code class="descclassname">pyLIMA.microlparallax.</code><code class="descname">horizons_obscodes</code><span class="sig-paren">(</span><em>observatory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#horizons_obscodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.horizons_obscodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform observatory names to JPL horizon codes.
+Write by Tim Lister, thanks :)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>observatory</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the satellite name you would like to obtain ephemeris. As to be in the dictionnary
+JPL_HORIZONS_ID (exact name matching!).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the JPL ID of your satellite.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlparallax.optcallback">
+<code class="descclassname">pyLIMA.microlparallax.</code><code class="descname">optcallback</code><span class="sig-paren">(</span><em>socket</em>, <em>command</em>, <em>option</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#optcallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.optcallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write by Tim Lister, thanks :)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlparallax.produce_horizons_ephem">
+<code class="descclassname">pyLIMA.microlparallax.</code><code class="descname">produce_horizons_ephem</code><span class="sig-paren">(</span><em>body</em>, <em>start_time</em>, <em>end_time</em>, <em>observatory='ELP'</em>, <em>step_size='60m'</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#produce_horizons_ephem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.produce_horizons_ephem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write by Tim Lister. Thanks for sharing :) Produe RA,DEC and distance from the Geocentric Center.</p>
+</dd></dl>
+
 </div>
 
 
@@ -68,13 +258,17 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="pyLIMA.microloutputs.html"
-                        title="previous chapter">pyLIMA.microloutputs module</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pyLIMA.microltoolbox.html"
-                        title="next chapter">pyLIMA.microltoolbox module</a></p>
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.microloutputs.html" title="previous chapter">pyLIMA.microloutputs module</a></li>
+      <li>Next: <a href="pyLIMA.microlsimulator.html" title="next chapter">pyLIMA.microlsimulator module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -103,12 +297,12 @@
       &copy;2016, Etienne Bachelet.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
       <a href="_sources/pyLIMA.microlparallax.txt"
-          rel="nofollow">Page source</a></li>
+          rel="nofollow">Page source</a>
     </div>
 
     

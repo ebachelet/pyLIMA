@@ -26,37 +26,245 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
     <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
-    <link rel="prev" title="pyLIMA.microltoolbox module" href="pyLIMA.microltoolbox.html" />
+    <link rel="next" title="pyLIMA.microlfits module" href="pyLIMA.microlfits.html" />
+    <link rel="prev" title="pyLIMA.event module" href="pyLIMA.event.html" />
    
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.microltoolbox.html" title="pyLIMA.microltoolbox module"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLIMA 0.0.0 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="pyLIMA.html" accesskey="U">pyLIMA package</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pylima-telescopes-module">
-<h1>pyLIMA.telescopes module<a class="headerlink" href="#pylima-telescopes-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pyLIMA.telescopes">
+<span id="pylima-telescopes-module"></span><h1>pyLIMA.telescopes module<a class="headerlink" href="#module-pyLIMA.telescopes" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Aug 27 16:39:32 2015</p>
+<p>&#64;author: ebachelet</p>
+<dl class="class">
+<dt id="pyLIMA.telescopes.Telescope">
+<em class="property">class </em><code class="descclassname">pyLIMA.telescopes.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>name='NDG'</em>, <em>camera_filter='I'</em>, <em>light_curve_magnitude=None</em>, <em>light_curve_magnitude_dictionnary=None</em>, <em>light_curve_flux=None</em>, <em>light_curve_flux_dictionnary=None</em>, <em>reference_flux=0.0</em>, <em>clean_the_lightcurve='Yes'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>######## Telescope module ########</p>
+<p>This module create a telescope object with the informations (attributes) needed for the fits.</p>
+<p>Attributes :</p>
+<blockquote>
+<div><p>location : The location of your observatory. Should be &#8220;Earth&#8221; (default) or &#8220;Space&#8221;.</p>
+<p>altitude : Altitude in meter of the telescope. Default is 0.0 (sea level).</p>
+<p>longitude : Longitude of the telescope in degrees. Default is 0.57.</p>
+<p>latitude : Latitude in degrees. Default is 49.49 .</p>
+<dl class="docutils">
+<dt>gamma <span class="classifier-delimiter">:</span> <span class="classifier">(Microlensing covention) Limb darkening coefficient <span class="math">\(\Gamma\)</span> associated to the filter.</span></dt>
+<dd>The classical (Milne definition) linear limb darkening coefficient can be found using:
+u=(3*gamma)/(2+gamma).
+Default is 0.0 (i.e uniform source brightness)</dd>
+</dl>
+<p>lightcurve_magnitude : a numpy array describing your data in magnitude.</p>
+<dl class="docutils">
+<dt>lightcurve_magnitude_dictionnary <span class="classifier-delimiter">:</span> <span class="classifier">a python dictionnary to transform the lightcurve_magnitude</span></dt>
+<dd>input to pyLIMA convention.</dd>
+</dl>
+<p>lightcurve_flux : a numpy array describing your data in flux.</p>
+<p>lightcurve_flux_dictionnary : a python dictionnary to transform the lightcurve_flux input to pyLIMA convention.</p>
+<p>reference_flux : a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .</p>
+<dl class="docutils">
+<dt>deltas-positions <span class="classifier-delimiter">:</span> <span class="classifier">a list containing the position shift of this observatory due to parallax.</span></dt>
+<dd>Default is an empty list. More details in microlparallax.</dd>
+</dl>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; name of the telescope. Default is &#8216;NDG&#8217;</li>
+<li><strong>camera_filter</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; telescope filter used. Should be a string which follows the convention of :
+&#8221; Gravity and limb-darkening coefficients for the Kepler, CoRoT, Spitzer, uvby,
+UBVRIJHK,
+and Sloan photometric systems&#8221;
+Claret, A. and Bloemen, S. 2011A&amp;A...529A..75C. For example, &#8216;I&#8217; (default) is
+Johnson_Cousins I filter
+and &#8216;i&#8217;&#8217; is the SDSS-i&#8217; Sloan filter.</li>
+<li><strong>light_curve_magnitude</strong> (<em>array_like</em>) &#8211; a numpy array with time, magnitude and error in magnitude.
+Default is an None.</li>
+<li><strong>light_curve_magnitude_dictionnary</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a python dictionnary that informs your columns convention. Used to
+translate to pyLIMA convention [time,mag,err_mag].
+Default is {&#8216;time&#8217;: 0, &#8216;mag&#8217; : 1, &#8216;err_mag&#8217; : 2 }</li>
+<li><strong>light_curve_flux</strong> (<em>array-like</em>) &#8211; a numpy array with time, flux and error in flux. Default is an None.</li>
+<li><strong>light_curve_flux_dictionnary</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a python dictionnary that informs your columns convention. Used to
+translate to pyLIMA convention [time,flux,err_flux].
+Default is {&#8216;time&#8217;: 0, &#8216;flux&#8217; : 1, &#8216;err_flux&#8217; : 2 }</li>
+<li><strong>reference_flux</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; a float used for the transformation of difference fluxes to real fluxes.
+Default is 0.0 .</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:param str clean_the_lightcurve : a string indicated if you want pyLIMA to clean your lightcurves. Highly recommanded!</p>
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.arrange_the_lightcurve_columns">
+<code class="descname">arrange_the_lightcurve_columns</code><span class="sig-paren">(</span><em>choice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.arrange_the_lightcurve_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.arrange_the_lightcurve_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rearange the lightcurve to the pyLIMA convention.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; &#8216;magnitude&#8217; or &#8216;flux&#8217;. A string which indicated on which lightcurves apply
+the sorting.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the lightcurve sorted in pyLIMA convention</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.clean_data_flux">
+<code class="descname">clean_data_flux</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.clean_data_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.clean_data_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean outliers of the telescope for the fits. Points are considered as outliers if they
+are 10 mag brighter
+or fainter than the lightcurve median or if nan appears in any columns or errobar higher
+than a 1 mag.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the cleaned magnitude lightcurve</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.clean_data_magnitude">
+<code class="descname">clean_data_magnitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.clean_data_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.clean_data_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean outliers of the telescope for the fits. Points are considered as outliers if they
+are 10 mag brighter
+or fainter than the lightcurve median or if nan appears in any columns or errobar higher
+than a 1 mag.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the cleaned magnitude lightcurve</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.compute_parallax">
+<code class="descname">compute_parallax</code><span class="sig-paren">(</span><em>event</em>, <em>parallax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.compute_parallax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.compute_parallax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and set the deltas_positions attribute due to the parallax.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a event object. More details in the event module.</li>
+<li><strong>parallax</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list containing the parallax model and to_par. More details in microlparallax module.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.find_gamma">
+<code class="descname">find_gamma</code><span class="sig-paren">(</span><em>Teff</em>, <em>log_g</em>, <em>claret_path='./data/'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.find_gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.find_gamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the associated <span class="math">\(\Gamma\)</span> linear limb-darkening coefficient associated to the filter,
+the given effective
+temperature and the given surface gravity in log10 cgs.</p>
+<dl class="docutils">
+<dt>WARNING. Two strong assomption are made :</dt>
+<dd><ul class="first last simple">
+<li>the microturbulent velocity turbulent_velocity is fixed to 2 km/s</li>
+<li>the metallicity is fixed equal to the Sun : metallicity=0.0</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Teff</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The effective temperature of the source in Kelvin.</li>
+<li><strong>log_g</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The log10 surface gravity in cgs.</li>
+<li><strong>claret_path</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; path to the Claret table.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.lightcurve_in_flux">
+<code class="descname">lightcurve_in_flux</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.lightcurve_in_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.lightcurve_in_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
+accordingly. More details in microltoolbox module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>clean</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; &#8216;Yes&#8217; or &#8216;No&#8217;. Perform or not a clean_data call to avoid outliers.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the lightcurve in flux, lightcurve_flux.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.lightcurve_in_magnitude">
+<code class="descname">lightcurve_in_magnitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.lightcurve_in_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.lightcurve_in_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention. Transform error bar
+accordingly. More details in microltoolbox module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the lightcurve in magnitude, lightcurve_magnitude.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.telescopes.Telescope.n_data">
+<code class="descname">n_data</code><span class="sig-paren">(</span><em>choice='magnitude'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope.n_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope.n_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of data points in the lightcurve.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; &#8216;magnitude&#8217; (default) or &#8216;flux&#8217; The unit you want to check data for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the size of the corresponding lightcurve</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -64,10 +272,17 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="pyLIMA.microltoolbox.html"
-                        title="previous chapter">pyLIMA.microltoolbox module</a></p>
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.event.html" title="previous chapter">pyLIMA.event module</a></li>
+      <li>Next: <a href="pyLIMA.microlfits.html" title="next chapter">pyLIMA.microlfits module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -96,12 +311,12 @@
       &copy;2016, Etienne Bachelet.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
       <a href="_sources/pyLIMA.telescopes.txt"
-          rel="nofollow">Page source</a></li>
+          rel="nofollow">Page source</a>
     </div>
 
     

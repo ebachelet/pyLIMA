@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pyLIMA.manager module &mdash; pyLIMA 0.0.0 documentation</title>
+    <title>Conventions &mdash; pyLIMA 0.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,6 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
+    <link rel="next" title="Example" href="Example.html" />
+    <link rel="prev" title="Installation" href="Installation.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -37,15 +39,23 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-pyLIMA.manager">
-<span id="pylima-manager-module"></span><h1>pyLIMA.manager module<a class="headerlink" href="#module-pyLIMA.manager" title="Permalink to this headline">¶</a></h1>
-<p>Created on Fri Aug 28 10:17:30 2015</p>
-<p>&#64;author: ebachelet</p>
-<dl class="function">
-<dt id="pyLIMA.manager.main">
-<code class="descclassname">pyLIMA.manager.</code><code class="descname">main</code><span class="sig-paren">(</span><em>command_line</em><span class="sig-paren">)</span><a class="headerlink" href="#pyLIMA.manager.main" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+  <div class="section" id="conventions">
+<h1>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h1>
+<p>pyLIMA use the following conventions.</p>
+<p>The time given in observations is expected to be in HJD.</p>
+<p>Following the idea of uniform notations in the field, pyLIMA is based on <a class="reference external" href="http://adsabs.harvard.edu/abs/2000ApJ...542..785G/">Gould2000</a>. The
+informations in [] represents the units:</p>
+<ul class="simple">
+<li><span class="math">\(t_o\)</span> [days]  is define as the time of the minimum impact parameter.</li>
+<li><span class="math">\(u_o\)</span> [<span class="math">\(\theta_E\)</span>] is the minimum impact parameter. It is positive if the source pass on the left of the source.</li>
+<li><span class="math">\(t_E\)</span> [days] is the angular Einstein ring crossing time.</li>
+<li><span class="math">\(\rho\)</span> [<span class="math">\(\theta_E\)</span>] is the normalised angular source radius.</li>
+<li><span class="math">\(s\)</span> [<span class="math">\(\theta_E\)</span>] is the normalised angular separation between the binary lens component.</li>
+<li><span class="math">\(q\)</span> [] is the binary mass ratio, with the smaller body on the right of the system.</li>
+<li><span class="math">\(\alpha\)</span> [rad] is the angle between the source trajectory and the the binary lens axis, counted in trigonometric convention.</li>
+<li><span class="math">\(\pi_{EN}\)</span> [<span class="math">\(AU/r_E\)</span>] is the North component of the microlensing parallax.</li>
+<li><span class="math">\(\pi_{EE}\)</span> [<span class="math">\(AU/r_E\)</span>] is the East component of the microlensing parallax.</li>
+</ul>
 </div>
 
 
@@ -57,13 +67,15 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="Example.html" title="next chapter">Example</a></li>
   </ul></li>
 </ul>
 </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/pyLIMA.manager.txt"
+      <li><a href="_sources/Conventions.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -92,7 +104,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
-      <a href="_sources/pyLIMA.manager.txt"
+      <a href="_sources/Conventions.txt"
           rel="nofollow">Page source</a>
     </div>
 

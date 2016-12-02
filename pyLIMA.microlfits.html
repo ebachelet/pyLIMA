@@ -27,40 +27,450 @@
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
     <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
     <link rel="next" title="pyLIMA.microlguess module" href="pyLIMA.microlguess.html" />
-    <link rel="prev" title="pyLIMA.manager module" href="pyLIMA.manager.html" />
+    <link rel="prev" title="pyLIMA.telescopes module" href="pyLIMA.telescopes.html" />
    
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.microlguess.html" title="pyLIMA.microlguess module"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.manager.html" title="pyLIMA.manager module"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLIMA 0.0.0 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="pyLIMA.html" accesskey="U">pyLIMA package</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pylima-microlfits-module">
-<h1>pyLIMA.microlfits module<a class="headerlink" href="#pylima-microlfits-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pyLIMA.microlfits">
+<span id="pylima-microlfits-module"></span><h1>pyLIMA.microlfits module<a class="headerlink" href="#module-pyLIMA.microlfits" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Aug 27 16:39:32 2015</p>
+<p>&#64;author: ebachelet</p>
+<dl class="class">
+<dt id="pyLIMA.microlfits.MLFits">
+<em class="property">class </em><code class="descclassname">pyLIMA.microlfits.</code><code class="descname">MLFits</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>######## Fitter module ########</p>
+<p>This module fits the event with the selected attributes.</p>
+<p><strong>WARNING</strong>: All fits (and so results) are made using data in flux.</p>
+<p>Attributes :</p>
+<blockquote>
+<div><p>event : the event object on which you perform the fit on. More details on the event module.</p>
+<dl class="docutils">
+<dt>model <span class="classifier-delimiter">:</span> <span class="classifier">The microlensing model you want to fit. Has to be an object define in</span></dt>
+<dd>microlmodels module.
+More details on the microlmodels module.</dd>
+</dl>
+<p>method : The fitting method you want to use for the fit.</p>
+<p>guess : The guess you can give to the fit or the guess return by the initial_guess function.</p>
+<p>fit_results : the fit parameters returned by method LM and DE.</p>
+<p>fit_covariance : the fit parameters covariance matrix returned by method LM and DE.</p>
+<p>fit_time : the time needed to fit.</p>
+<p>MCMC_chains : the MCMC chains returns by the MCMC method</p>
+<p>MCMC_probabilities : the objective function computed for each chains of the MCMC method</p>
+<p>fluxes_MCMC_method : a string describing how you want to estimate the model fluxes for the MCMC method.</p>
+<p>outputs : the standard pyLIMA outputs. More details in the microloutputs module.</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the</td>
+</tr>
+</tbody>
+</table>
+<p>event module.</p>
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.LM_Jacobian">
+<code class="descname">LM_Jacobian</code><span class="sig-paren">(</span><em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.LM_Jacobian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.LM_Jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the analytical Jacobian matrix, if requested by method LM.
+Available only for PSPL and FSPL without second_order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.
+:return: a numpy array which represents the jacobian matrix
+:rtype: array_like</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.MCMC">
+<code class="descname">MCMC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.MCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.MCMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>The MCMC method. Construct starting points of the chains around
+the best solution found by the &#8216;DE&#8217; method.
+The objective function is <a class="reference internal" href="#pyLIMA.microlfits.MLFits.chichi_MCMC" title="pyLIMA.microlfits.MLFits.chichi_MCMC"><code class="xref py py-func docutils literal"><span class="pre">chichi_MCMC()</span></code></a>. Optimization
+is made on Paczynski parameters, fs and g are found using a linear fit (np.polyfit).</p>
+<p>Based on the emcee python package :
+&#8221; emcee: The MCMC Hammer&#8221; (Foreman-Mackey et al. 2013).
+Have a look here : <a class="reference external" href="http://dan.iel.fm/emcee/current/">http://dan.iel.fm/emcee/current/</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple containing (MCMC_chains, MCMC_probabilities)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>WARNING</strong> :</dt>
+<dd>nwalkers is set to 200
+nlinks is set to 100
+nwalkers*nlinks MCMC steps in total</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.check_fit">
+<code class="descname">check_fit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.check_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.check_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the fit results and covariance make sens.</p>
+<p>0.0 terms or a negative term in the diagonal covariance matrix indicate the fit is not
+reliable.</p>
+<p>A negative source flux is also counted as a bad fit.</p>
+<p>A negative rho or rho&gt; 0.1 is also consider as a bad fit</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a flag indicated good or bad fit (&#8216;Good Fit&#8217; or &#8216;Bad Fit&#8217;)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)">string</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.chichi_MCMC">
+<code class="descname">chichi_MCMC</code><span class="sig-paren">(</span><em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.chichi_MCMC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.chichi_MCMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chi^2 for the MCMC method. There is some priors here.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.chichi_differential_evolution">
+<code class="descname">chichi_differential_evolution</code><span class="sig-paren">(</span><em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.chichi_differential_evolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.chichi_differential_evolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chi^2 for the DE method. There is some priors here.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.chichi_grids">
+<code class="descname">chichi_grids</code><span class="sig-paren">(</span><em>moving_parameters</em>, <em>*fix_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.chichi_grids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.chichi_grids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.chichi_telescopes">
+<code class="descname">chichi_telescopes</code><span class="sig-paren">(</span><em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.chichi_telescopes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.chichi_telescopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of chi^2 (float) for individuals telescopes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2 for each telescopes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.construct_the_hyper_grid">
+<code class="descname">construct_the_hyper_grid</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.construct_the_hyper_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.construct_the_hyper_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.differential_evolution">
+<code class="descname">differential_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.differential_evolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.differential_evolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>The DE method. Differential evolution algorithm. The objective function is
+<a class="reference internal" href="#pyLIMA.microlfits.MLFits.chichi_differential_evolution" title="pyLIMA.microlfits.MLFits.chichi_differential_evolution"><code class="xref py py-func docutils literal"><span class="pre">chichi_differential_evolution()</span></code></a>.</p>
+<blockquote>
+<div><p>Based on the scipy.optimize.differential_evolution.
+Look Storn &amp; Price (1997) :
+&#8220;Differential Evolution – A Simple and Efficient Heuristic for
+global Optimization over Continuous Spaces&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body">a tuple containing (fit_results, fit_covariance, computation_time)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">rtype:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>WARNING</strong> :</dt>
+<dd>tol (relative standard deviation of the objective function) is set to 10^-6
+popsize (the total number of individuals is :
+popsize*number_of_paczynski_parameters)
+is set to 15 mutation is set to (0.9, 1.5)
+recombination is set to 0.6
+These parameters can avoid the fit to properly converge (expected to be rare :)).
+Just relaunch should be fine.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.find_fluxes">
+<code class="descname">find_fluxes</code><span class="sig-paren">(</span><em>fit_process_parameters</em>, <em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.find_fluxes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.find_fluxes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM
+method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> &#8211; the model parameters ingested by the correpsonding fitting</td>
+</tr>
+</tbody>
+</table>
+<p>routine.
+:param model: the on which you want to compute the fs,g parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of tuple with the (fs,g) telescopes flux parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.grids">
+<code class="descname">grids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.grids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.grids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute models on a grid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.initial_guess">
+<code class="descname">initial_guess</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.initial_guess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.initial_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to estimate the microlensing parameters. Only use for PSPL and FSPL
+models. More details on microlguess module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Return guess_parameters:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">a list containing parameters guess related to the model.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.lmarquardt">
+<code class="descname">lmarquardt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.lmarquardt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.lmarquardt" title="Permalink to this definition">¶</a></dt>
+<dd><p>The LM method. This is based on the Levenberg-Marquardt algorithm:</p>
+<p>&#8220;A Method for the Solution of Certain Problems in Least Squares&#8221;
+Levenberg, K. Quart. Appl. Math. 2, 1944, p. 164-168
+&#8220;An Algorithm for Least-Squares Estimation of Nonlinear Parameters&#8221;
+Marquardt, D. SIAM J. Appl. Math. 11, 1963, p. 431-441</p>
+<p>Based on scipy.optimize.leastsq python routine, which is based on MINPACK&#8217;s lmdif and
+lmder
+algorithms (fortran based).</p>
+<p>The objective function is <a class="reference internal" href="#pyLIMA.microlfits.MLFits.residuals_LM" title="pyLIMA.microlfits.MLFits.residuals_LM"><code class="xref py py-func docutils literal"><span class="pre">residuals_LM()</span></code></a>.
+The starting point parameters are self.guess.
+the Jacobian is given by <a class="reference internal" href="#pyLIMA.microlfits.MLFits.LM_Jacobian" title="pyLIMA.microlfits.MLFits.LM_Jacobian"><code class="xref py py-func docutils literal"><span class="pre">LM_Jacobian()</span></code></a>.</p>
+<p>The fit is performed on all parameters : Paczynski parameters and telescopes fluxes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple containing (fit_results, fit_covariance, computation_time)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><strong>WARNING</strong>:</dt>
+<dd>ftol (relative error desired in the sum of square) is set to 10^-6
+maxfev (maximum number of function call) is set to 50000
+These limits can avoid the fit to properly converge (expected to be rare :))</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.mlfit">
+<code class="descname">mlfit</code><span class="sig-paren">(</span><em>model</em>, <em>method</em>, <em>flux_estimation_MCMC='MCMC'</em>, <em>fix_parameters_dictionnary=None</em>, <em>grid_resolution=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.mlfit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.mlfit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function realize the requested microlensing fit, and set the according results
+attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the model object requested. More details on the microlmodels module.</li>
+<li><strong>method</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; <p>The fitting method you want to use. Has to be a string  in :</p>
+<p>&#8216;LM&#8217; &#8211;&gt; Levenberg-Marquardt algorithm. Based on the
+scipy.optimize.leastsq routine.</p>
+<blockquote>
+<div><strong>WARNING</strong> : the parameter maxfev (number of maximum
+iterations) is set to 50000
+the parameter ftol (relative precision on the chi^2) is
+set to 0.00001
+your fit may not converge because of these limits.
+The starting points of this method are found using the
+initial_guess method.
+Obviously, this can fail. In this case, switch to
+method &#8216;DE&#8217;.</div></blockquote>
+<p>&#8216;DE&#8217; &#8211;&gt; Differential evolution algoritm. Based on the
+scipy.optimize.differential_evolution.</p>
+<blockquote>
+<div>Look Storn &amp; Price (1997) : &#8220;Differential Evolution – A
+Simple and Efficient Heuristic for global Optimization
+over Continuous Spaces&#8221;
+Because this method is heuristic, it is not 100% sure a
+satisfying solution is found. Just relaunch :)
+The result is then use as a starting point for the &#8216;LM&#8217;
+method.</div></blockquote>
+<p>&#8216;MCMC&#8217; &#8211;&gt; Monte-Carlo Markov Chain algorithm. Based on the
+emcee python package :</p>
+<blockquote>
+<div>&#8221; emcee: The MCMC Hammer&#8221; (Foreman-Mackey et al. 2013).
+The inital population is computed around the best
+solution return by
+the &#8216;DE&#8217; method.</div></blockquote>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note that a sanity check is done post-fit to assess the fit quality with the check_fit
+function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.model_residuals">
+<code class="descname">model_residuals</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.model_residuals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.model_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the residuals and the priors of a telescope lightcurve according to the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescopes module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; object containing pyLIMA_parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the residuals in flux, the priors</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like, float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.produce_outputs">
+<code class="descname">produce_outputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.produce_outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.produce_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce the standard outputs for a fit.
+More details in microloutputs module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.produce_pdf">
+<code class="descname">produce_pdf</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.produce_pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.produce_pdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.reconstruct_fit_process_parameters">
+<code class="descname">reconstruct_fit_process_parameters</code><span class="sig-paren">(</span><em>moving_parameters</em>, <em>fix_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.reconstruct_fit_process_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.reconstruct_fit_process_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.redefine_parameters_boundaries">
+<code class="descname">redefine_parameters_boundaries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.redefine_parameters_boundaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.redefine_parameters_boundaries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.residuals_LM">
+<code class="descname">residuals_LM</code><span class="sig-paren">(</span><em>fit_process_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.residuals_LM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.residuals_LM" title="Permalink to this definition">¶</a></dt>
+<dd><p>The normalized residuals associated to the model and parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</td>
+</tr>
+</tbody>
+</table>
+<p>fitting routine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a numpy array which represents the residuals_i for each telescope,</td>
+</tr>
+</tbody>
+</table>
+<p>residuals_i=(data_i-model_i)/sigma_i
+:rtype: array_like
+The sum of square residuals gives chi^2.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -68,13 +478,17 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="pyLIMA.manager.html"
-                        title="previous chapter">pyLIMA.manager module</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pyLIMA.microlguess.html"
-                        title="next chapter">pyLIMA.microlguess module</a></p>
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.telescopes.html" title="previous chapter">pyLIMA.telescopes module</a></li>
+      <li>Next: <a href="pyLIMA.microlguess.html" title="next chapter">pyLIMA.microlguess module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -103,12 +517,12 @@
       &copy;2016, Etienne Bachelet.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
       <a href="_sources/pyLIMA.microlfits.txt"
-          rel="nofollow">Page source</a></li>
+          rel="nofollow">Page source</a>
     </div>
 
     

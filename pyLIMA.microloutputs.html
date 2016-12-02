@@ -30,29 +30,10 @@
     <link rel="prev" title="pyLIMA.microlmodels module" href="pyLIMA.microlmodels.html" />
    
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.microlparallax.html" title="pyLIMA.microlparallax module"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="pyLIMA.microlmodels.html" title="pyLIMA.microlmodels module"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLIMA 0.0.0 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="pyLIMA.html" accesskey="U">pyLIMA package</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
@@ -63,11 +44,6 @@
 <span id="pylima-microloutputs-module"></span><h1>pyLIMA.microloutputs module<a class="headerlink" href="#module-pyLIMA.microloutputs" title="Permalink to this headline">¶</a></h1>
 <p>Created on Mon Nov  9 16:38:14 2015</p>
 <p>&#64;author: ebachelet</p>
-<dl class="function">
-<dt id="pyLIMA.microloutputs.K2_C9_outputs">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">K2_C9_outputs</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#K2_C9_outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.K2_C9_outputs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="function">
 <dt id="pyLIMA.microloutputs.LM_fit_errors">
 <code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">LM_fit_errors</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#LM_fit_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.LM_fit_errors" title="Permalink to this definition">¶</a></dt>
@@ -279,7 +255,7 @@ distributions (2D slice + histogram)</p>
 
 <dl class="function">
 <dt id="pyLIMA.microloutputs.MCMC_plot_align_data">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_align_data</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>ax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_align_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_align_data" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_align_data</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>plot_axe</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_align_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_align_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the data on the figure. Telescopes are aligned to the survey telescope (i.e number 0).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -288,7 +264,7 @@ distributions (2D slice + histogram)</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
 <li><strong>parameters</strong> &#8211; the parameters [list] of the model you want to plot.</li>
-<li><strong>ax</strong> &#8211; the matplotlib axes where you plot the data</li>
+<li><strong>plot_axe</strong> &#8211; the matplotlib axes where you plot the data</li>
 </ul>
 </td>
 </tr>
@@ -322,7 +298,7 @@ in term of objective funtion (~chichi)</p>
 
 <dl class="function">
 <dt id="pyLIMA.microloutputs.MCMC_plot_model">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_model</code><span class="sig-paren">(</span><em>fit</em>, <em>parameters</em>, <em>couleurs</em>, <em>figure_axes</em>, <em>scalar_couleur_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_model" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_model</code><span class="sig-paren">(</span><em>fit</em>, <em>reference_telescope</em>, <em>parameters</em>, <em>couleurs</em>, <em>figure_axes</em>, <em>scalar_couleur_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot a  model to a given figure, with the color corresponding to the objective function
 of the model.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -348,23 +324,11 @@ objective function here)</p>
 <dt id="pyLIMA.microloutputs.MCMC_plot_parameters_distribution">
 <code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">MCMC_plot_parameters_distribution</code><span class="sig-paren">(</span><em>fit</em>, <em>mcmc_best</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#MCMC_plot_parameters_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.MCMC_plot_parameters_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the fit parameters distributions.
-Only plot the best mcmc_chains are plotted.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fit</strong> &#8211; a fit object. See the microlfits for more details.</li>
-<li><strong>mcmc_best</strong> &#8211; a numpy array representing the best (&lt;= 6 sigma) mcmc chains.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a multiple matplotlib subplot representing the parameters distributions (2D slice +</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>histogram)
+Only plot the best mcmc_chains are plotted.
+:param fit: a fit object. See the microlfits for more details.
+:param mcmc_best: a numpy array representing the best (&lt;= 6 sigma) mcmc chains.
+:return: a multiple matplotlib subplot representing the parameters distributions (2D slice +
+histogram)
 :rtype: matplotlib_figure</p>
 </dd></dl>
 
@@ -389,7 +353,7 @@ Only plot the best mcmc_chains are plotted.</p>
 
 <dl class="function">
 <dt id="pyLIMA.microloutputs.align_telescope_lightcurve">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">align_telescope_lightcurve</code><span class="sig-paren">(</span><em>lightcurve_telescope_mag</em>, <em>fs_reference</em>, <em>g_reference</em>, <em>fs_telescope</em>, <em>g_telescope</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#align_telescope_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.align_telescope_lightcurve" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">align_telescope_lightcurve</code><span class="sig-paren">(</span><em>lightcurve_telescope_flux</em>, <em>model_ghost</em>, <em>model_telescope</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#align_telescope_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.align_telescope_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Align data to the survey telescope (i.e telescope 0).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -397,7 +361,7 @@ Only plot the best mcmc_chains are plotted.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>lightcurve_telescope_mag</strong> (<em>array_like</em>) &#8211; the survey telescope in magnitude</li>
-<li><strong>fs_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference source flux (i.e the fitted value)</li>
+<li><strong>fs_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; thce survey telescope reference source flux (i.e the fitted value)</li>
 <li><strong>g_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference blending parameter (i.e the fitted</li>
 </ul>
 </td>
@@ -438,26 +402,6 @@ Only plot the best mcmc_chains are plotted.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyLIMA.microloutputs.errors_on_fits">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">errors_on_fits</code><span class="sig-paren">(</span><em>self</em>, <em>choice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#errors_on_fits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.errors_on_fits" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="pyLIMA.microloutputs.errors_on_observables">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">errors_on_observables</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#errors_on_observables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.errors_on_observables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="pyLIMA.microloutputs.find_observables">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">find_observables</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#find_observables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.find_observables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="pyLIMA.microloutputs.find_observables_errors">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">find_observables_errors</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#find_observables_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.find_observables_errors" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="pyLIMA.microloutputs.initialize_plot_lightcurve">
 <code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">initialize_plot_lightcurve</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#initialize_plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.initialize_plot_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the lightcurve plot.</p>
@@ -494,9 +438,25 @@ Only plot the best mcmc_chains are plotted.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyLIMA.microloutputs.student_errors">
-<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">student_errors</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#student_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.student_errors" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microloutputs.pdf_output">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">pdf_output</code><span class="sig-paren">(</span><em>fit</em>, <em>output_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#pdf_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.pdf_output" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.plot_LM_ML_geometry">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">plot_LM_ML_geometry</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#plot_LM_ML_geometry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.plot_LM_ML_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the lensing geometry (i.e source trajectory) and the table of best parameters.
+:param object fit: a fit object. See the microlfits for more details.
+:param list best_parameters: a list containing the model you want to plot the trajectory</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microloutputs.plot_MCMC_ML_geometry">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">plot_MCMC_ML_geometry</code><span class="sig-paren">(</span><em>fit</em>, <em>best_chains</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#plot_MCMC_ML_geometry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.plot_MCMC_ML_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the lensing geometry (i.e source trajectory) and the table of best parameters.
+:param object fit: a fit object. See the microlfits for more details.
+:param list best_parameters: a list containing the model you want to plot the trajectory</p>
+</dd></dl>
 
 </div>
 
@@ -505,13 +465,17 @@ Only plot the best mcmc_chains are plotted.</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="pyLIMA.microlmodels.html"
-                        title="previous chapter">pyLIMA.microlmodels module</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pyLIMA.microlparallax.html"
-                        title="next chapter">pyLIMA.microlparallax module</a></p>
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.microlmodels.html" title="previous chapter">pyLIMA.microlmodels module</a></li>
+      <li>Next: <a href="pyLIMA.microlparallax.html" title="next chapter">pyLIMA.microlparallax module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -540,12 +504,12 @@ Only plot the best mcmc_chains are plotted.</p>
       &copy;2016, Etienne Bachelet.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
       <a href="_sources/pyLIMA.microloutputs.txt"
-          rel="nofollow">Page source</a></li>
+          rel="nofollow">Page source</a>
     </div>
 
     
