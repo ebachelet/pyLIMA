@@ -47,7 +47,7 @@
 informations in [] represents the units:</p>
 <ul class="simple">
 <li><span class="math">\(t_o\)</span> [days]  is define as the time of the minimum impact parameter.</li>
-<li><span class="math">\(u_o\)</span> [<span class="math">\(\theta_E\)</span>] is the minimum impact parameter. It is positive if the source pass on the left of the source.</li>
+<li><span class="math">\(u_o\)</span> [<span class="math">\(\theta_E\)</span>] is the minimum impact parameter. It is positive if the source pass on the left of the source. It is define on the center of mass of the lens system.</li>
 <li><span class="math">\(t_E\)</span> [days] is the angular Einstein ring crossing time.</li>
 <li><span class="math">\(\rho\)</span> [<span class="math">\(\theta_E\)</span>] is the normalised angular source radius.</li>
 <li><span class="math">\(s\)</span> [<span class="math">\(\theta_E\)</span>] is the normalised angular separation between the binary lens component.</li>
@@ -55,6 +55,12 @@ informations in [] represents the units:</p>
 <li><span class="math">\(\alpha\)</span> [rad] is the angle between the source trajectory and the the binary lens axis, counted in trigonometric convention.</li>
 <li><span class="math">\(\pi_{EN}\)</span> [<span class="math">\(AU/r_E\)</span>] is the North component of the microlensing parallax.</li>
 <li><span class="math">\(\pi_{EE}\)</span> [<span class="math">\(AU/r_E\)</span>] is the East component of the microlensing parallax.</li>
+</ul>
+<p>Then, the source trajectory x,y is define as :</p>
+<ul class="simple">
+<li><span class="math">\(\tau = (t-t_o)/t_E\)</span></li>
+<li><span class="math">\(x = \tau . cos(\alpha)- u_o . sin(\alpha)\)</span></li>
+<li><span class="math">\(y = \tau . sin(\alpha)+ u_o . cos(\alpha)\)</span></li>
 </ul>
 </div>
 
