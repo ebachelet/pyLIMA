@@ -45,7 +45,7 @@ def test_error_magnitude_to_error_flux():
 	error_flux = microltoolbox.error_magnitude_to_error_flux(error_magnitude, flux)
 
 	assert len(error_magnitude) == len(error_flux)
-	assert np.allclose(error_magnitude, -2.5 * error_flux / (flux * np.log(10)))
+	assert np.allclose(error_magnitude, np.abs(-2.5 * error_flux / (flux * np.log(10))))
 
 def test_error_flux_to_error_magnitude():
 
@@ -55,4 +55,4 @@ def test_error_flux_to_error_magnitude():
 	error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
 
 	assert len(error_magnitude) == len(error_flux)
-	assert np.allclose(error_magnitude, np.array([-0.10857362, -0.03619121, -0.01085736]))
+	assert np.allclose(error_magnitude, np.abs(np.array([-0.10857362, -0.03619121, -0.01085736])))

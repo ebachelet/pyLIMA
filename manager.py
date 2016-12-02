@@ -27,9 +27,9 @@ from pyLIMA import microlsimulator
 
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('OO' in event_name) and ('Follow' not in event_name)]
+                    ('ROME' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
-                     ('.dat' in event_name)]
+                     ('ROME' in event_name)]
 
     start = time.time()
     results = []
@@ -38,7 +38,7 @@ def main(command_line):
     for event_name in events_names:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'OB150196'
+        name = 'ROME_27'
 
         # name = 'Lightcurve_'+str(event_name)+'.'
         current_event = event.Event()
@@ -51,8 +51,8 @@ def main(command_line):
         # Names = ['OGLE','Kepler']
         # Locations = ['Earth','Space']
 
-        current_event.ra = 268.36254166
-        current_event.dec = -29.7928055
+        current_event.ra = 266.4929583333333
+        current_event.dec = -32.95677777777778
         count = 0
         import pdb;
         pdb.set_trace()
@@ -67,7 +67,7 @@ def main(command_line):
 
                     lightcurve = np.array(
                         [raw_light_curve[:, 0], raw_light_curve[:, 1],
-                         1.0 * (raw_light_curve[:, 2] ** 2 + 0.00 ** 2) ** 0.5]).T
+                         2.33 * (raw_light_curve[:, 2] ** 2 + 0.005 ** 2) ** 0.5]).T
                 elif ('Spitzer' in event_telescope):
 
                     raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
@@ -82,7 +82,7 @@ def main(command_line):
                                                     usecols=(0, 1, 2))
 
                     lightcurve = np.array(
-                        [raw_light_curve[:, 2], raw_light_curve[:, 0], raw_light_curve[:, 1]]).T
+                        [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
                 print event_telescope
 
                 if lightcurve[0, 0] < 2450000:
@@ -106,7 +106,7 @@ def main(command_line):
                 telescope.location = 'Earth'
             else:
 
-                telescope = telescopes.Telescope(name=event_telescope[:-4], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[7:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,
                                                  light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
                 telescope.location = 'Earth'
@@ -129,39 +129,41 @@ def main(command_line):
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('USBL', current_event, parallax=['Annual', 2457120],
-                                          orbital_motion=['None', 2457120])
-        Model.USBL_windows = [2456900, 2457300]
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['None', 2457143],
+                                          orbital_motion=['None', 2457143])
+        #Model.USBL_windows = [2456850, 2457350]
 
-        Model.parameters_guess = [2457123.7393666035, 0.07377374912968027, 100.19567145132673,
-                                  0.00781922126907861, 0.1891170236894218, -0.08522691762768343, -2.751077942426451,
-                                  0.1,
-                                  -0.1]
-        #Model.parameters_guess = [2457121.718802689, 0.044874912769544036, 92.42670084982296, 0.007699897220068091,
-        #                          0.21064050918430152, -0.06865864981640608, -2.888118768836607, 0,0]
-        # Model.parameters_guess = [2457123.339606512, 0.07127476937284467, 98.29935489284918, 0.007789733755782033,
-        #                          0.19294303151201372, -0.07806259861571774, -2.7967866875047314, -0.04708553491145748,
-        #                          -0.011182419093513155, 2.6840603557907263e-05, 0.0012152762867827978]
+        #Model.parameters_guess = [2457123.21106, 0.0489485, 96.06400650409061,
+        #                          0.007759720542532279, 0.2082247217878811, -0.0894830786973533, -2.810468587634137,
+        #                          0.2, -0.1
+        #                          ]
 
-        # Model.parameters_guess = [2457124.8648720165, 0.05087890409693893, 91.73208043047485, 0.0076081975458405365,
-        #                          0.21238283769339375, -0.10463980545672134, -2.8938338520787865, 0.23125922595225648,
-        #                          -0.08570629277441434, -0.0003936674943793056, -0.0003000986621273718]
+        # Model.parameters_guess = [2457118.2589892996, 0.04693224313041394, 97.82343956853856, 0.008179766610627337, 0.19677292474954153,
+        # -0.027979987829886924, -2.7820828889654297, 0.10258095275259316, -0.060878335472263845]
+        # Model.parameters_guess = [2457124.8648720165, 0.19, 91.73208043047485, 0.0076081975458405365,
+        #                        0.21238283769339375, -0.10463980545672134, -2.8938338520787865, 0.23125922595225648,
+        #                       -0.08570629277441434, -0.0003936674943793056, -0.0003000986621273718]
 
-        Model.parameters_boundaries[0] = (2457120, 2457125)
-        Model.parameters_boundaries[1] = (0.05, 0.1)
-        Model.parameters_boundaries[2] = (90, 110)
-        Model.parameters_boundaries[3] = (0.005, 0.01)
-        Model.parameters_boundaries[4] = (0.15, 0.25)
-        Model.parameters_boundaries[5] = (-0.2, 0.0)
-        Model.parameters_boundaries[6] = (-3.0, -2.5)
+        # Model.parameters_guess = [2457123.7393666035, 0.2059, 100.19567145132673,
+        #                          0.00781922126907861, 0.1891170236894218, -0.08522691762768343, -2.751077942426451,
+        #                         ]
+        #Model.parameters_boundaries[0] = (18.07, 24)
+        #Model.parameters_boundaries[1] = (-2.04, -1.25)
+        #Model.parameters_boundaries[2] = (99.93, 102)
+        ##Model.parameters_boundaries[3] = (9.540325464407533804e-03, 0.008)
+        #Model.parameters_boundaries[4] = (0.166666, 0.25)
+        #Model.parameters_boundaries[5] = (-0.22222, 0.0)
+        #Model.parameters_boundaries[6] = (-2.6080, -2.5)
 
         # Model.parameters_boundaries[6] = (-0.8, -0.6)
         # Model.parameters_boundaries[3] = (20, 40)
-        # Model.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'}
-        # Model.pyLIMA_to_fancy = {'logrho': lambda parameters: np.log10(parameters.rho)}
-        # Model.parameters_boundaries[3] = (-5.0, -1.0)
-        # Model.fancy_to_pyLIMA = {'rho': lambda parameters: 10 ** parameters.logrho}
-        current_event.fit(Model, 'LM')
+        #Model.fancy_to_pyLIMA_dictionnary = {'eps': 'to', 'loguo': 'uo'}
+
+        #Model.pyLIMA_to_fancy = {'eps': lambda parameters: 2457143 - parameters.to,
+        #                         'loguo': lambda parameters: np.log10(parameters.uo)}
+        #Model.fancy_to_pyLIMA = {'to': lambda parameters: 2457143 - parameters.eps,
+        #                         'uo': lambda parameters: 10 ** parameters.loguo}
+        current_event.fit(Model, 'LM',flux_estimation_MCMC='polyfit')
         import pdb;
         pdb.set_trace()
         current_event.fits[0].produce_outputs()
@@ -190,7 +192,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
-                        default='/nethome/ebachelet/Desktop/Microlensing/OpenSourceProject/SimulationML/OB150196/')
+                        default='/nethome/ebachelet/Desktop/RoboNET/Survey_Strategy/Simulations/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

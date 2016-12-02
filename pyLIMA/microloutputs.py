@@ -532,8 +532,8 @@ def initialize_plot_lightcurve(fit):
     """
     fig_size = [10, 10]
     figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
-                                       figsize=(fig_size[0], fig_size[1]))
-    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.9, wspace=0.2, hspace=0.1)
+                                       figsize=(fig_size[0], fig_size[1]), dpi=75)
+    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.99, wspace=0.2, hspace=0.1)
     figure_axes[0].grid()
     figure_axes[1].grid()
     # fig_size = plt.rcParams["figure.figsize"]
@@ -598,9 +598,11 @@ def LM_plot_model(fit, figure_axe):
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, '--k', label=fit.model.model_type, lw=1)
+    figure_axe.plot(time, magnitude, '--k', label=fit.model.model_type, lw=2)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
+    figure_axe.set_xlim(
+        [pyLIMA_parameters.to-2*pyLIMA_parameters.tE, pyLIMA_parameters.to+2*pyLIMA_parameters.tE])
     figure_axe.invert_yaxis()
     figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                     transform=figure_axe.transAxes)
@@ -625,7 +627,7 @@ def LM_plot_residuals(fit, figure_axe):
 
         residuals = 2.5 * np.log10(flux_model / flux)
 
-        figure_axe.errorbar(time, residuals, yerr=err_mag, ls='None',
+        figure_axe.errorbar(time, residuals, yerr=err_mag, ls='None', markersize=7.5,
                             marker=str(MARKER_SYMBOLS.next()))
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
@@ -664,7 +666,7 @@ def LM_plot_align_data(fit, figure_axe):
             lightcurve = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
 
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
-                            marker=str(MARKER_SYMBOLS.next()),
+                            marker=str(MARKER_SYMBOLS.next()), markersize=7.5,
                             label=telescope.name)
     figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
@@ -712,7 +714,7 @@ def plot_LM_ML_geometry(fit):
 
     best_parameters = fit.fit_results
     fig_size = [15, 5]
-    figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]))
+    figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]),dpi=75)
 
     figure_axes = figure_trajectory.add_subplot(121, aspect=1)
     plt.subplots_adjust(top=0.8, bottom=0.1, wspace=0.5, hspace=0.2)

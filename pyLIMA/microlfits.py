@@ -421,7 +421,7 @@ class MLFits(object):
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
 
             # Little prior here, need to be chaneged
-            if priors == np.inf:
+            if (priors == np.inf) & (telescope.name==self.event.survey):
 
                 return -np.inf
 
@@ -430,7 +430,7 @@ class MLFits(object):
                 chichi += (residus ** 2).sum()
                 # Little prior here, need to be changed
 
-                chichi += priors
+                #chichi += priors
 
         return -chichi
 

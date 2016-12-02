@@ -82,54 +82,6 @@ def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None', 0.
                  orbital_motion, source_spots)
 
 
-def source_trajectory(telescope, to, uo, tE, pyLIMA_parameters):
-    """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
-
-    :param float to: time of maximum magnification
-    :param float uo: minimum impact parameter
-    :param float tE: angular Einstein ring crossing time
-    :param object telescope: a telescope object. More details in telescope module.
-    :param object pyLIMA_parameters: a namedtuple which contain the parameters
-    :return: source_trajectory_x, source_trajectory_y the x,y compenents of the source trajectory
-    :rtype: array_like,array_like
-    """
-    # Linear basic trajectory
-
-    lightcurve = telescope.lightcurve_flux
-    time = lightcurve[:, 0]
-
-    tau = (time - to) / tE
-    beta = np.array([uo] * len(tau))
-
-    # These following second order induce curvatures in the source trajectory
-    # Parallax?
-    if 'piEN' in pyLIMA_parameters._fields:
-        piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
-        parallax_delta_tau, parallax_delta_beta = microlparallax.compute_parallax_curvature(piE,
-                                                                                            telescope.deltas_positions)
-
-        tau += parallax_delta_tau
-        beta += parallax_delta_beta
-
-    # Xallarap?
-
-    if 'alpha' in pyLIMA_parameters._fields:
-
-        alpha = pyLIMA_parameters.alpha
-        if 'dalphadt' in pyLIMA_parameters._fields:
-            alpha += microlorbitalmotion.orbital_motion_2D_trajectory_shift(self.orbital_motion_model[1],
-                                                                            telescope.lightcurve_flux,
-                                                                            pyLIMA_parameters.dalphadt)
-        source_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
-        source_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
-
-    else:
-
-        source_trajectory_x = tau
-        source_trajectory_y = beta
-
-    return source_trajectory_x, source_trajectory_y
-
 
 class MLModel(object):
     """
@@ -446,6 +398,7 @@ class MLModel(object):
 
         # Xallarap?
 
+        # Orbital motion?
         if 'alpha' in pyLIMA_parameters._fields:
 
             alpha = pyLIMA_parameters.alpha
@@ -786,7 +739,7 @@ class ModelUSBL(MLModel):
         else:
             Xs, Ys = source_trajectoire
             magnification = \
-                microlmagnification.amplification_USBL(10 ** pyLIMA_parameters.logs, 10 ** pyLIMA_parameters.logq,
+                microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
                                                        tolerance=0.001)[0]
 
@@ -837,7 +790,7 @@ class ModelVSPL(MLModel):
 
             unique_filters = np.unique(filters)
 
-            self.number_of_harmonics = 10
+            self.number_of_harmonics = 15
             for filter in unique_filters:
                 # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
                 for i in xrange(self.number_of_harmonics):

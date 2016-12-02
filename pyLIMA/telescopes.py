@@ -259,7 +259,7 @@ class Telescope(object):
         maximum_accepted_precision = 1.0
 
         index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) &
-                         (np.abs(self.lightcurve_magnitude[:, 2]) < maximum_accepted_precision))[0]
+                         (np.abs(self.lightcurve_magnitude[:, 2]) <= maximum_accepted_precision))[0]
 
         lightcurve = self.lightcurve_magnitude[index]
 
@@ -287,7 +287,7 @@ class Telescope(object):
         flux = self.lightcurve_flux[:, 1]
         error_flux = self.lightcurve_flux[:, 2]
         index = np.where(
-            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) < maximum_accepted_precision))[0]
+            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) <= maximum_accepted_precision))[0]
 
 
         lightcurve = self.lightcurve_flux[index]

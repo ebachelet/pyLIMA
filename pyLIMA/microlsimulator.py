@@ -183,7 +183,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
 
         time_of_observations = np.arange(time_start, time_end, sampling/ ( 24.0))
 
-    lightcurveflux = np.zeros((len(time_of_observations), 3))
+    lightcurveflux = np.ones((len(time_of_observations), 3))*42
     lightcurveflux[:, 0] = time_of_observations
 
     telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve_flux=lightcurveflux)

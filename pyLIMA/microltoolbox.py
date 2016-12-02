@@ -68,7 +68,7 @@ def error_magnitude_to_error_flux(error_magnitude, flux):
     :rtype: array_like
     """
 
-    error_flux = -error_magnitude * flux * np.log(10) / 2.5
+    error_flux = np.abs(-error_magnitude * flux * np.log(10) / 2.5)
 
     return error_flux
 
@@ -82,6 +82,6 @@ def error_flux_to_error_magnitude(error_flux, flux):
     :return: the transformed errors in magnitude
     :rtype: array_like
     """
-    error_magnitude = -2.5 * error_flux / (flux * np.log(10))
+    error_magnitude = np.abs(-2.5 * error_flux / (flux * np.log(10)))
 
     return error_magnitude

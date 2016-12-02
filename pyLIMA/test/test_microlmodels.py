@@ -293,8 +293,12 @@ def test_source_trajectory_with_parallax():
     telescope = mock.MagicMock()
     telescope.lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
     telescope.deltas_positions = np.array([[1, 2], [3, 4]])
+    event = _create_event()
+    event.telescopes[0] = telescope
+    Model = microlmodels.create_model('PSPL', event,parallax=['Annual',0])
 
-    source_X, source_Y = microlmodels.source_trajectory(telescope, to, uo, tE, parameters)
+
+    source_X, source_Y = Model.source_trajectory(telescope, to, uo, tE, parameters)
 
     assert len(source_X) == len(source_Y) == 2
 
@@ -320,8 +324,10 @@ def test_source_trajectory_with_alpha_non_negative():
     parameters = Parameters(to, uo, tE, alpha)
     telescope = mock.MagicMock()
     telescope.lightcurve_flux = np.array([[0, 1, 1], [42, 6, 6]])
-
-    source_X, source_Y = microlmodels.source_trajectory(telescope, to, uo, tE, parameters)
+    event = _create_event()
+    event.telescopes[0] = telescope
+    Model = microlmodels.create_model('PSPL', event, parallax=['Annual', 0])
+    source_X, source_Y = Model.source_trajectory(telescope, to, uo, tE, parameters)
 
     assert len(source_X) == len(source_Y) == 2
 

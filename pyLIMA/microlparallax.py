@@ -229,7 +229,8 @@ class MLParallaxes(object):
             name = telescope.name
 
             telescope_positions = self.space_parallax(time, name)
-
+            #import pdb;
+            #pdb.set_trace()
             delta_North = delta_North + telescope_positions[0]
             delta_East = delta_East + telescope_positions[1]
 
@@ -368,7 +369,7 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
     body = horizons_obscodes(body)
     if (verbose):
         print "Observatory ID= ", OBSERVATORY_ID
-        # import pdb; pdb.set_trace()
+
 
     tstart = 'JD' + str(start_time)
 
@@ -588,4 +589,6 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
                   }
     flag = 'Succes connection to JPL'
     print 'Successfully ephemeris from JPL!'
+    #import pdb;
+    #pdb.set_trace()
     return flag, horemp
