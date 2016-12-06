@@ -138,8 +138,7 @@ class Telescope(object):
 
             self.lightcurve_magnitude = self.lightcurve_in_magnitude()
 
-            if clean_the_lightcurve == 'Yes':
-                self.lightcurve_magnitude = self.clean_data_magnitude()
+
 
 
         self.location = 'Earth'

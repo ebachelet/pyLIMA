@@ -27,9 +27,9 @@ from pyLIMA import microlsimulator
 
 def main(command_line):
     events_names = [event_name for event_name in os.listdir(command_line.input_directory) if
-                    ('ROME' in event_name) and ('Follow' not in event_name)]
+                    ('.dat' in event_name) and ('Follow' not in event_name)]
     events_names2 = [event_name for event_name in os.listdir(command_line.input_directory) if
-                     ('ROME' in event_name)]
+                     ('.dat' in event_name)]
 
     start = time.time()
     results = []
@@ -38,7 +38,7 @@ def main(command_line):
     for event_name in events_names:
 
         # name='Lightcurve_'+str(17)+'_'
-        name = 'ROME_27'
+        name = 'OB160241'
 
         # name = 'Lightcurve_'+str(event_name)+'.'
         current_event = event.Event()
@@ -51,62 +51,46 @@ def main(command_line):
         # Names = ['OGLE','Kepler']
         # Locations = ['Earth','Space']
 
-        current_event.ra = 266.4929583333333
-        current_event.dec = -32.95677777777778
+        current_event.ra = 271.0010
+        current_event.dec = -28.155111
         count = 0
         import pdb;
         pdb.set_trace()
         start = time.time()
         for event_telescope in event_telescopes:
             try:
-                tel_name = event_telescope[14:-4]
-                if ('OOB' in event_telescope):
+                lightcurve = np.loadtxt(command_line.input_directory+event_telescope,dtype=str)
 
-                    raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(0, 1, 2))
+                if 'OGLE' in event_telescope:
+                    lightcurve = lightcurve[:,[0,1,2]].astype(float)
 
-                    lightcurve = np.array(
-                        [raw_light_curve[:, 0], raw_light_curve[:, 1],
-                         2.33 * (raw_light_curve[:, 2] ** 2 + 0.005 ** 2) ** 0.5]).T
-                elif ('Spitzer' in event_telescope):
+                if 'COJA' in event_telescope:
+                    lightcurve = lightcurve[:,[0,1,3]].astype(float)
+                    lightcurve[:,2] *= 10
 
-                    raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(0, 1, 2))
-
-                    lightcurve = np.array(
-                        [raw_light_curve[:, 0], raw_light_curve[:, 1],
-                         0.4 * (raw_light_curve[:, 2] ** 2 + 0.02 ** 2) ** 0.5]).T
-
-                else:
-                    raw_light_curve = np.genfromtxt(command_line.input_directory + event_telescope,
-                                                    usecols=(0, 1, 2))
-
-                    lightcurve = np.array(
-                        [raw_light_curve[:, 0], raw_light_curve[:, 1], raw_light_curve[:, 2]]).T
-                print event_telescope
-
-                if lightcurve[0, 0] < 2450000:
-                    lightcurve[:, 0] += 2450000
-                START = 2446906
-                END = 2488998
-                good = np.where((lightcurve[:, 0] < END) & (lightcurve[:, 0] > START))[0]
-                # good = np.where((lightcurve[:,0]>2457400))[0]
-
-
-                lightcurve = lightcurve[good]
+                if 'MOA' in event_telescope:
+                    lightcurve = lightcurve[:, [0, 1, 2]].astype(float)
+                    lightcurve[:, 2] *= 1
+                if 'Kepler' in event_telescope:
+                    lightcurve = lightcurve[:, [0, 1]].astype(float)
+                    lightcurve = np.c_[lightcurve,[50]*len(lightcurve)]
+                    #lightcurve[:, 0] += 2450000
+                    #lightcurve[:, 1] *= 10
+                    #lightcurve[:,2] *= 50
             except:
                 pass
-
-            if 'MOA_R' in event_telescope:
-                telescope = telescopes.Telescope(name=event_telescope[-9:-4] + '_' + event_telescope[-5],
+            #index = np.where((lightcurve[:,0]>2457500) | ((lightcurve[:,0]<2457487)))[0]
+            #lightcurve = lightcurve[index]
+            if ('MOA_R'  in event_telescope) | ('Kepler' in event_telescope):
+                telescope = telescopes.Telescope(name=event_telescope[:-6],
                                                  camera_filter=event_telescope[-5],
                                                  light_curve_flux=lightcurve,
                                                  light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
-                                                 reference_flux=0.0)
+                                                 reference_flux=5000.0)
                 telescope.location = 'Earth'
             else:
 
-                telescope = telescopes.Telescope(name=event_telescope[7:-4], camera_filter=event_telescope[-5],
+                telescope = telescopes.Telescope(name=event_telescope[:-4], camera_filter=event_telescope[-5],
                                                  light_curve_magnitude=lightcurve,
                                                  light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2})
                 telescope.location = 'Earth'
@@ -115,7 +99,7 @@ def main(command_line):
                 telescope.gamma = 0.44
             else:
                 telescope.gamma = 0.5
-            if telescope.name == 'Spitzer':
+            if telescope.name == 'Kepler':
                 telescope.location = 'Space'
             current_event.telescopes.append(telescope)
             count += 1
@@ -123,17 +107,17 @@ def main(command_line):
         print 'Start;', current_event.name
         import pdb;
         pdb.set_trace()
-        current_event.find_survey('OOB150196I')
+        current_event.find_survey('OGLE_I')
         current_event.check_event()
         print [i.name for i in current_event.telescopes]
         # Model = microlmodels.MLModels(current_event, command_line.model,
         #                              parallax=['None', 50.0])
 
-        Model = microlmodels.create_model('PSPL', current_event, parallax=['None', 2457143],
+        Model = microlmodels.create_model('PSPL', current_event, parallax=['Annual', 2457512],
                                           orbital_motion=['None', 2457143])
         #Model.USBL_windows = [2456850, 2457350]
 
-        #Model.parameters_guess = [2457123.21106, 0.0489485, 96.06400650409061,
+        #Model.parameters_guess = [2457228.6691167313, 0.5504378287491769, 119.57049960671444, 0.12837357112315345, 0.10480898512419343]
         #                          0.007759720542532279, 0.2082247217878811, -0.0894830786973533, -2.810468587634137,
         #                          0.2, -0.1
         #                          ]
@@ -163,7 +147,7 @@ def main(command_line):
         #                         'loguo': lambda parameters: np.log10(parameters.uo)}
         #Model.fancy_to_pyLIMA = {'to': lambda parameters: 2457143 - parameters.eps,
         #                         'uo': lambda parameters: 10 ** parameters.loguo}
-        current_event.fit(Model, 'LM',flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'DE',flux_estimation_MCMC='polyfit')
         import pdb;
         pdb.set_trace()
         current_event.fits[0].produce_outputs()
@@ -192,7 +176,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', default='PSPL')
     parser.add_argument('-i', '--input_directory',
-                        default='/nethome/ebachelet/Desktop/RoboNET/Survey_Strategy/Simulations/')
+                        default='/nethome/ebachelet/Desktop/Microlensing/'
+                                                            'OpenSourceProject/SimulationML/OB160795/')
     parser.add_argument('-o', '--output_directory', default='/nethome/ebachelet/Desktop/Microlensing/'
                                                             'OpenSourceProject/Developement/Fitter/FSPL/')
     parser.add_argument('-c', '--claret',

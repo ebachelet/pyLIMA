@@ -125,9 +125,10 @@ def initial_guess_PSPL(event):
     # uo estimation
     max_flux = maximum_flux_estimations[0]
     Amax = max_flux / fs_guess
-    if Amax<1.0:
+    if (Amax<1.0) | np.isnan(Amax):
         Amax=1.1
     uo_guess = np.sqrt(-2 + 2 * np.sqrt(1 - 1 / (1 - Amax ** 2)))
+
 
     # tE estimations
     tE_guesses = []
@@ -204,7 +205,7 @@ def initial_guess_PSPL(event):
     tE_guess = np.median(tE_guesses)
 
     # safety reason, unlikely
-    if tE_guess < 0.1:
+    if (tE_guess < 0.1) | np.isnan(tE_guess):
         tE_guess = 20.0
 
     # [to,uo,tE], fsource

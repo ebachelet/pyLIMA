@@ -602,7 +602,7 @@ def LM_plot_model(fit, figure_axe):
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.set_xlim(
-        [pyLIMA_parameters.to-2*pyLIMA_parameters.tE, pyLIMA_parameters.to+2*pyLIMA_parameters.tE])
+        [pyLIMA_parameters.to-3*pyLIMA_parameters.tE, pyLIMA_parameters.to+3*pyLIMA_parameters.tE+100])
     figure_axe.invert_yaxis()
     figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                     transform=figure_axe.transAxes)
