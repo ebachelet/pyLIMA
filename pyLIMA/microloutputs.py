@@ -26,7 +26,7 @@ plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 
-MARKER_SYMBOLS = np.nditer([[',', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']])
+MARKER_SYMBOLS = np.nditer([[',', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
 #plt.style.use('ggplot')
 
 def pdf_output(fit, output_directory):

@@ -285,7 +285,7 @@ def differential_evolution_parameters_boundaries(model):
     delta_uo_boundaries = (-1.0, 1.0)
     uo_boundaries = (0.0, 2.0)
     tE_boundaries = (1.0, 300)
-    rho_boundaries = (10 ** -5, 0.05)
+    rho_boundaries = (5*10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
     logs_boundaries = (-1.0, 1.0)

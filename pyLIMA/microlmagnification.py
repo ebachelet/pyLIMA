@@ -7,8 +7,11 @@ Created on Tue Dec  8 14:37:33 2015
 
 from __future__ import division
 import numpy as np
+from multiprocessing import Process, Queue
+import time
 
 import sys
+
 sys.path.insert(0, '/path/to/application/app/folder')
 
 from subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinary
@@ -29,8 +32,8 @@ def amplification_PSPL(tau, uo):
     """
     # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
 
-    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  #u(t)
-    impact_parameter_square = impact_parameter ** 2 #u(t)^2
+    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  # u(t)
+    impact_parameter_square = impact_parameter ** 2  # u(t)^2
 
     amplification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
 
@@ -53,8 +56,8 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
         :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)
         :rtype: array_like,array_like
     """
-    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  #u(t)
-    impact_parameter_square = impact_parameter ** 2 #u(t)^2
+    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  # u(t)
+    impact_parameter_square = impact_parameter ** 2  # u(t)^2
 
     amplification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
 
@@ -71,19 +74,18 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     indexes_WM = np.where((z_yoo < yoo_table[0][0]))[0]
 
     amplification_fspl[indexes_WM] = amplification_pspl[indexes_WM] * \
-    (2 * z_yoo[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
+                                     (2 * z_yoo[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
 
     # FSPL regime (z_yoo~1), then Yoo et al derivatives
     indexes_FSPL = np.where((z_yoo <= yoo_table[0][-1]) & (z_yoo >= yoo_table[0][0]))[0]
 
     amplification_fspl[indexes_FSPL] = amplification_pspl[indexes_FSPL] * \
-    (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
-
-
+                                       (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
 
     return amplification_fspl, impact_parameter
 
-def amplification_USBL(separation, q, Xs, Ys, rho, tolerance = 0.001):
+
+def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     """ The uniform source binary lens amplification, based on the work of Valerio Bozza, thanks :)
         "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
          optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
@@ -102,29 +104,66 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance = 0.001):
 
     # ensure all inputs are in float format to garantuee numerical stability
 
-    #s = np.float64(s)
-    #q = np.float64(q)
-    #Xs = np.float64(Xs)
-    #Ys = np.float64(Ys)
-    #rho = np.float64(rho)
-    #tolerance = np.float64(tolerance)
-    binary_magnification = VBBinary.VBBinaryLensing()
+    # s = np.float64(s)
+    # q = np.float64(q)
+    # Xs = np.float64(Xs)
+    # Ys = np.float64(Ys)
+    # rho = np.float64(rho)
+    # tolerance = np.float64(tolerance)
+
 
     amplification_usbl = np.array([])
 
+    # Set a process to prevent seg fault
+    process_queue = Queue()
+
+    subprocess = Process(target=USBL_queue_process, args=(process_queue,))
+    subprocess.daemon = True
+    subprocess.start()
     for index in xrange(len(Xs)):
         xs = Xs[index]
         ys = Ys[index]
         s = separation[index]
 
-        amplification_usbl = np.append( amplification_usbl, binary_magnification.BinaryMag(s, q, xs, ys, rho, tolerance))
 
-    return  amplification_usbl, Xs
+
+        USBL_process([s, q, xs, ys, rho, tolerance], process_queue)
+        subprocess.join()
+
+
+        error = subprocess.exitcode
+
+        if error == -11:
+            import pdb;
+            pdb.set_trace()
+            print 'VBBinary failed on :', s, q, xs, ys, rho, tolerance
+            process_queue.close()
+            amplification_USBL(separation * 1.00001, q, Xs, Ys, rho, tolerance=0.001)
+
+        else:
+
+            magnification_VBB = process_queue.get()
+
+        amplification_usbl = np.append(amplification_usbl, magnification_VBB)
+
+    process_queue.close()
+
+    return amplification_usbl, Xs
+
+
+def USBL_queue_process(queue):
+    while False:
+        msg = queue.get()
+
+
+def USBL_process(args, queue):
+    queue.put(VBBinary.VBBinaryLensing().BinaryMag(args[0], args[1], args[2],
+                                                   args[3], args[4], args[5]))
 
 #### TO DO : the following is row development# ###
 
 
-#def function_LEE(r, v, u, rho, gamma):
+# def function_LEE(r, v, u, rho, gamma):
 #    """Not working yet"""
 #    if r == 0:
 #        LEE = 1.0
@@ -136,7 +175,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance = 0.001):
 #    return LEE
 
 
-#def LEE_limit(v, u, rho, gamma):
+# def LEE_limit(v, u, rho, gamma):
 #    """Not working yet"""
 #    if u <= rho:
 #        limit_1 = 0.0
