@@ -115,24 +115,27 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     amplification_usbl = np.array([])
 
     # Set a process to prevent seg fault
-    process_queue = Queue()
 
-    subprocess = Process(target=USBL_queue_process, args=(process_queue,))
-    subprocess.daemon = True
-    subprocess.start()
+    process_queue = Queue()
+    #start = time.time()
+
+
+    Processes = []
     for index in xrange(len(Xs)):
         xs = Xs[index]
         ys = Ys[index]
         s = separation[index]
 
+        subprocess = Process(target=USBL_queue_process,
+                             args=(process_queue, [s,q,xs,ys, rho, tolerance]))
 
+        Processes.append(subprocess)
+        subprocess.start()
+    for p in Processes:
 
-        USBL_process([s, q, xs, ys, rho, tolerance], process_queue)
-        subprocess.join()
-
-
-        error = subprocess.exitcode
-
+        p.join()
+        error = p.exitcode
+        #print error
         if error == -11:
             import pdb;
             pdb.set_trace()
@@ -143,22 +146,23 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
         else:
 
             magnification_VBB = process_queue.get()
-
+            #print magnification_VBB
         amplification_usbl = np.append(amplification_usbl, magnification_VBB)
 
     process_queue.close()
 
+    #print time.time()-start
+    #import pdb;
+    #pdb.set_trace()
     return amplification_usbl, Xs
 
 
-def USBL_queue_process(queue):
-    while False:
-        msg = queue.get()
+def USBL_queue_process(queue, args):
 
-
-def USBL_process(args, queue):
     queue.put(VBBinary.VBBinaryLensing().BinaryMag(args[0], args[1], args[2],
                                                    args[3], args[4], args[5]))
+
+
 
 #### TO DO : the following is row development# ###
 
