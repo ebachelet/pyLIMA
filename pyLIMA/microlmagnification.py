@@ -114,42 +114,19 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
 
     amplification_usbl = np.array([])
 
-    # Set a process to prevent seg fault
-
-    process_queue = Queue()
-    #start = time.time()
+    
 
 
-    Processes = []
+   
     for index in xrange(len(Xs)):
         xs = Xs[index]
         ys = Ys[index]
         s = separation[index]
-
-        subprocess = Process(target=USBL_queue_process,
-                             args=(process_queue, [s,q,xs,ys, rho, tolerance]))
-
-        Processes.append(subprocess)
-        subprocess.start()
-    for p in Processes:
-
-        p.join()
-        error = p.exitcode
-        #print error
-        if error == -11:
-            import pdb;
-            pdb.set_trace()
-            print 'VBBinary failed on :', s, q, xs, ys, rho, tolerance
-            process_queue.close()
-            amplification_USBL(separation * 1.00001, q, Xs, Ys, rho, tolerance=0.001)
-
-        else:
-
-            magnification_VBB = process_queue.get()
-            #print magnification_VBB
+  	magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)	
+        
         amplification_usbl = np.append(amplification_usbl, magnification_VBB)
 
-    process_queue.close()
+   
 
     #print time.time()-start
     #import pdb;
