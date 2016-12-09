@@ -247,7 +247,7 @@ def simulate_microlensing_model_parameters(model):
 
     if model.model_type == 'FSPL':
         if np.abs(fake_parameters[1]) > 0.1:
-            fake_parameters[1] /= 10
+            fake_parameters[1] /= 100
         if np.abs(fake_parameters[1] / fake_parameters[3]) > 10:
             fake_parameters[1] = np.abs(fake_parameters[1]) * np.random.uniform(0, fake_parameters[3])
 
@@ -256,8 +256,7 @@ def simulate_microlensing_model_parameters(model):
         if np.abs(fake_parameters[2]) > 100:
             fake_parameters[2] = np.random.uniform(10, 15)
 
-        if np.abs(fake_parameters[1] + fake_parameters[3]) > 0.05:
-            fake_parameters[3] = -fake_parameters[1] + 0.05
+        i
     return fake_parameters
 
 
