@@ -14,6 +14,27 @@ SOURCE_MAGNITUDE = [14, 22]
 BLEND_LIMITS = [0, 1]
 
 
+def moon_illumination(sun, moon):
+    """The moon illumination expressed as a percentage.
+
+            :param astropy sun: the sun ephemeris
+            :param astropy moon: the moon ephemeris
+
+            :return: a numpy array like indicated the moon illumination.
+
+            :rtype: array_like
+
+    """
+
+    geocentric_elongation = sun.separation(moon).rad
+    selenocentric_elongation = np.arctan2(sun.distance * np.sin(geocentric_elongation),
+                                          moon.distance - sun.distance * np.cos(geocentric_elongation))
+
+    illumination = (1 + np.cos(selenocentric_elongation)) / 2.0
+
+    return illumination
+
+
 def poisson_noise(flux):
     """The poisson noise.
 
@@ -127,7 +148,8 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 
 
 def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start, time_end, sampling, event, location,
-                         bad_weather_percentage=0.0, moon_windows_avoidance=20, minimum_alt=20):
+                         bad_weather_percentage=0.0, minimum_alt=20, moon_windows_avoidance=20,
+                         maximum_moon_illumination=100.0):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
         full time windows, then limitation are applied :
             - Sun has to be below horizon : Sun< -18
@@ -146,8 +168,9 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
         :param str location: the location of the telescope. If it is 'Space', then the observations are made
                              continuously given the observing windows and the sampling.
         :param float bad_weather_percentage: the percentage of bad nights
-        :param float moon_windows_avoidance: the minimum distance in degrees accepted between the target and the Moon
         :param float minimum_alt: the minimum altitude ini degrees that your telescope can go to.
+        :param float moon_windows_avoidance: the minimum distance in degrees accepted between the target and the Moon
+        :param float maximum_moon_illumination: the maximum Moon brightness you allow in percentage
 
         :return: a telescope object
         :rtype: object
@@ -173,11 +196,13 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
         altazframe = AltAz(obstime=time_convertion, location=earth_location)
         Sun = get_sun(Time(time_of_observations, format='jd')).transform_to(altazframe)
         Moon = get_moon(Time(time_of_observations, format='jd')).transform_to(altazframe)
-
+        Moon_illumination = moon_illumination(Sun, Moon)
         Moon_separation = target.separation(Moon)
         observing_windows = np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
                                      & (Sun.alt < -18 * astropy.units.deg)
-                                     & (Moon_separation > moon_windows_avoidance * astropy.units.deg))[0]
+                                     & (Moon_separation > moon_windows_avoidance * astropy.units.deg)
+                                     & (Moon_illumination<maximum_moon_illumination)
+                                     )[0]
 
         time_of_observations = time_of_observations[observing_windows][::ratio_sampling]
 

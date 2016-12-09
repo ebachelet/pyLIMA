@@ -16,6 +16,7 @@ sys.path.insert(0, '/path/to/application/app/folder')
 
 from subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinary
 
+COUNT_VBB_CALL = 0
 
 def amplification_PSPL(tau, uo):
     """ The Paczynski magnification.
@@ -101,6 +102,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
         :return: the USBL magnification A_USBL(t) and the impact parameter U(t)
         :rtype: array_like,array_like
     """
+    global COUNT_VBB_CALL
 
     # ensure all inputs are in float format to garantuee numerical stability
 
@@ -122,7 +124,8 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
         print index,len(Xs)
         print s,q,xs,ys,rho,tolerance
         magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)
-
+        COUNT_VBB_CALL += 1
+        print COUNT_VBB_CALL
         amplification_usbl = np.append(amplification_usbl, magnification_VBB)
 
 

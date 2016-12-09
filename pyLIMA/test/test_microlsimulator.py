@@ -63,7 +63,7 @@ def test_simulate_a_telescope():
     event.dec = -30
 
     telescope = microlsimulator.simulate_a_telescope('blabli', 0, 0, -30, 'orange', 2457850, 2457900, 1.0, event,
-                                                     'Earth',0,0,0)
+                                                     'Earth',0,0,0,100)
 
     histogram, windows = np.histogram(telescope.lightcurve_flux[:,0],np.arange(2457850,2457900))
     assert len(telescope.lightcurve_flux[:, 0]) == 461.0
