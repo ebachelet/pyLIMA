@@ -104,29 +104,28 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
 
     # ensure all inputs are in float format to garantuee numerical stability
 
-    # s = np.float64(s)
-    # q = np.float64(q)
-    # Xs = np.float64(Xs)
-    # Ys = np.float64(Ys)
-    # rho = np.float64(rho)
-    # tolerance = np.float64(tolerance)
+    separation = np.float64(separation)
+    q = np.float64(q)
+    Xs = np.float64(Xs)
+    Ys = np.float64(Ys)
+    rho = np.float64(rho)
+    tolerance = np.float64(tolerance)
 
 
     amplification_usbl = np.array([])
+    print ''
 
-    
-
-
-   
     for index in xrange(len(Xs)):
         xs = Xs[index]
         ys = Ys[index]
         s = separation[index]
-  	magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)	
-        
+        print index,len(Xs)
+        print s,q,xs,ys,rho,tolerance
+        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)
+
         amplification_usbl = np.append(amplification_usbl, magnification_VBB)
 
-   
+
 
     #print time.time()-start
     #import pdb;

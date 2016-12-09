@@ -741,7 +741,7 @@ class ModelUSBL(MLModel):
             magnification = \
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.001)[0]
+                                                       tolerance=0.01)[0]
 
         return magnification, source_trajectoire
 

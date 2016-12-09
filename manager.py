@@ -147,7 +147,7 @@ def main(command_line):
         #                         'loguo': lambda parameters: np.log10(parameters.uo)}
         #Model.fancy_to_pyLIMA = {'to': lambda parameters: 2457143 - parameters.eps,
         #                         'uo': lambda parameters: 10 ** parameters.loguo}
-        current_event.fit(Model, 'DE',flux_estimation_MCMC='polyfit')
+        current_event.fit(Model, 'LM',flux_estimation_MCMC='polyfit')
         import pdb;
         pdb.set_trace()
         current_event.fits[0].produce_outputs()

@@ -10,9 +10,16 @@ import telnetlib
 import numpy as np
 from astropy import constants as astronomical_constants
 from scipy import interpolate
+import struct
 
 from pyslalib import slalib
 
+TIMEOUT_JPL = 120 #seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
+JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002 # seconds.
+
+### Uncomment the following if the spacecraft dataset is huge! and also in optcallback
+#MAX_WINDOW_WIDTH = 80 # Max Value: 65535
+#MAX_WINDOW_HEIGHT = 65535 # Max Value: 65535
 
 def horizons_obscodes(observatory):
     """Transform observatory names to JPL horizon codes.
@@ -26,9 +33,10 @@ def horizons_obscodes(observatory):
     """
 
     JPL_HORIZONS_ID = {
-        'Geocentric': '500',
-        'Kepler': '-227',
-        'Spitzer': '-79'
+        'Geocentric' : '500',
+        'Kepler' : '-227',
+        'Spitzer' : '-79',
+        'HST' : '-48'
     }
 
     # Check if we were passed the JPL site code directly
@@ -50,6 +58,12 @@ def optcallback(socket, command, option):
         socket.write(telnetlib.IAC + telnetlib.DONT + onum)
     if cnum == telnetlib.DO and onum == telnetlib.TTYPE:
         socket.write(telnetlib.IAC + telnetlib.WONT + telnetlib.TTYPE)
+
+    ### Uncomment the following if the spacecraft dataset is huge! and also the global variables
+        # at the begining of the module
+    #width = struct.pack('H', MAX_WINDOW_WIDTH)
+    #height = struct.pack('H', MAX_WINDOW_HEIGHT)
+    #socket.send(telnetlib.IAC + telnetlib.SB + telnetlib.NAWS + width + height + telnetlib.IAC + telnetlib.SE)
 
 
 def compute_parallax_curvature(piE, delta_positions):
@@ -226,7 +240,7 @@ class MLParallaxes(object):
             telescope_positions = self.annual_parallax(time)
             delta_North = np.append(delta_North, telescope_positions[0])
             delta_East = np.append(delta_East, telescope_positions[1])
-            name = telescope.name
+            name = telescope.spacecraft_name
 
             telescope_positions = self.space_parallax(time, name)
             #import pdb;
@@ -361,7 +375,7 @@ class MLParallaxes(object):
 def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_size='60m',
                                verbose=False):
     """
-    Write by Tim Lister. Thanks for sharing :) Produe RA,DEC and distance from the Geocentric Center.
+    Write by Tim Lister. Thanks for sharing :) Produce RA,DEC and distance from the Geocentric Center.
 
     """
     # Lookup observatory name
@@ -377,7 +391,10 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
         print "tstart = ", tstart
 
     tstop = 'JD' + str(end_time)
-    timeout = 5  # seconds
+    #timeout = TIMEOUT_JPL
+    expected_number_of_lines = (end_time-start_time)*24
+    timeout = max(JPL_TYPICAL_REQUEST_TIME_PER_LINE*expected_number_of_lines,5)
+
     t = telnetlib.Telnet('horizons.jpl.nasa.gov', 6775)
     t.set_option_negotiation_callback(optcallback)
     data = t.read_until('Horizons> ')
@@ -490,6 +507,7 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
                 print data
     else:
         useID = ''
+
     t.write('e\n')
     data = t.read_until('Observe, Elements, Vectors  [o,e,v,?] : ')
     if (verbose):
@@ -510,6 +528,7 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
     except:
         print "Telescope code unrecognized by JPL."
         return ([], [], [])
+
 
     if (verbose):
         print data
@@ -574,6 +593,7 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
             data_line = False
             print "Wrong number of fields (", len(hor_line.split()), ")"
             print "hor_line=", hor_line
+
         if (data_line == True):
 
             horemp_line = [time, raDegrees, decDegrees, light_dist]

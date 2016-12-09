@@ -87,6 +87,7 @@ def test_space_parallax():
     event = _create_event()
     event.telescopes[0].lightcurve_flux[:,0] = 2458000.5 +  event.telescopes[0].lightcurve_flux[:,0]
     parallax_model = ['None', 1664.51]
+
     parallax = microlparallax.MLParallaxes(event, parallax_model)
 
     positions = parallax.space_parallax(event.telescopes[0].lightcurve_flux[:,0], 'Kepler')
@@ -130,6 +131,7 @@ def test_parallax_combination_on_Space():
     event = _create_event()
     event.telescopes[0].location = 'Space'
     event.telescopes[0].name = 'Kepler'
+    event.telescopes[0].spacecraft_name = 'Kepler'
 
     event.telescopes[0].lightcurve_flux[:,0] = 2458000.5 +  event.telescopes[0].lightcurve_flux[:,0]
     parallax_model = ['Full', 1664.51]

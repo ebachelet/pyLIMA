@@ -61,6 +61,8 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
     total_number_of_days = int(time_end - time_start)
     time_step_observations = sampling / 24.0
+    number_of_day_exposure = np.floor(
+        1.0 / time_step_observations)  # less than expected total, more likely in a telescope :)
     night_begin = time_start
 
     time_observed = []
@@ -71,8 +73,8 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
         if good_weather > bad_weather_percentage:
             random_begin_of_the_night = 0.0
             night_end = night_begin + 1.0
-            time_observed += np.arange(night_begin+time_step_observations + random_begin_of_the_night, night_end,
-                                           time_step_observations).tolist()
+            time_observed += np.linspace(night_begin + time_step_observations + random_begin_of_the_night, night_end,
+                                         number_of_day_exposure).tolist()
 
         night_begin += 1
 
@@ -160,7 +162,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
         target = SkyCoord(event.ra, event.dec, unit='deg')
 
         minimum_sampling = min(4.0, sampling)
-        ratio_sampling = np.round(sampling/minimum_sampling)
+        ratio_sampling = np.round(sampling / minimum_sampling)
 
         time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
                                                bad_weather_percentage)
@@ -181,9 +183,9 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
 
     else:
 
-        time_of_observations = np.arange(time_start, time_end, sampling/ ( 24.0))
+        time_of_observations = np.arange(time_start, time_end, sampling / (24.0))
 
-    lightcurveflux = np.ones((len(time_of_observations), 3))*42
+    lightcurveflux = np.ones((len(time_of_observations), 3)) * 42
     lightcurveflux[:, 0] = time_of_observations
 
     telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve_flux=lightcurveflux)
@@ -244,7 +246,7 @@ def simulate_microlensing_model_parameters(model):
             fake_parameters.append(np.random.uniform(boundaries[0], boundaries[1]))
 
     if model.model_type == 'FSPL':
-        if np.abs(fake_parameters[1])>0.1 :
+        if np.abs(fake_parameters[1]) > 0.1:
             fake_parameters[1] /= 10
         if np.abs(fake_parameters[1] / fake_parameters[3]) > 10:
             fake_parameters[1] = np.abs(fake_parameters[1]) * np.random.uniform(0, fake_parameters[3])
@@ -289,7 +291,6 @@ def simulate_lightcurve_flux(model, pylima_parameters, red_noise_apply='Yes'):
         : param str red_noise_apply : to include or not red_noise
 
     """
-
 
     count = 0
 
