@@ -532,7 +532,7 @@ def initialize_plot_lightcurve(fit):
     """
     fig_size = [10, 10]
     figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
-                                       figsize=(fig_size[0], fig_size[1]), dpi=75)
+                                       figsize=(fig_size[0], fig_size[1]), dpi=40)
     plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.99, wspace=0.2, hspace=0.1)
     figure_axes[0].grid()
     figure_axes[1].grid()
@@ -628,7 +628,7 @@ def LM_plot_residuals(fit, figure_axe):
         residuals = 2.5 * np.log10(flux_model / flux)
 
         figure_axe.errorbar(time, residuals, yerr=err_mag, ls='None', markersize=7.5,
-                            marker=str(MARKER_SYMBOLS.next()))
+                            marker=str(MARKER_SYMBOLS.next()),capsize=0.0)
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
 
@@ -666,7 +666,7 @@ def LM_plot_align_data(fit, figure_axe):
             lightcurve = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
 
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
-                            marker=str(MARKER_SYMBOLS.next()), markersize=7.5,
+                            marker=str(MARKER_SYMBOLS.next()), markersize=7.5,capsize=0.0,
                             label=telescope.name)
     figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
