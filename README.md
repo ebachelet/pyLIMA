@@ -19,7 +19,7 @@ You can also practice by simulating events.
 
 Clone the repository or download as a ZIP file. Then
 
-## DO NOT RUN python install setup.py SVP
+#### DO NOT RUN python install setup.py SVP
 
 Please use pyLIMA as a external module, by doing a global import :
 
@@ -34,7 +34,7 @@ pyLIMA also require some python modules installation, see the documentation belo
 # What can you do?
 
 
-This is now in beta!! Here is what you can do :
+#### pyLIMA is now in beta!! Here is the status of implemented microlensing models:
 
 | Model | Implemented | Examples | Fit Method Advice | 
 | :---         |     :---:      |:---: |    ---: |
@@ -43,6 +43,7 @@ This is now in beta!! Here is what you can do :
 | Double-Source Point Lens (DSPL)   | ![Alt text](./doc/HGF.png?raw=true)     |  Yes | Differential Evolution (DE)    |
 | Uniform-Source Binary Lens (USBL)   | ![Alt text](./doc/WIP.png?raw=true)  | No |      |
 
+#### pyLIMA can also treat Second Order effects :
 
 | Second-Order Effects | Implemented | Examples |Fit Method Advice |
 | :---         |     :---:      |   :---: |   ---: |
