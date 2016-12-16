@@ -37,7 +37,7 @@ This is now in beta!! Here is what you can do :
 
 | Model | Implemented | Examples | Fit Method Advice | 
 | :---         |     :---:      |:---: |    ---: |
-| Point-Source Point Lens (PSPL)   | ![Alt text](http://www.clipartbest.com/cliparts/Kin/jry/Kinjrykiq.png)     | Yes | Levenberg-Marquardt (LM)     |
+| Point-Source Point Lens (PSPL)   | ![Alt text](http://www.onlinelifecoachcourses.com/blog/wp-content/uploads/2012/02/smiley-face.jpeg)     | Yes | Levenberg-Marquardt (LM)     |
 | Finite-Source Point Lens (FSPL)   | Yes     | Yes | Levenberg-Marquardt (LM) or Differential Evolution (DE)    |
 | Double-Source Point Lens (DSPL)   | Yes     |  Yes | Differential Evolution (DE)    |
 | Uniform-Source Binary Lens (USBL)   | In Progress     | No |      |
