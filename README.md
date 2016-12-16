@@ -46,11 +46,11 @@ This is now in beta!! Here is what you can do :
 
 | Second-Order Effects | Implemented | Examples |Fit Method Advice |
 | :---         |     :---:      |   :---: |   ---: |
-| Annual parallax   | Yes     | No | Levenberg-Marquardt (LM)     |
-| Terrestrial parallax   | Yes     | No | Levenberg-Marquardt (LM) |
-| Space parallax   | Yes     |  No| Differential Evolution (DE)    |
-| Orbital Motion   | In Progress     | No |       |
-| Xallarap   | In Progress     | No |       |
+| Annual parallax   |  ![Alt text](./doc/HGF.png?raw=true)      | No | Levenberg-Marquardt (LM)     |
+| Terrestrial parallax   |  ![Alt text](./doc/HGF.png?raw=true)     | No | Levenberg-Marquardt (LM) |
+| Space parallax   |  ![Alt text](./doc/HGF.png?raw=true)      |  No| Differential Evolution (DE)    |
+| Orbital Motion   | ![Alt text](./doc/WIP.png?raw=true)     | No |       |
+| Xallarap   | ![Alt text](./doc/WIP.png?raw=true)    | No |       |
 
 # Documentation
 Have a look to the documentation (hopefully up to date):
