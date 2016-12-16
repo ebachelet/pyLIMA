@@ -294,15 +294,13 @@ class MLModel(object):
         except TypeError:
 
             # Fluxes parameters are estimated through np.polyfit
-
-
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             g_blending = f_blending / f_source
-
+          
         return f_source, g_blending
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
@@ -702,6 +700,12 @@ class ModelUSBL(MLModel):
 
         magnification = np.zeros(len(source_trajectoire[0]))
 
+        for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
+            param = getattr(pyLIMA_parameters, key)
+            limits = self.parameters_boundaries[self.model_dictionnary[key]]
+            if (param<limits[0]) | (limits[1]<param):
+                    magnification += 0.1
+                    return magnification,magnification
         if 'dsdt' in pyLIMA_parameters._fields:
 
             separation = 10 ** pyLIMA_parameters.logs + \
@@ -724,7 +728,7 @@ class ModelUSBL(MLModel):
             magnification_USBL = \
                 microlmagnification.amplification_USBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.01)[0]
+                                                       tolerance=0.001)[0]
 
             magnification[index_USBL] = magnification_USBL
 
@@ -741,7 +745,7 @@ class ModelUSBL(MLModel):
             magnification = \
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.01)[0]
+                                                       tolerance=0.001)[0]
 
         return magnification, source_trajectoire
 
@@ -884,5 +888,6 @@ class ModelVSPL(MLModel):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
+
 
         return f_source, f_blending

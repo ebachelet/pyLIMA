@@ -102,30 +102,30 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
         :return: the USBL magnification A_USBL(t) and the impact parameter U(t)
         :rtype: array_like,array_like
     """
-    global COUNT_VBB_CALL
+    #global COUNT_VBB_CALL
 
     # ensure all inputs are in float format to garantuee numerical stability
 
-    separation = np.float64(separation)
-    q = np.float64(q)
-    Xs = np.float64(Xs)
-    Ys = np.float64(Ys)
-    rho = np.float64(rho)
-    tolerance = np.float64(tolerance)
+    #separation = np.float64(separation)
+    #q = np.float64(q)
+    #Xs = np.float64(Xs)
+    #Ys = np.float64(Ys)
+    #rho = np.float64(rho)
+    #tolerance = np.float64(tolerance)
 
 
     amplification_usbl = np.array([])
-    print ''
-
+    #print ''
+    #print separation[0],q,rho
     for index in xrange(len(Xs)):
         xs = Xs[index]
         ys = Ys[index]
         s = separation[index]
-        print index,len(Xs)
-        print s,q,xs,ys,rho,tolerance
+        #print index,len(Xs)
+       # print s,q,xs,ys,rho,tolerance
         magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)
-        COUNT_VBB_CALL += 1
-        print COUNT_VBB_CALL
+        #COUNT_VBB_CALL += 1
+       # print COUNT_VBB_CALL
         amplification_usbl = np.append(amplification_usbl, magnification_VBB)
 
 
@@ -133,6 +133,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     #print time.time()-start
     #import pdb;
     #pdb.set_trace()
+    #print amplification_usbl
     return amplification_usbl, Xs
 
 

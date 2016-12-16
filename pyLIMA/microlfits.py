@@ -381,6 +381,8 @@ class MLFits(object):
         # First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
+        import pdb;
+        pdb.set_trace()
         print 'MCMC preburn done'
         sampler.reset()
 
@@ -564,7 +566,7 @@ class MLFits(object):
 
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
                                                     ftol=10 ** -6, xtol=10 ** -10,
-                                                    gtol=10 ** -5)
+                                                    gtol=10 ** -5,factor=0.1)
         # import pdb;
         # pdb.set_trace()
         computation_time = python_time.time() - starting_time
@@ -786,7 +788,7 @@ class MLFits(object):
                 bounds=parameters_boundaries, args=tuple(grid_parameters_pixel.tolist()),
                 mutation=(1.1, 1.9), popsize=int(15 / len(parameters_boundaries) ** 0.5), maxiter=100,
                 tol=0.0001,
-                recombination=0.6, polish='None',
+                recombination=0.6, polish=None,
                 disp=True
             )
 

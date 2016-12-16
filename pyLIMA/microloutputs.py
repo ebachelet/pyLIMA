@@ -532,7 +532,7 @@ def initialize_plot_lightcurve(fit):
     """
     fig_size = [10, 10]
     figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
-                                       figsize=(fig_size[0], fig_size[1]), dpi=40)
+                                       figsize=(fig_size[0], fig_size[1]), dpi=75)
     plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.99, wspace=0.2, hspace=0.1)
     figure_axes[0].grid()
     figure_axes[1].grid()

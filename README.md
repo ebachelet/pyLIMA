@@ -9,8 +9,16 @@ Authors : Etienne Bachelet, etibachelet@gmail.com
 	  Martin Norbury, mnorbury@lcogt.net
 	  and friends!	
 
+pyLIMA is an open source for modeling microlensing events.
 
-This is an alpha version, do not expect it works :)
+This is now in beta!! Here is what you can do :
+
+| Model | Implemented | Fit Advice |
+| :---         |     :---:      |     ---: |
+| Point-Source Point Lens (PSPL)   | Yes     | Levenberg-Marquardt (LM)     |
+
+
+Have a look to the documentation :
 
 [Documentation](https://ebachelet.github.io/pyLIMA/)
 
