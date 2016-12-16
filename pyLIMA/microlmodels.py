@@ -300,7 +300,7 @@ class MLModel(object):
 
             f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
             g_blending = f_blending / f_source
-          
+
         return f_source, g_blending
 
     def compute_pyLIMA_parameters(self, fancy_parameters):

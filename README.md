@@ -19,11 +19,12 @@ You can also practice by simulating events.
 
 Clone the repository or download as a ZIP file. Then
 
-DO NOT RUN python install setup.py SVP
+## DO NOT RUN python install setup.py SVP
 
 Please use pyLIMA as a external module, by doing a global import :
 
 import sys
+
 sys.path.append(your-path-to-pyLIMA-directory)
 
 from pyLIMA import whatyouneed
