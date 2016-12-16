@@ -40,7 +40,7 @@ This is now in beta!! Here is what you can do :
 | Point-Source Point Lens (PSPL)   | ![Alt text](http://www.nairaland.com/faces/smiley.png)     | Yes | Levenberg-Marquardt (LM)     |
 | Finite-Source Point Lens (FSPL)   |  ![Alt text](http://www.nairaland.com/faces/smiley.png)      | Yes | Levenberg-Marquardt (LM) or Differential Evolution (DE)    |
 | Double-Source Point Lens (DSPL)   | ![Alt text](http://www.nairaland.com/faces/smiley.png)     |  Yes | Differential Evolution (DE)    |
-| Uniform-Source Binary Lens (USBL)   | ![Alt text](/doc/WIP.png)  | No |      |
+| Uniform-Source Binary Lens (USBL)   | ![Alt text](./doc/WIP.png?raw=true)  | No |      |
 
 
 | Second-Order Effects | Implemented | Examples |Fit Method Advice |
