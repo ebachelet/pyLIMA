@@ -49,15 +49,18 @@ pyLIMA also require some python modules installation, see the documentation belo
 | :---         |     :---:      |   :---: |   ---: |
 | Annual parallax   |  ![Alt text](./doc/HGF.png?raw=true)      | No | Levenberg-Marquardt (LM)     |
 | Terrestrial parallax   |  ![Alt text](./doc/HGF.png?raw=true)     | No | Levenberg-Marquardt (LM) |
-| Space parallax   |  ![Alt text](./doc/HGF.png?raw=true)      |  No| Differential Evolution (DE)    |
+| Space parallax   |  ![Alt text](./doc/HGF.png?raw=true)      |  No| Levenberg-Marquardt (LM)    |
 | Orbital Motion   | ![Alt text](./doc/WIP.png?raw=true)     | No |       |
 | Xallarap   | ![Alt text](./doc/WIP.png?raw=true)    | No |       |
 
-# Documentation
+# Documentation and examples
 Have a look to the documentation (hopefully up to date):
 
 [Documentation](https://ebachelet.github.io/pyLIMA/)
 
+Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
+
 # How to contribute?
 
-Please email me : etibachelet@gmail.com
+Want to contribute? Bug detections? Comments?
+Please email us : etibachelet@gmail.com, rstreet@lcogt.net, valboz@sa.infn.it
