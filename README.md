@@ -16,8 +16,9 @@ This is now in beta!! Here is what you can do :
 | Model | Implemented | Fit Advice |
 | :---         |     :---:      |     ---: |
 | Point-Source Point Lens (PSPL)   | Yes     | Levenberg-Marquardt (LM)     |
-
-
+| Finite-Source Point Lens (FSPL)   | Yes     | Levenberg-Marquardt (LM) or Differential Evolution (DE)    |
+| Double-Source Point Lens (DSPL)   | Yes     |  Differential Evolution (DE)    |
+| Uniform-Source Binary Lens (USBL)   | In Progress     |       |
 Have a look to the documentation :
 
 [Documentation](https://ebachelet.github.io/pyLIMA/)
