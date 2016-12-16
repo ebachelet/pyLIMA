@@ -17,7 +17,10 @@ You can also practice by simulating events.
 
 # Installation
 
-Clone the repository or download as a ZIP file. Then, ## DO NOT RUN python install setup.py.
+Clone the repository or download as a ZIP file. Then
+
+DO NOT RUN python install setup.py SVP
+
 Please use pyLIMA as a external module, by doing a global import :
 
 import sys
@@ -34,7 +37,7 @@ This is now in beta!! Here is what you can do :
 
 | Model | Implemented | Examples | Fit Method Advice | 
 | :---         |     :---:      |:---: |    ---: |
-| Point-Source Point Lens (PSPL)   | Yes     | Yes | Levenberg-Marquardt (LM)     |
+| Point-Source Point Lens (PSPL)   | ![Alt text](http://www.clipartbest.com/clipart-jixEzaqAT)     | Yes | Levenberg-Marquardt (LM)     |
 | Finite-Source Point Lens (FSPL)   | Yes     | Yes | Levenberg-Marquardt (LM) or Differential Evolution (DE)    |
 | Double-Source Point Lens (DSPL)   | Yes     |  Yes | Differential Evolution (DE)    |
 | Uniform-Source Binary Lens (USBL)   | In Progress     | No |      |
