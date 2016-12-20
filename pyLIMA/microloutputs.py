@@ -863,7 +863,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
-    trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope, pyLIMA_parameters.to,
+    trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
                                                                 pyLIMA_parameters.uo, pyLIMA_parameters.tE,
                                                                 pyLIMA_parameters)
 
@@ -881,7 +881,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
 
     if fit.model.model_type == 'DSPL':
 
-        trajectory_x, trajectory_y = microlmodels.source_trajectory(reference_telescope,
+        trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope,
                                                                     pyLIMA_parameters.to + pyLIMA_parameters.delta_to,
                                                                     pyLIMA_parameters.uo + pyLIMA_parameters.delta_uo,
                                                                     pyLIMA_parameters.tE,

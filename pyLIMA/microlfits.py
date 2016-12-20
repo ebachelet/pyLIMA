@@ -79,7 +79,8 @@ class MLFits(object):
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
 
-    def mlfit(self, model, method, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None, grid_resolution=10):
+    def mlfit(self, model, method, DE_population_size=1, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+              grid_resolution=10):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -127,7 +128,7 @@ class MLFits(object):
         self.model = model
         self.method = method
         self.fluxes_MCMC_method = flux_estimation_MCMC
-
+        self.DE_population_size = DE_population_size
         self.model.define_model_parameters()
 
         if self.method == 'LM':
@@ -170,8 +171,8 @@ class MLFits(object):
                       '' \
                       'method to "DE"'
 
-                #self.method = 'DE'
-                #self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
+                # self.method = 'DE'
+                # self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
             else:
 
@@ -381,14 +382,14 @@ class MLFits(object):
         # First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
-        import pdb;
-        pdb.set_trace()
+        # i#mport pdb;
+        # pdb.set_trace()
         print 'MCMC preburn done'
-        sampler.reset()
+        # sampler.reset()
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions, nlinks)
+        # sampler.run_mcmc(final_positions, nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
@@ -423,7 +424,7 @@ class MLFits(object):
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
 
             # Little prior here, need to be chaneged
-            if (priors == np.inf) & (telescope.name==self.event.survey):
+            if (priors == np.inf) & (telescope.name == self.event.survey):
 
                 return -np.inf
 
@@ -432,7 +433,7 @@ class MLFits(object):
                 chichi += (residus ** 2).sum()
                 # Little prior here, need to be changed
 
-                #chichi += priors
+                # chichi += priors
 
         return -chichi
 
@@ -461,9 +462,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(1.1, 1.9), popsize=int(15), maxiter=5000,
+            mutation=(1.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
             tol=0.0001,
-            recombination=0.6, polish='True',
+            recombination=0.6, polish=None,
             disp=True
         )
 
@@ -513,7 +514,6 @@ class MLFits(object):
 
 
             residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
-
 
             # Little prior here, need to be changed
             # if priors == np.inf:
@@ -566,7 +566,7 @@ class MLFits(object):
 
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
                                                     ftol=10 ** -6, xtol=10 ** -10,
-                                                    gtol=10 ** -5,factor=0.1)
+                                                    gtol=10 ** -5, factor=0.1)
         # import pdb;
         # pdb.set_trace()
         computation_time = python_time.time() - starting_time
@@ -610,7 +610,7 @@ class MLFits(object):
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         print sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS'
         print fit_result
         return fit_result, covariance_matrix, computation_time
@@ -749,7 +749,7 @@ class MLFits(object):
 
         for telescope in self.event.telescopes:
 
-            flux = telescope.lightcurve_flux[:,1]
+            flux = telescope.lightcurve_flux[:, 1]
 
             ml_model, prior, f_source, f_blending = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
@@ -782,11 +782,10 @@ class MLFits(object):
 
         grid_results = []
         for grid_parameters_pixel in hyper_grid:
-
             differential_evolution_estimation = scipy.optimize.differential_evolution(
                 self.chichi_grids,
                 bounds=parameters_boundaries, args=tuple(grid_parameters_pixel.tolist()),
-                mutation=(1.1, 1.9), popsize=int(15 / len(parameters_boundaries) ** 0.5), maxiter=100,
+                mutation=(1.1, 1.9), popsize=int(self.DE_population_size), maxiter=100,
                 tol=0.0001,
                 recombination=0.6, polish=None,
                 disp=True
