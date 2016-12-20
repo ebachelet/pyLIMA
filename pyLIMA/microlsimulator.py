@@ -204,7 +204,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
                                      & (Moon_illumination<maximum_moon_illumination)
                                      )[0]
 
-
+        time_of_observations = time_of_observations[observing_windows]
 
 
     else:
