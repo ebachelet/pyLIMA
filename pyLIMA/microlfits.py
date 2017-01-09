@@ -321,7 +321,7 @@ class MLFits(object):
                    nwalkers*nlinks MCMC steps in total
         """
 
-        nwalkers = 100
+        nwalkers = 200
         nlinks = 100
 
         if len(self.model.parameters_guess) == 0:
@@ -338,7 +338,7 @@ class MLFits(object):
         # Best solution
 
         best_solution = self.guess
-	import pdb; pdb.set_trace()
+
         if self.fluxes_MCMC_method == 'MCMC':
             limit_parameters = len(self.model.model_dictionnary.keys())
 
