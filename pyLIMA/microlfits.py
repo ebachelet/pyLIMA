@@ -20,7 +20,7 @@ import microlmodels
 import microloutputs
 import microlguess
 import microltoolbox
-
+import microlpriors
 warnings.filterwarnings("ignore")
 
 
@@ -321,7 +321,7 @@ class MLFits(object):
                    nwalkers*nlinks MCMC steps in total
         """
 
-        nwalkers = 200
+        nwalkers = 100
         nlinks = 100
 
         if len(self.model.parameters_guess) == 0:
@@ -338,7 +338,7 @@ class MLFits(object):
         # Best solution
 
         best_solution = self.guess
-
+	import pdb; pdb.set_trace()
         if self.fluxes_MCMC_method == 'MCMC':
             limit_parameters = len(self.model.model_dictionnary.keys())
 
@@ -382,14 +382,14 @@ class MLFits(object):
         # First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
-        # i#mport pdb;
-        # pdb.set_trace()
+        #import pdb;
+        #pdb.set_trace()
         print 'MCMC preburn done'
-        # sampler.reset()
+        sampler.reset()
 
         # Final estimation using the previous output.
 
-        # sampler.run_mcmc(final_positions, nlinks)
+        sampler.run_mcmc(final_positions, nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
@@ -407,12 +407,12 @@ class MLFits(object):
 
         :rtype: float
         """
-        # prior_limit = microlpriors.microlensing_parameters_limits_priors(
-        # fit_process_parameters, self.model.parameters_boundaries)
+        prior_limit = microlpriors.microlensing_parameters_limits_priors(
+        fit_process_parameters, self.model.parameters_boundaries)
 
-        # if prior_limit == np.inf:
+        if prior_limit == np.inf:
 
-        # return -np.inf
+        	 return -np.inf
 
         chichi = 0
 

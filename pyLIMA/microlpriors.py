@@ -26,7 +26,7 @@ def microlensing_flux_priors(size_dataset, f_source, g_blending):
 
 
 def microlensing_parameters_limits_priors(parameters, limits):
-    for i in xrange(len(parameters)):
+    for i in xrange(len(limits)):
 
         if (parameters[i] > limits[i][1]) | (parameters[i] < limits[i][0]):
 

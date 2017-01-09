@@ -292,15 +292,17 @@ class MLModel(object):
 
 
         except TypeError:
-
+	    
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-
-            f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-            g_blending = f_blending / f_source
-
+	    try:
+            	f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+           	g_blending = f_blending / f_source
+	    except:
+		f_source = 0
+		g_source = 0		
         return f_source, g_blending
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
@@ -700,12 +702,12 @@ class ModelUSBL(MLModel):
 
         magnification = np.zeros(len(source_trajectoire[0]))
 
-        for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
-            param = getattr(pyLIMA_parameters, key)
-            limits = self.parameters_boundaries[self.model_dictionnary[key]]
-            if (param<limits[0]) | (limits[1]<param):
-                    magnification += 0.1
-                    return magnification,magnification
+        #for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
+         #   param = getattr(pyLIMA_parameters, key)
+         #   limits = self.parameters_boundaries[self.model_dictionnary[key]]
+         #   if (param<limits[0]) | (limits[1]<param):
+         #           magnification += 0.1*np.inf
+         #           return magnification,magnification
         if 'dsdt' in pyLIMA_parameters._fields:
 
             separation = 10 ** pyLIMA_parameters.logs + \
