@@ -870,6 +870,15 @@ class MLFits(object):
 
         self.outputs = outputs
 
+    def produce_fit_statistics(self):
+        """ Produce the standard outputs for a fit.
+        More details in microloutputs module.
+        """
+
+        stats_outputs = microloutputs.statistical_outputs(self)
+
+        self.stats_outputs = stats_outputs
+
     def produce_pdf(self, output_directory):
 
         microloutputs.pdf_output(self, output_directory)

@@ -21,6 +21,8 @@ from scipy.stats.distributions import t as student
 
 import microltoolbox
 import microlmodels
+import microlstats
+
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
@@ -47,6 +49,134 @@ def pdf_output(fit, output_directory):
         pdf_details['Subject'] = 'A microlensing fit'
 
         pdf_details['CreationDate'] = datetime.today()
+
+def statistical_outputs(fit) :
+    """Compute statistics to estimate the fit quality
+
+        :param object fit: a fit object. See the microlfits for more details.
+
+        :return: a namedtuple containing the following attributes :
+
+                  fit_parameters : an namedtuple object containing all the fitted parameters
+
+                  fit_errors : an namedtuple object containing all the fitted parameters errors
+
+                  fit_correlation_matrix : a numpy array representing the fitted parameters
+                  correlation matrix
+
+                  figure_lightcurve : a two matplotlib figure showing the data and model and the
+                  correspoding residuals
+
+        :rtype: object
+    """
+    fig_size = [15, 5]
+    figure_stats = plt.figure(figsize=(fig_size[0], fig_size[1]))
+
+    best_parameters = fit.fit_results
+    best_model_pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
+
+    telescope_residuals = []
+
+    telescope_Kolmogorv_Smirnov_residuals_test = []
+    telescope_Anderson_Darling_residuals_test = []
+    telescope_Shapiro_Wilk_residuals_test = []
+
+    telescope_chi2 = []
+    telescope_chi2_sur_dof = []
+    telescope_BIC = []
+    telescope_AIC = []
+    for telescope in fit.event.telescopes:
+
+        residuals,priors = fit.model_residuals(telescope, best_model_pyLIMA_parameters)
+
+        telescope_residuals.append(residuals)
+
+        Kolmogorov_Smirnov = microlstats.normal_Kolmogorov_Smirnov(residuals)
+
+        Anderson_Darling = microlstats.normal_Anderson_Darling(residuals)
+
+
+        Shapiro_Wilk = microlstats.normal_Shapiro_Wilk(residuals)
+
+        telescope_Kolmogorv_Smirnov_residuals_test.append(Kolmogorov_Smirnov)
+        telescope_Anderson_Darling_residuals_test.append(Anderson_Darling)
+        telescope_Shapiro_Wilk_residuals_test.append(Shapiro_Wilk )
+
+        chi2_sur_dof = microlstats.normalized_chi2((residuals**2).sum(), len(residuals),
+                                                   len(fit.model.parameters_boundaries) + 2)
+        BIC = 0.0
+        AIC = 0.0
+
+        telescope_chi2.append((residuals**2).sum())
+        telescope_chi2_sur_dof.append(chi2_sur_dof)
+        telescope_BIC.append(BIC)
+        telescope_AIC.append(AIC)
+
+    total_residuals = fit.residuals_LM(best_parameters)
+
+    Kolmogorov_Smirnov = microlstats.normal_Kolmogorov_Smirnov(total_residuals)
+
+
+    Anderson_Darling = microlstats.normal_Anderson_Darling(total_residuals)
+
+    Shapiro_Wilk = microlstats.normal_Shapiro_Wilk(total_residuals)
+
+    telescope_Kolmogorv_Smirnov_residuals_test.append(Kolmogorov_Smirnov)
+    telescope_Anderson_Darling_residuals_test.append(Anderson_Darling)
+    telescope_Shapiro_Wilk_residuals_test.append(Shapiro_Wilk)
+
+    chi2_sur_dof = microlstats.normalized_chi2(best_parameters[-1], len(total_residuals),
+                                               len(fit.model.parameters_boundaries)+2)
+    BIC = microlstats.Bayesian_Information_Criterion(best_parameters[-1], len(total_residuals),
+                                               len(fit.model.parameters_boundaries) + 2)
+    AIC = microlstats.Akaike_Information_Criterion(best_parameters[-1], len(fit.model.parameters_boundaries) + 2)
+
+    telescope_chi2.append(best_parameters[-1])
+    telescope_chi2_sur_dof.append(chi2_sur_dof)
+    telescope_BIC.append(BIC)
+    telescope_AIC.append(AIC)
+
+
+
+
+    raw_labels = [i.name for i in fit.event.telescopes]
+    raw_labels += ['All site']
+    column_labels = ['KS','AD','SW','chi2','chi2_dof', 'BIC', 'AIC']
+    table_val = []
+    table_colors = []
+    colors_dictionary = {0:'r',1:'y',2:'g'}
+
+    for i in xrange(len(raw_labels)):
+        table_val.append([telescope_Kolmogorv_Smirnov_residuals_test[i][1],
+                          telescope_Anderson_Darling_residuals_test[i][0],
+                          telescope_Shapiro_Wilk_residuals_test[i][1],
+                          telescope_chi2[i],telescope_chi2_sur_dof[i][0],telescope_BIC[i],telescope_AIC[i]])
+
+        table_colors.append([colors_dictionary[telescope_Kolmogorv_Smirnov_residuals_test[i][2]],
+                             colors_dictionary[telescope_Anderson_Darling_residuals_test[i][2]],
+                             colors_dictionary[telescope_Shapiro_Wilk_residuals_test[i][2]],
+                             'w',
+                             colors_dictionary[telescope_chi2_sur_dof[i][1]],
+                             'w',
+                             'w',
+                             ])
+
+    table_val = np.round(table_val, 5).tolist()
+
+
+
+    table_axes = figure_stats.add_subplot(111, frameon=False)
+
+    the_table = table_axes.table(cellText=table_val,
+                                 rowLabels=raw_labels, cellColours=table_colors,
+                                 colLabels=column_labels, loc='center left')
+    table_axes.get_yaxis().set_visible(False)
+    table_axes.get_xaxis().set_visible(False)
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
+    the_table.scale(0.75, 0.75)
+    title = fit.model.event.name + ' : ' + fit.model.model_type
+    figure_stats.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
 
 def LM_outputs(fit):
