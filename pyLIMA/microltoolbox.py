@@ -6,6 +6,7 @@ Created on Mon May 23 17:18:15 2016
 """
 
 import numpy as np
+import copy
 
 # magnitude reference
 MAGNITUDE_CONSTANT = 27.4
@@ -85,3 +86,57 @@ def error_flux_to_error_magnitude(error_flux, flux):
     error_magnitude = np.abs(-2.5 * error_flux / (flux * np.log(10)))
 
     return error_magnitude
+
+
+def align_the_data_to_the_reference_telescope(fit):
+    """Align data to the survey telescope (i.e telescope 0).
+
+        :param array_like lightcurve_telescope_mag: the survey telescope in magnitude
+        :param float fs_reference: thce survey telescope reference source flux (i.e the fitted value)
+        :param float g_reference: the survey telescope reference blending parameter (i.e the fitted
+        value)
+        :param float fs_telescope: the telescope source flux (i.e the fitted value)
+        :param float g_reference: the telescope blending parameter (i.e the fitted value)
+
+        :return: the aligned to survey lightcurve in magnitude
+        :rtype: array_like
+    """
+
+    reference_telescope = fit.event.telescopes[0]
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+
+    normalised_lightcurve = []
+    for telescope in fit.event.telescopes:
+
+        if telescope.name == reference_telescope.name:
+
+            lightcurve = telescope.lightcurve_magnitude
+
+        else:
+
+            telescope_ghost = copy.copy(telescope)
+            telescope_ghost.name = reference_telescope.name
+            telescope_ghost.filter = reference_telescope.filter
+            # import pdb;
+            # pdb.set_trace()
+            model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
+            model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+
+            time = telescope.lightcurve_flux[:,0]
+            flux = telescope.lightcurve_flux[:, 1]
+            error_flux = telescope.lightcurve_flux[:, 2]
+            err_mag = error_flux_to_error_magnitude(error_flux, flux)
+
+            residuals = 2.5 * np.log10(model_telescope / flux)
+
+            magnitude_normalised = flux_to_magnitude(model_ghost) + residuals
+
+            lightcurve_normalised = [time, magnitude_normalised, err_mag]
+
+            lightcurve_mag_normalised = np.array(lightcurve_normalised).T
+
+
+            lightcurve = lightcurve_mag_normalised
+
+        normalised_lightcurve.append(lightcurve)
+    return normalised_lightcurve

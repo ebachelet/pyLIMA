@@ -732,6 +732,25 @@ class MLFits(object):
 
         return residuals, priors
 
+    def all_telescope_residuals(self, pyLIMA_parameters):
+        """ Compute the residuals and the priors of a telescope lightcurve according to the model.
+
+        :param object telescope: a telescope object. More details in telescopes module.
+        :param object pyLIMA_parameters: object containing pyLIMA_parameters
+
+        :return: the residuals in flux, the priors
+        :rtype: array_like, float
+        """
+
+        residuals = []
+        for telescope in self.event.telescopes:
+            # Find the residuals of telescope observation regarding the parameters and model
+            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+            # no prior here
+            residuals.append(residus)
+        # print python_time.time()-start
+        return residuals
+
     def find_fluxes(self, fit_process_parameters, model):
         """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM
         method.

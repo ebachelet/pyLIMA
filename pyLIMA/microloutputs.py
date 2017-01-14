@@ -75,7 +75,7 @@ def statistical_outputs(fit) :
     best_parameters = fit.fit_results
     best_model_pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
 
-    telescope_residuals = []
+    telescope_residuals = fit.all_telescope_residuals(best_model_pyLIMA_parameters)
 
     telescope_Kolmogorv_Smirnov_residuals_test = []
     telescope_Anderson_Darling_residuals_test = []
@@ -85,9 +85,10 @@ def statistical_outputs(fit) :
     telescope_chi2_sur_dof = []
     telescope_BIC = []
     telescope_AIC = []
+    count = 0
     for telescope in fit.event.telescopes:
 
-        residuals,priors = fit.model_residuals(telescope, best_model_pyLIMA_parameters)
+        residuals = telescope_residuals[count]
 
         telescope_residuals.append(residuals)
 
@@ -111,7 +112,7 @@ def statistical_outputs(fit) :
         telescope_chi2_sur_dof.append(chi2_sur_dof)
         telescope_BIC.append(BIC)
         telescope_AIC.append(AIC)
-
+        count += 1
     total_residuals = fit.residuals_LM(best_parameters)
 
     Kolmogorov_Smirnov = microlstats.normal_Kolmogorov_Smirnov(total_residuals)
@@ -141,15 +142,15 @@ def statistical_outputs(fit) :
 
     raw_labels = [i.name for i in fit.event.telescopes]
     raw_labels += ['All site']
-    column_labels = ['KS','AD','SW','chi2','chi2_dof', 'BIC', 'AIC']
+    column_labels = ['Kolmogorov-Smirnov\n(KS_stat,p_value)','Anderson-Darling\n(AD_stat,p value)','Shapiro-Wilk\n(SW_stat,p_value)','chi2','chi2_dof', 'BIC', 'AIC']
     table_val = []
     table_colors = []
     colors_dictionary = {0:'r',1:'y',2:'g'}
 
     for i in xrange(len(raw_labels)):
-        table_val.append([telescope_Kolmogorv_Smirnov_residuals_test[i][1],
-                          telescope_Anderson_Darling_residuals_test[i][0],
-                          telescope_Shapiro_Wilk_residuals_test[i][1],
+        table_val.append([np.round(telescope_Kolmogorv_Smirnov_residuals_test[i][:2],3),
+                          np.round(telescope_Anderson_Darling_residuals_test[i][:2],3),
+                          np.round(telescope_Shapiro_Wilk_residuals_test[i][:2],3),
                           telescope_chi2[i],telescope_chi2_sur_dof[i][0],telescope_BIC[i],telescope_AIC[i]])
 
         table_colors.append([colors_dictionary[telescope_Kolmogorv_Smirnov_residuals_test[i][2]],
@@ -161,7 +162,7 @@ def statistical_outputs(fit) :
                              'w',
                              ])
 
-    table_val = np.round(table_val, 5).tolist()
+    #table_val = np.round(table_val, 5).tolist()
 
 
 
@@ -200,12 +201,7 @@ def LM_outputs(fit):
     """
     # Change matplotlib default colors
 
-    n = len(fit.event.telescopes)
-    color = plt.cm.jet(np.linspace(0.1, 0.99, n))  # This returns RGBA; convert:
-    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
-                   tuple(color[:, 0:-1]))
-    hexcolor[0] = '#000000'
-    matplotlib.rcParams['axes.color_cycle'] = hexcolor
+
 
     results = LM_parameters_result(fit)
     covariance_matrix = fit.fit_covariance
@@ -774,30 +770,17 @@ def LM_plot_align_data(fit, figure_axe):
     """
     MARKER_SYMBOLS.reset()
 
-    reference_telescope = fit.event.telescopes[0]
-    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+    normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit)
 
-
+    count = 0
     for telescope in fit.event.telescopes:
 
-        if telescope.name == reference_telescope.name:
-
-            lightcurve = telescope.lightcurve_magnitude
-
-        else:
-
-            telescope_ghost = copy.copy(telescope)
-            telescope_ghost.name = reference_telescope.name
-            telescope_ghost.filter = reference_telescope.filter
-           # import pdb;
-            #pdb.set_trace()
-            model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
-            model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
-            lightcurve = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
+        lightcurve = normalised_lightcurves[count]
 
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
                             marker=str(MARKER_SYMBOLS.next()), markersize=7.5,capsize=0.0,
                             label=telescope.name)
+        count += 1
     figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
 

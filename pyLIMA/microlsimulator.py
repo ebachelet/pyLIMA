@@ -321,10 +321,9 @@ def simulate_lightcurve_flux(model, pylima_parameters, red_noise_apply='Yes'):
 
     for telescope in model.event.telescopes:
 
+
         theoritical_flux = model.compute_the_microlensing_model(telescope, pylima_parameters)[0]
-
         flux_error = poisson_noise(theoritical_flux)
-
         observed_flux = noisy_observations(theoritical_flux, flux_error)
 
         if red_noise_apply == 'Yes':

@@ -1,29 +1,30 @@
-import scipy.stats
+import scipy.stats as ss
 import numpy as np
-
+import statsmodels.api as sm
 
 ### Tests on residuals
 
 def normal_Kolmogorov_Smirnov(sample):
-    """ Compute a Kolmorogov-Smirnov test on the sample versus a normal distribution with mu = 0, sigma = 1
+    """ Compute a Kolmorogov-Smirnov test on the sample versus a normal distribution
 
         :param array_like sample: the sample you want to check the "Gaussianity"
         :returns: the Kologorov-Smirnov statistic, its related p_value and the  Kolmorogov-Smirnov judgement
         :rtype: float, float
     """
-
-    KS_stat, KS_pvalue = scipy.stats.kstest(sample, 'norm')
+    mu, sigma = ss.norm.fit(sample)
+    #use mu sigma for anomaly, 0,1 for rescaling???
+    KS_stat, KS_pvalue = ss.kstest(sample, 'norm', args=(mu, sigma))
 
     # the sample is likely Gaussian-like if KS_stat (~ maximum distance between sample and theoritical distribution) -> 0
     # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if KS_pvalue -> 1
 
     KS_judgement = 0
 
-    if KS_pvalue > 0.1:
+    if KS_pvalue > 0.01:
 
         KS_judgement = 1
 
-    if KS_pvalue > 0.5:
+    if KS_pvalue > 0.05:
 
         KS_judgement = 2
 
@@ -38,22 +39,20 @@ def normal_Anderson_Darling(sample):
         :rtype: float, array_like, array_like
     """
 
-    AD_stat, AD_critical_values, AD_significance_level = scipy.stats.anderson(sample, 'norm')
+    AD_stat, AD_critical_values, AD_significance_levels = ss.anderson(sample)
 
-    # the null hypothesis ( i.e the distribution of sample come from a Gaussian) can be rejected for each
-    # AD_significance_level if the AD_stat is GREATER than the corresponding AD_critical_values.
-    # Example :
-    # AD_stat = 0.44, AD_critical_values = [0.536,0.61,0.732,0.854,1.016], AD_significance_level(%) = [15,10,5,2.5,1]
-    # In this case, the null hypothesis is not rejected (i.e the sample can come from a Gaussian)
+    # the sample is likely Gaussian-like if AD_stat (~ maximum distance between sample and theoritical distribution) -> 0
+    # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if AD_pvalue -> 1
 
-    AD_critical_value = AD_critical_values[0]
 
     AD_judgement = 0
 
-    if AD_stat < AD_critical_value:
-        AD_judgement = 2
+    if AD_stat < 2*AD_critical_values[-1]:
+        AD_judgement = 1
 
-    return  AD_stat, AD_critical_value, AD_judgement
+    if AD_stat < AD_critical_values[-1]:
+        AD_judgement = 2
+    return  AD_stat, AD_critical_values[-1], AD_judgement
 
 def normal_Shapiro_Wilk(sample):
     """ Compute a Shapiro-Wilk test on the sample versus a normal distribution with mu = 0, sigma = 1
@@ -63,17 +62,18 @@ def normal_Shapiro_Wilk(sample):
         :rtype: float, float
     """
 
-    SW_stat, SW_pvalue = scipy.stats.shapiro(sample)
+    SW_stat, SW_pvalue = ss.shapiro(sample)
 
     # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if SW_stat -> 1
     # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if SW_pvalue -> 1
 
+    # Judegement made on the STATISTIC because 'W test statistic is accurate but the p-value may not be" (see scipy doc)
     SW_judgement = 0
 
-    if SW_pvalue > 0.1:
+    if SW_pvalue > 0.01:
         SW_judgement = 1
 
-    if SW_pvalue > 0.5:
+    if SW_pvalue > 0.05:
         SW_judgement = 2
 
 
