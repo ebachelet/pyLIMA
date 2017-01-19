@@ -60,7 +60,7 @@ class ModelException(Exception):
     pass
 
 
-def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None', 0.0],
+def create_model(model_type, event, model_arguments = [], parallax=['None', 0.0], xallarap=['None', 0.0],
                  orbital_motion=['None', 0.0], source_spots='None'):
     """
     Load a model according to the supplied model_type. Models are expected to be named
@@ -78,7 +78,7 @@ def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None', 0.
 
         raise ModelException('Unknown model "{}"'.format(model_type))
 
-    return model(event, parallax, xallarap,
+    return model(event, model_arguments, parallax, xallarap,
                  orbital_motion, source_spots)
 
 
@@ -157,12 +157,12 @@ class MLModel(object):
        """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, event, parallax=['None', 0.0], xallarap=['None', 0.0],
+    def __init__(self, event, model_arguments = [], parallax=['None', 0.0], xallarap=['None', 0.0],
                  orbital_motion=['None', 0.0], source_spots='None'):
         """ Initialization of the attributes described above.
         """
-
         self.event = event
+        self.model_arguments = model_arguments
         self.parallax_model = parallax
         self.xallarap_model = xallarap
         self.orbital_motion_model = orbital_motion
@@ -764,7 +764,7 @@ class ModelVSPL(MLModel):
 
     def define_pyLIMA_standard_parameters(self):
         """ Define the standard pyLIMA parameters dictionnary."""
-
+        self.number_of_harmonics = self.model_arguments[0]
         self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
         if self.parallax_model[0] != 'None':
             self.Jacobian_flag = 'No way'
@@ -797,7 +797,7 @@ class ModelVSPL(MLModel):
 
         unique_filters = np.unique(filters)
 
-        self.number_of_harmonics = 15
+
         for filter in unique_filters:
             # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
             for i in xrange(self.number_of_harmonics):
@@ -834,17 +834,18 @@ class ModelVSPL(MLModel):
         :rtype: array_like
         """
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:, 0] - 2456425
+        time = lightcurve[:, 0] - 2456425.5
 
         amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
 
-        period = getattr(pyLIMA_parameters, 'period')
+
 
         pulsations = 0.0
-
+        period = getattr(pyLIMA_parameters, 'period')
         # factor = 0.0
         # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
         for i in xrange(self.number_of_harmonics):
+
             # mplitude = getattr(pyLIMA_parameters, 'A_' + str(i))
             # factor = getattr(pyLIMA_parameters, 'q_' + telescope.filter)
             # factor2 = getattr(pyLIMA_parameters, 'phi_' + telescope.filter)
@@ -860,6 +861,7 @@ class ModelVSPL(MLModel):
             # pdb.set_trace()
             # phase *=(1+factor2)
             pulsations += amplitude * np.cos(2 * np.pi * (i + 1) / period * time + phase)
+
 
         # import pdb;
         # pdb.set_trace()

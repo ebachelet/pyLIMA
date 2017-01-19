@@ -200,7 +200,12 @@ def LM_outputs(fit):
     :rtype: object
     """
     # Change matplotlib default colors
-
+    n = len(fit.event.telescopes)
+    color = plt.cm.jet(np.linspace(0.01, 0.99, n))  # This returns RGBA; convert:
+    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
+                   tuple(color[:, 0:-1]))
+    matplotlib.rcParams['axes.color_cycle'] = hexcolor
+    #hexcolor[0] = '#000000'
 
 
     results = LM_parameters_result(fit)
@@ -435,7 +440,6 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
                              pyLIMA_parameters.to + 2 * pyLIMA_parameters.tE, 30000)
 
     time_of_model = np.sort(np.append(time_of_model, extra_time))
-    reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
         [time_of_model, [0] * len(time_of_model), [0] * len(time_of_model)]).T
@@ -709,7 +713,7 @@ def LM_plot_model(fit, figure_axe):
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
-    time = np.linspace(min_time, max_time + 100, 3000)
+    time = np.linspace(min_time, max_time + 100, 30000)
     extra_time = np.linspace(pyLIMA_parameters.to - 2 * pyLIMA_parameters.tE,
                              pyLIMA_parameters.to + 2 * pyLIMA_parameters.tE, 30000)
     time = np.sort(np.append(time, extra_time))
