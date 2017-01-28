@@ -79,7 +79,7 @@ class MLFits(object):
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
 
-    def mlfit(self, model, method, DE_population_size=1, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+    def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
@@ -143,7 +143,6 @@ class MLFits(object):
 
             else:
 
-                self.guess = self.initial_guess()
                 self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
         if self.method == 'DE':
@@ -327,13 +326,14 @@ class MLFits(object):
         if len(self.model.parameters_guess) == 0:
 
             differential_evolution_estimation = self.differential_evolution()[0]
+            self.DE_population_size = 5
             self.guess = differential_evolution_estimation
 
         else:
 
             self.guess = list(self.model.parameters_guess)
+            self.guess +=  self.find_fluxes(self.guess, self.model)
 
-        self.guess += self.find_fluxes(self.guess, self.model)
         print 'pre MCMC done'
         # Best solution
 
@@ -421,19 +421,9 @@ class MLFits(object):
         for telescope in self.event.telescopes:
 
             # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+            residus = self.model_residuals(telescope, pyLIMA_parameters)
 
-            # Little prior here, need to be chaneged
-            if (priors == np.inf) & (telescope.name == self.event.survey):
-
-                return -np.inf
-
-            else:
-
-                chichi += (residus ** 2).sum()
-                # Little prior here, need to be changed
-
-                # chichi += priors
+            chichi += (residus ** 2).sum()
 
         return -chichi
 
@@ -487,6 +477,7 @@ class MLFits(object):
                                        len(paczynski_parameters) + 2 * len(self.event.telescopes)))
 
         else:
+
             self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
 
             fit_results, fit_covariance, fit_time = self.lmarquardt()
@@ -513,15 +504,9 @@ class MLFits(object):
             # Find the residuals of telescope observation regarding the parameters and model
 
 
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+            residus = self.model_residuals(telescope, pyLIMA_parameters)
 
-            # Little prior here, need to be changed
-            # if priors == np.inf:
-            #  return np.inf
 
-            # else:
-            #    chichi += (residus**2).sum()+priors
-            #
             chichi += (residus ** 2).sum()
 
         return chichi
@@ -556,7 +541,8 @@ class MLFits(object):
 
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
-
+        if self.guess == []:
+            self.guess = self.initial_guess()
 
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
@@ -633,8 +619,8 @@ class MLFits(object):
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
-            # no prior here
+            residus = self.model_residuals(telescope, pyLIMA_parameters)
+
             residuals = np.append(residuals, residus)
         # print python_time.time()-start
         return residuals
@@ -728,9 +714,8 @@ class MLFits(object):
 
         residuals = (flux - microlensing_model[0]) / errflux
 
-        priors = microlensing_model[1]
 
-        return residuals, priors
+        return residuals
 
     def all_telescope_residuals(self, pyLIMA_parameters):
         """ Compute the residuals and the priors of a telescope lightcurve according to the model.
@@ -745,7 +730,7 @@ class MLFits(object):
         residuals = []
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+            residus = self.model_residuals(telescope, pyLIMA_parameters)
             # no prior here
             residuals.append(residus)
         # print python_time.time()-start
@@ -770,7 +755,7 @@ class MLFits(object):
 
             flux = telescope.lightcurve_flux[:, 1]
 
-            ml_model, prior, f_source, f_blending = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+            ml_model, f_source, f_blending = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
             # Prior here
             if f_source < 0:
@@ -830,7 +815,7 @@ class MLFits(object):
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
 
-            residus, priors = self.model_residuals(telescope, pyLIMA_parameters)
+            residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             chichi += (residus ** 2).sum()
 

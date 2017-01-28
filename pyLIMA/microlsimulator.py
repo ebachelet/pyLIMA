@@ -219,7 +219,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
     return telescope
 
 
-def simulate_a_microlensing_model(event, model='PSPL', parallax=['None', 0.0], xallarap=['None', 0.0],
+def simulate_a_microlensing_model(event, model='PSPL', args = (), parallax=['None', 0.0], xallarap=['None', 0.0],
                                   orbital_motion=['None', 0.0], source_spots='None'):
     """ Simulate a a microlensing model.
 
@@ -236,7 +236,7 @@ def simulate_a_microlensing_model(event, model='PSPL', parallax=['None', 0.0], x
         :rtype: object
     """
 
-    fake_model = microlmodels.create_model(model, event, parallax, xallarap,
+    fake_model = microlmodels.create_model(model, event, args, parallax, xallarap,
                                            orbital_motion, source_spots)
     fake_model.define_model_parameters()
 
@@ -323,6 +323,7 @@ def simulate_lightcurve_flux(model, pylima_parameters, red_noise_apply='Yes'):
 
 
         theoritical_flux = model.compute_the_microlensing_model(telescope, pylima_parameters)[0]
+
         flux_error = poisson_noise(theoritical_flux)
         observed_flux = noisy_observations(theoritical_flux, flux_error)
 

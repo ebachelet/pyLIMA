@@ -151,7 +151,8 @@ def statistical_outputs(fit) :
         table_val.append([np.round(telescope_Kolmogorv_Smirnov_residuals_test[i][:2],3),
                           np.round(telescope_Anderson_Darling_residuals_test[i][:2],3),
                           np.round(telescope_Shapiro_Wilk_residuals_test[i][:2],3),
-                          telescope_chi2[i],telescope_chi2_sur_dof[i][0],telescope_BIC[i],telescope_AIC[i]])
+                          np.round(telescope_chi2[i],3),np.round(telescope_chi2_sur_dof[i][0],3),
+                          np.round(telescope_BIC[i],3),np.round(telescope_AIC[i],3)])
 
         table_colors.append([colors_dictionary[telescope_Kolmogorv_Smirnov_residuals_test[i][2]],
                              colors_dictionary[telescope_Anderson_Darling_residuals_test[i][2]],

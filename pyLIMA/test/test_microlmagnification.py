@@ -10,15 +10,21 @@ import numpy as np
 from pyLIMA import microlmagnification
 from pyLIMA import microlmodels
 
+def test_impact_parameter():
+    tau = np.array([1])
+    uo = np.array([2])
 
+
+    impact_param = microlmagnification.impact_parameter(tau, uo)
+    assert impact_param == np.sqrt(5)
 def test_amplification_PSPL():
     tau = np.array([1])
     uo = np.array([0])
 
-    magnification, u = microlmagnification.amplification_PSPL(tau, uo)
+    magnification = microlmagnification.amplification_PSPL(tau, uo)
 
     assert np.allclose(magnification, np.array([1.34164079]))
-    assert u == 1
+
 
 
 def test_amplification_FSPL_one_point():
@@ -27,10 +33,10 @@ def test_amplification_FSPL_one_point():
     rho = 0.01
     gamma = 0.5
     yoo_table = microlmodels.yoo_table
-    magnification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, yoo_table)
+    magnification  = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, yoo_table)
 
     assert np.allclose(magnification, np.array([216.97028636]))
-    assert np.allclose(u, np.array([0.001]))
+
 
 
 def test_amplification_FSPL_two_points():
@@ -39,7 +45,6 @@ def test_amplification_FSPL_two_points():
     rho = 0.01
     gamma = 0.5
     yoo_table = microlmodels.yoo_table
-    magnification, u = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, yoo_table)
+    magnification = microlmagnification.amplification_FSPL(tau, uo, rho, gamma, yoo_table)
 
     assert np.allclose(magnification, np.array([216.97028636, 214.44622417]))
-    assert np.allclose(u, np.array([0.001, 0.002]))

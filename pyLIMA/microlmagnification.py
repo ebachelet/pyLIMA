@@ -18,7 +18,36 @@ from subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinar
 
 COUNT_VBB_CALL = 0
 
+def impact_parameter(tau, uo):
+
+    impact_param = (tau**2+uo**2)**0.5 #u(t)
+
+    return impact_param
+
 def amplification_PSPL(tau, uo):
+    """ The Paczynski magnification.
+        "Gravitational microlensing by the galactic halo",Paczynski, B. 1986
+        http://adsabs.harvard.edu/abs/1986ApJ...304....1P
+
+        :param array_like tau: the tau define for example in
+        http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+        :param array_like uo: the u define for example in
+        http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+
+        :return: the PSPL magnification A_PSPL(t) and the impact parameter U(t)
+        :rtype: array_like,array_like
+    """
+    # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+
+    impact_param = impact_parameter(tau, uo)  # u(t)
+    impact_param_square = impact_param ** 2  # u(t)^2
+
+    amplification_pspl = (impact_param_square + 2) / (impact_param * (impact_param_square + 4) ** 0.5)
+
+    # return both magnification and U, required by some methods
+    return amplification_pspl
+
+def Jacobian_amplification_PSPL(tau, uo):
     """ The Paczynski magnification.
         "Gravitational microlensing by the galactic halo",Paczynski, B. 1986
         http://adsabs.harvard.edu/abs/1986ApJ...304....1P
@@ -33,15 +62,13 @@ def amplification_PSPL(tau, uo):
     """
     # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
 
-    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  # u(t)
-    impact_parameter_square = impact_parameter ** 2  # u(t)^2
+    impact_param = impact_parameter(tau, uo)  # u(t)
+    impact_param_square = impact_param ** 2  # u(t)^2
 
-    amplification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
+    amplification_pspl = (impact_param_square + 2) / (impact_param * (impact_param_square + 4) ** 0.5)
 
     # return both magnification and U, required by some methods
-    return amplification_pspl, impact_parameter
-
-
+    return amplification_pspl, impact_param
 def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     """ The Yoo FSPL magnification.
         "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens",Yoo, J. et al 2004
@@ -57,10 +84,53 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
         :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)
         :rtype: array_like,array_like
     """
-    impact_parameter = (tau ** 2 + uo ** 2) ** 0.5  # u(t)
-    impact_parameter_square = impact_parameter ** 2  # u(t)^2
+    impact_param = impact_parameter(tau, uo)  # u(t)
+    impact_param_square = impact_param ** 2  # u(t)^2
 
-    amplification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
+    amplification_pspl = (impact_param_square + 2) / (impact_param * (impact_param_square + 4) ** 0.5)
+
+    z_yoo = impact_param / rho
+
+    amplification_fspl = np.zeros(len(amplification_pspl))
+
+    # Far from the lens (z_yoo>>1), then PSPL.
+    indexes_PSPL = np.where((z_yoo > yoo_table[0][-1]))[0]
+
+    amplification_fspl[indexes_PSPL] = amplification_pspl[indexes_PSPL]
+
+    # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
+    indexes_WM = np.where((z_yoo < yoo_table[0][0]))[0]
+
+    amplification_fspl[indexes_WM] = amplification_pspl[indexes_WM] * \
+                                     (2 * z_yoo[indexes_WM] - gamma * (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
+
+    # FSPL regime (z_yoo~1), then Yoo et al derivatives
+    indexes_FSPL = np.where((z_yoo <= yoo_table[0][-1]) & (z_yoo >= yoo_table[0][0]))[0]
+
+    amplification_fspl[indexes_FSPL] = amplification_pspl[indexes_FSPL] * \
+                                       (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
+
+    return amplification_fspl
+
+def Jacobian_amplification_FSPL(tau, uo, rho, gamma, yoo_table):
+    """ The Yoo FSPL magnification.
+        "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens",Yoo, J. et al 2004
+        http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
+
+        :param array_like tau: the tau define for example in
+        http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+        :param array_like u: the u define for example in
+        http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+        :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
+        :param array_like yoo_table: the interpolated Yoo et al table.
+
+        :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)
+        :rtype: array_like,array_like
+    """
+    impact_param = impact_parameter(tau, uo)  # u(t)
+    impact_param_square = impact_param ** 2  # u(t)^2
+
+    amplification_pspl = (impact_param_square + 2) / (impact_parameter * (impact_param_square + 4) ** 0.5)
 
     z_yoo = impact_parameter / rho
 
@@ -83,9 +153,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     amplification_fspl[indexes_FSPL] = amplification_pspl[indexes_FSPL] * \
                                        (yoo_table[1](z_yoo[indexes_FSPL]) - gamma * yoo_table[2](z_yoo[indexes_FSPL]))
 
-    return amplification_fspl, impact_parameter
-
-
+    return amplification_fspl, impact_param
 def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     """ The uniform source binary lens amplification, based on the work of Valerio Bozza, thanks :)
         "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
@@ -134,7 +202,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     #import pdb;
     #pdb.set_trace()
     #print amplification_usbl
-    return amplification_usbl, Xs
+    return amplification_usbl
 
 
 def USBL_queue_process(queue, args):

@@ -31,8 +31,8 @@ def _create_model(kind):
     model.Jacobian_flag = 'Not OK'
     model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'fs_Test': 3, 'g_Test': 4}
     model.pyLIMA_standards_dictionnary = model.model_dictionnary
-    model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0,0.0,0.0
-    model.model_magnification.return_value = np.random.random(100).tolist(), 0.0
+    model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0,0.0
+    model.model_magnification.return_value = np.random.random(100).tolist()
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
     model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 10, 5)
     model.model_type = kind
@@ -88,6 +88,7 @@ def test_mlfit_PSPL_LM_with_guess():
     current_event = _create_event()
     model = _create_model('PSPL')
     model.parameters_guess = [10, 0.1, 20]
+
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
 

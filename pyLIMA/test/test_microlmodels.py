@@ -91,7 +91,7 @@ def test_magnification_DSPL_computation():
 
     parameters = Parameters(to, uo, delta_to, delta_uo, tE, q_flux_I)
 
-    amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
+    amplification = Model.model_magnification(event.telescopes[0], parameters)
 
     assert np.allclose(amplification, np.array([9.21590819, 2.72932227]))
 
@@ -108,10 +108,9 @@ def test_magnification_FSPL_computation():
     rho = 0.05
     parameters = Parameters(to, uo, tE, rho)
 
-    amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
+    amplification = Model.model_magnification(event.telescopes[0], parameters)
 
     assert np.allclose(amplification, np.array([10.34817883, 1.00000064]))
-    assert np.allclose(impact_parameter, np.array([uo, (uo ** 2 + (42.0 - to) ** 2 / tE ** 2) ** 0.5]))
 
 
 def test_magnification_PSPL_computation():
@@ -126,10 +125,8 @@ def test_magnification_PSPL_computation():
 
     parameters = Parameters(to, uo, tE)
 
-    amplification, impact_parameter = Model.model_magnification(event.telescopes[0], parameters)
+    amplification = Model.model_magnification(event.telescopes[0], parameters)
     assert np.allclose(amplification, np.array([10.03746101, 1.00]))
-    assert np.allclose(impact_parameter, np.array([uo, (uo ** 2 + (42.0 - to) ** 2 / tE ** 2) ** 0.5]))
-
 
 def test_PSPL_computate_microlensing_model():
     event = _create_event()
@@ -145,7 +142,7 @@ def test_PSPL_computate_microlensing_model():
 
     parameters = Parameters(to, uo, tE, fs, g)
 
-    model, prior,fs,fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
+    model,fs,fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
     assert np.allclose(model, np.array([fs * (10.03746101 + g), fs * (1.00 + g)]))
 
 
@@ -165,7 +162,7 @@ def test_FSPL_computate_microlensing_model():
 
     parameters = Parameters(to, uo, tE, rho, fs, g)
 
-    model, prior, fs, fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
+    model, fs, fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
     assert np.allclose(model, np.array([fs * (10.34817832 + g), fs * (1.00 + g)]))
 
 
@@ -184,7 +181,7 @@ def test_DSPL_computate_microlensing_model():
     g = 1
     parameters = Parameters(to, uo, delta_to, delta_uo, tE, q_flux_I, fs, g)
 
-    model, prior, fs, fb= Model.compute_the_microlensing_model(event.telescopes[0], parameters)
+    model, fs, fb= Model.compute_the_microlensing_model(event.telescopes[0], parameters)
     assert np.allclose(model, np.array([fs * (9.21590819 + g), fs * (2.72932227 + g)]))
 
 
@@ -402,7 +399,7 @@ def test_default_microlensing_model_no_fluxes():
 
     parameters = Parameters(to, uo, tE, 'ihih', None)
 
-    microlensing_model, priors, fs, fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
+    microlensing_model,  fs, fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
 
     assert np.allclose(microlensing_model, np.array([1, 6]))
 

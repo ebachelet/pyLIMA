@@ -24,3 +24,4 @@ Then, the source trajectory x,y is define as :
 
 -  :math:`x = \tau . cos(\alpha)- u_o . sin(\alpha)`
 -  :math:`y = \tau . sin(\alpha)+ u_o . cos(\alpha)`
+

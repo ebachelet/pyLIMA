@@ -1,6 +1,6 @@
 import scipy.stats as ss
 import numpy as np
-import statsmodels.api as sm
+#import statsmodels.api as sm
 
 ### Tests on residuals
 

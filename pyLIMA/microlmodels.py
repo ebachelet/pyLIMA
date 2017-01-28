@@ -60,7 +60,7 @@ class ModelException(Exception):
     pass
 
 
-def create_model(model_type, event, model_arguments = [], parallax=['None', 0.0], xallarap=['None', 0.0],
+def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
                  orbital_motion=['None', 0.0], source_spots='None'):
     """
     Load a model according to the supplied model_type. Models are expected to be named
@@ -157,7 +157,7 @@ class MLModel(object):
        """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, event, model_arguments = [], parallax=['None', 0.0], xallarap=['None', 0.0],
+    def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
                  orbital_motion=['None', 0.0], source_spots='None'):
         """ Initialization of the attributes described above.
         """
@@ -257,7 +257,8 @@ class MLModel(object):
         :returns: the microlensing model
         :rtype: array_like
         """
-        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
+
+        amplification  = self.model_magnification(telescope, pyLIMA_parameters)
         return self._default_microlensing_model(telescope, pyLIMA_parameters, amplification)
 
     def _default_microlensing_model(self, telescope, pyLIMA_parameters, amplification):
@@ -276,11 +277,7 @@ class MLModel(object):
 
         microlensing_model = f_source * (amplification + g_blending)
 
-        # Prior here
-        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, g_blending)
-        # print 'the microl model', python_time.time() - start_time
-
-        return microlensing_model, priors, f_source, g_blending
+        return microlensing_model, f_source, g_blending
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification):
 
@@ -292,18 +289,22 @@ class MLModel(object):
 
 
         except TypeError:
-	    
+
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-	    try:
-            	f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-           	g_blending = f_blending / f_source
-	    except:
-		f_source = 0
-		g_source = 0		
+
+            try:
+                f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
+                g_blending = f_blending / f_source
+            except:
+                f_source = 0
+                g_blending = 0
+
+
         return f_source, g_blending
+
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the
@@ -332,6 +333,7 @@ class MLModel(object):
         # print 'conversion', python_time.time() - start_time
         return pyLIMA_parameters
 
+
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
         """ Transform the fancy parameters to the pyLIMA standards. The output got all
         the necessary standard attributes, example to, uo, tE...
@@ -350,6 +352,7 @@ class MLModel(object):
         # print 'fancy to PYLIMA', python_time.time() - start_time
         return fancy_parameters
 
+
     def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
         """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
             the necessary fancy attributes.
@@ -365,6 +368,7 @@ class MLModel(object):
                 setattr(pyLIMA_parameters, key_parameter, self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
 
         return pyLIMA_parameters
+
 
     def source_trajectory(self, telescope, to, uo, tE, pyLIMA_parameters):
         """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
@@ -450,6 +454,20 @@ class ModelPSPL(MLModel):
 
         return microlmagnification.amplification_PSPL(*source_trajectoire)
 
+    def Jacobian_model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a PSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        return microlmagnification.Jacobian_amplification_PSPL(*source_trajectoire)
+
     def model_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model
 
@@ -468,7 +486,7 @@ class ModelPSPL(MLModel):
 
         # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
         # Amplification[1] is U(t).
-        Amplification = self.model_magnification(telescope, pyLIMA_parameters)
+        Amplification = self.Jacobian_model_magnification(telescope, pyLIMA_parameters)
         dAmplificationdU = (-8) / (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
 
         # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
@@ -512,6 +530,9 @@ class ModelFSPL(MLModel):
 
         return model_dictionary
 
+
+
+
     def model_magnification(self, telescope, pyLIMA_parameters):
         """ The magnification associated to a FSPL model. More details in microlmagnification module.
 
@@ -531,6 +552,24 @@ class ModelFSPL(MLModel):
         return microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
                                                       gamma, self.yoo_table)
 
+    def Jacobian_model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a FSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to,
+                                                                          pyLIMA_parameters.uo,
+                                                                          pyLIMA_parameters.tE,
+                                                                          pyLIMA_parameters)
+        rho = pyLIMA_parameters.rho
+        gamma = telescope.gamma
+
+        return microlmagnification.Jacobian_amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
+                                                      gamma, self.yoo_table)
     def model_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a FSPL model
 
@@ -549,7 +588,7 @@ class ModelFSPL(MLModel):
         gamma = telescope.gamma
 
         # Derivative of A = Yoo et al (2004) method.
-        Amplification_PSPL = fake_model.model_magnification(telescope, pyLIMA_parameters)
+        Amplification_PSPL = fake_model.Jacobian_model_magnification(telescope, pyLIMA_parameters)
 
         dAmplification_PSPLdU = (-8) / (Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
 
@@ -600,7 +639,7 @@ class ModelFSPL(MLModel):
 
         Amplification_FSPL = self.model_magnification(telescope, pyLIMA_parameters)
 
-        dresdfs = (Amplification_FSPL[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
+        dresdfs = (Amplification_FSPL + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
 
         dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
 
@@ -654,16 +693,16 @@ class ModelDSPL(MLModel):
         source2_trajectory = self.source_trajectory(telescope, to2, uo2,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        source1_magnification = microlmagnification.amplification_PSPL(*source1_trajectory)[0]
+        source1_magnification = microlmagnification.amplification_PSPL(*source1_trajectory)
 
-        source2_magnification = microlmagnification.amplification_PSPL(*source2_trajectory)[0]
+        source2_magnification = microlmagnification.amplification_PSPL(*source2_trajectory)
 
         blend_magnification_factor = getattr(pyLIMA_parameters, 'q_flux_' + telescope.filter)
 
         effective_magnification = (source1_magnification + source2_magnification * blend_magnification_factor) / (
             1 + blend_magnification_factor)
 
-        return effective_magnification, source1_trajectory
+        return effective_magnification
 
 
 class ModelUSBL(MLModel):
@@ -702,12 +741,12 @@ class ModelUSBL(MLModel):
 
         magnification = np.zeros(len(source_trajectoire[0]))
 
-        #for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
-         #   param = getattr(pyLIMA_parameters, key)
-         #   limits = self.parameters_boundaries[self.model_dictionnary[key]]
-         #   if (param<limits[0]) | (limits[1]<param):
-         #           magnification += 0.1*np.inf
-         #           return magnification,magnification
+        # for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
+        #   param = getattr(pyLIMA_parameters, key)
+        #   limits = self.parameters_boundaries[self.model_dictionnary[key]]
+        #   if (param<limits[0]) | (limits[1]<param):
+        #           magnification += 0.1*np.inf
+        #           return magnification,magnification
         if 'dsdt' in pyLIMA_parameters._fields:
 
             separation = 10 ** pyLIMA_parameters.logs + \
@@ -748,11 +787,10 @@ class ModelUSBL(MLModel):
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
                                                        tolerance=0.001)[0]
-
         return magnification, source_trajectoire
 
 
-class ModelVSPL(MLModel):
+class ModelRRlyraePL(MLModel):
     @property
     def model_type(self):
         """ Return the kind of microlensing model.
@@ -797,7 +835,6 @@ class ModelVSPL(MLModel):
 
         unique_filters = np.unique(filters)
 
-
         for filter in unique_filters:
             # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
             for i in xrange(self.number_of_harmonics):
@@ -836,16 +873,13 @@ class ModelVSPL(MLModel):
         lightcurve = telescope.lightcurve_flux
         time = lightcurve[:, 0] - 2456425.5
 
-        amplification, u = self.model_magnification(telescope, pyLIMA_parameters)
-
-
+        amplification = self.model_magnification(telescope, pyLIMA_parameters)
 
         pulsations = 0.0
         period = getattr(pyLIMA_parameters, 'period')
         # factor = 0.0
         # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
         for i in xrange(self.number_of_harmonics):
-
             # mplitude = getattr(pyLIMA_parameters, 'A_' + str(i))
             # factor = getattr(pyLIMA_parameters, 'q_' + telescope.filter)
             # factor2 = getattr(pyLIMA_parameters, 'phi_' + telescope.filter)
@@ -862,7 +896,6 @@ class ModelVSPL(MLModel):
             # phase *=(1+factor2)
             pulsations += amplitude * np.cos(2 * np.pi * (i + 1) / period * time + phase)
 
-
         # import pdb;
         # pdb.set_trace()
 
@@ -871,10 +904,8 @@ class ModelVSPL(MLModel):
 
         # microlensing_model = f_source * pulsations * amplification + f_blending
         microlensing_model = f_source * amplification * pulsations + f_blending
-        # Prior here.
-        # print telescope.name,f_source,f_blending
-        priors = microlpriors.microlensing_flux_priors(len(microlensing_model), f_source, f_blending / f_source)
-        return microlensing_model, priors, f_source, f_blending
+
+        return microlensing_model, f_source, f_blending/f_blending
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
 
@@ -892,6 +923,5 @@ class ModelVSPL(MLModel):
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
             f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
-
 
         return f_source, f_blending
