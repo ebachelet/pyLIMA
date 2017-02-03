@@ -299,8 +299,8 @@ class MLModel(object):
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
                 g_blending = f_blending / f_source
             except:
-                f_source = 0
-                g_blending = 0
+                f_source = 0.0
+                g_blending = 0.0
 
 
         return f_source, g_blending
@@ -777,7 +777,7 @@ class ModelUSBL(MLModel):
                 telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
 
             magnification_PSPL = microlmagnification.amplification_PSPL(source_trajectoire[0][index_PSPL],
-                                                                        source_trajectoire[1][index_PSPL])[0]
+                                                                        source_trajectoire[1][index_PSPL])
 
             magnification[index_PSPL] = magnification_PSPL
 
@@ -787,8 +787,8 @@ class ModelUSBL(MLModel):
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
                                                        tolerance=0.001)[0]
-        return magnification, source_trajectoire
 
+	return magnification
 
 class ModelRRlyraePL(MLModel):
     @property
