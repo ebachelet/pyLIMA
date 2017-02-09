@@ -13,7 +13,7 @@ def normal_Kolmogorov_Smirnov(sample):
     """
     mu, sigma = ss.norm.fit(sample)
     #use mu sigma for anomaly, 0,1 for rescaling???
-    KS_stat, KS_pvalue = ss.kstest(sample, 'norm', args=(mu, sigma))
+    KS_stat, KS_pvalue = ss.kstest(sample, 'norm', args=(0, 1))
 
     # the sample is likely Gaussian-like if KS_stat (~ maximum distance between sample and theoritical distribution) -> 0
     # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if KS_pvalue -> 1

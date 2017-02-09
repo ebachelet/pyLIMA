@@ -28,7 +28,7 @@ plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 
-MARKER_SYMBOLS = np.nditer([[',', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
+MARKER_SYMBOLS = np.nditer([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
 #plt.style.use('ggplot')
 
 def pdf_output(fit, output_directory):
@@ -437,8 +437,8 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
     time_of_model = np.linspace(min_time, max_time + 100, 30000)
-    extra_time = np.linspace(pyLIMA_parameters.to - 2 * pyLIMA_parameters.tE,
-                             pyLIMA_parameters.to + 2 * pyLIMA_parameters.tE, 30000)
+    extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
+                             pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
 
     time_of_model = np.sort(np.append(time_of_model, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
@@ -715,8 +715,8 @@ def LM_plot_model(fit, figure_axe):
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
     time = np.linspace(min_time, max_time + 100, 30000)
-    extra_time = np.linspace(pyLIMA_parameters.to - 2 * pyLIMA_parameters.tE,
-                             pyLIMA_parameters.to + 2 * pyLIMA_parameters.tE, 30000)
+    extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
+                             pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
     time = np.sort(np.append(time, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -733,7 +733,7 @@ def LM_plot_model(fit, figure_axe):
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.set_xlim(
-        [pyLIMA_parameters.to-3*pyLIMA_parameters.tE, pyLIMA_parameters.to+3*pyLIMA_parameters.tE+100])
+        [pyLIMA_parameters.to-3*np.abs(pyLIMA_parameters.tE), pyLIMA_parameters.to+3*np.abs(pyLIMA_parameters.tE)+100])
     figure_axe.invert_yaxis()
     figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                     transform=figure_axe.transAxes)
