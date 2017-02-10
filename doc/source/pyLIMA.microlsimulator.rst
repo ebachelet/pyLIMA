@@ -1,5 +1,5 @@
 pyLIMA.microlsimulator module
------------------------------
+=============================
 
 .. automodule:: pyLIMA.microlsimulator
     :members:

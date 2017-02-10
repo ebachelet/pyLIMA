@@ -12,9 +12,10 @@ Welcome to pyLIMA's documentation!
 (you can cheat `here <http://adsabs.harvard.edu/abs/2006Natur.439..437B>`_)
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    Installation
+   InstallationForMACUser
    Conventions
    Example
    pyLIMA

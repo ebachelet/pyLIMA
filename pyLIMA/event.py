@@ -47,6 +47,7 @@ class Event(object):
          survey : the reference telescope. Has to be a string, default is 'None'.
 
          fits : list of microlfits objects.
+         
     """
 
     def __init__(self):

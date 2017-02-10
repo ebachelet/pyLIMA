@@ -4,13 +4,19 @@ import numpy as np
 
 ### Tests on residuals
 
-def normal_Kolmogorov_Smirnov(sample):
-    """ Compute a Kolmorogov-Smirnov test on the sample versus a normal distribution
 
-        :param array_like sample: the sample you want to check the "Gaussianity"
-        :returns: the Kologorov-Smirnov statistic, its related p_value and the  Kolmorogov-Smirnov judgement
-        :rtype: float, float
+def normal_Kolmogorov_Smirnov(sample):
+    """The moon illumination expressed as a percentage.
+
+                :param astropy sun: the sun ephemeris
+                :param astropy moon: the moon ephemeris
+
+                :return: a numpy array like indicated the moon illumination.
+
+                :rtype: array_like
+
     """
+
     mu, sigma = ss.norm.fit(sample)
     #use mu sigma for anomaly, 0,1 for rescaling???
     KS_stat, KS_pvalue = ss.kstest(sample, 'norm', args=(0, 1))
@@ -31,12 +37,12 @@ def normal_Kolmogorov_Smirnov(sample):
     return KS_stat, KS_pvalue, KS_judgement
 
 def normal_Anderson_Darling(sample):
-    """ Compute a Anderson-Darling test on the sample versus a normal distribution with mu = 0, sigma = 1
+    """Compute a Anderson-Darling test on the sample versus a normal distribution with mu = 0, sigma = 1
 
-        :param array_like sample: the sample you want to check the "Gaussianity"
-        :returns: the Anderson-Darling statistic, the Anderson-Darling critical values associated to the significance
-        level of 15 % and the Anderson-Darling judgement
-        :rtype: float, array_like, array_like
+            :param array_like sample: the sample you want to check the "Gaussianity"
+            :returns: the Anderson-Darling statistic, the Anderson-Darling critical values associated to the significance
+            level of 15 % and the Anderson-Darling judgement
+            :rtype: float, array_like, array_like
     """
 
     AD_stat, AD_critical_values, AD_significance_levels = ss.anderson(sample)
@@ -55,11 +61,11 @@ def normal_Anderson_Darling(sample):
     return  AD_stat, AD_critical_values[-1], AD_judgement
 
 def normal_Shapiro_Wilk(sample):
-    """ Compute a Shapiro-Wilk test on the sample versus a normal distribution with mu = 0, sigma = 1
+    """Compute a Shapiro-Wilk test on the sample versus a normal distribution with mu = 0, sigma = 1
 
-        :param array_like sample: the sample you want to check the "Gaussianity"
-        :returns: the Shapiro-Wilk statistic and its related p_value
-        :rtype: float, float
+            :param array_like sample: the sample you want to check the "Gaussianity"
+            :returns: the Shapiro-Wilk statistic and its related p_value
+            :rtype: float, float
     """
 
     SW_stat, SW_pvalue = ss.shapiro(sample)
@@ -83,14 +89,14 @@ def normal_Shapiro_Wilk(sample):
 ### Statistics fit quality metrics
 
 def normalized_chi2(chi2, n_data, n_parameters) :
-    """ Compute the chi^2/dof
+    """Compute the chi^2/dof
 
-        :param float chi2: the chi^2
-        :param int n_data: the number of data_points
-        :param int n_parameters: the number of model parameters
+            :param float chi2: the chi^2
+            :param int n_data: the number of data_points
+            :param int n_parameters: the number of model parameters
 
-        :returns: the chi^2/dof and the chi2dof_judgement
-        :rtype: float
+            :returns: the chi^2/dof and the chi2dof_judgement
+            :rtype: float
     """
 
     chi2_sur_dof = chi2/(n_data-n_parameters)
@@ -102,27 +108,27 @@ def normalized_chi2(chi2, n_data, n_parameters) :
     return chi2_sur_dof,chi2dof_judgement
 
 def Bayesian_Information_Criterion(chi2, n_data, n_parameters):
-    """ Compute the BIC statistic.
+    """Compute the BIC statistic.
 
-        :param float chi2: the chi^2
-        :param int n_data: the number of data_points
-        :param int n_parameters: the number of model parameters
+            :param float chi2: the chi^2
+            :param int n_data: the number of data_points
+            :param int n_parameters: the number of model parameters
 
-        :returns: the chi^2/dof
-        :rtype: float
+            :returns: the chi^2/dof
+            :rtype: float
     """
     BIC = chi2 + n_parameters*np.log(n_data)
 
     return BIC
 
 def Akaike_Information_Criterion(chi2, n_parameters):
-    """ Compute the BIC statistic.
+    """Compute the BIC statistic.
 
-        :param float chi2: the chi^2
-        :param int n_parameters: the number of model parameters
+            :param float chi2: the chi^2
+            :param int n_parameters: the number of model parameters
 
-        :returns: the chi^2/dof
-        :rtype: float
+            :returns: the chi^2/dof
+            :rtype: float
     """
     AIC = chi2 + 2*n_parameters
 
