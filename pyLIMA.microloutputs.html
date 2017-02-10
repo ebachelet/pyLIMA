@@ -27,7 +27,7 @@
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
     <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
     <link rel="next" title="pyLIMA.microlparallax module" href="pyLIMA.microlparallax.html" />
-    <link rel="prev" title="pyLIMA.microlmodels module" href="pyLIMA.microlmodels.html" />
+    <link rel="prev" title="pyLIMA.microlorbitalmotion module" href="pyLIMA.microlorbitalmotion.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -458,6 +458,30 @@ histogram)
 :param list best_parameters: a list containing the model you want to plot the trajectory</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="pyLIMA.microloutputs.statistical_outputs">
+<code class="descclassname">pyLIMA.microloutputs.</code><code class="descname">statistical_outputs</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microloutputs.html#statistical_outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microloutputs.statistical_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute statistics to estimate the fit quality</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a fit object. See the microlfits for more details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a namedtuple containing the following attributes :<p>fit_parameters : an namedtuple object containing all the fitted parameters</p>
+<p>fit_errors : an namedtuple object containing all the fitted parameters errors</p>
+<p>fit_correlation_matrix : a numpy array representing the fitted parameters
+correlation matrix</p>
+<p>figure_lightcurve : a two matplotlib figure showing the data and model and the
+correspoding residuals</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 
@@ -470,7 +494,7 @@ histogram)
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="pyLIMA.html">pyLIMA package</a><ul>
-      <li>Previous: <a href="pyLIMA.microlmodels.html" title="previous chapter">pyLIMA.microlmodels module</a></li>
+      <li>Previous: <a href="pyLIMA.microlorbitalmotion.html" title="previous chapter">pyLIMA.microlorbitalmotion module</a></li>
       <li>Next: <a href="pyLIMA.microlparallax.html" title="next chapter">pyLIMA.microlparallax module</a></li>
   </ul></li>
   </ul></li>
@@ -504,7 +528,7 @@ histogram)
       &copy;2016, Etienne Bachelet.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |

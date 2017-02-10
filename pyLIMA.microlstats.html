@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyLIMA.microlstats module &mdash; pyLIMA 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
+    <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
+    <link rel="next" title="pyLIMA.microltoolbox module" href="pyLIMA.microltoolbox.html" />
+    <link rel="prev" title="pyLIMA.microlsimulator module" href="pyLIMA.microlsimulator.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyLIMA.microlstats">
+<span id="pylima-microlstats-module"></span><h1>pyLIMA.microlstats module<a class="headerlink" href="#module-pyLIMA.microlstats" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pyLIMA.microlstats.Akaike_Information_Criterion">
+<code class="descclassname">pyLIMA.microlstats.</code><code class="descname">Akaike_Information_Criterion</code><span class="sig-paren">(</span><em>chi2</em>, <em>n_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlstats.html#Akaike_Information_Criterion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlstats.Akaike_Information_Criterion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the BIC statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>chi2</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the chi^2</li>
+<li><strong>n_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of model parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the chi^2/dof</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlstats.Bayesian_Information_Criterion">
+<code class="descclassname">pyLIMA.microlstats.</code><code class="descname">Bayesian_Information_Criterion</code><span class="sig-paren">(</span><em>chi2</em>, <em>n_data</em>, <em>n_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlstats.html#Bayesian_Information_Criterion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlstats.Bayesian_Information_Criterion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the BIC statistic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>chi2</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the chi^2</li>
+<li><strong>n_data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of data_points</li>
+<li><strong>n_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of model parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the chi^2/dof</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlstats.normal_Anderson_Darling">
+<code class="descclassname">pyLIMA.microlstats.</code><code class="descname">normal_Anderson_Darling</code><span class="sig-paren">(</span><em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlstats.html#normal_Anderson_Darling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlstats.normal_Anderson_Darling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute a Anderson-Darling test on the sample versus a normal distribution with mu = 0, sigma = 1</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sample</strong> (<em>array_like</em>) &#8211; the sample you want to check the &#8220;Gaussianity&#8221;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the Anderson-Darling statistic, the Anderson-Darling critical values associated to the significance</td>
+</tr>
+</tbody>
+</table>
+<p>level of 15 % and the Anderson-Darling judgement
+:rtype: float, array_like, array_like</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlstats.normal_Kolmogorov_Smirnov">
+<code class="descclassname">pyLIMA.microlstats.</code><code class="descname">normal_Kolmogorov_Smirnov</code><span class="sig-paren">(</span><em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlstats.html#normal_Kolmogorov_Smirnov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlstats.normal_Kolmogorov_Smirnov" title="Permalink to this definition">¶</a></dt>
+<dd><p>The moon illumination expressed as a percentage.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sun</strong> (<em>astropy</em>) &#8211; the sun ephemeris</li>
+<li><strong>moon</strong> (<em>astropy</em>) &#8211; the moon ephemeris</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a numpy array like indicated the moon illumination.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlstats.normal_Shapiro_Wilk">
+<code class="descclassname">pyLIMA.microlstats.</code><code class="descname">normal_Shapiro_Wilk</code><span class="sig-paren">(</span><em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlstats.html#normal_Shapiro_Wilk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlstats.normal_Shapiro_Wilk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute a Shapiro-Wilk test on the sample versus a normal distribution with mu = 0, sigma = 1</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sample</strong> (<em>array_like</em>) &#8211; the sample you want to check the &#8220;Gaussianity&#8221;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the Shapiro-Wilk statistic and its related p_value</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float, float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlstats.normalized_chi2">
+<code class="descclassname">pyLIMA.microlstats.</code><code class="descname">normalized_chi2</code><span class="sig-paren">(</span><em>chi2</em>, <em>n_data</em>, <em>n_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlstats.html#normalized_chi2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlstats.normalized_chi2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the chi^2/dof</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>chi2</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the chi^2</li>
+<li><strong>n_data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of data_points</li>
+<li><strong>n_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of model parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the chi^2/dof and the chi2dof_judgement</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.microlsimulator.html" title="previous chapter">pyLIMA.microlsimulator module</a></li>
+      <li>Next: <a href="pyLIMA.microltoolbox.html" title="next chapter">pyLIMA.microltoolbox module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyLIMA.microlstats.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Etienne Bachelet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/pyLIMA.microlstats.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

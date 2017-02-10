@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyLIMA.microlxallarap module &mdash; pyLIMA 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
+    <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
+    <link rel="next" title="pyLIMA.telescopes module" href="pyLIMA.telescopes.html" />
+    <link rel="prev" title="pyLIMA.microltoolbox module" href="pyLIMA.microltoolbox.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyLIMA.microlxallarap">
+<span id="pylima-microlxallarap-module"></span><h1>pyLIMA.microlxallarap module<a class="headerlink" href="#module-pyLIMA.microlxallarap" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pyLIMA.microlxallarap.North_East_vectors_target">
+<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">North_East_vectors_target</code><span class="sig-paren">(</span><em>ra_xallarap</em>, <em>dec_xallarap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#North_East_vectors_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.North_East_vectors_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function define the North and East vectors projected on the sky plane
+perpendicular to the line
+of sight (i.e the line define by ra,dec of the center of mass of the source binary).</p>
+<p>:param float ra_xallarap : the right acsension of the source binary center of mass in degree.
+:param float dec_xallarap : the declinaision of the source binary center of mass in degree.
+:return: the North and East vectors projected in the sky plan for this trajectory
+:rtype: array_like, array_like</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlxallarap.compute_xallarap_curvature">
+<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">compute_xallarap_curvature</code><span class="sig-paren">(</span><em>XiE</em>, <em>delta_positions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#compute_xallarap_curvature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.compute_xallarap_curvature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the curvature induce by the xallarap
+deltas_positions of a telescope.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>piE</strong> (<em>array_like</em>) &#8211; the microlensing parallax vector. Have a look :
+<a class="reference external" href="http://adsabs.harvard.edu/abs/2004ApJ...606..319G">http://adsabs.harvard.edu/abs/2004ApJ...606..319G</a></li>
+<li><strong>delta_positions</strong> (<em>array_like</em>) &#8211; the delta_positions of the telescope. More details in microlparallax module.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">delta_tau and delta_u, the shift introduce by parallax</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like,array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlxallarap.true_anomaly_from_mean_anomaly">
+<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">true_anomaly_from_mean_anomaly</code><span class="sig-paren">(</span><em>mean_anomaly</em>, <em>eccentricity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#true_anomaly_from_mean_anomaly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.true_anomaly_from_mean_anomaly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the true anomaly from the mean anomaly (i.e solve Kepler equation).
+:param float mean_anomaly : the mean_anomaly of your orbit.
+:param float eccentricity: the eccentricity of your ellipse.
+:return: the true anomaly of your orbit
+:rtype: float</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlxallarap.xallarap">
+<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">xallarap</code><span class="sig-paren">(</span><em>time_to_treat</em>, <em>ra_xallarap</em>, <em>dec_xallarap</em>, <em>orbital_period</em>, <em>eccentricity</em>, <em>time_periastron</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#xallarap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.xallarap" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Compute the delta positions induced by the source xallarap. See Miyake et al 2012 :</dt>
+<dd><a class="reference external" href="http://iopscience.iop.org/article/10.1088/0004-637X/752/2/82/pdf">http://iopscience.iop.org/article/10.1088/0004-637X/752/2/82/pdf</a> for more details.</dd>
+</dl>
+<p>:param array_like time_to_treat : the time you looking at.
+:param float ra_xallarap : the right acsension of the source binary center of mass in degree.
+:param float dec_xallarap : the declinaision of the source binary center of mass in degree.
+:param float oribtal_period : the orbital period of your orbit in days.
+:param float eccentricity: the eccentricity of your ellipse.
+:param float time_periastron: the time passage at periastron.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">deltas_positions, the shift in North and East cooridnates due to the mouvement of the source.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="pyLIMA.html">pyLIMA package</a><ul>
+      <li>Previous: <a href="pyLIMA.microltoolbox.html" title="previous chapter">pyLIMA.microltoolbox module</a></li>
+      <li>Next: <a href="pyLIMA.telescopes.html" title="next chapter">pyLIMA.telescopes module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyLIMA.microlxallarap.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Etienne Bachelet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/pyLIMA.microlxallarap.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
