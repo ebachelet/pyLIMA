@@ -141,6 +141,10 @@ class VBBinaryLensing(_object):
     __swig_getmethods__["satellite"] = _VBBinaryLensingLibrary.VBBinaryLensing_satellite_get
     if _newclass:
         satellite = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_satellite_get, _VBBinaryLensingLibrary.VBBinaryLensing_satellite_set)
+    __swig_setmethods__["parallaxsystem"] = _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_set
+    __swig_getmethods__["parallaxsystem"] = _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get
+    if _newclass:
+        parallaxsystem = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get, _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_set)
 
     def PlotCrit(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_PlotCrit(self, arg2, arg3)
@@ -154,8 +158,8 @@ class VBBinaryLensing(_object):
     def BinaryMagDark(self, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
         return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryMagDark(self, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
 
-    def SetObjectCoordinates(self, arg2, arg3, arg4):
-        return _VBBinaryLensingLibrary.VBBinaryLensing_SetObjectCoordinates(self, arg2, arg3, arg4)
+    def SetObjectCoordinates(self, arg2, arg3):
+        return _VBBinaryLensingLibrary.VBBinaryLensing_SetObjectCoordinates(self, arg2, arg3)
 
     def PSPLCurve(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_PSPLCurve(self, arg2, arg3)

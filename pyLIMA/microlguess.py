@@ -288,8 +288,8 @@ def differential_evolution_parameters_boundaries(model):
     rho_boundaries = (5*10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    logs_boundaries = (-1.0, 1.0)
-    logq_boundaries = (-5.0, 0.0)
+    logs_boundaries = (-0.5, 0.5)
+    logq_boundaries = (-6.0, 0.0)
     alpha_boundaries = (-np.pi, np.pi)
 
     piEN_boundaries = (-2.0, 2.0)

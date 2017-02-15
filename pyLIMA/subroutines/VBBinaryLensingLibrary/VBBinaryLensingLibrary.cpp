@@ -1,9 +1,9 @@
-// VBBinaryLensing v1.0.4
+// VBBinaryLensing v1.1.1
 // This code has been developed by Valerio Bozza, University of Salerno.
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
 
-//#include "stdafx.h" //(if you are in Visual Studio, you may require this line
+//#include "stdafx.h" //(if you are in Visual Studio, you may require this line)
 
 #include "VBBinaryLensingLibrary.h"
 #define _USE_MATH_DEFINES
@@ -45,19 +45,27 @@ complex operator-(complex);
 
 
 VBBinaryLensing::VBBinaryLensing(){
-	Obj =(double *)malloc(sizeof(double)*3);
 	Obj[0]=-0.0397317;
 	Obj[1]=0.998164;
 	Obj[2]=-0.045714;
+	// reference is ecliptic with x-axis toward the equinox.
+	// axial tilt at J2000 is 23:26:21.406 from JPL fundamental ephemeris
+	Eq2000[0]=1;
+	Eq2000[1]=Eq2000[2]=Quad2000[0]=North2000[0]=0;
+	Quad2000[1]=0.9174820003578725;
+	Quad2000[2]=-0.3977772982704228;
+	North2000[1]=0.3977772982704228;
+	North2000[2]=0.9174820003578725; 
 	Tol=1.e-2;
 	tsat=0;
 	possat=0;
 	nsat=0;
 	ndatasat=0;
+	satellite=0;
+	parallaxsystem=0;
 }
 
 VBBinaryLensing::~VBBinaryLensing(){
-	free(Obj);
 	if(nsat){
 		for(int i=0;i<nsat;i++){
 			free(tsat[i]);
@@ -156,11 +164,8 @@ void VBBinaryLensing::PrintCau(double a, double q){
 	delete CriticalCurves;
 }
 
-void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir,double yr){
-	static double AngPrec=7.725903993474008e-12;
-	static double Eq2000[]={-1,0.,0.},Quad2000[]={0,-0.9174861658216925,-0.397767690399572},North2000[]={0,-0.397767690399572,0.9174861658216925};
-	double RA,Dec,dis,hr,mn,sc,cy;
-	double phiprec,Rot[3][3];
+void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir){
+	double RA,Dec,dis,hr,mn,sc,phiprec;
 	char filename[256];
 	int ic;
 	FILE *f;
@@ -182,27 +187,13 @@ void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir,d
 	Dec=(fabs(hr)+mn/60+sc/3600)*M_PI/180;
 	if(hr<0) Dec=-Dec;
 
-	// Equinox precession angle
-	cy=(yr+0.5 - 2000)/100.;
-	phiprec=(cy*36525)*24*3600*AngPrec;
-	Rot[0][0]=cos(phiprec);
-	Rot[0][1]=-sin(phiprec);
-	Rot[0][2]=0;
-	Rot[1][0]=sin(phiprec);
-	Rot[1][1]=cos(phiprec);
-	Rot[1][2]=0;
-	Rot[2][0]=0;
-	Rot[2][1]=0;
-	Rot[2][2]=1;
-
-// Precession of object coordinates (new reference frame is {gamma,gamma+90 along the ecliptic,ecliptic north pole})
 	for(int i=0;i<3;i++){
-		Obj[i]=0.;
-		for(int j=0;j<3;j++){
-			Obj[i]+=Rot[i][j]*(cos(RA)*cos(Dec)*Eq2000[j]+sin(RA)*cos(Dec)*Quad2000[j]+sin(Dec)*North2000[j]);
-		}
+		Obj[i]=(cos(RA)*cos(Dec)*Eq2000[i]+sin(RA)*cos(Dec)*Quad2000[i]+sin(Dec)*North2000[i]);
+		rad[i]=Eq2000[i];
+		tang[i]=North2000[i];
 	}
 	fclose(f);
+
 
 // Looking for satellite table files in the specified directory
 	sprintf(filename,"%s\\satellite*.txt",sateltabledir);
@@ -263,7 +254,7 @@ void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir,d
 				}					
 			}
 			
-			// Allocating memorey according to the length of the table
+			// Allocating memory according to the length of the table
 			tsat[ic]=(double *)malloc(sizeof(double)*ndatasat[ic]);
 			possat[ic]=(double **)malloc(sizeof(double *)*ndatasat[ic]);
 			for(int j=0;j<ndatasat[ic];j++){
@@ -281,10 +272,7 @@ void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir,d
 						RA*=M_PI/180;
 						Dec*=M_PI/180;
 						for(int i=0;i<3;i++){
-							possat[ic][id][i]=0.;
-							for(int j=0;j<3;j++){
-								possat[ic][id][i]+=dis*Rot[i][j]*(cos(RA)*cos(Dec)*Eq2000[j]+sin(RA)*cos(Dec)*Quad2000[j]+sin(Dec)*North2000[j]);
-							}
+							possat[ic][id][i]=dis*(cos(RA)*cos(Dec)*Eq2000[i]+sin(RA)*cos(Dec)*Quad2000[i]+sin(Dec)*North2000[i]);
 						}
 					}else{
 						ndatasat[ic]=id;
@@ -301,41 +289,63 @@ void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir,d
 }
 
 void VBBinaryLensing::ComputeParallax(double t,double t0,double *Et){
-	static double e=0.016704,Tp=365.24219,phip=-1.343205392334836,tp=4469.558627684431,w=0.01720279167962383;
-	static double rad[3],tang[3];
-	static double Et0[2],vt0[2],t0old=0.,r,ty,fphi,Dfphi,phir,phil,Spit;
+	static double a0=1.00000261, adot=0.00000562; // Ephemeris from JPL website 
+	static double e0=0.01671123, edot=-0.00004392;
+	static double inc0=-0.00001531, incdot=-0.01294668;
+	static double L0=100.46457166, Ldot=35999.37244981;
+	static double om0=102.93768193, omdot=0.32327364;
+	static double deg=M_PI/180;
+	double a,e,inc,L,om,M,EE,dE,dM;
+	double x1,y1,vx,vy,Ear[3],vEar[3];
+	double Et0[2],vt0[2],t0old=0.,r,sp,ty,Spit;
 	int c=0,ic;
 	
 
 	if(t0!=t0old){
 		t0old=t0;
+		ty=(t0-1545)/36525.0;
 
-		ty=t0-tp;
-		ty=ty-floor((ty+Tp/2)/Tp)*Tp;
-		phi=(ty*w);
-		fphi=10000.;
-		ic=0;
-		while((fabs(fphi-ty)>1.e-4)&&(ic<100)){
-			ic++;
-			fphi=2*atan(sqrt((1-e)/(1+e))*tan(phi/2));
-			fphi-=e*sqrt(1-e*e)*sin(phi)/(1+e*cos(phi));
-			
-			fphi/=w;
-			Dfphi=sqrt(1-e*e)/(1+e*cos(phi));
-			Dfphi*=Dfphi/w*sqrt(1-e*e);
-			Dfphi=phi+(ty-fphi)/Dfphi;
-			Dfphi=(Dfphi>M_PI)? (0.9*M_PI+0.1*phi) : Dfphi;
-			Dfphi=(Dfphi<-M_PI)? (-0.9*M_PI+0.1*phi) : Dfphi;
-			phi=Dfphi;
+		a=a0+adot*ty;
+		e=e0+edot*ty;
+		inc=(inc0+incdot*ty)*deg;
+		L=(L0+Ldot*ty)*deg;
+		om=(om0+omdot*ty)*deg;
+
+		M=L-om;
+		M-=floor((M+M_PI)/(2*M_PI))*2*M_PI;
+
+		EE=M+e*sin(M);
+		dE=1;
+		while(fabs(dE)>1.e-8){
+			dM=M-(EE-e*sin(EE));
+			dE=dM/(1-e*cos(EE));
+			EE+=dE;
 		}
-		phi+=phip;
-		//r=-cos(phi)*Obj[0]-sin(phi)*Obj[1];
-		//rad[0]=-cos(phi)-r*Obj[0];
-		//rad[1]=-sin(phi)-r*Obj[1];
-		r=cos(phi)*Obj[0]+sin(phi)*Obj[1];
-		rad[0]=cos(phi)-r*Obj[0];
-		rad[1]=sin(phi)-r*Obj[1];
-		rad[2]=-r*Obj[2];
+		x1=a*(cos(EE)-e);
+		y1=a*sqrt(1-e*e)*sin(EE);
+//		r=a*(1-e*cos(EE));
+		vx=-a/(1-e*cos(EE))*sin(EE)*Ldot*deg/36525;
+		vy=a/(1-e*cos(EE))*cos(EE)*sqrt(1-e*e)*Ldot*deg/36525;
+
+		Ear[0]=x1*cos(om)-y1*sin(om);
+		Ear[1]=x1*sin(om)*cos(inc)+y1*cos(om)*cos(inc);
+		Ear[2]=x1*sin(om)*sin(inc)+y1*cos(om)*sin(inc);
+		vEar[0]=vx*cos(om)-vy*sin(om);
+		vEar[1]=vx*sin(om)*cos(inc)+vy*cos(om)*cos(inc);
+		vEar[2]=vx*sin(om)*sin(inc)+vy*cos(om)*sin(inc);
+
+		sp=0;
+		switch(parallaxsystem){
+			case 1:
+				for(int i=0;i<3;i++) sp+=North2000[i]*Obj[i];
+				for(int i=0;i<3;i++) rad[i]=-North2000[i]+sp*Obj[i];
+				break;
+			default:
+				for(int i=0;i<3;i++) sp+=Ear[i]*Obj[i];
+				for(int i=0;i<3;i++) rad[i]=Ear[i]-sp*Obj[i];
+				break;
+		}
+
 		r=sqrt(rad[0]*rad[0]+rad[1]*rad[1]+rad[2]*rad[2]);
 		rad[0]/=r;
 		rad[1]/=r;
@@ -343,37 +353,50 @@ void VBBinaryLensing::ComputeParallax(double t,double t0,double *Et){
 		tang[0]=rad[1]*Obj[2]-rad[2]*Obj[1];
 		tang[1]=rad[2]*Obj[0]-rad[0]*Obj[2];
 		tang[2]=rad[0]*Obj[1]-rad[1]*Obj[0];
-		r=(1-e*e)/(1+e*cos(phi-phip));
-		Et0[0]=r*(cos(phi)*rad[0]+sin(phi)*rad[1]);
-		Et0[1]=r*(cos(phi)*tang[0]+sin(phi)*tang[1]);
-		vt0[0]=w/sqrt(1-e*e)*((-sin(phi)-e*sin(phip))*rad[0]+(cos(phi)+e*cos(phip))*rad[1]);
-		vt0[1]=w/sqrt(1-e*e)*((-sin(phi)-e*sin(phip))*tang[0]+(cos(phi)+e*cos(phip))*tang[1]);
+
+		Et0[0]=Et0[1]=vt0[0]=vt0[1]=0;
+		for(int i=0;i<3;i++){
+			Et0[0]+=Ear[i]*rad[i];
+			Et0[1]+=Ear[i]*tang[i];
+			vt0[0]+=vEar[i]*rad[i];
+			vt0[1]+=vEar[i]*tang[i];
+		}
 	}
 
-	ty=t-tp;
-	ty=ty-floor((ty+Tp/2)/Tp)*Tp;
-	phi=(ty*w);
-	fphi=10000.;
-	ic=0;
-	while((fabs(fphi-ty)>1.e-4)&&(ic<100)){
-		ic++;
-		fphi=2*atan(sqrt((1-e)/(1+e))*tan(phi/2));
-		fphi-=e*sqrt(1-e*e)*sin(phi)/(1+e*cos(phi));
-		
-		fphi/=w;
-		Dfphi=sqrt(1-e*e)/(1+e*cos(phi));
-		Dfphi*=Dfphi/w*sqrt(1-e*e);
-		Dfphi=phi+(ty-fphi)/Dfphi;
-		Dfphi=(Dfphi>M_PI)? (0.9*M_PI+0.1*phi) : Dfphi;
-		Dfphi=(Dfphi<-M_PI)? (-0.9*M_PI+0.1*phi) : Dfphi;
-		phi=Dfphi;
+	ty=(t-1545)/36525.0;
+
+	a=a0+adot*ty;
+	e=e0+edot*ty;
+	inc=(inc0+incdot*ty)*deg;
+	L=(L0+Ldot*ty)*deg;
+	om=(om0+omdot*ty)*deg;
+
+	M=L-om;
+	M-=floor((M+M_PI)/(2*M_PI))*2*M_PI;
+
+	EE=M+e*sin(M);
+	dE=1;
+	while(dE>1.e-8){
+		dM=M-(EE-e*sin(EE));
+		dE=dM/(1-e*cos(EE));
+		EE+=dE;
 	}
-	phi+=phip;
-	r=(1-e*e)/(1+e*cos(phi-phip));
-	Et[0]=r*(cos(phi)*rad[0]+sin(phi)*rad[1])-Et0[0]-vt0[0]*(t-t0);
-	Et[1]=r*(cos(phi)*tang[0]+sin(phi)*tang[1])-Et0[1]-vt0[1]*(t-t0);
+	x1=a*(cos(EE)-e);
+	y1=a*sqrt(1-e*e)*sin(EE);
+//	r=a*(1-e*cos(EE));
+
+	Ear[0]=x1*cos(om)-y1*sin(om);
+	Ear[1]=x1*sin(om)*cos(inc)+y1*cos(om)*cos(inc);
+	Ear[2]=x1*sin(om)*sin(inc)+y1*cos(om)*sin(inc);
+	Et[0]=Et[1]=0;
+	for(int i=0;i<3;i++){
+		Et[0]+=Ear[i]*rad[i];
+		Et[1]+=Ear[i]*tang[i];
+	}
+	Et[0]+=-Et0[0]-vt0[0]*(t-t0);
+	Et[1]+=-Et0[1]-vt0[1]*(t-t0);
 	
-	if(satellite>0 && satellite <nsat){
+	if(satellite>0 && satellite <=nsat){
 		if(ndatasat[satellite-1]>2){
 			int left,right;
 			if(t<tsat[satellite-1][0]){
@@ -415,10 +438,10 @@ double VBBinaryLensing::PSPLCurve(double *pr,double t){
 
 double VBBinaryLensing::PSPLParallaxCurve(double *pr,double t){
 	double Mag=-1.0;
-	static double Et[2];
+	double Et[2];
 	double u0,tE,t0,pai1,pai2,th;
 	
-	u0=exp(pr[0]);
+	u0=pr[0];
 	tE=exp(pr[1]);
 	t0=pr[2];
 	pai1=pr[3];
@@ -468,12 +491,12 @@ double VBBinaryLensing::ESPLCurve(double *pr,double t){
 
 double VBBinaryLensing::ESPLParallaxCurve(double *pr,double t){
 	double Mag=-1.0;
-	static double Et[2];
+	double Et[2];
 	double u0,tE,t0,pai1,pai2,th;
 	double u,rr;
 	double n,k,b1,b2,b3,iF,iE,iP;
 	
-	u0=exp(pr[0]);
+	u0=pr[0];
 	tE=exp(pr[1]);
 	t0=pr[2];
 	pai1=pr[4];
@@ -880,7 +903,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 	static double dzmax,dlmax=1.0e-6,good[5];
 	static int worst1,worst2,worst3,bad,f1;
 	static double centeroffset,av=0.0,m1v=0.0,disim,disisso;
-	_curve *Prov;
+	static _curve *Prov;
 	static _point *scan,*scan2,*prin,*fifth,*left,*right,*center;
 
 #ifdef _PRINT_TIMES
@@ -928,6 +951,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 		tim1=Environment::TickCount;
 		inc+=tim1-tim0;
 #endif
+		// apply lens equation to check if it is really solved
 		for(int i=0;i<5;i++){
 			z=zr[i];
 			zc=conj(z);
@@ -989,9 +1013,11 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 	}
 	Prov=new _curve;
 	if(good[worst1]>dlmax){
-
 		for(int i=0;i<5;i++){
 			if((i!=worst1)&&(i!=worst2)){
+				if((i==worst3)&&(good[i]>dlmax)){
+					zr[i]=0.5*coefs[20]+coefs[21]/(0.5*coefs[20]-yc-coefs[22]/coefs[20]);
+				}
 				Prov->append(zr[i].re + centeroffset,zr[i].im);
 
 				zc=complex(Prov->last->x1, - Prov->last->x2);
@@ -1214,7 +1240,7 @@ double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,doub
 	th=thoff;
 	stheta=Thetas->insert(th);
 	stheta->maxerr=1.e100;
-	y=y0+complex(RSv,0);
+	y=y0+complex(RSv*cos(thoff),RSv*sin(thoff));
 
 #ifdef _PRINT_TIMES
 		tim0=Environment::TickCount;
@@ -2267,7 +2293,7 @@ void VBBinaryLensing::laguer(complex *a, int m, complex *x, int *its,double dzma
 	static int iter,j;
 	static double abx,abp,abm,err;
 	static complex dx,x1,b,d,f,g,h,sq,gp,gm,g2;
-	static double frac[MR+1]={0.0,0.5,0.25,0.75,0.13,0.38,0.62,0.88,1.0};
+	double frac[MR+1]={0.0,0.5,0.25,0.75,0.13,0.38,0.62,0.88,1.0};
 
 	for(iter=1;iter<=MAXIT;iter++){
 		*its=iter;
@@ -2357,7 +2383,7 @@ double SQR(double x){
 }
 
 double rf(double x, double y, double z)
-//Computes Carlson\92s elliptic integral of the first kind, RF (x, y, z). x, y, and z must be nonnegative,
+//Computes Carlson?s elliptic integral of the first kind, RF (x, y, z). x, y, and z must be nonnegative,
 //and at most one can be zero. TINY must be at least 5 times the machine underflow limit,
 //BIG at most one fifth the machine overflow limit.
 {
@@ -2394,7 +2420,7 @@ double rf(double x, double y, double z)
 #define __C6 (1.5*__C4)
 
 double rd(double x, double y, double z)
-//Computes Carlson\92s elliptic integral of the second kind, RD(x, y, z). x and y must be nonnegative,
+//Computes Carlson?s elliptic integral of the second kind, RD(x, y, z). x and y must be nonnegative,
 //and at most one can be zero. z must be positive. TINY must be at least twice the
 //negative 2/3 power of the machine overflow limit. BIG must be at most 0.1 \D7 ERRTOL times
 //the negative 2/3 power of the machine underflow limit.
@@ -2440,7 +2466,7 @@ double rd(double x, double y, double z)
 #define ___C8 (___C3+___C3)
 
 double rj(double x, double y, double z, double p)
-//Computes Carlson\92s elliptic integral of the third kind, RJ (x, y, z, p). x, y, and z must be
+//Computes Carlson?s elliptic integral of the third kind, RJ (x, y, z, p). x, y, and z must be
 //nonnegative, and at most one can be zero. p must be nonzero. If p < 0, the Cauchy principal
 //value is returned. TINY must be at least twice the cube root of the machine underflow limit,
 //BIG at most one fifth the cube root of the machine overflow limit.
@@ -2508,7 +2534,7 @@ double rj(double x, double y, double z, double p)
 #define C4_ (9.0/22.0)
 
 double rc(double x, double y)
-//Computes Carlson\92s degenerate elliptic integral, RC(x, y). x must be nonnegative and y must
+//Computes Carlson?s degenerate elliptic integral, RC(x, y). x must be nonnegative and y must
 //be nonzero. If y < 0, the Cauchy principal value is returned. TINY must be at least 5 times
 //the machine underflow limit, BIG at most one fifth the machine maximum overflow limit.
 {
@@ -2534,7 +2560,7 @@ double rc(double x, double y)
 }
 
 double ellf(double phi, double ak)
-//Legendre elliptic integral of the 1st kind F(?, k), evaluated using Carlson\92s function RF. The
+//Legendre elliptic integral of the 1st kind F(?, k), evaluated using Carlson?s function RF. The
 //argument ranges are 0 ? ? ? ?/2, 0 ? k sin ? ? 1.
 {
 	double rf(double x, double y, double z);
@@ -2544,7 +2570,7 @@ double ellf(double phi, double ak)
 }
 
 double elle(double phi, double ak)
-//Legendre elliptic integral of the 2nd kind E(?, k), evaluated using Carlson\92s functions RD and
+//Legendre elliptic integral of the 2nd kind E(?, k), evaluated using Carlson?s functions RD and
 //RF . The argument ranges are 0 ? ? ? ?/2, 0 ? k sin ? ? 1.
 {
 	double cc,q,s;
@@ -2555,7 +2581,7 @@ double elle(double phi, double ak)
 }
 
 double ellpi(double phi, double en, double ak)
-//Legendre elliptic integral of the 3rd kind ?(?, n, k), evaluated using Carlson\92s functions RJ and
+//Legendre elliptic integral of the 3rd kind ?(?, n, k), evaluated using Carlson?s functions RJ and
 //RF . (Note that the sign convention on n is opposite that of Abramowitz and Stegun.) The
 //ranges of ? and k are 0 ? ? ? ?/2, 0 ? k sin ? ? 1.
 {

@@ -1,5 +1,5 @@
 //////////////////
-VBBinaryLensing v1.0.4 (released 2016-09-18)
+VBBinaryLensing v1.1.1 (released 2017-02-02)
 - This code has been developed by Valerio Bozza, University of Salerno.
 - Any use of this code for scientific publications should be acknowledged by a citation to: V. Bozza, MNRAS 408 (2010) 2188
 //////////////////
@@ -16,3 +16,7 @@ The package contains the following files:
 - VBBinaryLensingLibrary.i // Sample swig configuration file for Python
 
 Before compiling, remove #include <stadfx.h> in all cpp files if you do not need it.
+
+Main change with respect to the 1.0 version is in the parallax calculation,
+which now follows http://ssd.jpl.nasa.gov/txt/aprx_pos_planets.pdf.
+- Possibility to switch between North-East system and Earth-acceleration parallel/perpendicular system.

@@ -165,10 +165,10 @@ template <typename T> T SwigValueInit() {
 #if defined(_DEBUG) && defined(SWIG_PYTHON_INTERPRETER_NO_DEBUG)
 /* Use debug wrappers with the Python release dll */
 # undef _DEBUG
-# include </usr/bin/anaconda/include/python2.7/Python.h>
+# include </usr/include/python2.7/Python.h>
 # define _DEBUG
 #else
-# include </usr/bin/anaconda/include/python2.7/Python.h>
+# include </usr/include/python2.7/Python.h>
 #endif
 
 /* -----------------------------------------------------------------------------
@@ -3763,6 +3763,58 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_parallaxsystem_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VBBinaryLensing_parallaxsystem_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_parallaxsystem_set" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_parallaxsystem_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  if (arg1) (arg1)->parallaxsystem = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_parallaxsystem_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:VBBinaryLensing_parallaxsystem_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_parallaxsystem_get" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  result = (int) ((arg1)->parallaxsystem);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VBBinaryLensing_PlotCrit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
@@ -4008,7 +4060,6 @@ SWIGINTERN PyObject *_wrap_VBBinaryLensing_SetObjectCoordinates(PyObject *SWIGUN
   VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
   char *arg2 = (char *) 0 ;
   char *arg3 = (char *) 0 ;
-  double arg4 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int res2 ;
@@ -4017,14 +4068,11 @@ SWIGINTERN PyObject *_wrap_VBBinaryLensing_SetObjectCoordinates(PyObject *SWIGUN
   int res3 ;
   char *buf3 = 0 ;
   int alloc3 = 0 ;
-  double val4 ;
-  int ecode4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
-  PyObject * obj3 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:VBBinaryLensing_SetObjectCoordinates",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VBBinaryLensing_SetObjectCoordinates",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_SetObjectCoordinates" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
@@ -4040,12 +4088,7 @@ SWIGINTERN PyObject *_wrap_VBBinaryLensing_SetObjectCoordinates(PyObject *SWIGUN
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "VBBinaryLensing_SetObjectCoordinates" "', argument " "3"" of type '" "char *""'");
   }
   arg3 = reinterpret_cast< char * >(buf3);
-  ecode4 = SWIG_AsVal_double(obj3, &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VBBinaryLensing_SetObjectCoordinates" "', argument " "4"" of type '" "double""'");
-  } 
-  arg4 = static_cast< double >(val4);
-  (arg1)->SetObjectCoordinates(arg2,arg3,arg4);
+  (arg1)->SetObjectCoordinates(arg2,arg3);
   resultobj = SWIG_Py_Void();
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   if (alloc3 == SWIG_NEWOBJ) delete[] buf3;
@@ -7967,6 +8010,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VBBinaryLensing_Tol_get", _wrap_VBBinaryLensing_Tol_get, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_satellite_set", _wrap_VBBinaryLensing_satellite_set, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_satellite_get", _wrap_VBBinaryLensing_satellite_get, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_parallaxsystem_set", _wrap_VBBinaryLensing_parallaxsystem_set, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_parallaxsystem_get", _wrap_VBBinaryLensing_parallaxsystem_get, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_PlotCrit", _wrap_VBBinaryLensing_PlotCrit, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_PrintCau", _wrap_VBBinaryLensing_PrintCau, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinaryMag", _wrap_VBBinaryLensing_BinaryMag, METH_VARARGS, NULL},

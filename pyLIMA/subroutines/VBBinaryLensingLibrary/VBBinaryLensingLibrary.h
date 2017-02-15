@@ -1,4 +1,4 @@
-// VBBinaryLensing v1.0.4
+// VBBinaryLensing v1.1.1
 // This code has been developed by Valerio Bozza, University of Salerno.
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
@@ -39,11 +39,12 @@ namespace VBBinaryLensingLibrary {
 		int *ndatasat,nsat;
 		double **tsat,***possat;
 		double y_1,y_2,av,e,phi,phip,phi0,Om,inc,t0,d3,v3,GM,flagits;
-		double *Obj;
+		double Obj[3],rad[3],tang[3];
+		double Eq2000[3],Quad2000[3],North2000[3]; 
 
+		double BinaryMag(double,double,double,double,double,double, _sols **);
 		_curve *NewImages(complex,complex  *,_theta *);
 		void OrderImages(_sols *,_curve *);
-		double BinaryMag(double,double,double,double,double,double, _sols **);
 		double BinaryMag0(double,double,double,double, _sols **);
 		void ComputeParallax(double,double,double *);
 		void laguer(complex *, int, complex *, int*,double);
@@ -52,7 +53,7 @@ namespace VBBinaryLensingLibrary {
 	public: 
 
 		double Tol;
-		int satellite;
+		int satellite,parallaxsystem;
 
 		_sols *PlotCrit(double,double);
 		void PrintCau(double,double);
@@ -60,7 +61,7 @@ namespace VBBinaryLensingLibrary {
 		double BinaryMag(double,double,double,double,double,double);
 		double BinaryMagDark(double,double,double,double,double,double,double);
 
-		void SetObjectCoordinates(char *,char *,double);
+		void SetObjectCoordinates(char *,char *);
 
 		double PSPLCurve(double *,double);
 		double PSPLParallaxCurve(double *,double);
