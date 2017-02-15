@@ -769,7 +769,7 @@ class ModelUSBL(MLModel):
             magnification_USBL = \
                 microlmagnification.amplification_USBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.001)[0]
+                                                       tolerance=0.001)
 
             magnification[index_USBL] = magnification_USBL
 
@@ -786,9 +786,9 @@ class ModelUSBL(MLModel):
             magnification = \
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.001)[0]
+                                                       tolerance=0.001)
 
-	return magnification
+        return magnification
 
 class ModelRRlyraePL(MLModel):
     @property
