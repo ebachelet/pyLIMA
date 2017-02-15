@@ -92,7 +92,7 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
         good_weather = np.random.uniform(0, 1)
 
         if good_weather > bad_weather_percentage:
-            random_begin_of_the_night = np.random.uniform(0, 0.1)
+            random_begin_of_the_night = 0
             night_end = night_begin + 1.0
             time_observed += np.linspace(night_begin + time_step_observations + random_begin_of_the_night, night_end,
                                          number_of_day_exposure).tolist()
