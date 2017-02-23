@@ -871,7 +871,7 @@ class ModelRRlyraePL(MLModel):
         :rtype: array_like
         """
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:, 0] - 2456425.5
+        time = lightcurve[:, 0] - 2456425
 
         amplification = self.model_magnification(telescope, pyLIMA_parameters)
 
@@ -899,13 +899,13 @@ class ModelRRlyraePL(MLModel):
         # import pdb;
         # pdb.set_trace()
 
-        pulsations = 10 ** (-pulsations / 2.5)
+        pulsations = 10 ** (pulsations / 2.5)
         f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
 
         # microlensing_model = f_source * pulsations * amplification + f_blending
         microlensing_model = f_source * amplification * pulsations + f_blending
 
-        return microlensing_model, f_source, f_blending/f_blending
+        return microlensing_model, f_source, f_blending
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
 

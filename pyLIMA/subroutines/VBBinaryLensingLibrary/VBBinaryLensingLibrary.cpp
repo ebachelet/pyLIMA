@@ -3,7 +3,7 @@
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
 
-//#include "stdafx.h" //(if you are in Visual Studio, you may require this line)
+//include "stdafx.h" //(if you are in Visual Studio, you may require this line)
 
 #include "VBBinaryLensingLibrary.h"
 #define _USE_MATH_DEFINES
@@ -1336,7 +1336,7 @@ double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,doub
 #ifdef _PRINT_ERRORS2
 		printf("\nNPS= %d Mag = %lf maxerr= %lg currerr =%lg th = %lf",NPS,Mag/(M_PI*RSv*RSv),maxerr/(M_PI*RSv*RSv),currerr/(M_PI*RSv*RSv),th);
 #endif
-	}while((currerr>errimage)&&(NPS<NPSmax)&&((flag<NPSold)/*||(currerr>10*errimage)*/)&&(flagits));
+	}while((currerr>errimage)&&(NPS<NPSmax)&&((flag<NPSold)/*||(currerr>10*errimage)*/)/*&&(flagits)*/);
 	Mag/=(M_PI*RSv*RSv);
 	phi=currerr/(M_PI*RSv*RSv);
 	phip=NPS;
