@@ -192,7 +192,7 @@ class Telescope(object):
         if choice == 'magnitude':
             return len(self.lightcurve_magnitude[:, 0])
 
-    def find_gamma(self, Teff, log_g, claret_path='./data/'):
+    def find_gamma(self, Teff, log_g, metallicity, claret_path='./data/'):
         """
         Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter,
         the given effective
@@ -209,7 +209,7 @@ class Telescope(object):
         # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011
         # convention
         turbulent_velocity = 2.0
-        metallicity = 0.0
+        #metallicity = 0.0
 
         # TODO: Use read claret generator
 

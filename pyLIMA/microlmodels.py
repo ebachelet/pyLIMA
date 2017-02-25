@@ -871,38 +871,13 @@ class ModelRRlyraePL(MLModel):
         :rtype: array_like
         """
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:, 0] - 2456425
+        time = lightcurve[:, 0]
 
         amplification = self.model_magnification(telescope, pyLIMA_parameters)
 
-        pulsations = 0.0
-        period = getattr(pyLIMA_parameters, 'period')
-        # factor = 0.0
-        # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
-        for i in xrange(self.number_of_harmonics):
-            # mplitude = getattr(pyLIMA_parameters, 'A_' + str(i))
-            # factor = getattr(pyLIMA_parameters, 'q_' + telescope.filter)
-            # factor2 = getattr(pyLIMA_parameters, 'phi_' + telescope.filter)
-            amplitude = getattr(pyLIMA_parameters, 'A' + str(i + 1) + '_' + telescope.filter)
-            # phase = getattr(pyLIMA_parameters, 'phi_' + str(i) + '1')
-            phase = getattr(pyLIMA_parameters, 'phi' + str(i + 1) + '_' + telescope.filter)
-
-            # if telescope.filter != 'I':
-            # amplitude *= getattr(pyLIMA_parameters, 'A'+str(i+1)+'_'+'I')
-            # phase *= getattr(pyLIMA_parameters, 'phia'+str(i+1)+'_' +'I')
-            # phase += getattr(pyLIMA_parameters, 'phib' + str(i + 1) + '_' + telescope.filter)
-            # import pdb;
-            # pdb.set_trace()
-            # phase *=(1+factor2)
-            pulsations += amplitude * np.cos(2 * np.pi * (i + 1) / period * time + phase)
-
-        # import pdb;
-        # pdb.set_trace()
-
-        pulsations = 10 ** (pulsations / 2.5)
+        pulsations = self.compute_pulsations( time, telescope.filter, pyLIMA_parameters)
         f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
 
-        # microlensing_model = f_source * pulsations * amplification + f_blending
         microlensing_model = f_source * amplification * pulsations + f_blending
 
         return microlensing_model, f_source, f_blending
@@ -925,3 +900,62 @@ class ModelRRlyraePL(MLModel):
             f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
 
         return f_source, f_blending
+
+    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters):
+
+        pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
+
+        f_source_V = f_source * pulsations
+        V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
+
+        radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        return radius
+    def compute_Teff(self,color):
+
+
+        # Casagrande 2010
+        color += -1.250
+        theta_eff = 0.4033+0.8171*color-0.1987*color**2
+        Teff = 5040/theta_eff
+
+        return Teff
+    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters ):
+
+
+
+        pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
+
+        f_source_V = f_source * pulsations
+
+        pulsations = self.compute_pulsations(time, telescope_I.filter, pyLIMA_parameters)
+
+
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_I.name) / 2
+
+        f_source_I = f_source * pulsations
+
+
+        V_magnitude = 27.4-2.5*np.log10(f_source_V)
+        I_magnitude = 27.4-2.5*np.log10(f_source_I)
+
+        return V_magnitude-I_magnitude
+
+    def compute_pulsations(self, time, filter, pyLIMA_parameters):
+
+        time = time - 2456425
+
+        pulsations = 0
+        period = getattr(pyLIMA_parameters, 'period')
+        # factor = 0.0
+        # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
+        for i in xrange(self.number_of_harmonics):
+            amplitude = getattr(pyLIMA_parameters, 'A' + str(i + 1) + '_' + filter)
+            phase = getattr(pyLIMA_parameters, 'phi' + str(i + 1) + '_' + filter)
+
+            pulsations += amplitude * np.cos(2 * np.pi * (i + 1) / period * time + phase)
+
+        pulsations = 10 ** (pulsations / 2.5)
+
+        return pulsations
