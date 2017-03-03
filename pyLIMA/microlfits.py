@@ -454,7 +454,7 @@ class MLFits(object):
             bounds=self.model.parameters_boundaries,
             mutation=(1.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
             tol=0.0001,
-            recombination=0.6, polish=None,
+            recombination=0.6, polish=True,
             disp=True
         )
 

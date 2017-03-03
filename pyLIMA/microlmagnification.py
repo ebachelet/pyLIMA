@@ -182,19 +182,17 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     #tolerance = np.float64(tolerance)
 
 
-    amplification_usbl = np.array([])
+    amplification_usbl = []
     #print ''
     #print separation[0],q,rho
-    for index in xrange(len(Xs)):
-        xs = Xs[index]
-        ys = Ys[index]
-        s = separation[index]
+    for xs, ys, s in zip(Xs, Ys, separation):
+
         #print index,len(Xs)
        # print s,q,xs,ys,rho,tolerance
         magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)
         #COUNT_VBB_CALL += 1
        # print COUNT_VBB_CALL
-        amplification_usbl = np.append(amplification_usbl, magnification_VBB)
+        amplification_usbl.append(magnification_VBB)
 
 
 
@@ -202,7 +200,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     #import pdb;
     #pdb.set_trace()
     #print amplification_usbl
-    return amplification_usbl
+    return np.array(amplification_usbl)
 
 
 def USBL_queue_process(queue, args):
