@@ -21,6 +21,7 @@ def read_claret_data(file_name, camera_filter):
     :param camera_filter: Retrieve data for supplied filter.
     :return: Generator of claret table.
     """
+
     try:
         resource = open(file_name)
     except IOError:

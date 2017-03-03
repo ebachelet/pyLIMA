@@ -14,7 +14,6 @@ import sys
 thismodule = sys.modules[__name__]
 
 import numpy as np
-from scipy import interpolate, misc
 import collections
 import time as python_time
 
@@ -23,6 +22,8 @@ import microlmagnification
 import microlpriors
 import microlparallax
 import microlorbitalmotion
+import stars
+from scipy import interpolate, misc
 
 full_path = os.path.abspath(__file__)
 directory, filename = os.path.split(full_path)
@@ -909,7 +910,8 @@ class ModelRRlyraePL(MLModel):
         f_source_V = f_source * pulsations
         V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
 
-        radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        #radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        radius = 10**(0.2*(-(V_magnitude-2.689+0.1)-10*np.log10(Teff)+37.35))
         return radius
     def compute_Teff(self,color):
 
@@ -959,3 +961,385 @@ class ModelRRlyraePL(MLModel):
         pulsations = 10 ** (pulsations / 2.5)
 
         return pulsations
+
+
+class ModelRRlyraePL(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: RRLyraePL
+        :rtype: string
+        """
+        return 'RRLyraePL'
+
+    def define_pyLIMA_standard_parameters(self):
+        """ Define the standard pyLIMA parameters dictionnary."""
+        self.number_of_harmonics = self.model_arguments[0]
+        self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
+        if self.parallax_model[0] != 'None':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
+
+            self.event.compute_parallax_all_telescopes(self.parallax_model)
+        for telescope in self.event.telescopes:
+            self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+
+        self.pyLIMA_standards_dictionnary = OrderedDict(
+            sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
+
+        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
+
+    def paczynski_model_parameters(self):
+        """ Define the PSPL standard parameters, [to,uo,tE]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        # model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3, 'A1': 4, 'A2': 5, 'A3': 6, 'A4': 7, 'A5': 8,
+        # 'A6': 9,
+        # 'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
+
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3}
+
+        filters = [telescope.filter for telescope in self.event.telescopes]
+
+        unique_filters = np.unique(filters)
+
+        for filter in unique_filters:
+            # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
+            for i in xrange(self.number_of_harmonics):
+                model_dictionary['A' + str(i + 1) + '_' + filter] = len(model_dictionary)
+                model_dictionary['phi' + str(i + 1) + '_' + filter] = len(model_dictionary)
+                # if filter != 'I':
+                # model_dictionary['phib' + str(i + 1) + '_' + filter] = len(model_dictionary)
+
+        self.Jacobian_flag = 'No way'
+
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a PSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        return microlmagnification.amplification_PSPL(*source_trajectoire)
+
+    def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
+        """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
+        if not the default microlensing model is returned.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :returns: the microlensing model
+        :rtype: array_like
+        """
+        lightcurve = telescope.lightcurve_flux
+        time = lightcurve[:, 0]
+
+        amplification = self.model_magnification(telescope, pyLIMA_parameters)
+
+        pulsations = self.compute_pulsations( time, telescope.filter, pyLIMA_parameters)
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
+
+        microlensing_model = f_source * amplification * pulsations + f_blending
+
+        return microlensing_model, f_source, f_blending
+
+    def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
+
+        try:
+            # Fluxes parameters are fitted
+            f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
+            f_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
+
+        except TypeError:
+
+            # Fluxes parameters are estimated through np.polyfit
+
+
+            lightcurve = telescope.lightcurve_flux
+            flux = lightcurve[:, 1]
+            errflux = lightcurve[:, 2]
+            f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
+
+        return f_source, f_blending
+
+    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters):
+
+        pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
+
+        f_source_V = f_source * pulsations
+        V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
+
+        #radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        radius = 10**(0.2*(-(V_magnitude-2.689+0.1)-10*np.log10(Teff)+37.35))
+        return radius
+    def compute_Teff(self,color):
+
+
+        # Casagrande 2010
+        color += -1.250
+        theta_eff = 0.4033+0.8171*color-0.1987*color**2
+        Teff = 5040/theta_eff
+
+        return Teff
+    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters ):
+
+
+
+        pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
+
+        f_source_V = f_source * pulsations
+
+        pulsations = self.compute_pulsations(time, telescope_I.filter, pyLIMA_parameters)
+
+
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_I.name) / 2
+
+        f_source_I = f_source * pulsations
+
+
+        V_magnitude = 27.4-2.5*np.log10(f_source_V)
+        I_magnitude = 27.4-2.5*np.log10(f_source_I)
+
+        return V_magnitude-I_magnitude
+
+    def compute_pulsations(self, time, filter, pyLIMA_parameters):
+
+        time = time - 2456425
+
+        pulsations = 0
+        period = getattr(pyLIMA_parameters, 'period')
+        # factor = 0.0
+        # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
+        for i in xrange(self.number_of_harmonics):
+            amplitude = getattr(pyLIMA_parameters, 'A' + str(i + 1) + '_' + filter)
+            phase = getattr(pyLIMA_parameters, 'phi' + str(i + 1) + '_' + filter)
+
+            pulsations += amplitude * np.cos(2 * np.pi * (i + 1) / period * time + phase)
+
+        pulsations = 10 ** (pulsations / 2.5)
+
+        return pulsations
+
+class ModelRRlyraeFS(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: RRLyraeFS
+        :rtype: string
+        """
+        return 'RRLyraeFS'
+
+    def define_pyLIMA_standard_parameters(self):
+        """ Define the standard pyLIMA parameters dictionnary."""
+        self.number_of_harmonics = self.model_arguments[0]
+
+        self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
+        if self.parallax_model[0] != 'None':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
+
+            self.event.compute_parallax_all_telescopes(self.parallax_model)
+        for telescope in self.event.telescopes:
+            self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+
+        self.pyLIMA_standards_dictionnary = OrderedDict(
+            sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
+
+        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
+
+    def paczynski_model_parameters(self):
+        """ Define the PSPL standard parameters, [to,uo,tE]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        # model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3, 'A1': 4, 'A2': 5, 'A3': 6, 'A4': 7, 'A5': 8,
+        # 'A6': 9,
+        # 'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
+
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'theta_E':3, 'period': 4}
+
+        filters = [telescope.filter for telescope in self.event.telescopes]
+
+        unique_filters = np.unique(filters)
+
+        for filter in unique_filters:
+            # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
+            for i in xrange(self.number_of_harmonics):
+                model_dictionary['A' + str(i + 1) + '_' + filter] = len(model_dictionary)
+                model_dictionary['phi' + str(i + 1) + '_' + filter] = len(model_dictionary)
+                # if filter != 'I':
+                # model_dictionary['phib' + str(i + 1) + '_' + filter] = len(model_dictionary)
+
+        self.Jacobian_flag = 'No way'
+        self.lyrae = stars.Star()
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a PSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        telescope_V, telescope_I = self.find_telecopes_V_and_I()
+
+        color = self.compute_color(telescope.lightcurve_flux[:,0], telescope_V, telescope_I, pyLIMA_parameters)
+        teff = self.compute_Teff(color)
+
+
+        gammas = []
+        rhos =  self.compute_radius(teff, telescope.lightcurve_flux[:,0], telescope_V, pyLIMA_parameters) * 0.00456 / pyLIMA_parameters.theta_E
+        pyLIMA_parameters.rho = rhos
+        #import pdb;
+        #pdb.set_trace()
+        count = 0
+        for temperature in teff :
+            self.lyrae.Teff = temperature
+            self.lyrae.log_g = 2
+            gamma = self.find_gamma(telescope, self.lyrae)
+            gammas.append(gamma)
+
+            print count
+            count += 1
+        import pdb;
+        pdb.set_trace()
+        rho =  pyLIMA_parameters.rho
+        gamma = np.array(gammas)
+
+        return microlmagnification.amplification_FSPL_for_Lyrae(source_trajectory_x, source_trajectory_y, rho,
+                                                               gamma, self.yoo_table)
+    def find_gamma(self, telescope, star):
+
+            telescope.find_gamma(star)
+            gamma = telescope.gamma
+            return gamma
+    def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
+        """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
+        if not the default microlensing model is returned.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :returns: the microlensing model
+        :rtype: array_like
+        """
+        lightcurve = telescope.lightcurve_flux
+        time = lightcurve[:, 0]
+
+        amplification = self.model_magnification(telescope, pyLIMA_parameters)
+
+        pulsations = self.compute_pulsations( time, telescope.filter, pyLIMA_parameters)
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
+
+        microlensing_model = f_source * amplification * pulsations + f_blending
+
+        return microlensing_model, f_source, f_blending
+
+    def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
+
+        try:
+            # Fluxes parameters are fitted
+            f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
+            f_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
+
+        except TypeError:
+
+            # Fluxes parameters are estimated through np.polyfit
+
+
+            lightcurve = telescope.lightcurve_flux
+            flux = lightcurve[:, 1]
+            errflux = lightcurve[:, 2]
+            f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
+
+        return f_source, f_blending
+
+    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters):
+
+        pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
+
+        f_source_V = f_source * pulsations
+        V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
+
+        #radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        radius = 10**(0.2*(-(V_magnitude-2.689+0.1)-10*np.log10(Teff)+37.35))
+        return radius
+    def compute_Teff(self,color):
+
+
+        # Casagrande 2010
+        color += -1.250
+        theta_eff = 0.4033+0.8171*color-0.1987*color**2
+        Teff = 5040/theta_eff
+
+        return Teff
+    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters ):
+
+
+
+        pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
+
+        f_source_V = f_source * pulsations
+
+        pulsations = self.compute_pulsations(time, telescope_I.filter, pyLIMA_parameters)
+
+
+        f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_I.name) / 2
+
+        f_source_I = f_source * pulsations
+
+
+        V_magnitude = 27.4-2.5*np.log10(f_source_V)
+        I_magnitude = 27.4-2.5*np.log10(f_source_I)
+
+        return V_magnitude-I_magnitude
+
+    def compute_pulsations(self, time, filter, pyLIMA_parameters):
+
+        time = time - 2456425
+
+        pulsations = 0
+        period = getattr(pyLIMA_parameters, 'period')
+        # factor = 0.0
+        # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
+        for i in xrange(self.number_of_harmonics):
+            amplitude = getattr(pyLIMA_parameters, 'A' + str(i + 1) + '_' + filter)
+            phase = getattr(pyLIMA_parameters, 'phi' + str(i + 1) + '_' + filter)
+
+            pulsations += amplitude * np.cos(2 * np.pi * (i + 1) / period * time + phase)
+
+        pulsations = 10 ** (pulsations / 2.5)
+
+        return pulsations
+
+
+    def find_telecopes_V_and_I(self):
+
+        telescope_V = [i for i in self.event.telescopes if 'survey2' in i.name][0]
+        telescope_I = [i for i in self.event.telescopes if 'survey1' in i.name][0]
+
+        return telescope_V, telescope_I

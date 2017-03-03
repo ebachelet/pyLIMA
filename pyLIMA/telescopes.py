@@ -192,7 +192,7 @@ class Telescope(object):
         if choice == 'magnitude':
             return len(self.lightcurve_magnitude[:, 0])
 
-    def find_gamma(self, Teff, log_g, metallicity, claret_path='./data/'):
+    def find_gamma(self, star):
         """
         Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter,
         the given effective
@@ -206,33 +206,9 @@ class Telescope(object):
         :param float log_g: The log10 surface gravity in cgs.
         :param string claret_path: path to the Claret table.
         """
-        # assumption   Microturbulent velocity =2km/s, metallicity= 0.0 (Sun value) Claret2011
-        # convention
-        turbulent_velocity = 2.0
-        #metallicity = 0.0
 
-        # TODO: Use read claret generator
 
-        claret_table = fits.open(claret_path + 'Claret2011.fits')
-        claret_table = np.array([claret_table[1].data['log g'], claret_table[1].data['Teff (K)'],
-                                 claret_table[1].data['Z (Sun)'], claret_table[1].data['Xi (km/s)'],
-                                 claret_table[1].data['u'], claret_table[1].data['filter']]).T
-
-        # Find the raw corresponding to the requested filter.
-
-        indexes_filter = np.where(claret_table[:, 5] == self.filter)[0]
-        claret_table_reduce = claret_table[indexes_filter, :-1].astype(float)
-
-        # Find the raw by computing distance of all raw and coefficient
-
-        limb_darkening_coefficient_raw_index = np.sqrt((claret_table_reduce[:, 0] - log_g) ** 2 +
-                                                       (claret_table_reduce[:, 1] - Teff) ** 2 +
-                                                       (claret_table_reduce[:, 2] - metallicity) ** 2 +
-                                                       (claret_table_reduce[:, 3] - turbulent_velocity) ** 2).argmin()
-
-        linear_limb_darkening_coefficient = claret_table_reduce[limb_darkening_coefficient_raw_index, -1]
-
-        self.gamma = 2 * linear_limb_darkening_coefficient / (3 - linear_limb_darkening_coefficient)
+        self.gamma = star.find_gamma(self.filter)
 
     def compute_parallax(self, event, parallax):
         """ Compute and set the deltas_positions attribute due to the parallax.

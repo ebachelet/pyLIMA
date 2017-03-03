@@ -329,7 +329,7 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, logs_boundaries,
                                  logq_boundaries, alpha_boundaries]
 
-    if model.model_type == 'VSPL':
+    if model.model_type == 'RRLyraePL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period]
 
         filters = [telescope.filter for telescope in model.event.telescopes]
@@ -340,8 +340,16 @@ def differential_evolution_parameters_boundaries(model):
                     parameters_boundaries += [amplitude]
                     parameters_boundaries += [phis]
 
-        #parameters_boundaries += [q_boundaries] * len(unique_filters)
-        # parameters_boundaries += [q_F_boundaries]
+    if model.model_type == 'RRLyraeFS':
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period]
+
+        filters = [telescope.filter for telescope in model.event.telescopes]
+
+        unique_filters = np.unique(filters)
+        for i in range(model.number_of_harmonics):
+                 for j in unique_filters:
+                     parameters_boundaries += [amplitude]
+                     parameters_boundaries += [phis]
     # Second order boundaries
     if model.parallax_model[0] != 'None':
         parameters_boundaries.append(piEN_boundaries)
