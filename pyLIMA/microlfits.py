@@ -320,7 +320,7 @@ class MLFits(object):
                    nwalkers*nlinks MCMC steps in total
         """
 
-        nwalkers = 200
+        nwalkers = 100
         nlinks = 100
 
         if len(self.model.parameters_guess) == 0:
@@ -334,7 +334,6 @@ class MLFits(object):
             self.guess = list(self.model.parameters_guess)
             self.guess +=  self.find_fluxes(self.guess, self.model)
 
-        print 'pre MCMC done'
         # Best solution
 
         best_solution = self.guess
@@ -368,13 +367,15 @@ class MLFits(object):
             # individual += fluxes
 
             chichi = self.chichi_MCMC(individual)
-
             if chichi != -np.inf:
                 # np.array(individual)
+                #print count_walkers
                 population.append(np.array(individual))
                 count_walkers += 1
         # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
         # number_of_parameters = number_of_paczynski_parameters
+        print 'pre MCMC done'
+
 
         number_of_parameters = len(individual)
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
@@ -382,14 +383,14 @@ class MLFits(object):
         # First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
-        #import pdb;
-        #pdb.set_trace()
+
         print 'MCMC preburn done'
+
         sampler.reset()
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions, nlinks)
+        sampler.run_mcmc(final_positions, 2*nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
@@ -454,7 +455,7 @@ class MLFits(object):
             bounds=self.model.parameters_boundaries,
             mutation=(1.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
             tol=0.0001,
-            recombination=0.6, polish=True,
+            recombination=0.7, polish=True,
             disp=True
         )
 
@@ -802,8 +803,8 @@ class MLFits(object):
             grid_results.append(best_parameters)
             print sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_parameters_pixel).strip(
                 '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun'])
-        import pdb;
-        pdb.set_trace()
+        #import pdb;
+        #pdb.set_trace()
 
     def chichi_grids(self, moving_parameters, *fix_parameters):
 

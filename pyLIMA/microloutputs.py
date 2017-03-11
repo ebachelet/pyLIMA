@@ -898,7 +898,7 @@ def plot_LM_ML_geometry(fit):
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
 
-    if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('VS' not in fit.model.model_type):
+    if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('RRLyrae' not in fit.model.model_type):
         index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
             0]
         source_disk = plt.Circle((trajectory_x[index_source], trajectory_y[index_source]), pyLIMA_parameters.rho,

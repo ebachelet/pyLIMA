@@ -56,8 +56,7 @@ class Star(object):
             good_filter  = np.where(self.claret_table[:,-1] == filter)[0]
 
             subclaret = self.claret_table[good_filter,:-1].astype(float)
-            import pdb;
-            pdb.set_trace()
+
             grid_interpolation = si.NearestNDInterpolator(subclaret[:,:-1],subclaret[:,-1])
 
             self.filter_claret_table[filter] = grid_interpolation

@@ -2,6 +2,7 @@ import numpy as np
 import astropy
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun, get_moon
 from astropy.time import Time
+
 import matplotlib.pyplot as plt
 
 import microlmodels
@@ -61,8 +62,12 @@ def noisy_observations(flux, error_flux):
         :rtype: array_like
 
     """
-    flux_observed = np.random.normal(flux, error_flux)
+    try :
 
+        flux_observed = np.random.normal(flux, error_flux)
+    except:
+        import pdb;
+        pdb.set_trace()
     return flux_observed
 
 
@@ -323,7 +328,11 @@ def simulate_lightcurve_flux(model, pylima_parameters, red_noise_apply='Yes'):
 
 
         theoritical_flux = model.compute_the_microlensing_model(telescope, pylima_parameters)[0]
-
+        if np.min(theoritical_flux>0):
+            pass
+        else:
+            import pdb;
+            pdb.set_trace()
         flux_error = poisson_noise(theoritical_flux)
         observed_flux = noisy_observations(theoritical_flux, flux_error)
 

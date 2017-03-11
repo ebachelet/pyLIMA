@@ -305,9 +305,9 @@ def differential_evolution_parameters_boundaries(model):
 
     # model_source_spots_boundaries = {'None': []}
 
-    Period = (0.01, 0.5)
+    Period = (0.0, 2.0)
     phis = (-np.pi, np.pi)
-    amplitude = (0, 0.1)
+    amplitude = (0.0,  1.0)
     q_boundaries = (-2, 2)
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
@@ -341,7 +341,7 @@ def differential_evolution_parameters_boundaries(model):
                     parameters_boundaries += [phis]
 
     if model.model_type == 'RRLyraeFS':
-        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period]
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, Period]
 
         filters = [telescope.filter for telescope in model.event.telescopes]
 
@@ -383,21 +383,6 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         return [to_parameters_trial]
 
-    # if 'uo' in parameter_key:
-    #   epsilon = np.random.uniform(0.9, 1.1)
-    #    sign = np.random.choice([-1, 1])
-
-    #    uo_trial = sign * parameters[parameters_dictionnary[parameter_key]] * epsilon
-
-    #    return [uo_trial]
-
-    # if 'tE' in parameter_key:
-    #    epsilon = np.random.uniform(0.9, 1.1)
-    #    sign = np.random.choice([-1, 1])
-
-    #    tE_trial = sign * parameters[parameters_dictionnary[parameter_key]] * epsilon
-
-    #    return [tE_trial]
 
     if 'fs' in parameter_key:
         epsilon = np.random.uniform(0.9, 1.1)
@@ -419,7 +404,23 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
     #    return [pi_trial]
 
-    epsilon = np.random.uniform(0.9, 1.1)
+    if 'rho' in parameter_key:
+        epsilon = np.random.uniform(-1, 1)
+        epsilon = 10**epsilon
+        rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
+        return [rho_parameters_trial]
+
+    if 'logs' in parameter_key:
+        epsilon = np.random.uniform(-0.2, 0.2)
+
+        logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
+        return [logs_parameters_trial]
+    if 'logq' in parameter_key:
+        epsilon = np.random.uniform(-2, 1)
+
+        logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
+        return [logq_parameters_trial]
+    epsilon = np.random.uniform(0.99, 1.01)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]
