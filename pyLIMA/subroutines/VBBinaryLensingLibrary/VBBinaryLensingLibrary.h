@@ -1,4 +1,4 @@
-// VBBinaryLensing v1.1.1
+// VBBinaryLensing v2.0
 // This code has been developed by Valerio Bozza, University of Salerno.
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
@@ -9,12 +9,12 @@
 #define __binlens
 #define __unmanaged
 
-#define _L1 x1-((x1+a/2.0)/((x1+a/2.0)*(x1+a/2.0)+x2*x2)+q*(x1-a/2.0)/((x1-a/2.0)*(x1-a/2.0)+x2*x2))/(1.0+q)
+#define _L1 x1-((x1+a/2.0)/((x1+a/2.0)*(x1+a/2.0)+x2*x2)+q*(x1-a/2.0)/((x1-a/2.0)*(x1-a/2.0)+x2*x2))/(1.0+q) // Used in PlotCrits
 #define _L2 x2-(x2/((x1+a/2.0)*(x1+a/2.0)+x2*x2)+q*x2/((x1-a/2.0)*(x1-a/2.0)+x2*x2))/(1.0+q)
-#define _LL (y-z)+coefs[21]/(-0.5e0*coefs[20]+zc)+coefs[22]/(0.5e0*coefs[20]+zc)
+#define _LL (y-z)+coefs[21]/(zc-coefs[20])+coefs[22]/zc //Lens equation test
 #define _J1 m1/((zc-m2*a)*(zc-m2*a))+m2/((zc+m1*a)*(zc+m1*a)) //#define _J1 m1/((zc-0.5*a)*(zc-0.5*a))+m2/((zc+0.5*a)*(zc+0.5*a))
-#define _J1c coefs[21]/((zc-coefs[22]*coefs[20])*(zc-coefs[22]*coefs[20]))+coefs[22]/((zc+coefs[21]*coefs[20])*(zc+coefs[21]*coefs[20])) //#define _J1 m1/((zc-0.5*a)*(zc-0.5*a))+m2/((zc+0.5*a)*(zc+0.5*a))
-#define _J2 -2.0*(coefs[21]/((z-coefs[22]*coefs[20])*(z-coefs[22]*coefs[20])*(z-coefs[22]*coefs[20]))+coefs[22]/((z+coefs[21]*coefs[20])*(z+coefs[21]*coefs[20])*(z+coefs[21]*coefs[20])))
+#define _J1c coefs[21]/((zc-coefs[20])*(zc-coefs[20]))+coefs[22]/(zc*zc) //#define _J1 m1/((zc-0.5*a)*(zc-0.5*a))+m2/((zc+0.5*a)*(zc+0.5*a))
+#define _J2 -2.0*(coefs[21]/((z-coefs[20])*(z-coefs[20])*(z-coefs[20]))+coefs[22]/(z*z*z))
 #define _skew(p1,p2,q1,q2) p1*q2-p2*q1
 #define _NP 200.0
 
@@ -27,7 +27,6 @@ class _sols;
 class _theta;
 class complex;
 
-
 #ifndef __unmanaged
 namespace VBBinaryLensingLibrary {
 
@@ -36,16 +35,14 @@ namespace VBBinaryLensingLibrary {
 	class VBBinaryLensing
 #endif
 	{
-		int *ndatasat,nsat;
+		int *ndatasat;
 		double **tsat,***possat;
-		double y_1,y_2,av,e,phi,phip,phi0,Om,inc,t0,d3,v3,GM,flagits;
+		double e,phi,phip,phi0,Om,inc,t0,d3,v3,GM,flagits;
 		double Obj[3],rad[3],tang[3];
 		double Eq2000[3],Quad2000[3],North2000[3]; 
 
-		double BinaryMag(double,double,double,double,double,double, _sols **);
 		_curve *NewImages(complex,complex  *,_theta *);
 		void OrderImages(_sols *,_curve *);
-		double BinaryMag0(double,double,double,double, _sols **);
 		void ComputeParallax(double,double,double *);
 		void laguer(complex *, int, complex *, int*,double);
 		void zroots(complex *,int, complex *, int,double);
@@ -53,11 +50,15 @@ namespace VBBinaryLensingLibrary {
 	public: 
 
 		double Tol;
-		int satellite,parallaxsystem;
+		int satellite,parallaxsystem,nsat;
+		double y_1,y_2,av;
 
 		_sols *PlotCrit(double,double);
 		void PrintCau(double,double);
 
+		double BinaryMag0(double,double,double,double, _sols **);
+		double BinaryMag0(double,double,double,double);
+		double BinaryMag(double,double,double,double,double,double, _sols **);
 		double BinaryMag(double,double,double,double,double,double);
 		double BinaryMagDark(double,double,double,double,double,double,double);
 
@@ -69,6 +70,7 @@ namespace VBBinaryLensingLibrary {
 		double ESPLParallaxCurve(double *,double);
 
 		double BinaryLightCurve(double *,double);
+		double BinaryLightCurveW(double *,double);
 		double BinaryLightCurveParallax(double *,double);
 		double BinaryLightCurveOrbital(double *,double);
 		double BinSourceMag(double *,double);
@@ -96,14 +98,6 @@ namespace VBBinaryLensingLibrary {
 }
 #endif
 
-class complex{
-public:
-	double re;
-	double im;
-	complex(double,double);
-	complex(double);
-	complex(void);
-};
 
 class _theta{
 public: 
@@ -124,6 +118,15 @@ public:
 	_theta *insert(double);
 
 
+};
+
+class complex{
+public:
+	double re;
+	double im;
+	complex(double,double);
+	complex(double);
+	complex(void);
 };
 
 class _point{

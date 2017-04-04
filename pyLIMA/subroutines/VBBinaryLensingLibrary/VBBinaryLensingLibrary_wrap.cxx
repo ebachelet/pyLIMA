@@ -3018,8 +3018,9 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_double swig_types[9]
 #define SWIGTYPE_p_doubleArray swig_types[10]
 #define SWIGTYPE_p_p__point swig_types[11]
-static swig_type_info *swig_types[13];
-static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
+#define SWIGTYPE_p_p__sols swig_types[12]
+static swig_type_info *swig_types[14];
+static swig_module_info swig_module = {swig_types, 13, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3815,6 +3816,214 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_nsat_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VBBinaryLensing_nsat_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_nsat_set" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_nsat_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  if (arg1) (arg1)->nsat = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_nsat_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:VBBinaryLensing_nsat_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_nsat_get" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  result = (int) ((arg1)->nsat);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_y_1_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VBBinaryLensing_y_1_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_y_1_set" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_y_1_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->y_1 = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_y_1_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:VBBinaryLensing_y_1_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_y_1_get" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  result = (double) ((arg1)->y_1);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_y_2_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VBBinaryLensing_y_2_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_y_2_set" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_y_2_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->y_2 = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_y_2_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:VBBinaryLensing_y_2_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_y_2_get" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  result = (double) ((arg1)->y_2);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_av_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VBBinaryLensing_av_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_av_set" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_av_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->av = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_av_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:VBBinaryLensing_av_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_av_get" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  result = (double) ((arg1)->av);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VBBinaryLensing_PlotCrit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
@@ -3894,7 +4103,310 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag0__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double arg2 ;
+  double arg3 ;
+  double arg4 ;
+  double arg5 ;
+  _sols **arg6 = (_sols **) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  double val5 ;
+  int ecode5 = 0 ;
+  void *argp6 = 0 ;
+  int res6 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:VBBinaryLensing_BinaryMag0",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_double(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "5"" of type '" "double""'");
+  } 
+  arg5 = static_cast< double >(val5);
+  res6 = SWIG_ConvertPtr(obj5, &argp6,SWIGTYPE_p_p__sols, 0 |  0 );
+  if (!SWIG_IsOK(res6)) {
+    SWIG_exception_fail(SWIG_ArgError(res6), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "6"" of type '" "_sols **""'"); 
+  }
+  arg6 = reinterpret_cast< _sols ** >(argp6);
+  result = (double)(arg1)->BinaryMag0(arg2,arg3,arg4,arg5,arg6);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag0__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double arg2 ;
+  double arg3 ;
+  double arg4 ;
+  double arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  double val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VBBinaryLensing_BinaryMag0",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_double(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VBBinaryLensing_BinaryMag0" "', argument " "5"" of type '" "double""'");
+  } 
+  arg5 = static_cast< double >(val5);
+  result = (double)(arg1)->BinaryMag0(arg2,arg3,arg4,arg5);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag0(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[7] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 6) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 5) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_VBBinaryLensing, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_double(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_double(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_double(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_double(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              return _wrap_VBBinaryLensing_BinaryMag0__SWIG_1(self, args);
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 6) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_VBBinaryLensing, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_double(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_double(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_double(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_double(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              void *vptr = 0;
+              int res = SWIG_ConvertPtr(argv[5], &vptr, SWIGTYPE_p_p__sols, 0);
+              _v = SWIG_CheckState(res);
+              if (_v) {
+                return _wrap_VBBinaryLensing_BinaryMag0__SWIG_0(self, args);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'VBBinaryLensing_BinaryMag0'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    VBBinaryLensing::BinaryMag0(double,double,double,double,_sols **)\n"
+    "    VBBinaryLensing::BinaryMag0(double,double,double,double)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double arg2 ;
+  double arg3 ;
+  double arg4 ;
+  double arg5 ;
+  double arg6 ;
+  double arg7 ;
+  _sols **arg8 = (_sols **) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  double val5 ;
+  int ecode5 = 0 ;
+  double val6 ;
+  int ecode6 = 0 ;
+  double val7 ;
+  int ecode7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOO:VBBinaryLensing_BinaryMag",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_double(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "5"" of type '" "double""'");
+  } 
+  arg5 = static_cast< double >(val5);
+  ecode6 = SWIG_AsVal_double(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "6"" of type '" "double""'");
+  } 
+  arg6 = static_cast< double >(val6);
+  ecode7 = SWIG_AsVal_double(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "7"" of type '" "double""'");
+  } 
+  arg7 = static_cast< double >(val7);
+  res8 = SWIG_ConvertPtr(obj7, &argp8,SWIGTYPE_p_p__sols, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "VBBinaryLensing_BinaryMag" "', argument " "8"" of type '" "_sols **""'"); 
+  }
+  arg8 = reinterpret_cast< _sols ** >(argp8);
+  result = (double)(arg1)->BinaryMag(arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
   double arg2 ;
@@ -3967,6 +4479,123 @@ SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag(PyObject *SWIGUNUSEDPARM(se
   return resultobj;
 fail:
   return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryMag(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[9] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 8) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 7) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_VBBinaryLensing, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_double(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_double(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_double(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_double(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              {
+                int res = SWIG_AsVal_double(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_double(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  return _wrap_VBBinaryLensing_BinaryMag__SWIG_1(self, args);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 8) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_VBBinaryLensing, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_double(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_double(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_double(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_double(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              {
+                int res = SWIG_AsVal_double(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_double(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_p__sols, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    return _wrap_VBBinaryLensing_BinaryMag__SWIG_0(self, args);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'VBBinaryLensing_BinaryMag'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    VBBinaryLensing::BinaryMag(double,double,double,double,double,double,_sols **)\n"
+    "    VBBinaryLensing::BinaryMag(double,double,double,double,double,double)\n");
+  return 0;
 }
 
 
@@ -4293,6 +4922,46 @@ SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryLightCurve(PyObject *SWIGUNUSED
   } 
   arg3 = static_cast< double >(val3);
   result = (double)(arg1)->BinaryLightCurve(arg2,arg3);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VBBinaryLensing_BinaryLightCurveW(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  VBBinaryLensing *arg1 = (VBBinaryLensing *) 0 ;
+  double *arg2 = (double *) 0 ;
+  double arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VBBinaryLensing_BinaryLightCurveW",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_VBBinaryLensing, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VBBinaryLensing_BinaryLightCurveW" "', argument " "1"" of type '" "VBBinaryLensing *""'"); 
+  }
+  arg1 = reinterpret_cast< VBBinaryLensing * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VBBinaryLensing_BinaryLightCurveW" "', argument " "2"" of type '" "double *""'"); 
+  }
+  arg2 = reinterpret_cast< double * >(argp2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VBBinaryLensing_BinaryLightCurveW" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  result = (double)(arg1)->BinaryLightCurveW(arg2,arg3);
   resultobj = SWIG_From_double(static_cast< double >(result));
   return resultobj;
 fail:
@@ -4998,256 +5667,6 @@ SWIGINTERN PyObject *annulus_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObje
   return SWIG_Py_Void();
 }
 
-SWIGINTERN PyObject *_wrap_complex_re_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  complex *arg1 = (complex *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:complex_re_set",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_re_set" "', argument " "1"" of type '" "complex *""'"); 
-  }
-  arg1 = reinterpret_cast< complex * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "complex_re_set" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  if (arg1) (arg1)->re = arg2;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_complex_re_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  complex *arg1 = (complex *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:complex_re_get",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_re_get" "', argument " "1"" of type '" "complex *""'"); 
-  }
-  arg1 = reinterpret_cast< complex * >(argp1);
-  result = (double) ((arg1)->re);
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_complex_im_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  complex *arg1 = (complex *) 0 ;
-  double arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:complex_im_set",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_im_set" "', argument " "1"" of type '" "complex *""'"); 
-  }
-  arg1 = reinterpret_cast< complex * >(argp1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "complex_im_set" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  if (arg1) (arg1)->im = arg2;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_complex_im_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  complex *arg1 = (complex *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  double result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:complex_im_get",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_im_get" "', argument " "1"" of type '" "complex *""'"); 
-  }
-  arg1 = reinterpret_cast< complex * >(argp1);
-  result = (double) ((arg1)->im);
-  resultobj = SWIG_From_double(static_cast< double >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_complex__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  double arg1 ;
-  double arg2 ;
-  double val1 ;
-  int ecode1 = 0 ;
-  double val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  complex *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:new_complex",&obj0,&obj1)) SWIG_fail;
-  ecode1 = SWIG_AsVal_double(obj0, &val1);
-  if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_complex" "', argument " "1"" of type '" "double""'");
-  } 
-  arg1 = static_cast< double >(val1);
-  ecode2 = SWIG_AsVal_double(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_complex" "', argument " "2"" of type '" "double""'");
-  } 
-  arg2 = static_cast< double >(val2);
-  result = (complex *)new complex(arg1,arg2);
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_complex, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_complex__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  double arg1 ;
-  double val1 ;
-  int ecode1 = 0 ;
-  PyObject * obj0 = 0 ;
-  complex *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:new_complex",&obj0)) SWIG_fail;
-  ecode1 = SWIG_AsVal_double(obj0, &val1);
-  if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_complex" "', argument " "1"" of type '" "double""'");
-  } 
-  arg1 = static_cast< double >(val1);
-  result = (complex *)new complex(arg1);
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_complex, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_complex__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  complex *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)":new_complex")) SWIG_fail;
-  result = (complex *)new complex();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_complex, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_complex(PyObject *self, PyObject *args) {
-  Py_ssize_t argc;
-  PyObject *argv[3] = {
-    0
-  };
-  Py_ssize_t ii;
-  
-  if (!PyTuple_Check(args)) SWIG_fail;
-  argc = args ? PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 2) && (ii < argc); ii++) {
-    argv[ii] = PyTuple_GET_ITEM(args,ii);
-  }
-  if (argc == 0) {
-    return _wrap_new_complex__SWIG_2(self, args);
-  }
-  if (argc == 1) {
-    int _v;
-    {
-      int res = SWIG_AsVal_double(argv[0], NULL);
-      _v = SWIG_CheckState(res);
-    }
-    if (_v) {
-      return _wrap_new_complex__SWIG_1(self, args);
-    }
-  }
-  if (argc == 2) {
-    int _v;
-    {
-      int res = SWIG_AsVal_double(argv[0], NULL);
-      _v = SWIG_CheckState(res);
-    }
-    if (_v) {
-      {
-        int res = SWIG_AsVal_double(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        return _wrap_new_complex__SWIG_0(self, args);
-      }
-    }
-  }
-  
-fail:
-  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_complex'.\n"
-    "  Possible C/C++ prototypes are:\n"
-    "    complex::complex(double,double)\n"
-    "    complex::complex(double)\n"
-    "    complex::complex()\n");
-  return 0;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_complex(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  complex *arg1 = (complex *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_complex",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_complex" "', argument " "1"" of type '" "complex *""'"); 
-  }
-  arg1 = reinterpret_cast< complex * >(argp1);
-  delete arg1;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *complex_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_complex, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
 SWIGINTERN PyObject *_wrap__theta_th_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   _theta *arg1 = (_theta *) 0 ;
@@ -5835,6 +6254,256 @@ SWIGINTERN PyObject *_thetas_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObje
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
   SWIG_TypeNewClientData(SWIGTYPE_p__thetas, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_complex_re_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  complex *arg1 = (complex *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:complex_re_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_re_set" "', argument " "1"" of type '" "complex *""'"); 
+  }
+  arg1 = reinterpret_cast< complex * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "complex_re_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->re = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_complex_re_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  complex *arg1 = (complex *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:complex_re_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_re_get" "', argument " "1"" of type '" "complex *""'"); 
+  }
+  arg1 = reinterpret_cast< complex * >(argp1);
+  result = (double) ((arg1)->re);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_complex_im_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  complex *arg1 = (complex *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:complex_im_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_im_set" "', argument " "1"" of type '" "complex *""'"); 
+  }
+  arg1 = reinterpret_cast< complex * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "complex_im_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  if (arg1) (arg1)->im = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_complex_im_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  complex *arg1 = (complex *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  double result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:complex_im_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "complex_im_get" "', argument " "1"" of type '" "complex *""'"); 
+  }
+  arg1 = reinterpret_cast< complex * >(argp1);
+  result = (double) ((arg1)->im);
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_complex__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  double arg1 ;
+  double arg2 ;
+  double val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  complex *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:new_complex",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_double(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_complex" "', argument " "1"" of type '" "double""'");
+  } 
+  arg1 = static_cast< double >(val1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_complex" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  result = (complex *)new complex(arg1,arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_complex, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_complex__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  double arg1 ;
+  double val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  complex *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_complex",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_double(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_complex" "', argument " "1"" of type '" "double""'");
+  } 
+  arg1 = static_cast< double >(val1);
+  result = (complex *)new complex(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_complex, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_complex__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  complex *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_complex")) SWIG_fail;
+  result = (complex *)new complex();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_complex, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_complex(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[3] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 2) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 0) {
+    return _wrap_new_complex__SWIG_2(self, args);
+  }
+  if (argc == 1) {
+    int _v;
+    {
+      int res = SWIG_AsVal_double(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      return _wrap_new_complex__SWIG_1(self, args);
+    }
+  }
+  if (argc == 2) {
+    int _v;
+    {
+      int res = SWIG_AsVal_double(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      {
+        int res = SWIG_AsVal_double(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        return _wrap_new_complex__SWIG_0(self, args);
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_complex'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    complex::complex(double,double)\n"
+    "    complex::complex(double)\n"
+    "    complex::complex()\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_complex(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  complex *arg1 = (complex *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_complex",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_complex, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_complex" "', argument " "1"" of type '" "complex *""'"); 
+  }
+  arg1 = reinterpret_cast< complex * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *complex_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_complex, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
 }
 
@@ -8012,8 +8681,17 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VBBinaryLensing_satellite_get", _wrap_VBBinaryLensing_satellite_get, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_parallaxsystem_set", _wrap_VBBinaryLensing_parallaxsystem_set, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_parallaxsystem_get", _wrap_VBBinaryLensing_parallaxsystem_get, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_nsat_set", _wrap_VBBinaryLensing_nsat_set, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_nsat_get", _wrap_VBBinaryLensing_nsat_get, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_y_1_set", _wrap_VBBinaryLensing_y_1_set, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_y_1_get", _wrap_VBBinaryLensing_y_1_get, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_y_2_set", _wrap_VBBinaryLensing_y_2_set, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_y_2_get", _wrap_VBBinaryLensing_y_2_get, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_av_set", _wrap_VBBinaryLensing_av_set, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_av_get", _wrap_VBBinaryLensing_av_get, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_PlotCrit", _wrap_VBBinaryLensing_PlotCrit, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_PrintCau", _wrap_VBBinaryLensing_PrintCau, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_BinaryMag0", _wrap_VBBinaryLensing_BinaryMag0, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinaryMag", _wrap_VBBinaryLensing_BinaryMag, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinaryMagDark", _wrap_VBBinaryLensing_BinaryMagDark, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_SetObjectCoordinates", _wrap_VBBinaryLensing_SetObjectCoordinates, METH_VARARGS, NULL},
@@ -8022,6 +8700,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VBBinaryLensing_ESPLCurve", _wrap_VBBinaryLensing_ESPLCurve, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_ESPLParallaxCurve", _wrap_VBBinaryLensing_ESPLParallaxCurve, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinaryLightCurve", _wrap_VBBinaryLensing_BinaryLightCurve, METH_VARARGS, NULL},
+	 { (char *)"VBBinaryLensing_BinaryLightCurveW", _wrap_VBBinaryLensing_BinaryLightCurveW, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinaryLightCurveParallax", _wrap_VBBinaryLensing_BinaryLightCurveParallax, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinaryLightCurveOrbital", _wrap_VBBinaryLensing_BinaryLightCurveOrbital, METH_VARARGS, NULL},
 	 { (char *)"VBBinaryLensing_BinSourceMag", _wrap_VBBinaryLensing_BinSourceMag, METH_VARARGS, NULL},
@@ -8049,13 +8728,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_annulus", _wrap_new_annulus, METH_VARARGS, NULL},
 	 { (char *)"delete_annulus", _wrap_delete_annulus, METH_VARARGS, NULL},
 	 { (char *)"annulus_swigregister", annulus_swigregister, METH_VARARGS, NULL},
-	 { (char *)"complex_re_set", _wrap_complex_re_set, METH_VARARGS, NULL},
-	 { (char *)"complex_re_get", _wrap_complex_re_get, METH_VARARGS, NULL},
-	 { (char *)"complex_im_set", _wrap_complex_im_set, METH_VARARGS, NULL},
-	 { (char *)"complex_im_get", _wrap_complex_im_get, METH_VARARGS, NULL},
-	 { (char *)"new_complex", _wrap_new_complex, METH_VARARGS, NULL},
-	 { (char *)"delete_complex", _wrap_delete_complex, METH_VARARGS, NULL},
-	 { (char *)"complex_swigregister", complex_swigregister, METH_VARARGS, NULL},
 	 { (char *)"_theta_th_set", _wrap__theta_th_set, METH_VARARGS, NULL},
 	 { (char *)"_theta_th_get", _wrap__theta_th_get, METH_VARARGS, NULL},
 	 { (char *)"_theta_maxerr_set", _wrap__theta_maxerr_set, METH_VARARGS, NULL},
@@ -8081,6 +8753,13 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"delete__thetas", _wrap_delete__thetas, METH_VARARGS, NULL},
 	 { (char *)"_thetas_insert", _wrap__thetas_insert, METH_VARARGS, NULL},
 	 { (char *)"_thetas_swigregister", _thetas_swigregister, METH_VARARGS, NULL},
+	 { (char *)"complex_re_set", _wrap_complex_re_set, METH_VARARGS, NULL},
+	 { (char *)"complex_re_get", _wrap_complex_re_get, METH_VARARGS, NULL},
+	 { (char *)"complex_im_set", _wrap_complex_im_set, METH_VARARGS, NULL},
+	 { (char *)"complex_im_get", _wrap_complex_im_get, METH_VARARGS, NULL},
+	 { (char *)"new_complex", _wrap_new_complex, METH_VARARGS, NULL},
+	 { (char *)"delete_complex", _wrap_delete_complex, METH_VARARGS, NULL},
+	 { (char *)"complex_swigregister", complex_swigregister, METH_VARARGS, NULL},
 	 { (char *)"_point_x1_set", _wrap__point_x1_set, METH_VARARGS, NULL},
 	 { (char *)"_point_x1_get", _wrap__point_x1_get, METH_VARARGS, NULL},
 	 { (char *)"_point_x2_set", _wrap__point_x2_set, METH_VARARGS, NULL},
@@ -8177,6 +8856,7 @@ static swig_type_info _swigt__p_complex = {"_p_complex", "complex *", 0, 0, (voi
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_doubleArray = {"_p_doubleArray", "doubleArray *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p__point = {"_p_p__point", "_point **", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_p__sols = {"_p_p__sols", "_sols **", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_VBBinaryLensing,
@@ -8191,6 +8871,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_double,
   &_swigt__p_doubleArray,
   &_swigt__p_p__point,
+  &_swigt__p_p__sols,
 };
 
 static swig_cast_info _swigc__p_VBBinaryLensing[] = {  {&_swigt__p_VBBinaryLensing, 0, 0, 0},{0, 0, 0, 0}};
@@ -8205,6 +8886,7 @@ static swig_cast_info _swigc__p_complex[] = {  {&_swigt__p_complex, 0, 0, 0},{0,
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_doubleArray, _p_doubleArrayTo_p_double, 0, 0},  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_doubleArray[] = {  {&_swigt__p_doubleArray, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p__point[] = {  {&_swigt__p_p__point, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_p__sols[] = {  {&_swigt__p_p__sols, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_VBBinaryLensing,
@@ -8219,6 +8901,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_double,
   _swigc__p_doubleArray,
   _swigc__p_p__point,
+  _swigc__p_p__sols,
 };
 
 

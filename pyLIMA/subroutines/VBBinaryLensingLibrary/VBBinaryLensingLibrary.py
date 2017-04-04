@@ -145,6 +145,22 @@ class VBBinaryLensing(_object):
     __swig_getmethods__["parallaxsystem"] = _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get
     if _newclass:
         parallaxsystem = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get, _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_set)
+    __swig_setmethods__["nsat"] = _VBBinaryLensingLibrary.VBBinaryLensing_nsat_set
+    __swig_getmethods__["nsat"] = _VBBinaryLensingLibrary.VBBinaryLensing_nsat_get
+    if _newclass:
+        nsat = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_nsat_get, _VBBinaryLensingLibrary.VBBinaryLensing_nsat_set)
+    __swig_setmethods__["y_1"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_1_set
+    __swig_getmethods__["y_1"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_1_get
+    if _newclass:
+        y_1 = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_y_1_get, _VBBinaryLensingLibrary.VBBinaryLensing_y_1_set)
+    __swig_setmethods__["y_2"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_2_set
+    __swig_getmethods__["y_2"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_2_get
+    if _newclass:
+        y_2 = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_y_2_get, _VBBinaryLensingLibrary.VBBinaryLensing_y_2_set)
+    __swig_setmethods__["av"] = _VBBinaryLensingLibrary.VBBinaryLensing_av_set
+    __swig_getmethods__["av"] = _VBBinaryLensingLibrary.VBBinaryLensing_av_get
+    if _newclass:
+        av = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_av_get, _VBBinaryLensingLibrary.VBBinaryLensing_av_set)
 
     def PlotCrit(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_PlotCrit(self, arg2, arg3)
@@ -152,8 +168,11 @@ class VBBinaryLensing(_object):
     def PrintCau(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_PrintCau(self, arg2, arg3)
 
-    def BinaryMag(self, arg2, arg3, arg4, arg5, arg6, arg7):
-        return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryMag(self, arg2, arg3, arg4, arg5, arg6, arg7)
+    def BinaryMag0(self, *args):
+        return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryMag0(self, *args)
+
+    def BinaryMag(self, *args):
+        return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryMag(self, *args)
 
     def BinaryMagDark(self, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
         return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryMagDark(self, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
@@ -175,6 +194,9 @@ class VBBinaryLensing(_object):
 
     def BinaryLightCurve(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryLightCurve(self, arg2, arg3)
+
+    def BinaryLightCurveW(self, arg2, arg3):
+        return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryLightCurveW(self, arg2, arg3)
 
     def BinaryLightCurveParallax(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_BinaryLightCurveParallax(self, arg2, arg3)
@@ -252,32 +274,6 @@ class annulus(_object):
 annulus_swigregister = _VBBinaryLensingLibrary.annulus_swigregister
 annulus_swigregister(annulus)
 
-class complex(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, complex, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, complex, name)
-    __repr__ = _swig_repr
-    __swig_setmethods__["re"] = _VBBinaryLensingLibrary.complex_re_set
-    __swig_getmethods__["re"] = _VBBinaryLensingLibrary.complex_re_get
-    if _newclass:
-        re = _swig_property(_VBBinaryLensingLibrary.complex_re_get, _VBBinaryLensingLibrary.complex_re_set)
-    __swig_setmethods__["im"] = _VBBinaryLensingLibrary.complex_im_set
-    __swig_getmethods__["im"] = _VBBinaryLensingLibrary.complex_im_get
-    if _newclass:
-        im = _swig_property(_VBBinaryLensingLibrary.complex_im_get, _VBBinaryLensingLibrary.complex_im_set)
-
-    def __init__(self, *args):
-        this = _VBBinaryLensingLibrary.new_complex(*args)
-        try:
-            self.this.append(this)
-        except Exception:
-            self.this = this
-    __swig_destroy__ = _VBBinaryLensingLibrary.delete_complex
-    __del__ = lambda self: None
-complex_swigregister = _VBBinaryLensingLibrary.complex_swigregister
-complex_swigregister(complex)
-
 class _theta(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, _theta, name, value)
@@ -352,6 +348,32 @@ class _thetas(_object):
         return _VBBinaryLensingLibrary._thetas_insert(self, arg2)
 _thetas_swigregister = _VBBinaryLensingLibrary._thetas_swigregister
 _thetas_swigregister(_thetas)
+
+class complex(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, complex, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, complex, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["re"] = _VBBinaryLensingLibrary.complex_re_set
+    __swig_getmethods__["re"] = _VBBinaryLensingLibrary.complex_re_get
+    if _newclass:
+        re = _swig_property(_VBBinaryLensingLibrary.complex_re_get, _VBBinaryLensingLibrary.complex_re_set)
+    __swig_setmethods__["im"] = _VBBinaryLensingLibrary.complex_im_set
+    __swig_getmethods__["im"] = _VBBinaryLensingLibrary.complex_im_get
+    if _newclass:
+        im = _swig_property(_VBBinaryLensingLibrary.complex_im_get, _VBBinaryLensingLibrary.complex_im_set)
+
+    def __init__(self, *args):
+        this = _VBBinaryLensingLibrary.new_complex(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _VBBinaryLensingLibrary.delete_complex
+    __del__ = lambda self: None
+complex_swigregister = _VBBinaryLensingLibrary.complex_swigregister
+complex_swigregister(complex)
 
 class _point(_object):
     __swig_setmethods__ = {}
