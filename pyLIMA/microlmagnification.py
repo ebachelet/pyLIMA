@@ -34,8 +34,8 @@ def amplification_PSPL(tau, uo):
         :param array_like uo: the u define for example in
         http://adsabs.harvard.edu/abs/2015ApJ...804...20C
 
-        :return: the PSPL magnification A_PSPL(t) and the impact parameter U(t)
-        :rtype: array_like,array_like
+        :return: the PSPL magnification A_PSPL(t)
+        :rtype: array_like
     """
     # For notations, check for example : http://adsabs.harvard.edu/abs/2015ApJ...804...20C
 
@@ -81,8 +81,8 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
         :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
         :param array_like yoo_table: the interpolated Yoo et al table.
 
-        :return: the FSPL magnification A_FSPL(t) and the impact parameter U(t)
-        :rtype: array_like,array_like
+        :return: the FSPL magnification A_FSPL(t)
+        :rtype: array_like
     """
     impact_param = impact_parameter(tau, uo)  # u(t)
     impact_param_square = impact_param ** 2  # u(t)^2
@@ -160,15 +160,15 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
          optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
         http://mnras.oxfordjournals.org/content/408/4/2188
 
-        :param float s: the projected normalised angular distance between the two bodies
+        :param array_like s: the projected normalised angular distance between the two bodies
         :param float q: the mass ratio of the two bodies
         :param array_like Xs: the horizontal positions of the source center in the source plane
         :param array_like Ys: the vertical positions of the source center in the source plane
         :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
         :param float tolerance: the relative precision desired in the magnification
 
-        :return: the USBL magnification A_USBL(t) and the impact parameter U(t)
-        :rtype: array_like,array_like
+        :return: the USBL magnification A_USBL(t)
+        :rtype: array_like
     """
 
     amplification_usbl = []
@@ -181,11 +181,7 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
         #print index,len(Xs)
        # print s,q,xs,ys,rho,tolerance
         magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s,q,xs,ys,rho,tolerance)
-        if magnification_VBB<0:
-                print s,q,xs,ys,rho,tolerance
-                magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s, q, xs+0.00001, ys, rho, tolerance)
-        #COUNT_VBB_CALL += 1
-       # print COUNT_VBB_CALL
+
         amplification_usbl.append(magnification_VBB)
 
 
@@ -194,6 +190,37 @@ def amplification_USBL(separation, q, Xs, Ys, rho, tolerance=0.001):
     #pdb.set_trace()
     #print amplification_usbl
     return np.array(amplification_usbl)
+
+def amplification_PSBL(separation, q, Xs, Ys):
+    """ The point source binary lens amplification, based on the work of Valerio Bozza, thanks :)
+        "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
+         optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
+        http://mnras.oxfordjournals.org/content/408/4/2188
+
+        :param array_like s: the projected normalised angular distance between the two bodies
+        :param float q: the mass ratio of the two bodies
+        :param array_like Xs: the horizontal positions of the source center in the source plane
+        :param array_like Ys: the vertical positions of the source center in the source plane
+
+        :return: the PSBL magnification A_PSBL(t)
+        :rtype: array_like
+    """
+
+    amplification_psbl = []
+    #print ''
+    #print separation[0],q,rho
+    #start = time.time()
+
+    for xs, ys, s in zip(Xs, Ys, separation):
+
+        #print index,len(Xs)
+       # print s,q,xs,ys,rho,tolerance
+        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag0(s,q,xs,ys)
+
+        amplification_psbl.append(magnification_VBB)
+
+
+    return np.array(amplification_psbl)
 
 
 def USBL_queue_process(queue, args):

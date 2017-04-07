@@ -267,7 +267,6 @@ def MCMC_outputs(fit):
         i += 1
         mcmc_chains = np.c_[mcmc_chains, raw_chains[:, :, i].ravel()]
 
-    best_parameters = mcmc_chains
 
     if raw_chains[0].shape[1] != len(fit.model.model_dictionnary):
         fluxes = MCMC_compute_fs_g(fit, mcmc_chains)
@@ -275,7 +274,6 @@ def MCMC_outputs(fit):
         mcmc_chains = np.c_[mcmc_chains, fluxes]
 
     mcmc_chains = np.c_[mcmc_chains, probabilities.ravel()]
-    best_parameters = np.c_[best_parameters, probabilities.ravel()]
 
     best_probability = np.argmax(mcmc_chains[:, -1])
 
@@ -284,7 +282,9 @@ def MCMC_outputs(fit):
     best_chains = mcmc_chains[index]
     best_chains = best_chains[best_chains[:, -1].argsort(),]
 
-    best_parameters = best_parameters[index]
+    best_parameters = best_chains
+
+    #best_parameters = best_parameters[index]
     best_parameters = best_parameters[best_parameters[:, -1].argsort(),]
     covariance_matrix = MCMC_covariance(mcmc_chains)
     correlation_matrix = cov2corr(covariance_matrix)
@@ -317,15 +317,11 @@ def MCMC_compute_fs_g(fit, mcmc_chains):
 
     """
     fluxes_chains = np.zeros((len(mcmc_chains), 2 * len(fit.event.telescopes)))
-
     for i in xrange(len(mcmc_chains)):
 
-        if fluxes_chains[i][0] == 0:
-            index = np.where(mcmc_chains == mcmc_chains[i])[0]
-
             fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
+            fluxes_chains[i] = fluxes
 
-            fluxes_chains[np.unique(index)] = fluxes
 
     return fluxes_chains
 
@@ -345,7 +341,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     mcmc_unique = np.array([json.loads(i) for i in mcmc_to_plot])
 
     mcmc_unique = mcmc_unique[mcmc_unique[:, -1].argsort(),]
-    dimensions = mcmc_best.shape[1] - 1
+    dimensions =len(fit.model.model_dictionnary.keys())
     fig_size = [10, 10]
 
     max_plot_ticks = MAX_PLOT_TICKS
@@ -421,6 +417,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     corresponding to the best model.
     :rtype: matplotlib_figure
     """
+
     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(mcmc_best[-1])
     MCMC_plot_align_data(fit, mcmc_best[0], figure_axes[0])
@@ -501,7 +498,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
     """
     MARKER_SYMBOLS.reset()
     reference_telescope = fit.event.telescopes[0]
-    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
 
     for telescope in fit.event.telescopes:
 

@@ -325,7 +325,7 @@ class MLModel(object):
                 setattr(self.model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
 
             except:
-                pass
+                setattr(self.model_parameters, key_parameter, None)
 
         # print 'arange', python_time.time() - start_time
 
@@ -770,24 +770,26 @@ class ModelUSBL(MLModel):
             magnification_USBL = \
                 microlmagnification.amplification_USBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.01)
+                                                       tolerance=0.001)
 
             magnification[index_USBL] = magnification_USBL
 
-            index_PSPL = np.where((telescope.lightcurve_flux[:, 0] > self.USBL_windows[1]) | (
+            index_PSBL = np.where((telescope.lightcurve_flux[:, 0] > self.USBL_windows[1]) | (
                 telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
 
-            magnification_PSPL = microlmagnification.amplification_PSPL(source_trajectoire[0][index_PSPL],
-                                                                        source_trajectoire[1][index_PSPL])
+            magnification_PSBL = microlmagnification.amplification_PSBL(separation[index_PSBL],
+                                                                        10 ** pyLIMA_parameters.logq,
+                                                                        source_trajectoire[0][index_PSBL],
+                                                                        source_trajectoire[1][index_PSBL])
 
-            magnification[index_PSPL] = magnification_PSPL
+            magnification[index_PSBL] = magnification_PSBL
 
         else:
             Xs, Ys = source_trajectoire
             magnification = \
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
                                                        Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.01)
+                                                       tolerance=0.001)
 
         return magnification
 

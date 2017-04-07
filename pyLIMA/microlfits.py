@@ -326,7 +326,7 @@ class MLFits(object):
         if len(self.model.parameters_guess) == 0:
 
             differential_evolution_estimation = self.differential_evolution()[0]
-            self.DE_population_size = 5
+            self.DE_population_size = 10
             self.guess = differential_evolution_estimation
 
         else:
@@ -363,6 +363,8 @@ class MLFits(object):
                     for parameter in parameter_trial:
                         individual.append(parameter)
 
+
+
             # fluxes = self.find_fluxes(individual,self.model)
             # individual += fluxes
 
@@ -378,7 +380,11 @@ class MLFits(object):
 
 
         number_of_parameters = len(individual)
-        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a=2.0)
+
+
+
+
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a = 10.0)
 
         # First estimation using population as a starting points.
 

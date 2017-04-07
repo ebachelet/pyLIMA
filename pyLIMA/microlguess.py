@@ -281,8 +281,8 @@ def differential_evolution_parameters_boundaries(model):
                                          model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
-    delta_to_boundaries = (-100, 100)
-    delta_uo_boundaries = (-1.0, 1.0)
+    delta_to_boundaries = (-150, 150)
+    delta_uo_boundaries = (-2.0, 2.0)
     uo_boundaries = (0.0, 2.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (5*10 ** -5, 0.05)
@@ -391,7 +391,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
 
         return [fs_trial, g_trial]
-
+        #return
     if 'g_' in parameter_key:
         return
 
@@ -420,7 +420,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.99, 1.01)
+    epsilon = np.random.uniform(0.8, 1.2)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]

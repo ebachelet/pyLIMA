@@ -102,7 +102,7 @@ class Event(object):
             raise EventException('Wrong fit method request')
 
         fit = microlfits.MLFits(self)
-        fit.mlfit(model, method, DE_population_size= DE_population_size, flux_estimation_MCMC='polyfit',
+        fit.mlfit(model, method, DE_population_size= DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
                   fix_parameters_dictionnary=fix_parameters_dictionnary,
                   grid_resolution=grid_resolution)
 
