@@ -385,7 +385,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
 
     if 'fs' in parameter_key:
-        epsilon = np.random.uniform(0.9, 1.1)
+        epsilon = np.random.uniform(0.99, 1.01)
 
         fs_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
@@ -411,12 +411,12 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         return [rho_parameters_trial]
 
     if 'logs' in parameter_key:
-        epsilon = np.random.uniform(-0.2, 0.2)
+        epsilon = np.random.uniform(-0.1, 0.1)
 
         logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logs_parameters_trial]
     if 'logq' in parameter_key:
-        epsilon = np.random.uniform(-2, 1)
+        epsilon = np.random.uniform(-0.1, 0.1)
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]

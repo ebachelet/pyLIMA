@@ -15,6 +15,13 @@ import emcee
 import sys
 import copy
 from collections import OrderedDict
+from mpi4py import MPI
+import dill
+
+MPI.pickle.dumps = dill.dumps
+MPI.pickle.loads = dill.loads
+
+from emcee.utils import MPIPool
 
 import microlmodels
 import microloutputs
@@ -22,6 +29,8 @@ import microlguess
 import microltoolbox
 import microlpriors
 warnings.filterwarnings("ignore")
+
+
 
 
 class MLFits(object):
@@ -80,7 +89,7 @@ class MLFits(object):
         self.fluxes_MCMC_method = ''
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-              grid_resolution=10):
+              grid_resolution=10, computational_pool = None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -130,7 +139,7 @@ class MLFits(object):
         self.fluxes_MCMC_method = flux_estimation_MCMC
         self.DE_population_size = DE_population_size
         self.model.define_model_parameters()
-
+        self.pool = computational_pool
         if self.method == 'LM':
             number_of_data = self.event.total_number_of_data_points()
             if number_of_data <= (len(self.model.model_dictionnary)):
@@ -322,6 +331,7 @@ class MLFits(object):
 
         nwalkers = 100
         nlinks = 100
+       # start = python_time.time()
 
         if len(self.model.parameters_guess) == 0:
 
@@ -336,7 +346,7 @@ class MLFits(object):
 
         # Best solution
 
-        best_solution = self.guess
+        best_solution = np.abs(self.guess)
 
         if self.fluxes_MCMC_method == 'MCMC':
             limit_parameters = len(self.model.model_dictionnary.keys())
@@ -372,6 +382,7 @@ class MLFits(object):
             if chichi != -np.inf:
                 # np.array(individual)
                 #print count_walkers
+
                 population.append(np.array(individual))
                 count_walkers += 1
         # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
@@ -382,9 +393,13 @@ class MLFits(object):
         number_of_parameters = len(individual)
 
 
+        #pool = MPIPool()
+        #if not pool.is_master():
+                #pool.wait()
+                #sys.exit(0)
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
+                                        a = 2.0, pool = self.pool)
 
-
-        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC, a = 10.0)
 
         # First estimation using population as a starting points.
 
@@ -396,11 +411,12 @@ class MLFits(object):
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions, 2*nlinks)
+        sampler.run_mcmc(final_positions, 3*nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
-
+        #pool.close()
+       # print python_time.time()-start
         print sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS'
         return MCMC_chains, MCMC_probabilities
 
@@ -418,8 +434,8 @@ class MLFits(object):
         fit_process_parameters, self.model.parameters_boundaries)
 
         if prior_limit == np.inf:
-
-        	 return -np.inf
+             #import pdb;pdb.set_trace()
+             return -np.inf
 
         chichi = 0
 
@@ -432,7 +448,11 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
-        return -chichi
+
+       # comm = MPI.COMM_WORLD
+        #rank = comm.Get_rank()
+        #print rank, fit_process_parameters, chichi
+        return -chichi/2
 
     def differential_evolution(self):
         """  The DE method. Differential evolution algorithm. The objective function is
