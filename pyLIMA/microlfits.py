@@ -331,6 +331,8 @@ class MLFits(object):
 
         nwalkers = 100
         nlinks = 100
+        import pdb;
+        pdb.set_trace()
        # start = python_time.time()
 
         if len(self.model.parameters_guess) == 0:
@@ -372,7 +374,6 @@ class MLFits(object):
 
                     for parameter in parameter_trial:
                         individual.append(parameter)
-
 
 
             # fluxes = self.find_fluxes(individual,self.model)
@@ -430,12 +431,12 @@ class MLFits(object):
 
         :rtype: float
         """
-        prior_limit = microlpriors.microlensing_parameters_limits_priors(
-        fit_process_parameters, self.model.parameters_boundaries)
+       # prior_limit = microlpriors.microlensing_parameters_limits_priors(
+       # fit_process_parameters, self.model.parameters_boundaries)
 
-        if prior_limit == np.inf:
+        #if prior_limit == np.inf:
              #import pdb;pdb.set_trace()
-             return -np.inf
+         #    return -np.inf
 
         chichi = 0
 
@@ -479,8 +480,8 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(1.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
-            tol=0.0001,
+            mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
+            tol=0.0001, strategy='best2exp',
             recombination=0.7, polish=True,
             disp=True
         )
@@ -816,7 +817,7 @@ class MLFits(object):
             differential_evolution_estimation = scipy.optimize.differential_evolution(
                 self.chichi_grids,
                 bounds=parameters_boundaries, args=tuple(grid_parameters_pixel.tolist()),
-                mutation=(1.1, 1.9), popsize=int(self.DE_population_size), maxiter=100,
+                mutation=(1.1, 1.9), popsize=10, maxiter=10,
                 tol=0.0001,
                 recombination=0.6, polish=None,
                 disp=True
@@ -829,8 +830,8 @@ class MLFits(object):
             grid_results.append(best_parameters)
             print sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_parameters_pixel).strip(
                 '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun'])
-        #import pdb;
-        #pdb.set_trace()
+        import pdb;
+        pdb.set_trace()
 
     def chichi_grids(self, moving_parameters, *fix_parameters):
 

@@ -832,7 +832,7 @@ def plot_LM_ML_geometry(fit):
     figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]),dpi=75)
 
     figure_axes = figure_trajectory.add_subplot(121, aspect=1)
-    plt.subplots_adjust(top=0.8, bottom=0.1, wspace=0.5, hspace=0.2)
+    plt.subplots_adjust(top=0.8, bottom=0.1, wspace=0.2, hspace=0.0)
     einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
     figure_axes.add_artist(einstein_ring)
 
@@ -896,8 +896,9 @@ def plot_LM_ML_geometry(fit):
         figure_axes.scatter(0, 0, s=10, c='k')
 
     if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('RRLyrae' not in fit.model.model_type):
-        index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
-            0]
+        #index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
+        #   0]
+        index_source  = np.argmin((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5)
         source_disk = plt.Circle((trajectory_x[index_source], trajectory_y[index_source]), pyLIMA_parameters.rho,
                                  color='y')
         figure_axes.add_artist(source_disk)
@@ -931,12 +932,19 @@ def plot_LM_ML_geometry(fit):
 
     the_table = table_axes.table(cellText=table_val, cellColours=table_colors, rowColours=raw_colors,
                                  rowLabels=raw_labels,
-                                 colLabels=column_labels, loc='center left')
+                                 colLabels=column_labels, loc='center left',
+                                 rowLoc = 'left', colLoc='center',
+                                 bbox=[0.0, -0.0, 1.0, 1.0]
+                                 )
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
-    the_table.auto_set_font_size(False)
-    the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
-    the_table.scale(0.75, 0.75)
+    #the_table.set_fontsize('large')
+    #the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
+    #the_table.auto_set_font_size(False)
+    #the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
+    #the_table.scale(0.9, 0.9)
+
+
     title = fit.model.event.name + ' : ' + fit.model.model_type
     figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
     return figure_trajectory

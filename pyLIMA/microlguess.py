@@ -275,9 +275,9 @@ def differential_evolution_parameters_boundaries(model):
        :rtype: list,float
     """
 
-    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 300 for telescope in
+    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 0 for telescope in
                                          model.event.telescopes]
-    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 300 for telescope in
+    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux[:, 0]) + 0 for telescope in
                                          model.event.telescopes]
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
@@ -288,8 +288,8 @@ def differential_evolution_parameters_boundaries(model):
     rho_boundaries = (5*10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    logs_boundaries = (-0.5, 0.5)
-    logq_boundaries = (-6.0, 0.0)
+    logs_boundaries = (-1.0, 1.0)
+    logq_boundaries = (-5.0, 0.0)
     alpha_boundaries = (-np.pi, np.pi)
 
     piEN_boundaries = (-2.0, 2.0)
@@ -378,7 +378,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :rtype: list of float
      """
     if 'to' in parameter_key:
-        epsilon = np.random.uniform(-1, 1)
+        epsilon = np.random.uniform(-0.1, 0.1)
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
         return [to_parameters_trial]
@@ -420,7 +420,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.8, 1.2)
+    epsilon = np.random.uniform(0.99 , 1.01)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]
