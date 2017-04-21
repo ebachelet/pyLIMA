@@ -833,8 +833,7 @@ def plot_LM_ML_geometry(fit):
 
     figure_axes = figure_trajectory.add_subplot(121, aspect=1)
     plt.subplots_adjust(top=0.8, bottom=0.1, wspace=0.2, hspace=0.0)
-    einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
-    figure_axes.add_artist(einstein_ring)
+
 
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
@@ -894,6 +893,14 @@ def plot_LM_ML_geometry(fit):
 
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
+        einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
+        figure_axes.add_artist(einstein_ring)
+
+    if 'BL' in fit.model.model_type:
+
+        fit.model.find_caustics(10**pyLIMA_parameters.logs, 10** pyLIMA_parameters.logq)
+        figure_axes.scatter(fit.model.caustics[:,0].real,fit.model.caustics[:,0].imag, s=10, c='k')
+        figure_axes.scatter(fit.model.critical_curves[:,0].real,fit.model.critical_curves[:,0].imag,color='k',s=1)
 
     if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('RRLyrae' not in fit.model.model_type):
         #index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][

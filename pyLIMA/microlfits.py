@@ -331,8 +331,7 @@ class MLFits(object):
 
         nwalkers = 100
         nlinks = 100
-        import pdb;
-        pdb.set_trace()
+
        # start = python_time.time()
 
         if len(self.model.parameters_guess) == 0:
@@ -481,7 +480,7 @@ class MLFits(object):
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
             mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
-            tol=0.0001, strategy='best2exp',
+            tol=0.0001, strategy='best2bin',
             recombination=0.7, polish=True,
             disp=True
         )

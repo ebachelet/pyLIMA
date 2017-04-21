@@ -23,6 +23,8 @@ import microlpriors
 import microlparallax
 import microlorbitalmotion
 import stars
+import microlcaustics
+
 from scipy import interpolate, misc
 
 full_path = os.path.abspath(__file__)
@@ -792,6 +794,19 @@ class ModelUSBL(MLModel):
                                                        tolerance=0.001)
 
         return magnification
+
+
+    def find_caustics(self, separation, mass_ratio):
+
+        caustics, critical_curves = microlcaustics.compute_2_lenses_caustics_points(separation,
+                                                                                              mass_ratio,
+                                                                                              resolution=100)
+
+        area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.1)
+
+        self.caustics = caustics
+        self.critical_curves = critical_curves
+        self.area_of_interest = area_of_interest
 
 
 
