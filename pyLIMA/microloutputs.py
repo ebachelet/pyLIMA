@@ -22,6 +22,7 @@ from scipy.stats.distributions import t as student
 import microltoolbox
 import microlmodels
 import microlstats
+import microlcaustics
 
 
 plot_lightcurve_windows = 0.2
@@ -897,10 +898,15 @@ def plot_LM_ML_geometry(fit):
         figure_axes.add_artist(einstein_ring)
 
     if 'BL' in fit.model.model_type:
+        regime, caustics, cc = microlcaustics.find_2_lenses_caustics_and_critical_curves(10**pyLIMA_parameters.logs,
+                                                                                         10** pyLIMA_parameters.logq,
+                                                                                         resolution=5000)
+        for count, caustic in enumerate(caustics):
+            if caustic != None:
+                figure_axes.plot(caustic.real, caustic.imag,lw=3,c='r')
+                figure_axes.plot(cc[count].real, cc[count].imag, '--k')
 
-        fit.model.find_caustics(10**pyLIMA_parameters.logs, 10** pyLIMA_parameters.logq)
-        figure_axes.scatter(fit.model.caustics[:,0].real,fit.model.caustics[:,0].imag, s=10, c='k')
-        figure_axes.scatter(fit.model.critical_curves[:,0].real,fit.model.critical_curves[:,0].imag,color='k',s=1)
+
 
     if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('RRLyrae' not in fit.model.model_type):
         #index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
