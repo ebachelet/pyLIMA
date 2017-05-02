@@ -282,13 +282,13 @@ def differential_evolution_parameters_boundaries(model):
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     delta_to_boundaries = (-150, 150)
-    delta_uo_boundaries = (-2.0, 2.0)
+    delta_uo_boundaries = (-1.0, 1.0)
     uo_boundaries = (0.0, 2.0)
     tE_boundaries = (1.0, 300)
     rho_boundaries = (5*10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    logs_boundaries = (-1.0, 1.0)
+    logs_boundaries = (-0.3, 0.7)
     logq_boundaries = (-6.0, 0.0)
     alpha_boundaries = (-np.pi, np.pi)
 
@@ -324,6 +324,10 @@ def differential_evolution_parameters_boundaries(model):
         unique_filters = np.unique(filters)
 
         parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
+
+    if model.model_type == 'PSBL':
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, logs_boundaries,
+                                 logq_boundaries, alpha_boundaries]
 
     if model.model_type == 'USBL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, logs_boundaries,
