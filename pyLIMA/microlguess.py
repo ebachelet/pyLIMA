@@ -424,7 +424,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.99 , 1.01)
+    epsilon = np.random.uniform(0.9 , 1.1)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]

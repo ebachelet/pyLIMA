@@ -22,7 +22,6 @@ import microlmagnification
 import microlpriors
 import microlparallax
 import microlorbitalmotion
-import stars
 import microlcaustics
 
 from scipy import interpolate, misc

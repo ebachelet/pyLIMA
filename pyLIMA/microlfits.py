@@ -15,13 +15,13 @@ import emcee
 import sys
 import copy
 from collections import OrderedDict
-from mpi4py import MPI
-import dill
+#from mpi4py import MPI
+#import dill
 
-MPI.pickle.dumps = dill.dumps
-MPI.pickle.loads = dill.loads
+#MPI.pickle.dumps = dill.dumps
+#MPI.pickle.loads = dill.loads
 
-from emcee.utils import MPIPool
+#from emcee.utils import MPIPool
 
 import microlmodels
 import microloutputs

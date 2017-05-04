@@ -100,7 +100,7 @@ def test_MCMC_parameters_initialization():
 
     parameter_key_3 = 'rho'
     trial_3 = microlguess.MCMC_parameters_initialization(parameter_key_3, parameters_dictionnary, parameters)[0]
-    assert ( trial_3>0.9*3.3) & ( trial_3<1.1*3.3) 
+    assert ( trial_3>0.1*3.3) & ( trial_3<10*3.3)
 	
 
     parameter_key_4 = 'fs_LCOGT'

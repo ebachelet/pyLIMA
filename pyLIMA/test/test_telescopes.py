@@ -9,6 +9,7 @@ import os.path
 import numpy as np
 
 from pyLIMA import telescopes
+from pyLIMA import stars
 
 
 def test_init():
@@ -80,10 +81,13 @@ def test_find_gamma():
     full_path = os.path.abspath(__file__)
     directory, filename = os.path.split(full_path)
 
-    telescope.find_gamma(32000.0, 4.5, os.path.join(directory, '../data/'))
+    star = stars.Star()
+    telescope.find_gamma(star)
     EPSILON = 0.001
 
-    assert np.abs(telescope.gamma - 0.127056) <= EPSILON
+    assert np.abs(telescope.gamma - 0.370885527486) <= EPSILON
+
+
 
 
 def test_n_data():
