@@ -18,6 +18,7 @@ You can also practice by simulating events.
 
 [Documentation](https://ebachelet.github.io/pyLIMA/)
 
+### Installation
 Clone the repository or download as a ZIP file. Then
 
 #### DO NOT RUN python install setup.py SVP
@@ -33,7 +34,7 @@ sys.path.append(your-path-to-pyLIMA-directory)
 from pyLIMA import whatyouneed
 
 
-#### Required libraries
+### Required libraries
 pyLIMA also require some python modules installation, see the documentation link above.
 
 ### Examples
