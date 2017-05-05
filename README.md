@@ -32,9 +32,11 @@ sys.path.append(your-path-to-pyLIMA-directory)
 
 from pyLIMA import whatyouneed
 
+
+#### Required libraries
 pyLIMA also require some python modules installation, see the documentation link above.
 
-
+### Examples
 Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
 
 
