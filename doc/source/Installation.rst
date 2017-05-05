@@ -15,5 +15,8 @@ pyLIMA is a python based software which require some libraries :
 
 `emcee <http://dan.iel.fm/emcee/current/>`_, the mcmc hammer
 
+You should be able to install all of this using: 
+
+**> pip install the_module**
 
 That's it, let's go!

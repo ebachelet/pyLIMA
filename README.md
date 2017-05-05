@@ -9,17 +9,20 @@ Authors : Etienne Bachelet, etibachelet@gmail.com
 	  Martin Norbury, mnorbury@lcogt.net
 	  and friends!	
 
-# What is that?
-
 pyLIMA is an open source for modeling microlensing events.
 It should be flexible enough to handle your data and fit it.
 You can also practice by simulating events.
 
-# Installation
+# Documentation and Installation
+
+
+[Documentation](https://ebachelet.github.io/pyLIMA/)
 
 Clone the repository or download as a ZIP file. Then
 
 #### DO NOT RUN python install setup.py SVP
+
+
 
 Please use pyLIMA as a external module, by doing a global import :
 
@@ -29,7 +32,12 @@ sys.path.append(your-path-to-pyLIMA-directory)
 
 from pyLIMA import whatyouneed
 
-pyLIMA also require some python modules installation, see the documentation below.
+pyLIMA also require some python modules installation, see the documentation link above.
+
+
+Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
+
+
 
 # What can you do?
 
@@ -56,9 +64,7 @@ pyLIMA also require some python modules installation, see the documentation belo
 # Documentation and examples
 Have a look to the documentation (hopefully up to date):
 
-[Documentation](https://ebachelet.github.io/pyLIMA/)
 
-Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
 
 # How to contribute?
 
