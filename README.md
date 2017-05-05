@@ -61,10 +61,6 @@ Examples can be found in your pyLIMA directory. Look on the documentation to lea
 | Orbital Motion   | ![Alt text](./doc/WIP.png?raw=true)     | No |       |
 | Xallarap   | ![Alt text](./doc/WIP.png?raw=true)    | No |       |
 
-# Documentation and examples
-Have a look to the documentation (hopefully up to date):
-
-
 
 # How to contribute?
 
