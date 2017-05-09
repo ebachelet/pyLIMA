@@ -8,4 +8,4 @@ numpy
 matplotlib
 astropy
 emcee
-git+http://github.com/scottransom/pyslalib.git
+pyslalib

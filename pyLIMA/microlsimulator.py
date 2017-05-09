@@ -305,7 +305,7 @@ def simulate_fluxes_parameters(list_of_telescopes):
 
     fake_fluxes_parameters = []
 
-    for telescope in telescopes:
+    for telescope in list_of_telescopes:
         magnitude_source = np.random.uniform(SOURCE_MAGNITUDE[0], SOURCE_MAGNITUDE[1])
         flux_source = microltoolbox.magnitude_to_flux(magnitude_source)
         blending_ratio = np.random.uniform(BLEND_LIMITS[0], BLEND_LIMITS[1])
@@ -331,7 +331,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
     for telescope in model.event.telescopes:
 
 
-        theoritical_flux = model.compute_the_microlensing_model(telescope, pylima_parameters)[0]
+        theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
         if np.min(theoritical_flux>0):
             pass
         else:
