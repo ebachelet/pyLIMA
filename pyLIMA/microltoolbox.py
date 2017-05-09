@@ -18,7 +18,7 @@ def chichi(residuals_fn, fit_process_parameters):
 
     :param func residuals_fn: a function which compute the residuals
     :param list fit_process_parameters: the model parameters ingested by the correpsonding
-    fitting routine.
+                                        fitting routine.
 
     :returns: the chi^2
 
@@ -26,7 +26,7 @@ def chichi(residuals_fn, fit_process_parameters):
     """
 
     residuals = residuals_fn(fit_process_parameters)
-    _chichi = (residuals ** 2).sum()
+    _chichi = np.sum(residuals ** 2)
 
     return _chichi
 
@@ -89,17 +89,12 @@ def error_flux_to_error_magnitude(error_flux, flux):
 
 
 def align_the_data_to_the_reference_telescope(fit):
-    """Align data to the survey telescope (i.e telescope 0).
+    """Align data to the survey telescope (i.e telescope 0). Used to plot fit results. Ugly microlensing alignement....
 
-        :param array_like lightcurve_telescope_mag: the survey telescope in magnitude
-        :param float fs_reference: thce survey telescope reference source flux (i.e the fitted value)
-        :param float g_reference: the survey telescope reference blending parameter (i.e the fitted
-        value)
-        :param float fs_telescope: the telescope source flux (i.e the fitted value)
-        :param float g_reference: the telescope blending parameter (i.e the fitted value)
+    :param object fit: a microlfits object
 
-        :return: the aligned to survey lightcurve in magnitude
-        :rtype: array_like
+    :return: the aligned to survey lightcurve in magnitude
+    :rtype: array_like
     """
 
     reference_telescope = fit.event.telescopes[0]
@@ -122,7 +117,7 @@ def align_the_data_to_the_reference_telescope(fit):
             model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
             model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
-            time = telescope.lightcurve_flux[:,0]
+            time = telescope.lightcurve_flux[:, 0]
             flux = telescope.lightcurve_flux[:, 1]
             error_flux = telescope.lightcurve_flux[:, 2]
             err_mag = error_flux_to_error_magnitude(error_flux, flux)
@@ -135,8 +130,8 @@ def align_the_data_to_the_reference_telescope(fit):
 
             lightcurve_mag_normalised = np.array(lightcurve_normalised).T
 
-
             lightcurve = lightcurve_mag_normalised
 
         normalised_lightcurve.append(lightcurve)
+
     return normalised_lightcurve

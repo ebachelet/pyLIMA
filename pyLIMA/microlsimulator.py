@@ -21,7 +21,7 @@ def moon_illumination(sun, moon):
             :param astropy sun: the sun ephemeris
             :param astropy moon: the moon ephemeris
 
-            :return: a numpy array like indicated the moon illumination.
+            :return: a numpy array indicated the moon illumination.
 
             :rtype: array_like
 
@@ -37,7 +37,7 @@ def moon_illumination(sun, moon):
 
 
 def poisson_noise(flux):
-    """The poisson noise.
+    """The Poisson noise.
 
         :param array_like flux: the observed flux
 
@@ -65,23 +65,25 @@ def noisy_observations(flux, error_flux):
     try :
 
         flux_observed = np.random.normal(flux, error_flux)
-    except:
-        import pdb;
-        pdb.set_trace()
+
+    except :
+
+        flux_observed = flux
+
     return flux_observed
 
 
 def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
     """ Simulate observing time during the observing windows, rejecting windows with bad weather.
 
-        :param float time_start: the start of observations in JD
-        :param float time_end: the end of observations in JD
-        :param float sampling: the number of points observed per hour.
-        :param float bad_weather_percentage: the percentage of bad nights
+    :param float time_start: the start of observations in JD
+    :param float time_end: the end of observations in JD
+    :param float sampling: the number of points observed per hour.
+    :param float bad_weather_percentage: the percentage of bad nights
 
-        :return: a numpy array which represents the time of observations
+    :return: a numpy array which represents the time of observations
 
-        :rtype: array_like
+    :rtype: array_like
 
     """
 
@@ -161,24 +163,24 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
             - Moon has to be more than the moon_windows_avoidance distance from the target
             - Observations altitude of the target have to be bigger than minimum_alt
 
-        :param str name:  the name of the telescope.
-        :param float altitude: the altitude in meters if the telescope
-        :param float longitude: the longitude in degree of the telescope location
-        :param float latitude: the latitude in degree of the telescope location
-        :param str filter: the filter used for observations
-        :param float time_start: the start of observations in JD
-        :param float time_end: the end of observations in JD
-        :param float sampling: the hour sampling.
-        :param object event: the microlensing event you look at
-        :param str location: the location of the telescope. If it is 'Space', then the observations are made
+    :param str name:  the name of the telescope.
+    :param float altitude: the altitude in meters if the telescope
+    :param float longitude: the longitude in degree of the telescope location
+    :param float latitude: the latitude in degree of the telescope location
+    :param str filter: the filter used for observations
+    :param float time_start: the start of observations in JD
+    :param float time_end: the end of observations in JD
+    :param float sampling: the hour sampling.
+    :param object event: the microlensing event you look at
+    :param str location: the location of the telescope. If it is 'Space', then the observations are made
                              continuously given the observing windows and the sampling.
-        :param float bad_weather_percentage: the percentage of bad nights
-        :param float minimum_alt: the minimum altitude ini degrees that your telescope can go to.
-        :param float moon_windows_avoidance: the minimum distance in degrees accepted between the target and the Moon
-        :param float maximum_moon_illumination: the maximum Moon brightness you allow in percentage
+    :param float bad_weather_percentage: the percentage of bad nights
+    :param float minimum_alt: the minimum altitude ini degrees that your telescope can go to.
+    :param float moon_windows_avoidance: the minimum distance in degrees accepted between the target and the Moon
+    :param float maximum_moon_illumination: the maximum Moon brightness you allow in percentage
 
-        :return: a telescope object
-        :rtype: object
+    :return: a telescope object
+    :rtype: object
     """
 
     # fake lightcurve
@@ -228,17 +230,17 @@ def simulate_a_microlensing_model(event, model='PSPL', args = (), parallax=['Non
                                   orbital_motion=['None', 0.0], source_spots='None'):
     """ Simulate a a microlensing model.
 
-        :param object event: the microlensing event you look at. More details in event module
-        :param str model: the microlensing model you want. Default is 'PSPL'. More details in microlmodels module
-        :param array_like parallax : the parallax effect you want to add. Default is no parallax.
+    :param object event: the microlensing event you look at. More details in event module
+    :param str model: the microlensing model you want. Default is 'PSPL'. More details in microlmodels module
+    :param array_like parallax: the parallax effect you want to add. Default is no parallax.
                                      More details in microlmodels module
-        :param array_like xallarap : the xallarap effect you want to add. Default is no parallax.
+    :param array_like xallarap: the xallarap effect you want to add. Default is no parallax.
                                      More details in microlmodels module
-        :param str source_spots : If you want to add source spots. Default is no source_spots.
+    :param str source_spots: If you want to add source spots. Default is no source_spots.
                                      More details in microlmodels module
 
-        :return: a model object
-        :rtype: object
+    :return: a microlmodel object
+    :rtype: object
     """
 
     fake_model = microlmodels.create_model(model, event, args, parallax, xallarap,
@@ -291,14 +293,14 @@ def simulate_microlensing_model_parameters(model):
     return fake_parameters
 
 
-def simulate_fluxes_parameters(telescopes):
+def simulate_fluxes_parameters(list_of_telescopes):
     """ Simulate flux parameters (magnitude_source , g) for the telescopes. More details in microlmodels module
 
-        :param list telescope:a list of telescopes object
+    :param list list_of_telescopes: a list of telescopes object
 
+    :return: fake_fluxes parameters, a set of fluxes parameters
+    :rtype: list
 
-        :return: fake_fluxes parameters, a set of fluxes parameters
-        :rtype: list
     """
 
     fake_fluxes_parameters = []
@@ -314,11 +316,13 @@ def simulate_fluxes_parameters(telescopes):
     return fake_fluxes_parameters
 
 
-def simulate_lightcurve_flux(model, pylima_parameters, red_noise_apply='Yes'):
+def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
     """ Simulate the flux of telescopes given a model and a set of parameters.
-        :param object model: the microlensing you desire. More detail in microlmodels.
-        :param object pylima_parameters: the parameters used to simulate the flux.
-        : param str red_noise_apply : to include or not red_noise
+    It updates straight the telescopes object inside the given model.
+
+    :param object model: the microlensing model you desire. More detail in microlmodels.
+    :param object pyLIMA_parameters: the parameters used to simulate the flux.
+    :param str red_noise_apply: to include or not red_noise
 
     """
 

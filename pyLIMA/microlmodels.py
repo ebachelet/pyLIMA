@@ -192,7 +192,7 @@ class MLModel(object):
         return
 
     @abc.abstractmethod
-    def model_magnification(self, pyLIMA_parameters, source_trajectory, gamma, yoo_table):
+    def model_magnification(self, telescope, pyLIMA_parameters):
         return
 
     def define_pyLIMA_standard_parameters(self):
@@ -282,7 +282,16 @@ class MLModel(object):
         return microlensing_model, f_source, g_blending
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification):
+        """
+        Compute the source/blending flux
 
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :param array_like amplification: an array containing the magnification
+
+        :returns:  the source and the blending flux
+        :rtype: tuple
+        """
         try:
             # Fluxes parameters are fitted
             f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
@@ -310,7 +319,7 @@ class MLModel(object):
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the
-        standard pyLIMA parameters needed for computing a model.
+        standard pyLIMA parameters needed to compute a model.
 
         :param list fancy_parameters: the parameters you fit
         :return: pyLIMA parameters
@@ -447,8 +456,8 @@ class ModelPSPL(MLModel):
 
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: magnification, impact_parameter
-        :rtype: array_like,array_like
+        :return: magnification
+        :rtype: array_like
         """
 
         source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
@@ -734,8 +743,8 @@ class ModelUSBL(MLModel):
 
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: magnification, impact_parameter
-        :rtype: array_like,array_like
+        :return: magnification
+        :rtype: array_like
         """
 
         source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
@@ -944,8 +953,8 @@ class ModelRRLyraePL(MLModel):
 
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: magnification, impact_parameter
-        :rtype: array_like,array_like
+        :return: magnification
+        :rtype: array_like
         """
 
         source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
@@ -954,13 +963,12 @@ class ModelRRLyraePL(MLModel):
         return microlmagnification.amplification_PSPL(*source_trajectoire)
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
-        """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
-        if not the default microlensing model is returned.
+        """ Compute the microlensing model according the injected parameters. T
 
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :returns: the microlensing model
-        :rtype: array_like
+        :returns: the microlensing model, the source and the blending flux
+        :rtype: tuple, tuple of array like
         """
         lightcurve = telescope.lightcurve_flux
         time = lightcurve[:, 0]
@@ -975,7 +983,18 @@ class ModelRRLyraePL(MLModel):
         return microlensing_model, f_source, f_blending
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification, pulsations):
+        """
+        Compute the source/blending flux
 
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :param array_like amplification: an array containing the magnification
+        :param array_like pulsations: an array containing the RR Lyrae pulsations
+
+
+        :returns:  the source and the blending flux
+        :rtype: tuple
+        """
         try:
             # Fluxes parameters are fitted
             f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
@@ -1119,8 +1138,8 @@ class ModelRRLyraeFS(MLModel):
 
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: magnification, impact_parameter
-        :rtype: array_like,array_like
+        :return: magnification
+        :rtype: array_like
         """
 
         source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,

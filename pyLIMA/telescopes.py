@@ -50,7 +50,7 @@ class Telescope(object):
 
         reference_flux : a float used for the transformation of difference fluxes to real fluxes. Default is 10000.0 .
 
-        deltas-positions : a list containing the position shift of this observatory due to parallax.
+        deltas_positions : a list containing the position shift of this observatory due to parallax.
                            Default is an empty list. More details in microlparallax.
 
     :param string name: name of the telescope. Default is 'NDG'
@@ -81,7 +81,8 @@ class Telescope(object):
     :param float reference_flux: a float used for the transformation of difference fluxes to real fluxes.
                                  Default is 0.0 .
 
-    :param str clean_the_lightcurve : a string indicated if you want pyLIMA to clean your lightcurves. Highly recommanded!
+    :param str clean_the_lightcurve : a string indicated if you want pyLIMA to clean your lightcurves.
+                                      Highly recommanded!
     """
 
     def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None,
@@ -151,11 +152,11 @@ class Telescope(object):
     def arrange_the_lightcurve_columns(self, choice):
         """Rearange the lightcurve to the pyLIMA convention.
 
-            :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply
+        :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply
                                    the sorting.
 
-            :return: the lightcurve sorted in pyLIMA convention
-            :rtype: array_like
+        :return: the lightcurve sorted in pyLIMA convention
+        :rtype: array_like
         """
 
         if choice == 'magnitude':
@@ -275,8 +276,6 @@ class Telescope(object):
         """
         Transform magnitude to flux using m=27.4-2.5*log10(flux) convention. Transform error bar
         accordingly. More details in microltoolbox module.
-
-        :param string clean: 'Yes' or 'No'. Perform or not a clean_data call to avoid outliers.
 
         :return: the lightcurve in flux, lightcurve_flux.
         :rtype: array_like
