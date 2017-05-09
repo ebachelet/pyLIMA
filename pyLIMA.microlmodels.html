@@ -49,7 +49,7 @@
 <em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">MLModel</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#MLModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.MLModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>######## MLModels module ########</p>
-<p>This module defines the model you want to fit your data to. Model is the parent class, each model is a child
+<p>This class defines the model you want to fit your data to. Model is the parent class, each model is a child
 class (polymorphism), for example ModelPSPL.</p>
 <p>Attributes :</p>
 <blockquote>
@@ -126,7 +126,7 @@ NOT WORKING NOW.</li>
 <dt id="pyLIMA.microlmodels.MLModel.compute_pyLIMA_parameters">
 <code class="descname">compute_pyLIMA_parameters</code><span class="sig-paren">(</span><em>fancy_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#MLModel.compute_pyLIMA_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.MLModel.compute_pyLIMA_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Realize the transformation between the fancy parameters to fit to the
-standard pyLIMA parameters needed for computing a model.</p>
+standard pyLIMA parameters needed to compute a model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -182,7 +182,27 @@ if you have some fancy parameters request.</p>
 <dl class="method">
 <dt id="pyLIMA.microlmodels.MLModel.derive_telescope_flux">
 <code class="descname">derive_telescope_flux</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em>, <em>amplification</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#MLModel.derive_telescope_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.MLModel.derive_telescope_flux" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the source/blending flux</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescope module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a namedtuple which contain the parameters</li>
+<li><strong>amplification</strong> (<em>array_like</em>) &#8211; an array containing the magnification</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the source and the blending flux</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyLIMA.microlmodels.MLModel.fancy_parameters_to_pyLIMA_standard_parameters">
@@ -205,7 +225,7 @@ the necessary standard attributes, example to, uo, tE...</p>
 
 <dl class="method">
 <dt id="pyLIMA.microlmodels.MLModel.model_magnification">
-<code class="descname">model_magnification</code><span class="sig-paren">(</span><em>pyLIMA_parameters</em>, <em>source_trajectory</em>, <em>gamma</em>, <em>yoo_table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#MLModel.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.MLModel.model_magnification" title="Permalink to this definition">¶</a></dt>
+<code class="descname">model_magnification</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#MLModel.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.MLModel.model_magnification" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -448,6 +468,65 @@ From Hwang et al 2013 : <a class="reference external" href="http://iopscience.io
 </dd></dl>
 
 <dl class="class">
+<dt id="pyLIMA.microlmodels.ModelPSBL">
+<em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">ModelPSBL</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelPSBL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelPSBL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyLIMA.microlmodels.MLModel" title="pyLIMA.microlmodels.MLModel"><code class="xref py py-class docutils literal"><span class="pre">pyLIMA.microlmodels.MLModel</span></code></a></p>
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelPSBL.find_caustics">
+<code class="descname">find_caustics</code><span class="sig-paren">(</span><em>separation</em>, <em>mass_ratio</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelPSBL.find_caustics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelPSBL.find_caustics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelPSBL.model_magnification">
+<code class="descname">model_magnification</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelPSBL.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelPSBL.model_magnification" title="Permalink to this definition">¶</a></dt>
+<dd><p>The magnification associated to a USBL model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescope module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a namedtuple which contain the parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification, impact_parameter</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like,array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLIMA.microlmodels.ModelPSBL.model_type">
+<code class="descname">model_type</code><a class="headerlink" href="#pyLIMA.microlmodels.ModelPSBL.model_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the kind of microlensing model.</p>
+<p>:returns:PSBL
+:rtype: string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelPSBL.paczynski_model_parameters">
+<code class="descname">paczynski_model_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelPSBL.paczynski_model_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelPSBL.paczynski_model_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the USBL standard parameters, [to,uo,tE,rho, s,q,alpha]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionnary containing the pyLIMA standards</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pyLIMA.microlmodels.ModelPSPL">
 <em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">ModelPSPL</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelPSPL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelPSPL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyLIMA.microlmodels.MLModel" title="pyLIMA.microlmodels.MLModel"><code class="xref py py-class docutils literal"><span class="pre">pyLIMA.microlmodels.MLModel</span></code></a></p>
@@ -513,10 +592,10 @@ From Hwang et al 2013 : <a class="reference external" href="http://iopscience.io
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification, impact_parameter</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like,array_like</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
 </td>
 </tr>
 </tbody>
@@ -558,12 +637,32 @@ From Hwang et al 2013 : <a class="reference external" href="http://iopscience.io
 </dd></dl>
 
 <dl class="class">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL">
-<em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">ModelRRlyraePL</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRlyraePL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS">
+<em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">ModelRRLyraeFS</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyLIMA.microlmodels.MLModel" title="pyLIMA.microlmodels.MLModel"><code class="xref py py-class docutils literal"><span class="pre">pyLIMA.microlmodels.MLModel</span></code></a></p>
 <dl class="method">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL.compute_the_microlensing_model">
-<code class="descname">compute_the_microlensing_model</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRlyraePL.compute_the_microlensing_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL.compute_the_microlensing_model" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.compute_Teff">
+<code class="descname">compute_Teff</code><span class="sig-paren">(</span><em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_Teff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_Teff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.compute_color">
+<code class="descname">compute_color</code><span class="sig-paren">(</span><em>time</em>, <em>telescope_V</em>, <em>telescope_I</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.compute_pulsations">
+<code class="descname">compute_pulsations</code><span class="sig-paren">(</span><em>time</em>, <em>filter</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_pulsations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_pulsations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.compute_radius">
+<code class="descname">compute_radius</code><span class="sig-paren">(</span><em>Teff</em>, <em>time</em>, <em>telescope_V</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_radius" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.compute_the_microlensing_model">
+<code class="descname">compute_the_microlensing_model</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_the_microlensing_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_the_microlensing_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
 if not the default microlensing model is returned.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -587,19 +686,29 @@ if not the default microlensing model is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL.define_pyLIMA_standard_parameters">
-<code class="descname">define_pyLIMA_standard_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRlyraePL.define_pyLIMA_standard_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL.define_pyLIMA_standard_parameters" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.define_pyLIMA_standard_parameters">
+<code class="descname">define_pyLIMA_standard_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.define_pyLIMA_standard_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.define_pyLIMA_standard_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define the standard pyLIMA parameters dictionnary.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL.derive_telescope_flux">
-<code class="descname">derive_telescope_flux</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em>, <em>amplification</em>, <em>pulsations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRlyraePL.derive_telescope_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL.derive_telescope_flux" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.derive_telescope_flux">
+<code class="descname">derive_telescope_flux</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em>, <em>amplification</em>, <em>pulsations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.derive_telescope_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.derive_telescope_flux" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL.model_magnification">
-<code class="descname">model_magnification</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRlyraePL.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL.model_magnification" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.find_gamma">
+<code class="descname">find_gamma</code><span class="sig-paren">(</span><em>telescope</em>, <em>star</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.find_gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.find_gamma" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.find_telecopes_V_and_I">
+<code class="descname">find_telecopes_V_and_I</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.find_telecopes_V_and_I"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.find_telecopes_V_and_I" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.model_magnification">
+<code class="descname">model_magnification</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.model_magnification" title="Permalink to this definition">¶</a></dt>
 <dd><p>The magnification associated to a PSPL model. More details in microlmagnification module.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -611,10 +720,10 @@ if not the default microlensing model is returned.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification, impact_parameter</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like,array_like</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
 </td>
 </tr>
 </tbody>
@@ -622,14 +731,14 @@ if not the default microlensing model is returned.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL.model_type">
-<code class="descname">model_type</code><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL.model_type" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.model_type">
+<code class="descname">model_type</code><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.model_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the kind of microlensing model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">PSPL</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">RRLyraeFS</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)">string</a></td>
 </tr>
@@ -638,8 +747,146 @@ if not the default microlensing model is returned.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyLIMA.microlmodels.ModelRRlyraePL.paczynski_model_parameters">
-<code class="descname">paczynski_model_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRlyraePL.paczynski_model_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRlyraePL.paczynski_model_parameters" title="Permalink to this definition">¶</a></dt>
+<dt id="pyLIMA.microlmodels.ModelRRLyraeFS.paczynski_model_parameters">
+<code class="descname">paczynski_model_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.paczynski_model_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.paczynski_model_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the PSPL standard parameters, [to,uo,tE]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionnary containing the pyLIMA standards</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL">
+<em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">ModelRRLyraePL</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyLIMA.microlmodels.MLModel" title="pyLIMA.microlmodels.MLModel"><code class="xref py py-class docutils literal"><span class="pre">pyLIMA.microlmodels.MLModel</span></code></a></p>
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.compute_Teff">
+<code class="descname">compute_Teff</code><span class="sig-paren">(</span><em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.compute_Teff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.compute_Teff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.compute_color">
+<code class="descname">compute_color</code><span class="sig-paren">(</span><em>time</em>, <em>telescope_V</em>, <em>telescope_I</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.compute_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.compute_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.compute_pulsations">
+<code class="descname">compute_pulsations</code><span class="sig-paren">(</span><em>time</em>, <em>filter</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.compute_pulsations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.compute_pulsations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.compute_radius">
+<code class="descname">compute_radius</code><span class="sig-paren">(</span><em>Teff</em>, <em>time</em>, <em>telescope_V</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.compute_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.compute_radius" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.compute_the_microlensing_model">
+<code class="descname">compute_the_microlensing_model</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.compute_the_microlensing_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.compute_the_microlensing_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the microlensing model according the injected parameters. T</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescope module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a namedtuple which contain the parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the microlensing model, the source and the blending flux</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple, tuple of array like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.define_pyLIMA_standard_parameters">
+<code class="descname">define_pyLIMA_standard_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.define_pyLIMA_standard_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.define_pyLIMA_standard_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the standard pyLIMA parameters dictionnary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.derive_telescope_flux">
+<code class="descname">derive_telescope_flux</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em>, <em>amplification</em>, <em>pulsations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.derive_telescope_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.derive_telescope_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the source/blending flux</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescope module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a namedtuple which contain the parameters</li>
+<li><strong>amplification</strong> (<em>array_like</em>) &#8211; an array containing the magnification</li>
+<li><strong>pulsations</strong> (<em>array_like</em>) &#8211; an array containing the RR Lyrae pulsations</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the source and the blending flux</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.model_magnification">
+<code class="descname">model_magnification</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.model_magnification" title="Permalink to this definition">¶</a></dt>
+<dd><p>The magnification associated to a PSPL model. More details in microlmagnification module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescope module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a namedtuple which contain the parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.model_type">
+<code class="descname">model_type</code><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.model_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the kind of microlensing model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">RRLyraePL</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)">string</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlmodels.ModelRRLyraePL.paczynski_model_parameters">
+<code class="descname">paczynski_model_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraePL.paczynski_model_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraePL.paczynski_model_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define the PSPL standard parameters, [to,uo,tE]</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -660,6 +907,11 @@ if not the default microlensing model is returned.</p>
 <em class="property">class </em><code class="descclassname">pyLIMA.microlmodels.</code><code class="descname">ModelUSBL</code><span class="sig-paren">(</span><em>event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelUSBL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelUSBL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyLIMA.microlmodels.MLModel" title="pyLIMA.microlmodels.MLModel"><code class="xref py py-class docutils literal"><span class="pre">pyLIMA.microlmodels.MLModel</span></code></a></p>
 <dl class="method">
+<dt id="pyLIMA.microlmodels.ModelUSBL.find_caustics">
+<code class="descname">find_caustics</code><span class="sig-paren">(</span><em>separation</em>, <em>mass_ratio</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelUSBL.find_caustics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelUSBL.find_caustics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pyLIMA.microlmodels.ModelUSBL.model_magnification">
 <code class="descname">model_magnification</code><span class="sig-paren">(</span><em>telescope</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelUSBL.model_magnification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelUSBL.model_magnification" title="Permalink to this definition">¶</a></dt>
 <dd><p>The magnification associated to a USBL model.</p>
@@ -673,10 +925,10 @@ if not the default microlensing model is returned.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification, impact_parameter</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnification</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like,array_like</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
 </td>
 </tr>
 </tbody>
@@ -691,7 +943,7 @@ if not the default microlensing model is returned.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DSPL</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">USBL</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)">string</a></td>
 </tr>

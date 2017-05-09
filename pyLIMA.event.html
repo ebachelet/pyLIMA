@@ -27,7 +27,7 @@
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
     <link rel="up" title="pyLIMA package" href="pyLIMA.html" />
     <link rel="next" title="pyLIMA.microlfits module" href="pyLIMA.microlfits.html" />
-    <link rel="prev" title="pyLIMA.test.test_telescopes module" href="pyLIMA.test.test_telescopes.html" />
+    <link rel="prev" title="pyLIMA package" href="pyLIMA.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -55,10 +55,10 @@
 <div><p>kind : type of event. In general, should be &#8216;Microlensing&#8217; (default)</p>
 <p>name : name of the event. Should be a string. Default is &#8216;Sagittarius A*&#8217;</p>
 <p>ra : right ascension of the event (J2000). Should be a float in degree between 0.0 and
-360.0. Default is ra of Sagittarius A, <span class="math">\(\alpha\)</span> = 266.416792 from Baker &amp; Sramek
+360.0. Default is ra of Sagittarius A, \alpha = 266.416792 from Baker &amp; Sramek
 1999ApJ...524..805B</p>
 <p>dec : declination of the event (J2000). Should be a float in degree between -90 and 90.
-Default is dec of Sagittarius A, <span class="math">\(\delta\)</span> = -29.007806 from Baker &amp; Sramek
+Default is dec of Sagittarius A, \delta = -29.007806 from Baker &amp; Sramek
 1999ApJ...524..805B</p>
 <p>Teff : effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K</p>
 <p>log_g : surface gravity in log10 cgs unit. Should be a float. Default is 4.5</p>
@@ -105,7 +105,7 @@ Default is the first telescope.</td>
 
 <dl class="method">
 <dt id="pyLIMA.event.Event.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>model</em>, <em>method</em>, <em>DE_population_size=10</em>, <em>flux_estimation_MCMC='MCMC'</em>, <em>fix_parameters_dictionnary=None</em>, <em>grid_resolution=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>model</em>, <em>method</em>, <em>DE_population_size=10</em>, <em>flux_estimation_MCMC='MCMC'</em>, <em>fix_parameters_dictionnary=None</em>, <em>grid_resolution=10</em>, <em>computational_pool=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/event.html#Event.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.event.Event.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to fit the event with a model and a method.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -182,7 +182,7 @@ the second order parameter.
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="pyLIMA.html">pyLIMA package</a><ul>
-      <li>Previous: <a href="pyLIMA.test.test_telescopes.html" title="previous chapter">pyLIMA.test.test_telescopes module</a></li>
+      <li>Previous: <a href="pyLIMA.html" title="previous chapter">pyLIMA package</a></li>
       <li>Next: <a href="pyLIMA.microlfits.html" title="next chapter">pyLIMA.microlfits module</a></li>
   </ul></li>
   </ul></li>

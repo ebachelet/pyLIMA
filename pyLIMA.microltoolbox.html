@@ -47,30 +47,16 @@
 <dl class="function">
 <dt id="pyLIMA.microltoolbox.align_the_data_to_the_reference_telescope">
 <code class="descclassname">pyLIMA.microltoolbox.</code><code class="descname">align_the_data_to_the_reference_telescope</code><span class="sig-paren">(</span><em>fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microltoolbox.html#align_the_data_to_the_reference_telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microltoolbox.align_the_data_to_the_reference_telescope" title="Permalink to this definition">¶</a></dt>
-<dd><p>Align data to the survey telescope (i.e telescope 0).</p>
+<dd><p>Align data to the survey telescope (i.e telescope 0). Used to plot fit results. Ugly microlensing alignement....</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>lightcurve_telescope_mag</strong> (<em>array_like</em>) &#8211; the survey telescope in magnitude</li>
-<li><strong>fs_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; thce survey telescope reference source flux (i.e the fitted value)</li>
-<li><strong>g_reference</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the survey telescope reference blending parameter (i.e the fitted</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a microlfits object</td>
 </tr>
-</tbody>
-</table>
-<p>value)
-:param float fs_telescope: the telescope source flux (i.e the fitted value)
-:param float g_reference: the telescope blending parameter (i.e the fitted value)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the aligned to survey lightcurve in magnitude</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the aligned to survey lightcurve in magnitude</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
 </tr>
 </tbody>
 </table>
@@ -84,22 +70,18 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>residuals_fn</strong> (<em>func</em>) &#8211; a function which compute the residuals</li>
-<li><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</li>
+<li><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding
+fitting routine.</li>
 </ul>
 </td>
 </tr>
-</tbody>
-</table>
-<p>fitting routine.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the chi^2</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></p>
+</td>
 </tr>
 </tbody>
 </table>
