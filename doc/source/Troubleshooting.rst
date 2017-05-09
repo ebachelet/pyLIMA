@@ -37,7 +37,7 @@ Then follow the standard install procedure.
 **### Troubleshooting due to VBBinaryLensing ###**
 
 pyLIMA is based on the Valerio Bozza package, `VBBinaryLensing <http://www.fisica.unisa.it/GravitationAstrophysics/VBBinaryLensing.htm>`_
-This package is C++, and was transformed into a python library using `SWIG <http://www.swig.org/Doc1.3/Python.html>_
+This package is C++, and was transformed into a python library using `SWIG <http://www.swig.org/Doc1.3/Python.html>`_
 This procedure is compiler dependent, and so not flexible between platform.
 If you face troubleshooting due to VBBinaryLensing, give a try to `<RecompileVBBinaryLensing.html>`_.
 
