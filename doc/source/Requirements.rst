@@ -17,7 +17,7 @@ a fortran compiler and a C/C++ compiler, such as gfortran and gcc/g++. For examp
 We gonna need a package manager, such as `pip <https://pip.pypa.io/en/stable/installing/https://pip.pypa.io/en/stable/installing/>`_ or `anaconda <https://www.continuum.io/downloads>`_ (not fully tested). 
 
 
-When it is done, just install pyLIMA in the repository of your choice :
+The first installation step is to install pyLIMA in the repository of your choice (could be inside a `<VirtualEnv.html>`_):
 
 
 **> git clone https://github.com/ebachelet/pyLIMA.git**
