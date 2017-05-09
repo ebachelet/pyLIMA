@@ -15,29 +15,28 @@ import emcee
 import sys
 import copy
 from collections import OrderedDict
-#from mpi4py import MPI
-#import dill
+# from mpi4py import MPI
+# import dill
 
-#MPI.pickle.dumps = dill.dumps
-#MPI.pickle.loads = dill.loads
+# MPI.pickle.dumps = dill.dumps
+# MPI.pickle.loads = dill.loads
 
-#from emcee.utils import MPIPool
+# from emcee.utils import MPIPool
 
 import microlmodels
 import microloutputs
 import microlguess
 import microltoolbox
 import microlpriors
+
 warnings.filterwarnings("ignore")
-
-
 
 
 class MLFits(object):
     """
     ######## Fitter module ########
 
-    This module fits the event with the selected attributes.
+    This class contains the method to fit the event with the selected attributes.
 
     **WARNING**: All fits (and so results) are made using data in flux.
 
@@ -68,7 +67,7 @@ class MLFits(object):
         outputs : the standard pyLIMA outputs. More details in the microloutputs module.
 
     :param object event: the event object on which you perform the fit on. More details on the
-    event module.
+                         event module.
 
 
     """
@@ -89,7 +88,7 @@ class MLFits(object):
         self.fluxes_MCMC_method = ''
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-              grid_resolution=10, computational_pool = None):
+              grid_resolution=10, computational_pool=None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -124,8 +123,15 @@ class MLFits(object):
                                  emcee python package :
                                           " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
                                           The inital population is computed around the best
-                                          solution return by
+                                          solution returned by
                                           the 'DE' method.
+
+
+        :param int DE_population_size:  The population factor desired for the DE method. Default is 10.
+
+        :param string flux_estimation_MCMC: The desired method to estimate the fluxes (f_source and g) of the
+                                             telescopes. 'MCMC' will do this through an MCMC method (default) when
+                                             everything else will do this thanks to a 1D polyfit through np.polyfit.
 
         Note that a sanity check is done post-fit to assess the fit quality with the check_fit
         function.
@@ -313,8 +319,8 @@ class MLFits(object):
     def MCMC(self):
         """ The MCMC method. Construct starting points of the chains around
             the best solution found by the 'DE' method.
-            The objective function is :func:`chichi_MCMC`. Optimization
-            is made on Paczynski parameters, fs and g are found using a linear fit (np.polyfit).
+            The objective function is :func:`chichi_MCMC`. Telescope flux (fs and g), can be optimized thanks to MCMC if
+            flux_estimation_MCMC is 'MCMC', either they are derived through np.polyfit.
 
             Based on the emcee python package :
             " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
@@ -324,15 +330,15 @@ class MLFits(object):
             :rtype: tuple
 
             **WARNING** :
-                   nwalkers is set to 200
-                   nlinks is set to 100
+                   nwalkers is set to 100
+                   nlinks is set to 300
                    nwalkers*nlinks MCMC steps in total
         """
 
         nwalkers = 100
         nlinks = 100
 
-       # start = python_time.time()
+        # start = python_time.time()
 
         if len(self.model.parameters_guess) == 0:
 
@@ -343,7 +349,7 @@ class MLFits(object):
         else:
 
             self.guess = list(self.model.parameters_guess)
-            self.guess +=  self.find_fluxes(self.guess, self.model)
+            self.guess += self.find_fluxes(self.guess, self.model)
 
         # Best solution
 
@@ -374,14 +380,13 @@ class MLFits(object):
                     for parameter in parameter_trial:
                         individual.append(parameter)
 
-
             # fluxes = self.find_fluxes(individual,self.model)
             # individual += fluxes
 
             chichi = self.chichi_MCMC(individual)
             if chichi != -np.inf:
                 # np.array(individual)
-                #print count_walkers
+                # print count_walkers
 
                 population.append(np.array(individual))
                 count_walkers += 1
@@ -389,17 +394,14 @@ class MLFits(object):
         # number_of_parameters = number_of_paczynski_parameters
         print 'pre MCMC done'
 
-
         number_of_parameters = len(individual)
 
-
-        #pool = MPIPool()
-        #if not pool.is_master():
-                #pool.wait()
-                #sys.exit(0)
+        # pool = MPIPool()
+        # if not pool.is_master():
+        # pool.wait()
+        # sys.exit(0)
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
-                                        a = 2.0, pool = self.pool)
-
+                                        a=2.0, pool=self.pool)
 
         # First estimation using population as a starting points.
 
@@ -411,12 +413,12 @@ class MLFits(object):
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions, 3*nlinks)
+        sampler.run_mcmc(final_positions, 3 * nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
-        #pool.close()
-       # print python_time.time()-start
+        # pool.close()
+        # print python_time.time()-start
         print sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS'
         return MCMC_chains, MCMC_probabilities
 
@@ -424,39 +426,38 @@ class MLFits(object):
         """Return the chi^2 for the MCMC method. There is some priors here.
 
         :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
+                                            fitting routine.
 
-        :returns: the chi^2
+        :returns: here, the return is -chi^2/2 (likelihood)
 
         :rtype: float
         """
-       # prior_limit = microlpriors.microlensing_parameters_limits_priors(
-       # fit_process_parameters, self.model.parameters_boundaries)
+        # prior_limit = microlpriors.microlensing_parameters_limits_priors(
+        # fit_process_parameters, self.model.parameters_boundaries)
 
-        #if prior_limit == np.inf:
-             #import pdb;pdb.set_trace()
-         #    return -np.inf
+        # if prior_limit == np.inf:
+        # import pdb;pdb.set_trace()
+        #    return -np.inf
 
         chichi = 0
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
         for telescope in self.event.telescopes:
-
             # Find the residuals of telescope observation regarding the parameters and model
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             chichi += (residus ** 2).sum()
 
 
-       # comm = MPI.COMM_WORLD
-        #rank = comm.Get_rank()
-        #print rank, fit_process_parameters, chichi
-        return -chichi/2
+            # comm = MPI.COMM_WORLD
+        # rank = comm.Get_rank()
+        # print rank, fit_process_parameters, chichi
+        return -chichi / 2
 
     def differential_evolution(self):
         """  The DE method. Differential evolution algorithm. The objective function is
-        :func:`chichi_differential_evolution`.
+        :func:`chichi_differential_evolution`. The flux parameters are estimated through np.polyfit.
          Based on the scipy.optimize.differential_evolution.
          Look Storn & Price (1997) :
          "Differential Evolution – A Simple and Efficient Heuristic for
@@ -466,11 +467,16 @@ class MLFits(object):
          :rtype: tuple
 
          **WARNING** :
-                   tol (relative standard deviation of the objective function) is set to 10^-6
+                   tol (relative standard deviation of the objective function) is set to 10^-4
+
                    popsize (the total number of individuals is :
                    popsize*number_of_paczynski_parameters)
-                   is set to 15 mutation is set to (0.9, 1.5)
-                   recombination is set to 0.6
+                   is set to DE_population_size
+
+                   mutation is set to (0.1, 1.5)
+
+                   recombination is set to 0.7
+
                    These parameters can avoid the fit to properly converge (expected to be rare :)).
                    Just relaunch should be fine.
         """
@@ -515,7 +521,7 @@ class MLFits(object):
         return fit_results, fit_covariance, computation_time
 
     def chichi_differential_evolution(self, fit_process_parameters):
-        """Return the chi^2 for the DE method. There is some priors here.
+        """Return the chi^2 for the DE method.
 
         :param list fit_process_parameters: the model parameters ingested by the correpsonding
         fitting routine.
@@ -532,7 +538,6 @@ class MLFits(object):
 
 
             residus = self.model_residuals(telescope, pyLIMA_parameters)
-
 
             chichi += (residus ** 2).sum()
 
@@ -556,7 +561,7 @@ class MLFits(object):
 
            The fit is performed on all parameters : Paczynski parameters and telescopes fluxes.
 
-           :return: a tuple containing (fit_results, fit_covariance, computation_time)
+           :return: a tuple containing (fit_results, covariance_matrix, computation_time)
            :rtype: tuple
 
            **WARNING**:
@@ -632,10 +637,10 @@ class MLFits(object):
         """The normalized residuals associated to the model and parameters.
 
            :param list fit_process_parameters: the model parameters ingested by the correpsonding
-           fitting routine.
+                                               fitting routine.
 
            :return: a numpy array which represents the residuals_i for each telescope,
-           residuals_i=(data_i-model_i)/sigma_i
+                    residuals_i=(data_i-model_i)/sigma_i
            :rtype: array_like
            The sum of square residuals gives chi^2.
         """
@@ -657,7 +662,7 @@ class MLFits(object):
         Available only for PSPL and FSPL without second_order.
 
         :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
+                                            fitting routine.
         :return: a numpy array which represents the jacobian matrix
         :rtype: array_like
         """
@@ -705,7 +710,7 @@ class MLFits(object):
         """Return a list of chi^2 (float) for individuals telescopes.
 
         :param list fit_process_parameters: the model parameters ingested by the correpsonding
-        fitting routine.
+                                            fitting routine.
 
         :returns: the chi^2 for each telescopes
 
@@ -724,10 +729,10 @@ class MLFits(object):
         return chichi_list
 
     def model_residuals(self, telescope, pyLIMA_parameters):
-        """ Compute the residuals and the priors of a telescope lightcurve according to the model.
+        """ Compute the residuals of a telescope lightcurve according to the model.
 
         :param object telescope: a telescope object. More details in telescopes module.
-        :param object pyLIMA_parameters: object containing pyLIMA_parameters
+        :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
 
         :return: the residuals in flux, the priors
         :rtype: array_like, float
@@ -741,17 +746,15 @@ class MLFits(object):
 
         residuals = (flux - microlensing_model[0]) / errflux
 
-
         return residuals
 
     def all_telescope_residuals(self, pyLIMA_parameters):
-        """ Compute the residuals and the priors of a telescope lightcurve according to the model.
+        """ Compute the residuals of all telescopes according to the model.
 
-        :param object telescope: a telescope object. More details in telescopes module.
-        :param object pyLIMA_parameters: object containing pyLIMA_parameters
+        :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
 
-        :return: the residuals in flux, the priors
-        :rtype: array_like, float
+        :return: the residuals in flux,
+        :rtype: list, a list of array of residuals in flux
         """
 
         residuals = []
@@ -767,9 +770,9 @@ class MLFits(object):
         """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM
         method.
 
-        :param fit_process_parameters: the model parameters ingested by the correpsonding fitting
-        routine.
-        :param model: the on which you want to compute the fs,g parameters.
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding fitting
+                                       routine.
+        :param object model: a microlmodels which you want to compute the fs,g parameters.
 
         :return: a list of tuple with the (fs,g) telescopes flux parameters.
         :rtype: list
@@ -795,7 +798,7 @@ class MLFits(object):
         return telescopes_fluxes
 
     def grids(self):
-        """ Compute models on a grid
+        """ Compute models on a grid. ON CONSTRUCTION.
         """
 
         parameters_on_the_grid = []
@@ -833,7 +836,8 @@ class MLFits(object):
         pdb.set_trace()
 
     def chichi_grids(self, moving_parameters, *fix_parameters):
-
+        """ Compute chi^2. ON CONSTRUCTION.
+        """
         fit_process_parameters = self.reconstruct_fit_process_parameters(moving_parameters, fix_parameters)
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
@@ -849,7 +853,8 @@ class MLFits(object):
         return chichi
 
     def reconstruct_fit_process_parameters(self, moving_parameters, fix_parameters):
-
+        """ Reconstruc parameters. ON CONSTRUCTION.
+        """
         fit_process_parameters = []
 
         for key in self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]:
@@ -865,7 +870,8 @@ class MLFits(object):
         return fit_process_parameters
 
     def redefine_parameters_boundaries(self):
-
+        """ Recompute the parameters boundaries. ON CONSTRUCTION.
+        """
         parameters_boundaries = []
         self.moving_parameters_dictionnary = {}
         count = 0
@@ -879,7 +885,8 @@ class MLFits(object):
         return parameters_boundaries
 
     def construct_the_hyper_grid(self, parameters):
-
+        """Define the grid. ON CONSTRUCTION.
+        """
         params = map(np.asarray, parameters)
         grid = np.broadcast_arrays(*[x[(slice(None),) + (None,) * i] for i, x in enumerate(params)])
 
@@ -911,5 +918,6 @@ class MLFits(object):
         self.stats_outputs = stats_outputs
 
     def produce_pdf(self, output_directory):
-
+        """ ON CONSTRUCTION
+        """
         microloutputs.pdf_output(self, output_directory)

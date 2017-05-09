@@ -22,7 +22,7 @@ class Telescope(object):
     """
     ######## Telescope module ########
 
-    This module create a telescope object with the informations (attributes) needed for the fits.
+    This class create a telescope object.
 
     Attributes :
 
@@ -194,17 +194,11 @@ class Telescope(object):
 
     def find_gamma(self, star):
         """
-        Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter,
-        the given effective
-        temperature and the given surface gravity in log10 cgs.
+        Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter.
 
-        WARNING. Two strong assomption are made :
-                  - the microturbulent velocity turbulent_velocity is fixed to 2 km/s
 
-                  - the metallicity is fixed equal to the Sun : metallicity=0.0
-        :param float Teff: The effective temperature of the source in Kelvin.
-        :param float log_g: The log10 surface gravity in cgs.
-        :param string claret_path: path to the Claret table.
+        :param object star: a stars object.
+
         """
 
 

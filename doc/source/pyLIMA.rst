@@ -21,6 +21,7 @@ Submodules
    pyLIMA.microlstats
    pyLIMA.microltoolbox
    pyLIMA.microlxallarap
+   pyLIMA.stars
    pyLIMA.telescopes
 
 Subpackages

@@ -15,12 +15,12 @@ def initial_guess_PSPL(event):
     """Function to find initial PSPL guess for Levenberg-Marquardt solver (method=='LM').
        This assumes no blending.
 
-       :param object event: the event object on which you perform the fit on. More details on the
-       event module.
+    :param object event: the event object on which you perform the fit on. More details on the
+                            event module.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE) and the
-       source flux of the survey telescope.
-       :rtype: list,float
+    :return: the PSPL guess for this event. A list of parameters associated to the PSPL model + the source flux of
+                the survey telescope.
+    :rtype: list,float
     """
 
     # to estimation
@@ -217,12 +217,12 @@ def initial_guess_FSPL(event):
     """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
        This assumes no blending.
 
-       :param object event: the event object on which you perform the fit on. More details on the
-       event module.
+    :param object event: the event object on which you perform the fit on. More details on the
+                            event module.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and
-       the source flux of the survey telescope.
-       :rtype: list,float
+    :return: the FSPL guess for this event. A list of parameters associated to the FSPL model + the source flux of
+                the survey telescope.
+    :rtype: list,float
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
     # Dummy guess
@@ -239,10 +239,10 @@ def initial_guess_DSPL(event):
        This assumes no blending.
 
        :param object event: the event object on which you perform the fit on. More details on the
-       event module.
+                            event module.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of
-       the survey telescope.
+       :return: the DSPL guess for this event. A list of parameters associated to the DSPL model + the source flux of
+                the survey telescope.
        :rtype: list,float
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
@@ -264,15 +264,12 @@ def initial_guess_DSPL(event):
 
 
 def differential_evolution_parameters_boundaries(model):
-    """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
-       This assumes no blending.
+    """ This function define the parameters boundaries for a specific model.
 
-       :param object event: the event object on which you perform the fit on. More details on the
-       event module.
+       :param object model: a microlmodels object.
 
-       :return: the PSPL guess for this event.A list with Paczynski parameters (to,uo,tE,rho) and the source flux of
-       the survey telescope.
-       :rtype: list,float
+       :return: parameters_boundaries, a list of tuple containing parameters limits
+       :rtype: list
     """
 
     minimum_observing_time_telescopes = [min(telescope.lightcurve_flux[:, 0]) - 0 for telescope in
@@ -372,7 +369,7 @@ def differential_evolution_parameters_boundaries(model):
 
 
 def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parameters):
-    """Function to construc MCMC first population.
+    """Generate a random parameter for the MCMC initialization.
 
         :param str parameter_key: the parameter on which we apply the function
         :param dict parameters_dictionnary: the dictionnary of parameters keys associared to the parameters input

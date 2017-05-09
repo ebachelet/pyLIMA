@@ -88,7 +88,7 @@ class MLModel(object):
     """
        ######## MLModels module ########
 
-       This module defines the model you want to fit your data to. Model is the parent class, each model is a child
+       This class defines the model you want to fit your data to. Model is the parent class, each model is a child
        class (polymorphism), for example ModelPSPL.
 
        Attributes :
