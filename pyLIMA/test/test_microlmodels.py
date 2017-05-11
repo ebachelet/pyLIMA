@@ -49,6 +49,24 @@ def test_create_USBL_model():
 
     assert isinstance(usbl_model, microlmodels.ModelUSBL)
 
+def test_create_PSBL_model():
+    event = _create_event()
+    psbl_model = microlmodels.create_model('PSBL', event)
+
+    assert isinstance(psbl_model, microlmodels.ModelPSBL)
+
+def test_create_RRLyraePL_model():
+    event = _create_event()
+    rrpl_model = microlmodels.create_model('RRLyraePL', event,model_arguments=[1])
+
+    assert isinstance(rrpl_model, microlmodels.ModelRRLyraePL)
+
+def test_create_RRLyraeFS_model():
+    event = _create_event()
+    rrfs_model = microlmodels.create_model('RRLyraeFS', event,model_arguments=[1])
+
+    assert isinstance(rrfs_model, microlmodels.ModelRRLyraeFS)
+
 def test_create_bad_model():
     # Both tests are equivalent
     event = _create_event()
@@ -80,6 +98,49 @@ def test_define_parameters_boundaries():
     Model = microlmodels.create_model('FSPL', event)
 
     assert Model.parameters_boundaries == [(0,42), (0.0, 2.0), (1.0, 300), (5*10**-5, 0.05)]
+
+def test_magnification_USBL_computation():
+    event = _create_event()
+    print event.telescopes[0].lightcurve_flux
+    Model = microlmodels.create_model('USBL', event)
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'logs', 'logq','alpha'])
+
+
+    to = 0
+    uo = 0.70710678
+    tE = 1
+    rho = 0.0033
+    s = np.log10(1.0)
+    q = np.log10(0.02)
+    alpha = -np.pi/4
+    parameters = Parameters(to, uo, tE, rho, s, q,alpha)
+
+    magnification = Model.model_magnification(event.telescopes[0], parameters)
+
+
+    assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
+
+
+def test_magnification_USBL_computation():
+    event = _create_event()
+    print event.telescopes[0].lightcurve_flux
+    Model = microlmodels.create_model('PSBL', event)
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'logs', 'logq','alpha'])
+
+
+    to = 0
+    uo = 0.70710678
+    tE = 1
+    s = np.log10(1.0)
+    q = np.log10(0.02)
+    alpha = -np.pi/4
+    parameters = Parameters(to, uo, tE, s, q,alpha)
+
+    magnification = Model.model_magnification(event.telescopes[0], parameters)
+
+
+    assert np.allclose(magnification, np.array([1.63109244,  1.00000063]))
+
 
 
 def test_magnification_DSPL_computation():
