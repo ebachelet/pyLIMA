@@ -43,6 +43,11 @@ def test_create_DSPL_model():
 
     assert isinstance(dspl_model, microlmodels.ModelDSPL)
 
+def test_create_USBL_model():
+    event = _create_event()
+    usbl_model = microlmodels.create_model('USBL', event)
+
+    assert isinstance(usbl_model, microlmodels.ModelUSBL)
 
 def test_create_bad_model():
     # Both tests are equivalent
@@ -441,3 +446,23 @@ def test_FSPL_Jacobian():
     Jacobian = Model.model_Jacobian(event.telescopes[0], parameters)
 
     assert Jacobian.shape == (6, len(event.telescopes[0].lightcurve_flux))
+
+def test_FSPL_Jacobian_model_magnification():
+    event = _create_event()
+
+    Model = microlmodels.create_model('FSPL', event)
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test'])
+
+    to = 0.0
+    uo = 0.1
+    tE = 1.0
+    rho = 0.26
+    fs = 10
+    g = 1.0
+
+    parameters = Parameters(to, uo, tE, rho, fs, g)
+
+    Jacobian = Model.Jacobian_model_magnification(event.telescopes[0], parameters)
+
+    assert np.allclose(Jacobian[0], np.array([ 7.92527951,  1.00000064]))
+    assert np.allclose(Jacobian[1], np.array([  0.1       ,  42.00011905]))

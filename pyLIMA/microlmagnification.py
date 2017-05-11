@@ -60,7 +60,7 @@ def amplification_PSPL(tau, uo):
 
 
 def Jacobian_amplification_PSPL(tau, uo):
-    """
+    """ Same function as above, just also returns the impact parameter needed for the Jacobian PSPL model.
     The Paczynski Point Source Point Lens magnification and the impact parameter U(t).
     "Gravitational microlensing by the galactic halo",Paczynski, B. 1986
     http://adsabs.harvard.edu/abs/1986ApJ...304....1P
@@ -136,7 +136,7 @@ def amplification_FSPL(tau, uo, rho, gamma, yoo_table):
 
 
 def Jacobian_amplification_FSPL(tau, uo, rho, gamma, yoo_table):
-    """
+    """Same function as above, just also returns the impact parameter needed for the Jacobian FSPL model.
     The Yoo et al. Finite Source Point Lens magnification and the impact parameter U(t).
     "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens",Yoo, J. et al 2004
     http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
@@ -159,9 +159,9 @@ def Jacobian_amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     impact_param = impact_parameter(tau, uo)  # u(t)
     impact_param_square = impact_param ** 2  # u(t)^2
 
-    amplification_pspl = (impact_param_square + 2) / (impact_parameter * (impact_param_square + 4) ** 0.5)
+    amplification_pspl = (impact_param_square + 2) / (impact_param * (impact_param_square + 4) ** 0.5)
 
-    z_yoo = impact_parameter / rho
+    z_yoo = impact_param / rho
 
     amplification_fspl = np.zeros(len(amplification_pspl))
 
@@ -202,6 +202,7 @@ def amplification_USBL(separation, mass_ratio, x_source, y_source, rho, toleranc
     :return: the USBL magnification A_USBL(t)
     :rtype: array_like
     """
+
 
     amplification_usbl = []
     # print ''
