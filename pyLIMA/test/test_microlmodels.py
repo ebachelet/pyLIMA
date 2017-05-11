@@ -121,7 +121,7 @@ def test_magnification_USBL_computation():
     assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
 
 
-def test_magnification_USBL_computation():
+def test_magnification_PSBL_computation():
     event = _create_event()
     print event.telescopes[0].lightcurve_flux
     Model = microlmodels.create_model('PSBL', event)
