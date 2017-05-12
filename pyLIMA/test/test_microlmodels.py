@@ -116,8 +116,9 @@ def test_magnification_USBL_computation():
     parameters = Parameters(to, uo, tE, rho, s, q,alpha)
 
     magnification = Model.model_magnification(event.telescopes[0], parameters)
+    assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
 
-
+    Model.USBL_windows = [min(event.telescopes[0].lightcurve_flux[:,0]), max(event.telescopes[0].lightcurve_flux[:,0])]
     assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
 
 
