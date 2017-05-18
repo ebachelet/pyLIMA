@@ -670,16 +670,17 @@ def initialize_plot_lightcurve(fit):
 
     figure_axes[0].set_ylabel('Mag', fontsize=5 * fig_size[1] * 3 / 4.0)
     figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
-    figure_axes[0].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
+    figure_axes[0].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
     figure_axes[1].set_xlabel('HJD', fontsize=5 * fig_size[0] * 3 / 4.0)
     figure_axes[1].xaxis.set_major_locator(MaxNLocator(6))
     figure_axes[1].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[1].xaxis.get_major_ticks()[0].draw = lambda *args: None
+
     figure_axes[1].ticklabel_format(useOffset=False, style='plain')
     figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 3 / 4.0)
-    figure_axes[1].tick_params(axis='x', labelsize=1.5 * fig_size[0] * 3 / 4.0)
-    figure_axes[1].tick_params(axis='y', labelsize=2.5 * fig_size[1] * 3 / 4.0)
+    figure_axes[1].tick_params(axis='x', labelsize=3.5 * fig_size[0] * 3 / 4.0)
+    figure_axes[1].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
     return figure, figure_axes
 
@@ -760,6 +761,7 @@ def LM_plot_residuals(fit, figure_axe):
                             marker=str(MARKER_SYMBOLS.next()),capsize=0.0)
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
+    figure_axe.yaxis.get_major_ticks()[-1].draw = lambda *args: None
 
     # xticks_labels = figure_axe.get_xticks()
     # figure_axe.set_xticklabels(xticks_labels, rotation=45)
@@ -871,7 +873,7 @@ def plot_LM_ML_geometry(fit):
                               index_trajectory_limits[midle]],
                           trajectory_y[index_trajectory_limits[midle + 1]] - trajectory_y[
                               index_trajectory_limits[midle]],
-                          head_width=0.1, head_length=0.2, color='b')
+                          head_width=0.01, head_length=0.01, color='b')
 
     if fit.model.model_type == 'DSPL':
         trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope,
@@ -918,6 +920,18 @@ def plot_LM_ML_geometry(fit):
 
     figure_axes.axis(
         [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_ylimit])
+
+    figure_axes.xaxis.set_major_locator(MaxNLocator(5))
+    figure_axes.yaxis.set_major_locator(MaxNLocator(5))
+    figure_axes.xaxis.get_major_ticks()[0].draw = lambda *args: None
+    figure_axes.yaxis.get_major_ticks()[0].draw = lambda *args: None
+    figure_axes.xaxis.get_major_ticks()[-1].draw = lambda *args: None
+    figure_axes.yaxis.get_major_ticks()[-1].draw = lambda *args: None
+
+    figure_axes.set_xlabel(r'$x(\theta_E)$', fontsize=50)
+    figure_axes.set_ylabel(r'$y(\theta_E)$', fontsize=50)
+    figure_axes.tick_params(axis='x', labelsize=25)
+    figure_axes.tick_params(axis='y', labelsize=25)
 
     raw_labels = fit.model.model_dictionnary.keys() + ['Chi^2']
     column_labels = ['Parameters', 'Errors']

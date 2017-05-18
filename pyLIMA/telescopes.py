@@ -155,6 +155,7 @@ class Telescope(object):
         :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply
                                    the sorting.
 
+
         :return: the lightcurve sorted in pyLIMA convention
         :rtype: array_like
         """
