@@ -786,7 +786,7 @@ def LM_plot_align_data(fit, figure_axe):
                             marker=str(MARKER_SYMBOLS.next()), markersize=7.5,capsize=0.0,
                             label=telescope.name)
         count += 1
-    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
+    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), fontsize=25, loc=2, borderaxespad=0.)
 
 
 def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_telescope):

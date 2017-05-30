@@ -1153,7 +1153,9 @@ class ModelRRLyraeFS(MLModel):
 
 
         gammas = []
-        rhos =  self.compute_radius(teff, telescope.lightcurve_flux[:,0], telescope_V, pyLIMA_parameters) * 0.00456 / pyLIMA_parameters.theta_E
+        rhos =  self.compute_radius(teff, telescope.lightcurve_flux[:,0], telescope_V, pyLIMA_parameters) * (
+                                    0.00456*10**6 / pyLIMA_parameters.theta_E)
+
         pyLIMA_parameters.rho = rhos
         #import pdb;
         #pdb.set_trace()
@@ -1164,7 +1166,6 @@ class ModelRRLyraeFS(MLModel):
             gamma = self.find_gamma(telescope, self.lyrae)
             gammas.append(gamma)
 
-            print count
             count += 1
 
         rho =  pyLIMA_parameters.rho
@@ -1217,7 +1218,7 @@ class ModelRRLyraeFS(MLModel):
 
         return f_source, f_blending
 
-    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters):
+    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters, magic_table = None):
 
         pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
         f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
@@ -1226,7 +1227,11 @@ class ModelRRLyraeFS(MLModel):
         V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
 
         #radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
-        radius = 10**(0.2*(-(V_magnitude-2.689+0.1)-10*np.log10(Teff)+37.35))
+        if magic_table:
+            BC = magic_table(Teff)
+        else:
+            BC=0
+        radius = 10**(0.2*(-(V_magnitude-2.689+BC)-10*np.log10(Teff)+37.35))
         return radius
     def compute_Teff(self,color):
 
