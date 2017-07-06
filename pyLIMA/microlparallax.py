@@ -559,7 +559,7 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
         print data
     if (1 == 1):
         # t.write('n\n1,3,4,9,19,20,23,\nJ2000\n\n\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
-        t.write('n\n1,20,\nJ2000\n\n\JD\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n\n\n')
+        t.write('n\n1,20,\nJ2000\n\n\JD\nMIN\nDEG\nYES\n\n\nYES\n\n\n\n\n\n100000\n\n')
     else:
         t.write('y\n')  # accept default output?
         data = t.read_until(', ?] : ')  # ,timeout)
