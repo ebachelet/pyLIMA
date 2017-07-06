@@ -904,10 +904,13 @@ def plot_LM_ML_geometry(fit):
                                                                                          10** pyLIMA_parameters.logq,
                                                                                          resolution=5000)
         for count, caustic in enumerate(caustics):
-            if caustic != None:
+
+            try:
                 figure_axes.plot(caustic.real, caustic.imag,lw=3,c='r')
                 figure_axes.plot(cc[count].real, cc[count].imag, '--k')
 
+            except AttributeError:
+                pass
 
 
     if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('RRLyrae' not in fit.model.model_type):

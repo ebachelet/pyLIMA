@@ -19,6 +19,7 @@ def initial_guess_PSPL(event):
                             event module.
 
     :return: the PSPL guess for this event. A list of parameters associated to the PSPL model + the source flux of
+    :return: the PSPL guess for this event. A list of parameters associated to the PSPL model + the source flux of
                 the survey telescope.
     :rtype: list,float
     """
