@@ -1,4 +1,16 @@
 from setuptools import setup, find_packages
+from distutils.core import setup, Extension
+
+
+
+
+VBB = Extension('_VBBinaryLensingLibrary',
+		 sources=['./pyLIMA/subroutines/VBBinaryLensingLibrary/VBBinaryLensingLibrary.cpp',
+			  './pyLIMA/subroutines/VBBinaryLensingLibrary/VBBinaryLensingLibrary.i',
+		 ],
+		swig_opts=['-c++','-modern', '-I../include'],
+
+		)
 
 setup(
     name="pyLIMA",
@@ -9,4 +21,7 @@ setup(
     url="http://github.com/ebachelet/pyLIMA",
     packages=find_packages('.'),
     test_suite="nose.collector",
+    ext_modules = [VBB],
+    py_modules = ["./pyLIMA/subroutines/VBBinaryLensingLibrary/"],
+       
 )

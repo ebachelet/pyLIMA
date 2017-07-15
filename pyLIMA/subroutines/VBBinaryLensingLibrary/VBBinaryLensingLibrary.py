@@ -47,10 +47,7 @@ def _swig_setattr_nondynamic(self, class_type, name, value, static=1):
     if method:
         return method(self, value)
     if (not static):
-        if _newclass:
-            object.__setattr__(self, name, value)
-        else:
-            self.__dict__[name] = value
+        object.__setattr__(self, name, value)
     else:
         raise AttributeError("You cannot add attributes to %s" % self)
 
@@ -90,11 +87,20 @@ except AttributeError:
     _newclass = 0
 
 
-class doubleArray(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, doubleArray, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, doubleArray, name)
+
+def _swig_setattr_nondynamic_method(set):
+    def set_attr(self, name, value):
+        if (name == "thisown"):
+            return self.this.own(value)
+        if hasattr(self, name) or (name == "this"):
+            set(self, name, value)
+        else:
+            raise AttributeError("You cannot add attributes to %s" % self)
+    return set_attr
+
+
+class doubleArray(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
 
     def __init__(self, nelements):
@@ -114,9 +120,7 @@ class doubleArray(_object):
 
     def cast(self):
         return _VBBinaryLensingLibrary.doubleArray_cast(self)
-    __swig_getmethods__["frompointer"] = lambda x: _VBBinaryLensingLibrary.doubleArray_frompointer
-    if _newclass:
-        frompointer = staticmethod(_VBBinaryLensingLibrary.doubleArray_frompointer)
+    frompointer = staticmethod(_VBBinaryLensingLibrary.doubleArray_frompointer)
 doubleArray_swigregister = _VBBinaryLensingLibrary.doubleArray_swigregister
 doubleArray_swigregister(doubleArray)
 
@@ -127,40 +131,16 @@ doubleArray_frompointer = _VBBinaryLensingLibrary.doubleArray_frompointer
 
 _VBBinaryLensingLibrary._NP_swigconstant(_VBBinaryLensingLibrary)
 _NP = _VBBinaryLensingLibrary._NP
-class VBBinaryLensing(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, VBBinaryLensing, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, VBBinaryLensing, name)
+class VBBinaryLensing(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["Tol"] = _VBBinaryLensingLibrary.VBBinaryLensing_Tol_set
-    __swig_getmethods__["Tol"] = _VBBinaryLensingLibrary.VBBinaryLensing_Tol_get
-    if _newclass:
-        Tol = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_Tol_get, _VBBinaryLensingLibrary.VBBinaryLensing_Tol_set)
-    __swig_setmethods__["satellite"] = _VBBinaryLensingLibrary.VBBinaryLensing_satellite_set
-    __swig_getmethods__["satellite"] = _VBBinaryLensingLibrary.VBBinaryLensing_satellite_get
-    if _newclass:
-        satellite = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_satellite_get, _VBBinaryLensingLibrary.VBBinaryLensing_satellite_set)
-    __swig_setmethods__["parallaxsystem"] = _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_set
-    __swig_getmethods__["parallaxsystem"] = _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get
-    if _newclass:
-        parallaxsystem = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get, _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_set)
-    __swig_setmethods__["nsat"] = _VBBinaryLensingLibrary.VBBinaryLensing_nsat_set
-    __swig_getmethods__["nsat"] = _VBBinaryLensingLibrary.VBBinaryLensing_nsat_get
-    if _newclass:
-        nsat = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_nsat_get, _VBBinaryLensingLibrary.VBBinaryLensing_nsat_set)
-    __swig_setmethods__["y_1"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_1_set
-    __swig_getmethods__["y_1"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_1_get
-    if _newclass:
-        y_1 = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_y_1_get, _VBBinaryLensingLibrary.VBBinaryLensing_y_1_set)
-    __swig_setmethods__["y_2"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_2_set
-    __swig_getmethods__["y_2"] = _VBBinaryLensingLibrary.VBBinaryLensing_y_2_get
-    if _newclass:
-        y_2 = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_y_2_get, _VBBinaryLensingLibrary.VBBinaryLensing_y_2_set)
-    __swig_setmethods__["av"] = _VBBinaryLensingLibrary.VBBinaryLensing_av_set
-    __swig_getmethods__["av"] = _VBBinaryLensingLibrary.VBBinaryLensing_av_get
-    if _newclass:
-        av = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_av_get, _VBBinaryLensingLibrary.VBBinaryLensing_av_set)
+    Tol = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_Tol_get, _VBBinaryLensingLibrary.VBBinaryLensing_Tol_set)
+    satellite = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_satellite_get, _VBBinaryLensingLibrary.VBBinaryLensing_satellite_set)
+    parallaxsystem = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_get, _VBBinaryLensingLibrary.VBBinaryLensing_parallaxsystem_set)
+    nsat = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_nsat_get, _VBBinaryLensingLibrary.VBBinaryLensing_nsat_set)
+    y_1 = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_y_1_get, _VBBinaryLensingLibrary.VBBinaryLensing_y_1_set)
+    y_2 = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_y_2_get, _VBBinaryLensingLibrary.VBBinaryLensing_y_2_set)
+    av = _swig_property(_VBBinaryLensingLibrary.VBBinaryLensing_av_get, _VBBinaryLensingLibrary.VBBinaryLensing_av_set)
 
     def PlotCrit(self, arg2, arg3):
         return _VBBinaryLensingLibrary.VBBinaryLensing_PlotCrit(self, arg2, arg3)
@@ -224,44 +204,17 @@ class VBBinaryLensing(_object):
 VBBinaryLensing_swigregister = _VBBinaryLensingLibrary.VBBinaryLensing_swigregister
 VBBinaryLensing_swigregister(VBBinaryLensing)
 
-class annulus(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, annulus, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, annulus, name)
+class annulus(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["bin"] = _VBBinaryLensingLibrary.annulus_bin_set
-    __swig_getmethods__["bin"] = _VBBinaryLensingLibrary.annulus_bin_get
-    if _newclass:
-        bin = _swig_property(_VBBinaryLensingLibrary.annulus_bin_get, _VBBinaryLensingLibrary.annulus_bin_set)
-    __swig_setmethods__["cum"] = _VBBinaryLensingLibrary.annulus_cum_set
-    __swig_getmethods__["cum"] = _VBBinaryLensingLibrary.annulus_cum_get
-    if _newclass:
-        cum = _swig_property(_VBBinaryLensingLibrary.annulus_cum_get, _VBBinaryLensingLibrary.annulus_cum_set)
-    __swig_setmethods__["Mag"] = _VBBinaryLensingLibrary.annulus_Mag_set
-    __swig_getmethods__["Mag"] = _VBBinaryLensingLibrary.annulus_Mag_get
-    if _newclass:
-        Mag = _swig_property(_VBBinaryLensingLibrary.annulus_Mag_get, _VBBinaryLensingLibrary.annulus_Mag_set)
-    __swig_setmethods__["err"] = _VBBinaryLensingLibrary.annulus_err_set
-    __swig_getmethods__["err"] = _VBBinaryLensingLibrary.annulus_err_get
-    if _newclass:
-        err = _swig_property(_VBBinaryLensingLibrary.annulus_err_get, _VBBinaryLensingLibrary.annulus_err_set)
-    __swig_setmethods__["f"] = _VBBinaryLensingLibrary.annulus_f_set
-    __swig_getmethods__["f"] = _VBBinaryLensingLibrary.annulus_f_get
-    if _newclass:
-        f = _swig_property(_VBBinaryLensingLibrary.annulus_f_get, _VBBinaryLensingLibrary.annulus_f_set)
-    __swig_setmethods__["nim"] = _VBBinaryLensingLibrary.annulus_nim_set
-    __swig_getmethods__["nim"] = _VBBinaryLensingLibrary.annulus_nim_get
-    if _newclass:
-        nim = _swig_property(_VBBinaryLensingLibrary.annulus_nim_get, _VBBinaryLensingLibrary.annulus_nim_set)
-    __swig_setmethods__["prev"] = _VBBinaryLensingLibrary.annulus_prev_set
-    __swig_getmethods__["prev"] = _VBBinaryLensingLibrary.annulus_prev_get
-    if _newclass:
-        prev = _swig_property(_VBBinaryLensingLibrary.annulus_prev_get, _VBBinaryLensingLibrary.annulus_prev_set)
-    __swig_setmethods__["next"] = _VBBinaryLensingLibrary.annulus_next_set
-    __swig_getmethods__["next"] = _VBBinaryLensingLibrary.annulus_next_get
-    if _newclass:
-        next = _swig_property(_VBBinaryLensingLibrary.annulus_next_get, _VBBinaryLensingLibrary.annulus_next_set)
+    bin = _swig_property(_VBBinaryLensingLibrary.annulus_bin_get, _VBBinaryLensingLibrary.annulus_bin_set)
+    cum = _swig_property(_VBBinaryLensingLibrary.annulus_cum_get, _VBBinaryLensingLibrary.annulus_cum_set)
+    Mag = _swig_property(_VBBinaryLensingLibrary.annulus_Mag_get, _VBBinaryLensingLibrary.annulus_Mag_set)
+    err = _swig_property(_VBBinaryLensingLibrary.annulus_err_get, _VBBinaryLensingLibrary.annulus_err_set)
+    f = _swig_property(_VBBinaryLensingLibrary.annulus_f_get, _VBBinaryLensingLibrary.annulus_f_set)
+    nim = _swig_property(_VBBinaryLensingLibrary.annulus_nim_get, _VBBinaryLensingLibrary.annulus_nim_set)
+    prev = _swig_property(_VBBinaryLensingLibrary.annulus_prev_get, _VBBinaryLensingLibrary.annulus_prev_set)
+    next = _swig_property(_VBBinaryLensingLibrary.annulus_next_get, _VBBinaryLensingLibrary.annulus_next_set)
 
     def __init__(self):
         this = _VBBinaryLensingLibrary.new_annulus()
@@ -274,36 +227,15 @@ class annulus(_object):
 annulus_swigregister = _VBBinaryLensingLibrary.annulus_swigregister
 annulus_swigregister(annulus)
 
-class _theta(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, _theta, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, _theta, name)
+class _theta(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["th"] = _VBBinaryLensingLibrary._theta_th_set
-    __swig_getmethods__["th"] = _VBBinaryLensingLibrary._theta_th_get
-    if _newclass:
-        th = _swig_property(_VBBinaryLensingLibrary._theta_th_get, _VBBinaryLensingLibrary._theta_th_set)
-    __swig_setmethods__["maxerr"] = _VBBinaryLensingLibrary._theta_maxerr_set
-    __swig_getmethods__["maxerr"] = _VBBinaryLensingLibrary._theta_maxerr_get
-    if _newclass:
-        maxerr = _swig_property(_VBBinaryLensingLibrary._theta_maxerr_get, _VBBinaryLensingLibrary._theta_maxerr_set)
-    __swig_setmethods__["Mag"] = _VBBinaryLensingLibrary._theta_Mag_set
-    __swig_getmethods__["Mag"] = _VBBinaryLensingLibrary._theta_Mag_get
-    if _newclass:
-        Mag = _swig_property(_VBBinaryLensingLibrary._theta_Mag_get, _VBBinaryLensingLibrary._theta_Mag_set)
-    __swig_setmethods__["errworst"] = _VBBinaryLensingLibrary._theta_errworst_set
-    __swig_getmethods__["errworst"] = _VBBinaryLensingLibrary._theta_errworst_get
-    if _newclass:
-        errworst = _swig_property(_VBBinaryLensingLibrary._theta_errworst_get, _VBBinaryLensingLibrary._theta_errworst_set)
-    __swig_setmethods__["prev"] = _VBBinaryLensingLibrary._theta_prev_set
-    __swig_getmethods__["prev"] = _VBBinaryLensingLibrary._theta_prev_get
-    if _newclass:
-        prev = _swig_property(_VBBinaryLensingLibrary._theta_prev_get, _VBBinaryLensingLibrary._theta_prev_set)
-    __swig_setmethods__["next"] = _VBBinaryLensingLibrary._theta_next_set
-    __swig_getmethods__["next"] = _VBBinaryLensingLibrary._theta_next_get
-    if _newclass:
-        next = _swig_property(_VBBinaryLensingLibrary._theta_next_get, _VBBinaryLensingLibrary._theta_next_set)
+    th = _swig_property(_VBBinaryLensingLibrary._theta_th_get, _VBBinaryLensingLibrary._theta_th_set)
+    maxerr = _swig_property(_VBBinaryLensingLibrary._theta_maxerr_get, _VBBinaryLensingLibrary._theta_maxerr_set)
+    Mag = _swig_property(_VBBinaryLensingLibrary._theta_Mag_get, _VBBinaryLensingLibrary._theta_Mag_set)
+    errworst = _swig_property(_VBBinaryLensingLibrary._theta_errworst_get, _VBBinaryLensingLibrary._theta_errworst_set)
+    prev = _swig_property(_VBBinaryLensingLibrary._theta_prev_get, _VBBinaryLensingLibrary._theta_prev_set)
+    next = _swig_property(_VBBinaryLensingLibrary._theta_next_get, _VBBinaryLensingLibrary._theta_next_set)
 
     def __init__(self, arg2):
         this = _VBBinaryLensingLibrary.new__theta(arg2)
@@ -316,24 +248,12 @@ class _theta(_object):
 _theta_swigregister = _VBBinaryLensingLibrary._theta_swigregister
 _theta_swigregister(_theta)
 
-class _thetas(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, _thetas, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, _thetas, name)
+class _thetas(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["first"] = _VBBinaryLensingLibrary._thetas_first_set
-    __swig_getmethods__["first"] = _VBBinaryLensingLibrary._thetas_first_get
-    if _newclass:
-        first = _swig_property(_VBBinaryLensingLibrary._thetas_first_get, _VBBinaryLensingLibrary._thetas_first_set)
-    __swig_setmethods__["last"] = _VBBinaryLensingLibrary._thetas_last_set
-    __swig_getmethods__["last"] = _VBBinaryLensingLibrary._thetas_last_get
-    if _newclass:
-        last = _swig_property(_VBBinaryLensingLibrary._thetas_last_get, _VBBinaryLensingLibrary._thetas_last_set)
-    __swig_setmethods__["length"] = _VBBinaryLensingLibrary._thetas_length_set
-    __swig_getmethods__["length"] = _VBBinaryLensingLibrary._thetas_length_get
-    if _newclass:
-        length = _swig_property(_VBBinaryLensingLibrary._thetas_length_get, _VBBinaryLensingLibrary._thetas_length_set)
+    first = _swig_property(_VBBinaryLensingLibrary._thetas_first_get, _VBBinaryLensingLibrary._thetas_first_set)
+    last = _swig_property(_VBBinaryLensingLibrary._thetas_last_get, _VBBinaryLensingLibrary._thetas_last_set)
+    length = _swig_property(_VBBinaryLensingLibrary._thetas_length_get, _VBBinaryLensingLibrary._thetas_length_set)
 
     def __init__(self):
         this = _VBBinaryLensingLibrary.new__thetas()
@@ -349,20 +269,11 @@ class _thetas(_object):
 _thetas_swigregister = _VBBinaryLensingLibrary._thetas_swigregister
 _thetas_swigregister(_thetas)
 
-class complex(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, complex, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, complex, name)
+class complex(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["re"] = _VBBinaryLensingLibrary.complex_re_set
-    __swig_getmethods__["re"] = _VBBinaryLensingLibrary.complex_re_get
-    if _newclass:
-        re = _swig_property(_VBBinaryLensingLibrary.complex_re_get, _VBBinaryLensingLibrary.complex_re_set)
-    __swig_setmethods__["im"] = _VBBinaryLensingLibrary.complex_im_set
-    __swig_getmethods__["im"] = _VBBinaryLensingLibrary.complex_im_get
-    if _newclass:
-        im = _swig_property(_VBBinaryLensingLibrary.complex_im_get, _VBBinaryLensingLibrary.complex_im_set)
+    re = _swig_property(_VBBinaryLensingLibrary.complex_re_get, _VBBinaryLensingLibrary.complex_re_set)
+    im = _swig_property(_VBBinaryLensingLibrary.complex_im_get, _VBBinaryLensingLibrary.complex_im_set)
 
     def __init__(self, *args):
         this = _VBBinaryLensingLibrary.new_complex(*args)
@@ -375,40 +286,16 @@ class complex(_object):
 complex_swigregister = _VBBinaryLensingLibrary.complex_swigregister
 complex_swigregister(complex)
 
-class _point(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, _point, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, _point, name)
+class _point(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["x1"] = _VBBinaryLensingLibrary._point_x1_set
-    __swig_getmethods__["x1"] = _VBBinaryLensingLibrary._point_x1_get
-    if _newclass:
-        x1 = _swig_property(_VBBinaryLensingLibrary._point_x1_get, _VBBinaryLensingLibrary._point_x1_set)
-    __swig_setmethods__["x2"] = _VBBinaryLensingLibrary._point_x2_set
-    __swig_getmethods__["x2"] = _VBBinaryLensingLibrary._point_x2_get
-    if _newclass:
-        x2 = _swig_property(_VBBinaryLensingLibrary._point_x2_get, _VBBinaryLensingLibrary._point_x2_set)
-    __swig_setmethods__["parab"] = _VBBinaryLensingLibrary._point_parab_set
-    __swig_getmethods__["parab"] = _VBBinaryLensingLibrary._point_parab_get
-    if _newclass:
-        parab = _swig_property(_VBBinaryLensingLibrary._point_parab_get, _VBBinaryLensingLibrary._point_parab_set)
-    __swig_setmethods__["ds"] = _VBBinaryLensingLibrary._point_ds_set
-    __swig_getmethods__["ds"] = _VBBinaryLensingLibrary._point_ds_get
-    if _newclass:
-        ds = _swig_property(_VBBinaryLensingLibrary._point_ds_get, _VBBinaryLensingLibrary._point_ds_set)
-    __swig_setmethods__["dJ"] = _VBBinaryLensingLibrary._point_dJ_set
-    __swig_getmethods__["dJ"] = _VBBinaryLensingLibrary._point_dJ_get
-    if _newclass:
-        dJ = _swig_property(_VBBinaryLensingLibrary._point_dJ_get, _VBBinaryLensingLibrary._point_dJ_set)
-    __swig_setmethods__["d"] = _VBBinaryLensingLibrary._point_d_set
-    __swig_getmethods__["d"] = _VBBinaryLensingLibrary._point_d_get
-    if _newclass:
-        d = _swig_property(_VBBinaryLensingLibrary._point_d_get, _VBBinaryLensingLibrary._point_d_set)
-    __swig_setmethods__["theta"] = _VBBinaryLensingLibrary._point_theta_set
-    __swig_getmethods__["theta"] = _VBBinaryLensingLibrary._point_theta_get
-    if _newclass:
-        theta = _swig_property(_VBBinaryLensingLibrary._point_theta_get, _VBBinaryLensingLibrary._point_theta_set)
+    x1 = _swig_property(_VBBinaryLensingLibrary._point_x1_get, _VBBinaryLensingLibrary._point_x1_set)
+    x2 = _swig_property(_VBBinaryLensingLibrary._point_x2_get, _VBBinaryLensingLibrary._point_x2_set)
+    parab = _swig_property(_VBBinaryLensingLibrary._point_parab_get, _VBBinaryLensingLibrary._point_parab_set)
+    ds = _swig_property(_VBBinaryLensingLibrary._point_ds_get, _VBBinaryLensingLibrary._point_ds_set)
+    dJ = _swig_property(_VBBinaryLensingLibrary._point_dJ_get, _VBBinaryLensingLibrary._point_dJ_set)
+    d = _swig_property(_VBBinaryLensingLibrary._point_d_get, _VBBinaryLensingLibrary._point_d_set)
+    theta = _swig_property(_VBBinaryLensingLibrary._point_theta_get, _VBBinaryLensingLibrary._point_theta_set)
 
     def __init__(self, arg2, arg3, arg4):
         this = _VBBinaryLensingLibrary.new__point(arg2, arg3, arg4)
@@ -416,14 +303,8 @@ class _point(_object):
             self.this.append(this)
         except Exception:
             self.this = this
-    __swig_setmethods__["next"] = _VBBinaryLensingLibrary._point_next_set
-    __swig_getmethods__["next"] = _VBBinaryLensingLibrary._point_next_get
-    if _newclass:
-        next = _swig_property(_VBBinaryLensingLibrary._point_next_get, _VBBinaryLensingLibrary._point_next_set)
-    __swig_setmethods__["prev"] = _VBBinaryLensingLibrary._point_prev_set
-    __swig_getmethods__["prev"] = _VBBinaryLensingLibrary._point_prev_get
-    if _newclass:
-        prev = _swig_property(_VBBinaryLensingLibrary._point_prev_get, _VBBinaryLensingLibrary._point_prev_set)
+    next = _swig_property(_VBBinaryLensingLibrary._point_next_get, _VBBinaryLensingLibrary._point_next_set)
+    prev = _swig_property(_VBBinaryLensingLibrary._point_prev_get, _VBBinaryLensingLibrary._point_prev_set)
 
     def __sub__(self, arg2):
         return _VBBinaryLensingLibrary._point___sub__(self, arg2)
@@ -432,44 +313,17 @@ class _point(_object):
 _point_swigregister = _VBBinaryLensingLibrary._point_swigregister
 _point_swigregister(_point)
 
-class _curve(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, _curve, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, _curve, name)
+class _curve(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["length"] = _VBBinaryLensingLibrary._curve_length_set
-    __swig_getmethods__["length"] = _VBBinaryLensingLibrary._curve_length_get
-    if _newclass:
-        length = _swig_property(_VBBinaryLensingLibrary._curve_length_get, _VBBinaryLensingLibrary._curve_length_set)
-    __swig_setmethods__["first"] = _VBBinaryLensingLibrary._curve_first_set
-    __swig_getmethods__["first"] = _VBBinaryLensingLibrary._curve_first_get
-    if _newclass:
-        first = _swig_property(_VBBinaryLensingLibrary._curve_first_get, _VBBinaryLensingLibrary._curve_first_set)
-    __swig_setmethods__["last"] = _VBBinaryLensingLibrary._curve_last_set
-    __swig_getmethods__["last"] = _VBBinaryLensingLibrary._curve_last_get
-    if _newclass:
-        last = _swig_property(_VBBinaryLensingLibrary._curve_last_get, _VBBinaryLensingLibrary._curve_last_set)
-    __swig_setmethods__["next"] = _VBBinaryLensingLibrary._curve_next_set
-    __swig_getmethods__["next"] = _VBBinaryLensingLibrary._curve_next_get
-    if _newclass:
-        next = _swig_property(_VBBinaryLensingLibrary._curve_next_get, _VBBinaryLensingLibrary._curve_next_set)
-    __swig_setmethods__["prev"] = _VBBinaryLensingLibrary._curve_prev_set
-    __swig_getmethods__["prev"] = _VBBinaryLensingLibrary._curve_prev_get
-    if _newclass:
-        prev = _swig_property(_VBBinaryLensingLibrary._curve_prev_get, _VBBinaryLensingLibrary._curve_prev_set)
-    __swig_setmethods__["partneratstart"] = _VBBinaryLensingLibrary._curve_partneratstart_set
-    __swig_getmethods__["partneratstart"] = _VBBinaryLensingLibrary._curve_partneratstart_get
-    if _newclass:
-        partneratstart = _swig_property(_VBBinaryLensingLibrary._curve_partneratstart_get, _VBBinaryLensingLibrary._curve_partneratstart_set)
-    __swig_setmethods__["partneratend"] = _VBBinaryLensingLibrary._curve_partneratend_set
-    __swig_getmethods__["partneratend"] = _VBBinaryLensingLibrary._curve_partneratend_get
-    if _newclass:
-        partneratend = _swig_property(_VBBinaryLensingLibrary._curve_partneratend_get, _VBBinaryLensingLibrary._curve_partneratend_set)
-    __swig_setmethods__["parabstart"] = _VBBinaryLensingLibrary._curve_parabstart_set
-    __swig_getmethods__["parabstart"] = _VBBinaryLensingLibrary._curve_parabstart_get
-    if _newclass:
-        parabstart = _swig_property(_VBBinaryLensingLibrary._curve_parabstart_get, _VBBinaryLensingLibrary._curve_parabstart_set)
+    length = _swig_property(_VBBinaryLensingLibrary._curve_length_get, _VBBinaryLensingLibrary._curve_length_set)
+    first = _swig_property(_VBBinaryLensingLibrary._curve_first_get, _VBBinaryLensingLibrary._curve_first_set)
+    last = _swig_property(_VBBinaryLensingLibrary._curve_last_get, _VBBinaryLensingLibrary._curve_last_set)
+    next = _swig_property(_VBBinaryLensingLibrary._curve_next_get, _VBBinaryLensingLibrary._curve_next_set)
+    prev = _swig_property(_VBBinaryLensingLibrary._curve_prev_get, _VBBinaryLensingLibrary._curve_prev_set)
+    partneratstart = _swig_property(_VBBinaryLensingLibrary._curve_partneratstart_get, _VBBinaryLensingLibrary._curve_partneratstart_set)
+    partneratend = _swig_property(_VBBinaryLensingLibrary._curve_partneratend_get, _VBBinaryLensingLibrary._curve_partneratend_set)
+    parabstart = _swig_property(_VBBinaryLensingLibrary._curve_parabstart_get, _VBBinaryLensingLibrary._curve_parabstart_set)
 
     def __init__(self, *args):
         this = _VBBinaryLensingLibrary.new__curve(*args)
@@ -512,24 +366,12 @@ class _curve(_object):
 _curve_swigregister = _VBBinaryLensingLibrary._curve_swigregister
 _curve_swigregister(_curve)
 
-class _sols(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, _sols, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, _sols, name)
+class _sols(object):
+    thisown = _swig_property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
-    __swig_setmethods__["length"] = _VBBinaryLensingLibrary._sols_length_set
-    __swig_getmethods__["length"] = _VBBinaryLensingLibrary._sols_length_get
-    if _newclass:
-        length = _swig_property(_VBBinaryLensingLibrary._sols_length_get, _VBBinaryLensingLibrary._sols_length_set)
-    __swig_setmethods__["first"] = _VBBinaryLensingLibrary._sols_first_set
-    __swig_getmethods__["first"] = _VBBinaryLensingLibrary._sols_first_get
-    if _newclass:
-        first = _swig_property(_VBBinaryLensingLibrary._sols_first_get, _VBBinaryLensingLibrary._sols_first_set)
-    __swig_setmethods__["last"] = _VBBinaryLensingLibrary._sols_last_set
-    __swig_getmethods__["last"] = _VBBinaryLensingLibrary._sols_last_get
-    if _newclass:
-        last = _swig_property(_VBBinaryLensingLibrary._sols_last_get, _VBBinaryLensingLibrary._sols_last_set)
+    length = _swig_property(_VBBinaryLensingLibrary._sols_length_get, _VBBinaryLensingLibrary._sols_length_set)
+    first = _swig_property(_VBBinaryLensingLibrary._sols_first_get, _VBBinaryLensingLibrary._sols_first_set)
+    last = _swig_property(_VBBinaryLensingLibrary._sols_last_get, _VBBinaryLensingLibrary._sols_last_set)
 
     def __init__(self):
         this = _VBBinaryLensingLibrary.new__sols()
@@ -594,6 +436,5 @@ elle = _VBBinaryLensingLibrary.elle
 def ellpi(phi, en, ak):
     return _VBBinaryLensingLibrary.ellpi(phi, en, ak)
 ellpi = _VBBinaryLensingLibrary.ellpi
-# This file is compatible with both classic and new-style classes.
 
 
