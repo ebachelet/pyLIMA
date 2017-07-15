@@ -22,6 +22,6 @@ setup(
     packages=find_packages('.'),
     test_suite="nose.collector",
     ext_modules = [VBB],
-    py_modules = ["./pyLIMA/subroutines/VBBinaryLensingLibrary/"],
+    py_modules = ["VBBinaryLensingLibrary"],
        
 )
