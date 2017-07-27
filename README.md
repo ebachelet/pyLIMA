@@ -32,7 +32,7 @@ the required libraries [Documentation](https://ebachelet.github.io/pyLIMA/)
 Clone the repository or download as a ZIP file. Then
 
 
-python2.7 setup.py build_ext --build-lib=./pyLIMA/subroutines/VBBinaryLensingLibrary
+python setup.py build_ext --build-lib=./pyLIMA/subroutines/VBBinaryLensingLibrary
 (and, not mandatory, python setup.py clean --all)
 
 The install the required libraries with

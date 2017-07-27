@@ -15,7 +15,7 @@ Welcome to pyLIMA's documentation!
    :maxdepth: 2
 
 
-   Installation
+   Install
    Conventions
    Example
    pyLIMA
