@@ -18,10 +18,30 @@ You can also practice by simulating events.
 
 [Documentation](https://ebachelet.github.io/pyLIMA/)
 
-### Installation
+### Required materials 
+Regular C/C++ and fortran compilers are required for packages installation
+
+You also need [SWIG](http://www.swig.org/download.html)
+
+You need [pip](https://pip.pypa.io/en/stable/installing/) or you can install manually
+the required libraries [Documentation](https://ebachelet.github.io/pyLIMA/)
+
+
+### Installation and use
+
 Clone the repository or download as a ZIP file. Then
 
-#### DO NOT RUN python install setup.py SVP
+
+python2.7 setup.py build_ext --build-lib=./pyLIMA/subroutines/VBBinaryLensingLibrary
+(and, not mandatory, python setup.py clean --all)
+
+The install the required libraries with
+
+pip install -r requirements.txt
+
+This new procedure which should avoid the previous installations headaches!
+Successfully test on various UNIX, MAC and Windows! If you encounter any problems,
+please contact etibachelet@gmail.com.
 
 
 
@@ -32,10 +52,6 @@ import sys
 sys.path.append(your-path-to-pyLIMA-directory)
 
 from pyLIMA import whatyouneed
-
-
-### Required libraries
-pyLIMA also require some python modules installation, see the documentation link above.
 
 ### Examples
 Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
