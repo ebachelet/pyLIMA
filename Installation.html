@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation and troubleshooting &mdash; pyLIMA 0.0.0 documentation</title>
+    <title>Installation &mdash; pyLIMA 0.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,8 +25,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="pyLIMA 0.0.0 documentation" href="index.html" />
-    <link rel="next" title="Requirements" href="Requirements.html" />
-    <link rel="prev" title="Welcome to pyLIMA’s documentation!" href="index.html" />
+    <link rel="up" title="Installation and troubleshooting" href="Install.html" />
+    <link rel="next" title="Virtual environnement" href="VirtualEnv.html" />
+    <link rel="prev" title="Requirements" href="Requirements.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -39,18 +40,16 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-and-troubleshooting">
-<h1>Installation and troubleshooting<a class="headerlink" href="#installation-and-troubleshooting" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="VirtualEnv.html">Virtual environnement</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Libraries.html">Libraries</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Troubleshooting.html">Troubleshooting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InstallationForMACUser.html">Installing pyLIMA under MacOS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="RecompileVBBinaryLensing.html">Recompile the VBBinaryLensing library</a></li>
-</ul>
-</div>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>The first installation step is to install pyLIMA in the repository of your choice (could be inside a <a class="reference external" href="VirtualEnv.html">VirtualEnv.html</a>):</p>
+<p><strong>&gt; git clone https://github.com/ebachelet/pyLIMA.git</strong></p>
+<p>Then we need to build the VBBinaryLensingLibrary:</p>
+<p><strong>&gt; python setup.py build_ext &#8211;build-lib=./pyLIMA/subroutines/VBBinaryLensingLibrary</strong></p>
+<p>Optional :</p>
+<p><strong>&gt; python setup.py clean &#8211;all</strong></p>
+<p>Then you can install the required libraries:</p>
+<p><strong>&gt; pip install -r requirements.txt</strong></p>
 </div>
 
 
@@ -62,8 +61,10 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Welcome to pyLIMA&#8217;s documentation!</a></li>
-      <li>Next: <a href="Requirements.html" title="next chapter">Requirements</a></li>
+  <li><a href="Install.html">Installation and troubleshooting</a><ul>
+      <li>Previous: <a href="Requirements.html" title="previous chapter">Requirements</a></li>
+      <li>Next: <a href="VirtualEnv.html" title="next chapter">Virtual environnement</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

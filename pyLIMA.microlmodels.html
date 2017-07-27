@@ -112,9 +112,9 @@ pyLIMA standards. Example :  {&#8216;rho&#8217;: lambda parameters: 10 ** parame
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a event object. More details on the event module.</li>
-<li><strong>parallax</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list of [string,float] indicating the parallax model you want and to_par</li>
-<li><strong>xallarap</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.</li>
-<li><strong>orbital_motion</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; a list of [string,float] indicating the parallax model you want and to_om.
+<li><strong>parallax</strong> (<em>list</em>) &#8211; a list of [string,float] indicating the parallax model you want and to_par</li>
+<li><strong>xallarap</strong> (<em>list</em>) &#8211; a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.</li>
+<li><strong>orbital_motion</strong> (<em>list</em>) &#8211; a list of [string,float] indicating the parallax model you want and to_om.
 NOT WORKING NOW.</li>
 <li><strong>source_spots</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; a string indicated the source_spots you want. NOT WORKING.</li>
 </ul>
@@ -131,7 +131,7 @@ standard pyLIMA parameters needed to compute a model.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fancy_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; the parameters you fit</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fancy_parameters</strong> (<em>list</em>) &#8211; the parameters you fit</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">pyLIMA parameters</td>
 </tr>
@@ -657,7 +657,7 @@ From Hwang et al 2013 : <a class="reference external" href="http://iopscience.io
 
 <dl class="method">
 <dt id="pyLIMA.microlmodels.ModelRRLyraeFS.compute_radius">
-<code class="descname">compute_radius</code><span class="sig-paren">(</span><em>Teff</em>, <em>time</em>, <em>telescope_V</em>, <em>pyLIMA_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_radius" title="Permalink to this definition">¶</a></dt>
+<code class="descname">compute_radius</code><span class="sig-paren">(</span><em>Teff</em>, <em>time</em>, <em>telescope_V</em>, <em>pyLIMA_parameters</em>, <em>magic_table=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmodels.html#ModelRRLyraeFS.compute_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmodels.ModelRRLyraeFS.compute_radius" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
