@@ -160,6 +160,10 @@ class MLFits(object):
 
                 self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
+        if self.method == 'TRF':
+
+
+                self.fit_results, self.fit_covariance, self.fit_time = self.trust_region_reflective()
         if self.method == 'DE':
             self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
 
@@ -578,7 +582,7 @@ class MLFits(object):
 
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
-                                                    Dfun=self.LM_Jacobian, col_deriv=1, full_output=1, ftol=10 ** -6,
+                                                    Dfun=self.LM_Jacobian, col_deriv=0, full_output=1, ftol=10 ** -6,
                                                     xtol=10 ** -10, gtol=10 ** -5)
         else:
 
@@ -612,7 +616,7 @@ class MLFits(object):
                 print ' Attempt to construct a rough covariance matrix'
                 jacobian = self.LM_Jacobian(fit_result)
 
-                covariance_matrix = np.linalg.inv(np.dot(jacobian, jacobian.T))
+                covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
                 # Normalise the output by the reduced chichi
                 covariance_matrix = covariance_matrix * fit_result[-1] / (n_data - n_parameters)
 
@@ -704,7 +708,55 @@ class MLFits(object):
 
             start_index = index[-1] + 1
 
-        return jacobi
+        return jacobi.T
+
+    def trust_region_reflective(self):
+
+        starting_time = python_time.time()
+
+        # use the analytical Jacobian (faster) if no second order are present, else let the
+        # algorithm find it.
+        if self.guess == []:
+            self.guess = self.initial_guess()
+
+        for index,telescope in enumerate(self.event.telescopes):
+            if self.guess[self.model.model_dictionnary['g_'+telescope.name]] <0:
+                self.guess[self.model.model_dictionnary['g_' + telescope.name]] = 0
+
+        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
+        bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
+
+        if self.model.Jacobian_flag == 'OK':
+            trf_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, max_nfev=50000,
+                                                    jac=self.LM_Jacobian,bounds=(bounds_min,bounds_max),  ftol=10 ** -6,
+                                                    xtol=10 ** -10, gtol=10 ** -5)
+        else:
+
+            trf_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, max_nfev=50000,
+                                                    bounds=(bounds_min,bounds_max),  ftol=10 ** -6,
+                                                    xtol=10 ** -10, gtol=10 ** -5)
+        computation_time = python_time.time() - starting_time
+
+        fit_result = np.copy(trf_fit['x']).tolist()
+        fit_result += [2*trf_fit['cost']]
+
+
+        try:
+
+            jacobian = trf_fit['jac']
+
+        except:
+
+            jacobian = self.LM_Jacobian(fit_result)
+
+        covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
+        n_data = 0
+        for telescope in self.event.telescopes:
+            n_data = n_data + telescope.n_data('flux')
+
+        n_parameters = len(self.model.model_dictionnary)
+        covariance_matrix *= fit_result[-1] / (n_data - n_parameters)
+        return fit_result, covariance_matrix, computation_time
 
     def chichi_telescopes(self, fit_process_parameters):
         """Return a list of chi^2 (float) for individuals telescopes.

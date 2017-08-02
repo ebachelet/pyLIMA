@@ -90,7 +90,7 @@ class Event(object):
 
         """
         available_kind = ['Microlensing']
-        available_methods = ['LM', 'DE', 'MCMC', 'GRIDS']
+        available_methods = ['LM', 'DE', 'MCMC', 'GRIDS','TRF']
 
         if self.kind not in available_kind:
             print 'ERROR : No possible fit yet for a non microlensing event, sorry :('
