@@ -335,8 +335,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
         if np.min(theoritical_flux>0):
             pass
         else:
-            import pdb;
-            pdb.set_trace()
+            theoritical_flux = np.abs(theoritical_flux)
         flux_error = poisson_noise(theoritical_flux)
         observed_flux = noisy_observations(theoritical_flux, flux_error)
 

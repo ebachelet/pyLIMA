@@ -1,4 +1,4 @@
-// VBBinaryLensing v2.0
+// VBBinaryLensing v1.2.1
 // This code has been developed by Valerio Bozza, University of Salerno.
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
@@ -67,6 +67,7 @@ VBBinaryLensing::VBBinaryLensing(){
 	ndatasat=0;
 	satellite=0;
 	parallaxsystem=0;
+	minannuli=1;
 }
 
 VBBinaryLensing::~VBBinaryLensing(){
@@ -683,7 +684,7 @@ double VBBinaryLensing::BinaryMagDark(double a,double q,double y1,double y2,doub
 	int c=0,flag;
 	double currerr,maxerr;
 	annulus *first,*scan,*scan2;
-	int nannuli,nannold;
+	int nannold;
 //		static double Mags[256];	
 	_sols *Images;
 
@@ -725,7 +726,7 @@ double VBBinaryLensing::BinaryMagDark(double a,double q,double y1,double y2,doub
 			currerr=scan->err;
 			flag=0;
 			nannuli=nannold=1;
-			while((flag<nannold+5)&&(currerr>Tolv)){
+			while(((flag<nannold+5)&&(currerr>Tolv))|| (nannuli<minannuli)){
 				maxerr=0;
 				for(scan2=first->next;scan2;scan2=scan2->next){
 #ifdef _PRINT_ERRORS_DARK
@@ -821,7 +822,6 @@ double VBBinaryLensing::BinaryMagDark(double a,double q,double y1,double y2,doub
 	//	Mag=-Mag;
 	//}
 
-	phi=nannuli;
 	return Mag;
 }
 
@@ -873,7 +873,7 @@ double VBBinaryLensing::BinSourceXallarapMag(double *pr,double t){
 	static double y1,y2,q,a,th,u0;
 	int c=0;
 
-	q=sqrt(sqrt(FR)); // Attenzione! q dovrebbe essere in realtà un parametro libero ma non troppo. Da rivedere
+	q=sqrt(sqrt(FR)); // Attenzione! q dovrebbe essere in realt\E0 un parametro libero ma non troppo. Da rivedere
 	a=sqrt((u1-u2)*(u1-u2)+(t01-t02)*(t01-t02)/(tE*tE));
 	th=atan((u1-u2)*tE/(t01-t02));
 	u0=(u1+u2*q)/(1+q);
@@ -1362,7 +1362,7 @@ double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,doub
 #ifdef _PRINT_ERRORS2
 		printf("\nNPS= %d Mag = %lf maxerr= %lg currerr =%lg th = %lf",NPS,Mag/(M_PI*RSv*RSv),maxerr/(M_PI*RSv*RSv),currerr/(M_PI*RSv*RSv),th);
 #endif
-	}while((currerr>errimage)&&(NPS<NPSmax)&&((flag<NPSold)/*||(currerr>10*errimage)*/)/*&&(flagits)*/);
+	}while((currerr>errimage)&&(NPS<NPSmax)&&((flag<NPSold)/* || NPS<8 ||(currerr>10*errimage)*/)/*&&(flagits)*/);
 	Mag/=(M_PI*RSv*RSv);
 	phi=currerr/(M_PI*RSv*RSv);
 	phip=NPS;
@@ -2448,7 +2448,7 @@ double rf(double x, double y, double z)
 double rd(double x, double y, double z)
 //Computes Carlson?s elliptic integral of the second kind, RD(x, y, z). x and y must be nonnegative,
 //and at most one can be zero. z must be positive. TINY must be at least twice the
-//negative 2/3 power of the machine overflow limit. BIG must be at most 0.1 × ERRTOL times
+//negative 2/3 power of the machine overflow limit. BIG must be at most 0.1 \D7 ERRTOL times
 //the negative 2/3 power of the machine underflow limit.
 {
 	double alamb,ave,delx,dely,delz,ea,eb,ec,ed,ee,fac,sqrtx,sqrty,
