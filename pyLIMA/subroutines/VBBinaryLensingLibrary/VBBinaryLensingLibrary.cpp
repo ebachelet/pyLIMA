@@ -1,9 +1,13 @@
-// VBBinaryLensing v1.1.1
+// VBBinaryLensing v2.0
 // This code has been developed by Valerio Bozza, University of Salerno.
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
 
-#include "stdafx.h" //(if you are in Visual Studio, you may require this line)
+#ifdef _WIN32
+char systemslash='\\';
+#else
+char systemslash='/';
+#endif
 
 #include "VBBinaryLensingLibrary.h"
 #define _USE_MATH_DEFINES
@@ -68,6 +72,7 @@ VBBinaryLensing::VBBinaryLensing(){
 VBBinaryLensing::~VBBinaryLensing(){
 	if(nsat){
 		for(int i=0;i<nsat;i++){
+			for(int j=0;j<ndatasat[i];j++) free(possat[i][j]);
 			free(tsat[i]);
 			free(possat[i]);
 		}
@@ -172,6 +177,7 @@ void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir){
 
 	if(nsat){
 		for(int i=0;i<nsat;i++){
+			for(int j=0;j<ndatasat[i];j++) free(possat[i][j]);
 			free(tsat[i]);
 			free(possat[i]);
 		}
@@ -196,7 +202,7 @@ void VBBinaryLensing::SetObjectCoordinates(char *modelfile,char *sateltabledir){
 
 
 // Looking for satellite table files in the specified directory
-	sprintf(filename,"%s\\satellite*.txt",sateltabledir);
+	sprintf(filename,"%s%csatellite*.txt",sateltabledir,systemslash);
 	nsat=0;
 	for(unsigned char c=32;c<255;c++){
 		filename[strlen(filename)-5]=c;
@@ -395,7 +401,7 @@ void VBBinaryLensing::ComputeParallax(double t,double t0,double *Et){
 	}
 	Et[0]+=-Et0[0]-vt0[0]*(t-t0);
 	Et[1]+=-Et0[1]-vt0[1]*(t-t0);
-	
+
 	if(satellite>0 && satellite <=nsat){
 		if(ndatasat[satellite-1]>2){
 			int left,right;
@@ -539,6 +545,35 @@ double VBBinaryLensing::BinaryLightCurve(double *pr,double t){
 	if(fabs(tn)<10.){
 		while((Mag<0.9)&&(c<3)){
 			Mag= BinaryMag(exp(pr[0]),exp(pr[1]),y_1,y_2,exp(pr[4]),Tolv,&Images);
+			Tolv/=10;
+			c++;
+			delete Images;
+		}
+	}else{
+		Mag=-Mag;
+	}
+
+	return Mag;
+}
+
+double VBBinaryLensing::BinaryLightCurveW(double *pr,double t){
+	double Mag=-1.0,Tolv=Tol,a,q,xc,t0,u0,tn,tE;
+	int c=0;
+	_sols *Images;
+	a=exp(pr[0]);
+	q=exp(pr[1]);
+	tE=exp(pr[5]);
+	xc=(a-1/a)/(1+exp(pr[1]));
+	if(xc<0) xc=0.;
+	t0=pr[6]+xc*cos(pr[3])*tE;
+	u0=pr[2]+xc*sin(pr[3]);
+	tn=(t-t0)/tE;
+
+	y_1=u0*sin(pr[3])-tn*cos(pr[3]);
+	y_2=-u0*cos(pr[3])-tn*sin(pr[3]);
+	if(fabs(tn)<10.){
+		while((Mag<0.9)&&(c<3)){
+			Mag= BinaryMag(a,q,y_1,y_2,exp(pr[4]),Tolv,&Images);
 			Tolv/=10;
 			c++;
 			delete Images;
@@ -898,44 +933,31 @@ double VBBinaryLensing::BinSourceXallarapMag(double *pr,double t){
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 
-_curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
-	static complex  yc,z,zc,zr[5]={0.,0.,0.,0.,0.},dy,dz,dJ;
+_curve *VBBinaryLensing::NewImages(complex yi,complex  *coefs,_theta *theta){
+	static complex  y,yc,z,zc,zr[5]={0.,0.,0.,0.,0.},dy,dz,dJ;
 	static double dzmax,dlmax=1.0e-6,good[5];
 	static int worst1,worst2,worst3,bad,f1;
-	static double centeroffset,av=0.0,m1v=0.0,disim,disisso;
+	static double av=0.0,m1v=0.0,disim,disisso;
 	static _curve *Prov;
-	static _point *scan,*scan2,*prin,*fifth,*left,*right,*center;
+	static _point *scan,*prin,*fifth,*left,*right,*center;
 
 #ifdef _PRINT_TIMES
 	static double tim0,tim1;
 #endif
 
-	if((coefs[20].re!=av)||(coefs[21].re!=m1v)){
-		centeroffset= coefs[20].re/2.0*(coefs[22].re-coefs[21].re);
-		av=coefs[20].re;
-		m1v=coefs[21].re;
-	}
-
+	y=yi+coefs[11];
 	yc=conj(y);
 
-	coefs[5]=coefs[8] - coefs[6]*yc*yc;
-	coefs[4]=coefs[14]-yc*coefs[6]-coefs[5]*y;
-	coefs[3]=coefs[15]-yc*coefs[9];
-	coefs[2]=coefs[3]*y*yc+y*coefs[12]+coefs[18];
-	coefs[0]=yc*coefs[16]-yc*yc*coefs[11];
-	coefs[1]=y*coefs[3]+coefs[0]+coefs[19];
-	coefs[3]=-yc*coefs[3]+y*yc*coefs[7]+coefs[10];
-	coefs[0]=-y*coefs[0]+coefs[17]+y*coefs[13]+yc*coefs[11];
-	
-	//if((coefs[0].re>0.0001217333571557066)&&(coefs[0].re<0.0001217333571557067)){
-	//	complex sc;
-	//	sc=zr[0];
-	//	zr[0]=zr[4];
-	//	zr[4]=sc;
-	//	sc=zr[1];
-	//	zr[1]=zr[3];
-	//	zr[3]=sc;
-	//}
+	/* coefs[6]=a*a; coefs[7]=a*a*a; coefs[8]=m2*m2; coefs[9]=a*a*m2*m2; coefs[10]=a*m2; coefs[11]=a*m1; coefs[20]=a; coefs[21]=m1; coefs[22]=m2;*/
+
+	coefs[0]=coefs[9]*y;
+	coefs[1]=coefs[10]*(coefs[20]*(coefs[21]+y*(2*yc-coefs[20]))-2*y);
+	coefs[2]=y*(1-coefs[7]*yc)-coefs[20]*(coefs[21]+2*y*yc*(1+coefs[22]))+coefs[6]*(yc*(coefs[21]-coefs[22])+y*(1+coefs[22]+yc*yc));
+	coefs[3]=2*y*yc+coefs[7]*yc+coefs[6]*(yc*(2*y-yc)-coefs[21])-coefs[20]*(y+2*yc*(yc*y-coefs[22]));
+	coefs[4]=yc*(2*coefs[20]+y);
+	coefs[4]=yc*(coefs[4]-1)-coefs[20]*(coefs[4]-coefs[21]);
+	coefs[5]=yc*(coefs[20]-yc);
+
 	bad=1;
 	dzmax=1.0e-12;
 	disim=-1.;
@@ -955,7 +977,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 		for(int i=0;i<5;i++){
 			z=zr[i];
 			zc=conj(z);
-			good[i]=abs(_LL);
+			good[i]=abs(_LL); // Lens equation check
 			switch(i){
 				case 0:
 					worst1=i;
@@ -995,7 +1017,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 			//	worst2=i;
 			//}
 		}
-		if((good[worst3]<dlmax)&&((good[worst1]<dlmax)||(good[worst2]>1.e3*good[worst3]))){
+		if((good[worst3]<dlmax)&&((good[worst1]<dlmax)||(good[worst2]>1.e2*good[worst3]))){
 			bad=0;
 		} else{
 			if((disim>0)&&(good[worst3]/disim>0.99)){
@@ -1015,10 +1037,10 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 	if(good[worst1]>dlmax){
 		for(int i=0;i<5;i++){
 			if((i!=worst1)&&(i!=worst2)){
-				if((i==worst3)&&(good[i]>dlmax)){
-					zr[i]=0.5*coefs[20]+coefs[21]/(0.5*coefs[20]-yc-coefs[22]/coefs[20]);
-				}
-				Prov->append(zr[i].re + centeroffset,zr[i].im);
+				//if((i==worst3)&&(good[i]>dlmax)&&(good[worst2]>1.e2*good[worst3])){
+				//	zr[i]=(coefs[21].re<coefs[22].re)? 0.5*coefs[20]+coefs[21]/(0.5*coefs[20]-yc-coefs[22]/coefs[20]) : -0.5*coefs[20]+coefs[22]/(-0.5*coefs[20]-yc+coefs[21]/coefs[20]);
+				//}
+				Prov->append(zr[i].re,zr[i].im);
 
 				zc=complex(Prov->last->x1, - Prov->last->x2);
 				z=_J1c;
@@ -1026,6 +1048,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 				dy=complex(-sin(theta->th),cos(theta->th))*coefs[23];
 				dz=(dy-z*conj(dy))/dJ;
 				z=conj(zc);
+				Prov->last->x1-=coefs[11].re;
 				Prov->last->d=dz;
 				Prov->last->dJ=dJ.re;
 				Prov->last->ds=(imag(dy*dz*dz*_J2)+coefs[23].re*coefs[23].re)/dJ.re;
@@ -1039,7 +1062,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 	}else{
 		f1=0;
 		for(int i=0;i<5;i++){
-			Prov->append(zr[i].re + centeroffset,zr[i].im);
+			Prov->append(zr[i].re,zr[i].im);
 
 			zc=complex(Prov->last->x1, - Prov->last->x2);
 			z=_J1c;
@@ -1047,6 +1070,7 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 			dy=complex(-sin(theta->th),cos(theta->th))*coefs[23];
 			dz=(dy-z*conj(dy))/dJ;
 			z=conj(zc);
+			Prov->last->x1-=coefs[11].re;
 			Prov->last->d=dz;
 			Prov->last->dJ=dJ.re;
 			Prov->last->ds=(imag(dy*dz*dz*_J2)+coefs[23].re*coefs[23].re)/dJ.re;
@@ -1101,6 +1125,15 @@ _curve *VBBinaryLensing::NewImages(complex y,complex  *coefs,_theta *theta){
 	}
 	return Prov;
 }
+
+double VBBinaryLensing::BinaryMag0(double a1,double q1,double y1v,double y2v){
+	_sols *images;
+	double mag;
+	mag=BinaryMag0(a1,q1,y1v,y2v,&images);
+	delete images;
+	return mag;
+}
+
 double VBBinaryLensing::BinaryMag0(double a1,double q1,double y1v,double y2v,_sols **Images){
 	static complex a,q,m1,m2,y;
 	static double av=-1.0,qv=-1.0;
@@ -1112,35 +1145,31 @@ double VBBinaryLensing::BinaryMag0(double a1,double q1,double y1v,double y2v,_so
 
 	stheta=new _theta(0.);
 	if((a1!=av)||(q1!=qv)){
-		a=complex(a1,0.0);
-		q=complex(q1,0.0);
-		m2= 1.0/(1.0+q);
-		m1=q*m2;
-		complex  a2=a*a,a3=a2*a,a4=a3*a,a6=a2*a4,d2m1=2.0*m1-1.0;
-		
-		coefs[6]=64.0;
-		coefs[7]=128.0;
-		coefs[8]=16.0*a2;
-		coefs[9]=32.0*a2;
-		coefs[10]=-8.0*a4;
-		coefs[11]=4.0*a4;
-		coefs[12]=8.0*(8.0+a4);
-		coefs[13]=16.0*a2*d2m1*d2m1-a6;
-		coefs[14]=32.0*a*d2m1;
-		coefs[15]=2.0*coefs[14];
-		coefs[16]=16.0*a3*d2m1;
-		coefs[17]=2.0*a3*d2m1*(a2-4.0);
-		coefs[18]=-16.0*a*(2.0+a2)*d2m1;
-		coefs[19]=a2*(a4-32.0-64.0*m1*(m1-1.0));
+		av=a1;
+		qv=q1;
+		if(q1<1){
+			a=complex(-a1,0);
+			q=complex(q1,0);
+		}else{
+			a=complex(a1,0);
+			q=complex(1/q1,0);
+		}
+		m1=1.0/(1.0+q);
+		m2=q*m1;
+
 		coefs[20]=a;
 		coefs[21]=m1;
 		coefs[22]=m2;
+		coefs[6]=a*a; 
+		coefs[7]=coefs[6]*a; 
+		coefs[8]=m2*m2; 
+		coefs[9]=coefs[6]*coefs[8]; 
+		coefs[10]=a*m2;
+		coefs[11]=a*m1;
+		coefs[23]=0;
 
-		av=a1;
-		qv=q1;
-		coefs[23]=0.;
 	}
-	y=complex (y1v,y2v)-a/2.0*(1.0-q)/(1.0+q);
+	y=complex (y1v,y2v);
 	(*Images)=new _sols;
 	Prov=NewImages(y,coefs,stheta);
 	Mag=0.;
@@ -1176,15 +1205,15 @@ double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,doub
 double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,double RSv,double Tol,_sols **Images){
 	static complex a,q,m1,m2,y0,y,yc,z,zc;
 	static double av=-1.0,qv=-1.0;
-	static complex  coefs[24],d1,d2,dy,dJ,dz;
+	static complex coefs[24],d1,d2,dy,dJ,dz;
 	static double thoff=0.01020304;
-	double Mag=-1.0,th;
-	double errimage,maxerr,currerr,Magold;
-	int NPS,NPSmax,flag,NPSold;
-	_curve *Prov,*Prov2;
-	_point *scan1,*scan2;
-	_thetas *Thetas;
-	_theta *stheta,*itheta;
+	static double Mag=-1.0,th;
+	static double errimage,maxerr,currerr,Magold;
+	static int NPS,NPSmax,flag,NPSold;
+	static _curve *Prov,*Prov2;
+	static _point *scan1,*scan2;
+	static _thetas *Thetas;
+	static _theta *stheta,*itheta;
 
 #ifdef _PRINT_TIMES
 	static double tim0,tim1;
@@ -1194,36 +1223,32 @@ double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,doub
 // Initialization of the equation coefficients
 
 	if((a1!=av)||(q1!=qv)){
-		a=complex(a1,0.0);
-		q=complex(q1,0.0);
-		m2= 1.0/(1.0+q);
-		m1=q*m2;
-		complex  a2=a*a,a3=a2*a,a4=a3*a,a6=a2*a4,d2m1=2.0*m1-1.0;
-		
-		coefs[6]=64.0;
-		coefs[7]=128.0;
-		coefs[8]=16.0*a2;
-		coefs[9]=32.0*a2;
-		coefs[10]=-8.0*a4;
-		coefs[11]=4.0*a4;
-		coefs[12]=8.0*(8.0+a4);
-		coefs[13]=16.0*a2*d2m1*d2m1-a6;
-		coefs[14]=32.0*a*d2m1;
-		coefs[15]=2.0*coefs[14];
-		coefs[16]=16.0*a3*d2m1;
-		coefs[17]=2.0*a3*d2m1*(a2-4.0);
-		coefs[18]=-16.0*a*(2.0+a2)*d2m1;
-		coefs[19]=a2*(a4-32.0-64.0*m1*(m1-1.0));
+		av=a1;
+		qv=q1;
+		if(q1<1){
+			a=complex(-a1,0);
+			q=complex(q1,0);
+		}else{
+			a=complex(a1,0);
+			q=complex(1/q1,0);
+		}
+		m1=1.0/(1.0+q);
+		m2=q*m1;
+
 		coefs[20]=a;
 		coefs[21]=m1;
 		coefs[22]=m2;
+		coefs[6]=a*a; 
+		coefs[7]=coefs[6]*a; 
+		coefs[8]=m2*m2; 
+		coefs[9]=coefs[6]*coefs[8]; 
+		coefs[10]=a*m2;
+		coefs[11]=a*m1;
 
-		av=a1;
-		qv=q1;
 	}
 	coefs[23]=RSv;
 
-	y0=complex (y1v,y2v)-a/2.0*(1.0-q)/(1.0+q);
+	y0=complex (y1v,y2v);
 	NPS=1;
 	if(Tol>1.){
 		errimage=0.;
@@ -1242,10 +1267,11 @@ double VBBinaryLensing::BinaryMag(double a1,double q1,double y1v,double y2v,doub
 	stheta->maxerr=1.e100;
 	y=y0+complex(RSv*cos(thoff),RSv*sin(thoff));
 
+
 #ifdef _PRINT_TIMES
 		tim0=Environment::TickCount;
 #endif
-   	Prov=NewImages(y,coefs,stheta);
+  	Prov=NewImages(y,coefs,stheta);
 #ifdef _PRINT_TIMES
 		tim1=Environment::TickCount;
 		GM+=tim1-tim0;
@@ -2293,7 +2319,7 @@ void VBBinaryLensing::laguer(complex *a, int m, complex *x, int *its,double dzma
 	static int iter,j;
 	static double abx,abp,abm,err;
 	static complex dx,x1,b,d,f,g,h,sq,gp,gm,g2;
-	double frac[MR+1]={0.0,0.5,0.25,0.75,0.13,0.38,0.62,0.88,1.0};
+	static double frac[MR+1]={0.0,0.5,0.25,0.75,0.13,0.38,0.62,0.88,1.0};
 
 	for(iter=1;iter<=MAXIT;iter++){
 		*its=iter;
