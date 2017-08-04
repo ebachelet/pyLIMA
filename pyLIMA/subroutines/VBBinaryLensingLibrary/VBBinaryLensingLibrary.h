@@ -1,4 +1,4 @@
-// VBBinaryLensing v1.2.1
+// VBBinaryLensing v2.0
 // This code has been developed by Valerio Bozza, University of Salerno.
 // Any use of this code for scientific publications should be acknowledged by a citation to
 // V. Bozza, MNRAS 408 (2010) 2188
@@ -51,7 +51,6 @@ namespace VBBinaryLensingLibrary {
 
 		double Tol;
 		int satellite,parallaxsystem,nsat;
-		int minannuli,nannuli;
 		double y_1,y_2,av;
 
 		_sols *PlotCrit(double,double);
