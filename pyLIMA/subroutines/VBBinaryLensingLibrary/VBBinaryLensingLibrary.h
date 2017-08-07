@@ -51,6 +51,7 @@ namespace VBBinaryLensingLibrary {
 
 		double Tol;
 		int satellite,parallaxsystem,nsat;
+		int minannuli,nannuli;
 		double y_1,y_2,av;
 
 		_sols *PlotCrit(double,double);
