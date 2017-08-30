@@ -194,7 +194,7 @@ def test_LM_Jacobian():
     parameters = [to, uo, tE, rho, fs, g]
 
     Jacobian = fit.LM_Jacobian(parameters)
-
+    Jacobian = Jacobian.T
     assert Jacobian.shape == (6, len(current_event.telescopes[0].lightcurve_flux))
 
 

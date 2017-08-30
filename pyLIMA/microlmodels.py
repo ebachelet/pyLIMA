@@ -184,6 +184,10 @@ class MLModel(object):
 
         self.define_pyLIMA_standard_parameters()
 
+        self.optimal_geometric_center = None
+
+        self.x_center = None
+        self.y_center = None
     @abc.abstractproperty
     def model_type(self):
         pass
@@ -748,9 +752,16 @@ class ModelUSBL(MLModel):
         :rtype: array_like
         """
 
-        source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
-                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+        if self.optimal_geometric_center:
 
+            new_to, new_uo = self.change_origin_center(pyLIMA_parameters)
+
+            source_trajectoire = self.source_trajectory(telescope, new_to, new_uo,
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
+        else:
+
+            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
         magnification = np.zeros(len(source_trajectoire[0]))
 
         # for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
@@ -818,6 +829,29 @@ class ModelUSBL(MLModel):
         self.critical_curves = critical_curves
         self.area_of_interest = area_of_interest
 
+    def change_origin_center(self, pyLIMA_parameters):
+
+        if self.x_center:
+            new_origin_x = self.x_center
+            new_origin_y = self.y_center
+
+        else:
+
+            new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_caustics_center(
+                10 ** pyLIMA_parameters.logs,
+                10 ** pyLIMA_parameters.logq)
+
+            self.x_center = new_origin_x
+            self.y_center = new_origin_y
+
+        new_to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+                                                                new_origin_y * np.sin(pyLIMA_parameters.alpha))
+
+        new_uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+                                         new_origin_y * np.cos(pyLIMA_parameters.alpha))
+
+        return new_to, new_uo
+
 
 class ModelPSBL(MLModel):
     @property
@@ -850,7 +884,15 @@ class ModelPSBL(MLModel):
         :rtype: array_like,array_like
         """
 
-        source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+        if self.optimal_geometric_center:
+
+            new_to, new_uo = self.change_origin_center(pyLIMA_parameters)
+
+            source_trajectoire = self.source_trajectory(telescope, new_to, new_uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+        else:
+
+            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
         magnification = np.zeros(len(source_trajectoire[0]))
@@ -891,6 +933,29 @@ class ModelPSBL(MLModel):
         self.critical_curves = critical_curves
         self.area_of_interest = area_of_interest
 
+    def change_origin_center(self, pyLIMA_parameters):
+
+        if self.x_center:
+            new_origin_x = self.x_center
+            new_origin_y = self.y_center
+
+        else:
+
+            new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_caustics_center(
+                                     10**pyLIMA_parameters.logs,
+                                     10**pyLIMA_parameters.logq)
+
+            self.x_center = new_origin_x
+            self.y_center = new_origin_y
+
+        new_to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+                                                                new_origin_y * np.sin(pyLIMA_parameters.alpha))
+
+        new_uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+                                         new_origin_y * np.cos(pyLIMA_parameters.alpha))
+
+
+        return new_to, new_uo
 
 class ModelRRLyraePL(MLModel):
     @property

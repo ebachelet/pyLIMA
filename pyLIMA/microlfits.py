@@ -28,6 +28,7 @@ import microloutputs
 import microlguess
 import microltoolbox
 import microlpriors
+import microlcaustics
 
 warnings.filterwarnings("ignore")
 
@@ -489,8 +490,8 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
-            tol=0.0001, strategy='best2bin',
+            mutation=(0.5, 1.8), popsize=int(self.DE_population_size), maxiter=5000,
+            tol=0.0001, strategy='rand2bin',
             recombination=0.7, polish=True,
             disp=True
         )
@@ -540,10 +541,12 @@ class MLFits(object):
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
 
-
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             chichi += (residus ** 2).sum()
+
+        self.model.x_center = None
+        self.model.y_center = None
 
         return chichi
 
@@ -653,6 +656,7 @@ class MLFits(object):
         residuals = np.array([])
         # start = python_time.time()
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
             residus = self.model_residuals(telescope, pyLIMA_parameters)
@@ -720,12 +724,15 @@ class MLFits(object):
             self.guess = self.initial_guess()
 
         for index,telescope in enumerate(self.event.telescopes):
-            if self.guess[self.model.model_dictionnary['g_'+telescope.name]] <0:
-                self.guess[self.model.model_dictionnary['g_' + telescope.name]] = 0
+            if self.guess[self.model.model_dictionnary['g_'+telescope.name]] <-1.0:
+                self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -1.0
 
+       # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
+       # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
         bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
         bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
-
+        import pdb;
+        pdb.set_trace()
         if self.model.Jacobian_flag == 'OK':
             trf_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, max_nfev=50000,
                                                     jac=self.LM_Jacobian,bounds=(bounds_min,bounds_max),  ftol=10 ** -6,

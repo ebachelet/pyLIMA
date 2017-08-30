@@ -11,7 +11,15 @@ import scipy.spatial as ss
 import matplotlib.pyplot as plt
 
 def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolution = 1000):
+    """  Find and sort caustics for a binary lens
 
+        :param float separation: the projected normalised angular distance between the two bodies
+        :param float mass_ratio: the mass ratio of the two bodies
+        :param int resolution: number of points desired in the caustic computation.
+
+        :return: the caustic regime,  the sorted caustics and the critical curve
+        :rtype: str, list of array_like, list of array_like
+    """
     close_top_caustic = None
     close_top_cc = None
     close_bottom_caustic = None
@@ -50,7 +58,14 @@ def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolutio
 
 
 def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
+    """ Sort the caustic points to have regular resonant caustic
 
+        :param array_like caustic_points: the points of the caustics, in complex notation
+        :param array_like critical_curves_points: the points of the critical curve, in complex notation
+
+        :return: the resonant caustic,  the resonant critical curve
+        :rtype:  array_like, array_like
+    """
 
 
 
@@ -101,7 +116,15 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
     return resonant_caustic, resonant_cc
 
 def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
+    """ Sort the caustic points to have one central caustic and two "planetary" caustics
 
+        :param array_like caustic_points: the points of the caustics, in complex notation
+        :param array_like critical_curves_points: the points of the critical curve, in complex notation
+
+        :return: the central caustic,  the top planetary caustic, the bottom planetary caustic,
+        the central critical curve, the top critical curve, the bottom critical curve
+        :rtype:  array_like, array_like, array_like, array_like, array_like, array_like
+    """
     median_x = np.median(caustic_points[:, :].real, axis=0)
     median_y = np.median(caustic_points[:, :].imag, axis=0)
 
@@ -125,13 +148,21 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
 
 
 def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
+    """ Sort the caustic points to have one central caustic and one "planetary" caustics
 
+        :param array_like caustic_points: the points of the caustics, in complex notation
+        :param array_like critical_curves_points: the points of the critical curve, in complex notation
+
+        :return: the central caustic,  the  planetary caustic, the central critical curve,
+        the planetary critical curve
+        :rtype:  array_like, array_like, array_like, array_like
+    """
 
     median_x = np.median(caustic_points[:, :].real, axis=0)
 
     global_median_x = np.median(caustic_points[:, :].real, axis=(0, 1))
 
-    wide_caustic_index = np.where((median_x < global_median_x))[0]
+    wide_caustic_index = np.where((median_x > global_median_x))[0]
     wide_caustic = np.r_[caustic_points[:, wide_caustic_index[0]], caustic_points[:, wide_caustic_index[1]]]
     wide_cc = np.r_[critical_curves_points[:, wide_caustic_index[0]],
                     critical_curves_points[:, wide_caustic_index[1]]]
@@ -141,12 +172,24 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
     index_left.remove(wide_caustic_index[1])
     central_caustic = np.r_[caustic_points[:, index_left[0]], caustic_points[:, index_left[1]]]
     central_cc = np.r_[critical_curves_points[:, index_left[0]],
-                       critical_curves_points[:, index_left[1]]]
+                           critical_curves_points[:, index_left[1]]]
 
     return central_caustic, wide_caustic, central_cc, wide_cc
 
 def compute_2_lenses_caustics_points(separation, mass_ratio, resolution = 1000):
+    """  Find the critical curve points and caustics points associated to a binary lens. See :
+         "On the Minimum Magnification Between Caustic Crossings for Microlensing by Binary and Multiple Stars"
+         Witt and Mao 1995 http://adsabs.harvard.edu/abs/1995ApJ...447L.105W
+         "Investigation of high amplification events in light curves of gravitationally lensed quasars"
+         Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
+        :param float separation: the projected normalised angular distance between the two bodies
+        :param float mass_ratio: the mass ratio of the two bodies
+        :param int resolution: number of points desired in the caustic computation.
+                 :return: the central caustic,  the top planetary caustic, the bottom planetary caustic,
+                 the central critical curve, the top critical curve, the bottom critical curve
+                 :rtype:  array_like, array_like, array_like, array_like, array_like, array_like
+    """
     caustics = []
     critical_curves = []
 
@@ -162,7 +205,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution = 1000):
     lens_1_conjugate = np.conj(lens_1)
     lens_2_conjugate = np.conj(lens_2)
 
-    phi = np.linspace(0.0, 2*np.pi, resolution)
+    phi = np.linspace(0.01, 2*np.pi, resolution)
     roots = []
     wm_1 = 4.0 * lens_1 * delta_mass
     wm_3 = 0.0
@@ -183,6 +226,9 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution = 1000):
 
         polynomial_roots = np.roots(polynomial_coefficients)
 
+        #poly2 = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
+        #import pdb;
+        #pdb.set_trace()
         if len(roots) == 0 :
 
             pol_roots = polynomial_roots
@@ -205,8 +251,8 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution = 1000):
 
 
         images_conjugate = np.conj(pol_roots)
-        zeta_caustics = pol_roots + mass_1 / (lens_1_conjugate -  images_conjugate) + mass_2 / (
-            lens_2_conjugate -  images_conjugate)
+        zeta_caustics = pol_roots + mass_1 / (lens_1_conjugate - images_conjugate) + mass_2 / (
+            lens_2_conjugate - images_conjugate)
 
         if len(caustics) == 0:
             caustics = zeta_caustics
@@ -232,7 +278,14 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution = 1000):
 
 
 def find_area_of_interest_around_caustics(caustics,secure_factor = 0.1):
+    """  Find a box around the caustic, the are of interest.
 
+       :param list caustics: a list containing all array_like of caustics
+       :param float secure_factor: an extra limit around the box, in Einstein ring unit
+
+       :return: the are of interest,  a list containin x limits, y limits and x,y center
+       :rtype: list
+   """
     all_points = []
     for caustic in caustics:
 
@@ -259,38 +312,86 @@ def find_area_of_interest_around_caustics(caustics,secure_factor = 0.1):
 
 
 def find_2_lenses_caustic_regime(separation, mass_ratio):
+    """  Find the caustic regime.
+        "An alternative parameterisation for binary-lens caustic-crossing events"
+        Cassan A.2008 http://adsabs.harvard.edu/abs/2008A%26A...491..587C
+        "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The Caustic Region Of INfluence"
+        Penny M.2014 http://adsabs.harvard.edu/abs/2014ApJ...790..142P
 
-    #from Cassan 2008
+       :param float separation: the projected normalised angular distance between the two bodies
+       :param float mass_ratio: the mass ratio of the two bodies
 
-    #compute close limit
-    mass_ratio_constant = (1+mass_ratio)**2/(27*mass_ratio)
-
-    constant_1 = (1-3*mass_ratio_constant)/(mass_ratio_constant)
-    constant_2 = 3
-
-    polynomial_coefficients = [1,0,0,0,constant_1,0,0,0,constant_2,0,0,0,-1]
-    polynomial_roots = np.roots(polynomial_coefficients)
-
-    s_close = [i.real for i in polynomial_roots if (i.imag==0) & (i.real>0)][0]
-
-    #compute wide limit
-
-    s_wide = ((1+mass_ratio**(1/3))**3/(1+mass_ratio))**0.5
+       :return: caustic_regime: close, wide or resonant
+       :rtype: str
+   """
 
 
     caustic_regime = 'resonant'
 
-    if separation > s_wide:
+    wide_limit = ((1+mass_ratio**(1/3.0))**3/(1+mass_ratio))**0.5
+
+    if separation > wide_limit:
 
         caustic_regime = 'wide'
 
-    if separation < s_close:
+    close_limit = mass_ratio/(1+mass_ratio)**2
+
+    if 1/separation**8*((1-separation**4)/3)**3 > close_limit:
 
         caustic_regime = 'close'
+
 
     return caustic_regime
 
 
+def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
+    """  Define a new geometric center dependig of the caustic regime. This helps fit convergence sometimes:
+            resonant : (0,0)
+            close : (x_planetary_caustic, y_planetary_caustic)
+            wide : (x_planetary_caustic, y_planetary_caustic)
+
+        "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The Caustic Region Of INfluence"
+        Penny M.2014 http://adsabs.harvard.edu/abs/2014ApJ...790..142P
+        "Microlensing observations rapid search for exoplanets: MORSE code for GPUs"
+        McDougall A. and Albrow M. http://adsabs.harvard.edu/abs/2016MNRAS.456..565M
+
+       :param float separation: the projected normalised angular distance between the two bodies
+       :param float mass_ratio: the mass ratio of the two bodies
+
+
+       :return: x_center, y_center : the new system center
+       :rtype: str
+
+   """
+    x_center = 0
+    y_center = 0
+
+
+    caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
+
+
+    if caustic_regime == 'wide':
+
+        caustic_regime, caustics, critical_curve = find_2_lenses_caustics_and_critical_curves(separation,
+                                                                                              mass_ratio,
+                                                                                              resolution=10)
+
+        x_center = np.median(caustics[-2].real)
+
+    if caustic_regime == 'close':
+
+        caustic_regime, caustics, critical_curve = find_2_lenses_caustics_and_critical_curves(separation,
+                                                                                              mass_ratio,
+                                                                                              resolution=10)
+
+        x_center = np.median(caustics[1].real)
+        y_center = np.median(caustics[1].imag)
+
+    return x_center, y_center
+
+
+
+### DEPRECIATED
 def dx(function, x,args):
 
     return abs(0-function(x,args[0],args[1],args[2],args[3],args[4]))

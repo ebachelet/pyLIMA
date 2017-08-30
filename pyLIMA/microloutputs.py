@@ -854,9 +854,16 @@ def plot_LM_ML_geometry(fit):
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
-    trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
-                                                                pyLIMA_parameters.uo, pyLIMA_parameters.tE,
-                                                                pyLIMA_parameters)
+    if fit.model.optimal_geometric_center:
+
+        new_to, new_uo = fit.model.change_origin_center(pyLIMA_parameters)
+
+        trajectory_x,trajectory_y = fit.model.source_trajectory(reference_telescope, new_to, new_uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+    else:
+
+        trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
 
     figure_axes.plot(trajectory_x, trajectory_y, 'b')
 
