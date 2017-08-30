@@ -7,7 +7,7 @@ Created on Thu Aug 27 16:39:32 2015
 import collections
 import contextlib
 try:
-    from StringIO import StringIO
+    import StringIO
 except ImportError:
     from io import StringIO
 
