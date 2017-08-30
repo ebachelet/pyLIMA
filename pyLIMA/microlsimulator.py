@@ -5,10 +5,10 @@ from astropy.time import Time
 
 import matplotlib.pyplot as plt
 
-import microlmodels
-import microltoolbox
-import telescopes
-import event
+from pyLIMA import microlmodels
+from pyLIMA import microltoolbox
+from pyLIMA import telescopes
+from pyLIMA import event
 
 RED_NOISE = 'Yes'
 SOURCE_MAGNITUDE = [14, 22]

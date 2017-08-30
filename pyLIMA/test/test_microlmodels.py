@@ -101,7 +101,6 @@ def test_define_parameters_boundaries():
 
 def test_magnification_USBL_computation():
     event = _create_event()
-    print event.telescopes[0].lightcurve_flux
     Model = microlmodels.create_model('USBL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'logs', 'logq','alpha'])
 
@@ -124,7 +123,6 @@ def test_magnification_USBL_computation():
 
 def test_magnification_PSBL_computation():
     event = _create_event()
-    print event.telescopes[0].lightcurve_flux
     Model = microlmodels.create_model('PSBL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'logs', 'logq','alpha'])
 

@@ -92,26 +92,24 @@ def test_telescopes_names():
 
 
 def test_fit_bad_event_type():
+    current_event = event.Event()
+    current_event.kind = 'I am not microlensing'
 
-	current_event = event.Event()
-	current_event.kind = 'I am not microlensing'
-
-	with pytest.raises(event.EventException) as event_exception:
-        	current_event.fit('PSPL', 'LM')
-    	assert 'Can not fit this event kind' in str(event_exception)
+    with pytest.raises(event.EventException) as event_exception:
+        current_event.fit('PSPL', 'LM')
+    assert 'Can not fit this event kind' in str(event_exception)
 
 
 def test_fit_bad_method():
+    current_event = event.Event()
 
-	current_event = event.Event()
-	
-	with pytest.raises(event.EventException) as event_exception:
-        	current_event.fit('PSPL', 'I am not a fitter :)')
-    	assert 'Wrong fit method request' in str(event_exception)
+    with pytest.raises(event.EventException) as event_exception:
+        current_event.fit('PSPL', 'I am not a fitter :)')
+    assert 'Wrong fit method request' in str(event_exception)
 
-	with pytest.raises(event.EventException) as event_exception:
-        	current_event.fit('PSPL', 51)
-    	assert 'Wrong fit method request' in str(event_exception)
+    with pytest.raises(event.EventException) as event_exception:
+        current_event.fit('PSPL', 51)
+    assert 'Wrong fit method request' in str(event_exception)
 
 
 def test_find_survey():
@@ -170,7 +168,8 @@ def test_lightcurves_in_flux_sets_telescope_lightcurve_flux():
         assert np.allclose(telescope.lightcurve_flux, results[count])
         count += 1
 
-def test_find_survey_no_survey() :
+
+def test_find_survey_no_survey():
     current_event = event.Event()
 
     telescope1 = mock.MagicMock()
@@ -183,4 +182,3 @@ def test_find_survey_no_survey() :
     current_event.telescopes.append(telescope2)
 
     assert current_event.find_survey('NDG') == None
-

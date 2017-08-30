@@ -9,8 +9,8 @@ from __future__ import division
 import numpy as np
 import astropy.io.fits as fits
 
-import microltoolbox
-import microlparallax
+from pyLIMA import microltoolbox
+from pyLIMA import microlparallax
 
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected lightcurve format differs, please
 # indicate this in the correponding lightcurve_magnitude_dictionnary or lightcurve_flux_dictionnary, see below.
@@ -122,7 +122,7 @@ class Telescope(object):
             self.lightcurve_flux = self.lightcurve_in_flux()
 
             if clean_the_lightcurve == 'Yes':
-                 self.lightcurve_flux = self.clean_data_flux()
+                self.lightcurve_flux = self.clean_data_flux()
 
         if light_curve_flux is None:
 
@@ -136,11 +136,7 @@ class Telescope(object):
             if clean_the_lightcurve == 'Yes':
                 self.lightcurve_flux = self.clean_data_flux()
 
-
             self.lightcurve_magnitude = self.lightcurve_in_magnitude()
-
-
-
 
         self.location = 'Earth'
         self.altitude = 0.0  # meters
@@ -203,7 +199,6 @@ class Telescope(object):
 
         """
 
-
         self.gamma = star.find_gamma(self.filter)
 
     def compute_parallax(self, event, parallax):
@@ -214,7 +209,7 @@ class Telescope(object):
         """
         para = microlparallax.MLParallaxes(event, parallax)
         para.parallax_combination(self)
-        print 'Parallax(' + parallax[0] + ') estimated for the telescope ' + self.name + ': SUCCESS'
+        print('Parallax(' + parallax[0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
     def clean_data_magnitude(self):
         """
@@ -238,8 +233,8 @@ class Telescope(object):
                          (np.abs(self.lightcurve_magnitude[:, 2]) > maximum_accepted_precision))[0]
         if len(index) != 0:
             self.bad_points_magnitude = index
-            print 'pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \
-                   'bad_points_magnitude attribute.'
+            print('pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \
+                                                                                 'bad_points_magnitude attribute.')
 
         return lightcurve
 
@@ -258,19 +253,17 @@ class Telescope(object):
         flux = self.lightcurve_flux[:, 1]
         error_flux = self.lightcurve_flux[:, 2]
         index = np.where(
-            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) <= maximum_accepted_precision))[0]
-
+            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) <= maximum_accepted_precision))[
+            0]
 
         lightcurve = self.lightcurve_flux[index]
 
         index = np.where(
             (np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) > maximum_accepted_precision))[0]
         if len(index) != 0:
-
-
             self.bad_points_flux = index
-            print 'pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \
-                                                                             'bad_points_flux attribute.'
+            print('pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \
+                                                                                 'bad_points_flux attribute.')
         return lightcurve
 
     def lightcurve_in_flux(self):
@@ -312,7 +305,5 @@ class Telescope(object):
         error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
 
         ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T
-
-
 
         return ligthcurve_magnitude

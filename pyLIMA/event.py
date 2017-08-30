@@ -64,7 +64,7 @@ class Event(object):
         self.fits = []
 
     def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-            grid_resolution=10,computational_pool = None):
+            grid_resolution=10, computational_pool=None):
         """Function to fit the event with a model and a method.
 
 
@@ -90,28 +90,28 @@ class Event(object):
 
         """
         available_kind = ['Microlensing']
-        available_methods = ['LM', 'DE', 'MCMC', 'GRIDS','TRF']
+        available_methods = ['LM', 'DE', 'MCMC', 'GRIDS', 'TRF']
 
         if self.kind not in available_kind:
-            print 'ERROR : No possible fit yet for a non microlensing event, sorry :('
+            print('ERROR : No possible fit yet for a non microlensing event, sorry :(')
             raise EventException('Can not fit this event kind')
 
         if method not in available_methods:
-            print 'ERROR : Wrong method request, has to be a string selected between ' + \
-                  ' or '.join(available_methods) + ''
+            print('ERROR : Wrong method request, has to be a string selected between ' + \
+                  ' or '.join(available_methods) + '')
             raise EventException('Wrong fit method request')
 
         fit = microlfits.MLFits(self)
-        fit.mlfit(model, method, DE_population_size= DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
+        fit.mlfit(model, method, DE_population_size=DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
                   fix_parameters_dictionnary=fix_parameters_dictionnary,
-                  grid_resolution=grid_resolution, computational_pool = computational_pool)
+                  grid_resolution=grid_resolution, computational_pool=computational_pool)
 
         self.fits.append(fit)
 
     def telescopes_names(self):
         """Print the the telescope's names contain in the event.
         """
-        print [self.telescopes[i].name for i in xrange(len(self.telescopes))]
+        print([self.telescopes[i].name for i in xrange(len(self.telescopes))])
 
     def check_event(self):
         """Function to check if everything is correctly set before the fit.
@@ -146,13 +146,13 @@ class Event(object):
 
                 if (len(telescope.lightcurve_magnitude) == 0) & \
                         (len(telescope.lightcurve_flux) == 0):
-                    print 'ERROR : There is no associated lightcurve in magnitude or flux with ' \
+                    print('ERROR : There is no associated lightcurve in magnitude or flux with ' \
                           'this telescopes : ' \
-                          + telescope.name + ', add one with telescope.lightcurve = your_data'
+                          + telescope.name + ', add one with telescope.lightcurve = your_data')
                     raise EventException('There is no lightcurve associated to the  telescope ' + str(
                         telescope.name) + ', no fit possible!')
 
-        print sys._getframe().f_code.co_name, ' : Everything looks fine, this event can be fitted'
+        print(sys._getframe().f_code.co_name, ' : Everything looks fine, this event can be fitted')
 
     def find_survey(self, choice=None):
         """Function to find the survey telescope in the telescopes list,
@@ -174,7 +174,7 @@ class Event(object):
 
         else:
 
-            print 'ERROR : There is no telescope names containing ' + self.survey
+            print('ERROR : There is no telescope names containing ' + self.survey)
             return
 
     def lightcurves_in_flux(self, choice='Yes'):

@@ -10,6 +10,7 @@ from collections import OrderedDict
 import os.path
 import abc
 import sys
+from scipy import interpolate, misc
 
 thismodule = sys.modules[__name__]
 
@@ -17,15 +18,13 @@ import numpy as np
 import collections
 import time as python_time
 
-import microlguess
-import microlmagnification
-import microlpriors
-import microlparallax
-import microlorbitalmotion
-import microlcaustics
-import stars
-
-from scipy import interpolate, misc
+from pyLIMA import microlguess
+from pyLIMA import microlmagnification
+from pyLIMA import microlpriors
+from pyLIMA import microlparallax
+from pyLIMA import microlorbitalmotion
+from pyLIMA import microlcaustics
+from pyLIMA import stars
 
 full_path = os.path.abspath(__file__)
 directory, filename = os.path.split(full_path)
@@ -36,7 +35,7 @@ try:
     yoo_table = np.loadtxt(os.path.join(directory, 'data/Yoo_B0B1.dat'))
 except:
 
-    print 'ERROR : No b0b1.dat file found, please check!'
+    print('ERROR : No b0b1.dat file found, please check!')
 
 b0b1 = yoo_table
 zz = b0b1[:, 0]
@@ -188,6 +187,7 @@ class MLModel(object):
 
         self.x_center = None
         self.y_center = None
+
     @abc.abstractproperty
     def model_type(self):
         pass
@@ -265,7 +265,7 @@ class MLModel(object):
         :rtype: array_like
         """
 
-        amplification  = self.model_magnification(telescope, pyLIMA_parameters)
+        amplification = self.model_magnification(telescope, pyLIMA_parameters)
         return self._default_microlensing_model(telescope, pyLIMA_parameters, amplification)
 
     def _default_microlensing_model(self, telescope, pyLIMA_parameters, amplification):
@@ -318,9 +318,7 @@ class MLModel(object):
                 f_source = 0.0
                 g_blending = 0.0
 
-
         return f_source, g_blending
-
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the
@@ -349,7 +347,6 @@ class MLModel(object):
         # print 'conversion', python_time.time() - start_time
         return pyLIMA_parameters
 
-
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
         """ Transform the fancy parameters to the pyLIMA standards. The output got all
         the necessary standard attributes, example to, uo, tE...
@@ -368,7 +365,6 @@ class MLModel(object):
         # print 'fancy to PYLIMA', python_time.time() - start_time
         return fancy_parameters
 
-
     def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
         """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
             the necessary fancy attributes.
@@ -384,7 +380,6 @@ class MLModel(object):
                 setattr(pyLIMA_parameters, key_parameter, self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
 
         return pyLIMA_parameters
-
 
     def source_trajectory(self, telescope, to, uo, tE, pyLIMA_parameters):
         """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
@@ -546,9 +541,6 @@ class ModelFSPL(MLModel):
 
         return model_dictionary
 
-
-
-
     def model_magnification(self, telescope, pyLIMA_parameters):
         """ The magnification associated to a FSPL model. More details in microlmagnification module.
 
@@ -585,7 +577,8 @@ class ModelFSPL(MLModel):
         gamma = telescope.gamma
 
         return microlmagnification.Jacobian_amplification_FSPL(source_trajectory_x, source_trajectory_y, rho,
-                                                      gamma, self.yoo_table)
+                                                               gamma, self.yoo_table)
+
     def model_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a FSPL model
 
@@ -816,12 +809,11 @@ class ModelUSBL(MLModel):
 
         return magnification
 
-
     def find_caustics(self, separation, mass_ratio):
 
         caustics, critical_curves = microlcaustics.compute_2_lenses_caustics_points(separation,
-                                                                                              mass_ratio,
-                                                                                              resolution=100)
+                                                                                    mass_ratio,
+                                                                                    resolution=100)
 
         area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.1)
 
@@ -869,7 +861,7 @@ class ModelPSBL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2,'logs': 3, 'logq': 4, 'alpha': 5}
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'logs': 3, 'logq': 4, 'alpha': 5}
 
         self.Jacobian_flag = 'No way'
 
@@ -889,11 +881,11 @@ class ModelPSBL(MLModel):
             new_to, new_uo = self.change_origin_center(pyLIMA_parameters)
 
             source_trajectoire = self.source_trajectory(telescope, new_to, new_uo,
-                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
         else:
 
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
-                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
 
         magnification = np.zeros(len(source_trajectoire[0]))
 
@@ -916,16 +908,15 @@ class ModelPSBL(MLModel):
 
         Xs, Ys = source_trajectoire
         magnification = \
-                microlmagnification.amplification_PSBL(separation, 10 ** pyLIMA_parameters.logq, Xs, Ys)
+            microlmagnification.amplification_PSBL(separation, 10 ** pyLIMA_parameters.logq, Xs, Ys)
 
         return magnification
-
 
     def find_caustics(self, separation, mass_ratio):
 
         caustics, critical_curves = microlcaustics.compute_2_lenses_caustics_points(separation,
-                                                                                              mass_ratio,
-                                                                                              resolution=100)
+                                                                                    mass_ratio,
+                                                                                    resolution=100)
 
         area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.1)
 
@@ -942,8 +933,8 @@ class ModelPSBL(MLModel):
         else:
 
             new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_caustics_center(
-                                     10**pyLIMA_parameters.logs,
-                                     10**pyLIMA_parameters.logq)
+                10 ** pyLIMA_parameters.logs,
+                10 ** pyLIMA_parameters.logq)
 
             self.x_center = new_origin_x
             self.y_center = new_origin_y
@@ -954,8 +945,8 @@ class ModelPSBL(MLModel):
         new_uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
                                          new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
-
         return new_to, new_uo
+
 
 class ModelRRLyraePL(MLModel):
     @property
@@ -1041,10 +1032,10 @@ class ModelRRLyraePL(MLModel):
 
         amplification = self.model_magnification(telescope, pyLIMA_parameters)
 
-        pulsations = self.compute_pulsations( time, telescope.filter, pyLIMA_parameters)
+        pulsations = self.compute_pulsations(time, telescope.filter, pyLIMA_parameters)
         f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
 
-        microlensing_model = f_source * amplification* pulsations + f_blending
+        microlensing_model = f_source * amplification * pulsations + f_blending
 
         return microlensing_model, f_source, f_blending
 
@@ -1074,7 +1065,7 @@ class ModelRRLyraePL(MLModel):
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve[:, 1]
             errflux = lightcurve[:, 2]
-            f_source, f_blending = np.polyfit(amplification * pulsations, flux , 1, w=1 / errflux)
+            f_source, f_blending = np.polyfit(amplification * pulsations, flux, 1, w=1 / errflux)
 
         return f_source, f_blending
 
@@ -1086,21 +1077,20 @@ class ModelRRLyraePL(MLModel):
         f_source_V = f_source * pulsations
         V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
 
-        #radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
-        radius = 10**(0.2*(-(V_magnitude-2.689+0.1)-10*np.log10(Teff)+37.35))
+        # radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        radius = 10 ** (0.2 * (-(V_magnitude - 2.689 + 0.1) - 10 * np.log10(Teff) + 37.35))
         return radius
-    def compute_Teff(self,color):
 
+    def compute_Teff(self, color):
 
         # Casagrande 2010
         color += -1.250
-        theta_eff = 0.4033+0.8171*color-0.1987*color**2
-        Teff = 5040/theta_eff
+        theta_eff = 0.4033 + 0.8171 * color - 0.1987 * color ** 2
+        Teff = 5040 / theta_eff
 
         return Teff
-    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters ):
 
-
+    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters):
 
         pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
         f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
@@ -1109,16 +1099,14 @@ class ModelRRLyraePL(MLModel):
 
         pulsations = self.compute_pulsations(time, telescope_I.filter, pyLIMA_parameters)
 
-
         f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_I.name) / 2
 
         f_source_I = f_source * pulsations
 
+        V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
+        I_magnitude = 27.4 - 2.5 * np.log10(f_source_I)
 
-        V_magnitude = 27.4-2.5*np.log10(f_source_V)
-        I_magnitude = 27.4-2.5*np.log10(f_source_I)
-
-        return V_magnitude-I_magnitude
+        return V_magnitude - I_magnitude
 
     def compute_pulsations(self, time, filter, pyLIMA_parameters):
 
@@ -1137,8 +1125,6 @@ class ModelRRLyraePL(MLModel):
         pulsations = 10 ** (pulsations / 2.5)
 
         return pulsations
-
-
 
 
 class ModelRRLyraeFS(MLModel):
@@ -1181,7 +1167,7 @@ class ModelRRLyraeFS(MLModel):
         # 'A6': 9,
         # 'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
 
-        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'theta_E':3, 'period': 4}
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'theta_E': 3, 'period': 4}
 
         filters = [telescope.filter for telescope in self.event.telescopes]
 
@@ -1208,24 +1194,24 @@ class ModelRRLyraeFS(MLModel):
         :rtype: array_like
         """
 
-        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
-                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to,
+                                                                          pyLIMA_parameters.uo,
+                                                                          pyLIMA_parameters.tE, pyLIMA_parameters)
 
         telescope_V, telescope_I = self.find_telecopes_V_and_I()
 
-        color = self.compute_color(telescope.lightcurve_flux[:,0], telescope_V, telescope_I, pyLIMA_parameters)
+        color = self.compute_color(telescope.lightcurve_flux[:, 0], telescope_V, telescope_I, pyLIMA_parameters)
         teff = self.compute_Teff(color)
 
-
         gammas = []
-        rhos =  self.compute_radius(teff, telescope.lightcurve_flux[:,0], telescope_V, pyLIMA_parameters) * (
-                                    0.00456*10**6 / pyLIMA_parameters.theta_E)
+        rhos = self.compute_radius(teff, telescope.lightcurve_flux[:, 0], telescope_V, pyLIMA_parameters) * (
+            0.00456 * 10 ** 6 / pyLIMA_parameters.theta_E)
 
         pyLIMA_parameters.rho = rhos
-        #import pdb;
-        #pdb.set_trace()
+        # import pdb;
+        # pdb.set_trace()
         count = 0
-        for temperature in teff :
+        for temperature in teff:
             self.lyrae.Teff = temperature
             self.lyrae.log_g = 2
             gamma = self.find_gamma(telescope, self.lyrae)
@@ -1233,16 +1219,18 @@ class ModelRRLyraeFS(MLModel):
 
             count += 1
 
-        rho =  pyLIMA_parameters.rho
+        rho = pyLIMA_parameters.rho
         gamma = np.array(gammas)
 
         return microlmagnification.amplification_FSPL_for_Lyrae(source_trajectory_x, source_trajectory_y, rho,
-                                                               gamma, self.yoo_table)
+                                                                gamma, self.yoo_table)
+
     def find_gamma(self, telescope, star):
 
-            telescope.find_gamma(star)
-            gamma = telescope.gamma
-            return gamma
+        telescope.find_gamma(star)
+        gamma = telescope.gamma
+        return gamma
+
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
         """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
         if not the default microlensing model is returned.
@@ -1257,7 +1245,7 @@ class ModelRRLyraeFS(MLModel):
 
         amplification = self.model_magnification(telescope, pyLIMA_parameters)
 
-        pulsations = self.compute_pulsations( time, telescope.filter, pyLIMA_parameters)
+        pulsations = self.compute_pulsations(time, telescope.filter, pyLIMA_parameters)
         f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification, pulsations)
 
         microlensing_model = f_source * amplification * pulsations + f_blending
@@ -1283,7 +1271,7 @@ class ModelRRLyraeFS(MLModel):
 
         return f_source, f_blending
 
-    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters, magic_table = None):
+    def compute_radius(self, Teff, time, telescope_V, pyLIMA_parameters, magic_table=None):
 
         pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
         f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
@@ -1291,25 +1279,24 @@ class ModelRRLyraeFS(MLModel):
         f_source_V = f_source * pulsations
         V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
 
-        #radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
+        # radius = (0.636*10**-((V_magnitude-2*2.689)/5)/Teff**2)
         if magic_table:
             BC = magic_table(Teff)
         else:
-            BC=0
-        radius = 10**(0.2*(-(V_magnitude-2.689+BC)-10*np.log10(Teff)+37.35))
+            BC = 0
+        radius = 10 ** (0.2 * (-(V_magnitude - 2.689 + BC) - 10 * np.log10(Teff) + 37.35))
         return radius
-    def compute_Teff(self,color):
 
+    def compute_Teff(self, color):
 
         # Casagrande 2010
         color += -1.250
-        theta_eff = 0.4033+0.8171*color-0.1987*color**2
-        Teff = 5040/theta_eff
+        theta_eff = 0.4033 + 0.8171 * color - 0.1987 * color ** 2
+        Teff = 5040 / theta_eff
 
         return Teff
-    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters ):
 
-
+    def compute_color(self, time, telescope_V, telescope_I, pyLIMA_parameters):
 
         pulsations = self.compute_pulsations(time, telescope_V.filter, pyLIMA_parameters)
         f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_V.name) / 2
@@ -1318,16 +1305,14 @@ class ModelRRLyraeFS(MLModel):
 
         pulsations = self.compute_pulsations(time, telescope_I.filter, pyLIMA_parameters)
 
-
         f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope_I.name) / 2
 
         f_source_I = f_source * pulsations
 
+        V_magnitude = 27.4 - 2.5 * np.log10(f_source_V)
+        I_magnitude = 27.4 - 2.5 * np.log10(f_source_I)
 
-        V_magnitude = 27.4-2.5*np.log10(f_source_V)
-        I_magnitude = 27.4-2.5*np.log10(f_source_I)
-
-        return V_magnitude-I_magnitude
+        return V_magnitude - I_magnitude
 
     def compute_pulsations(self, time, filter, pyLIMA_parameters):
 
@@ -1346,7 +1331,6 @@ class ModelRRLyraeFS(MLModel):
         pulsations = 10 ** (pulsations / 2.5)
 
         return pulsations
-
 
     def find_telecopes_V_and_I(self):
 

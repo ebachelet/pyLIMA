@@ -76,7 +76,6 @@ def test_simulate_a_microlensing_model():
     telescope.lightcurve_flux = np.array([[0, 1], [2, 2]]).T
     event.telescopes = []
     event.telescopes.append(telescope)
-    print event.telescopes[0].lightcurve_flux[:, 0]
 
     model = microlsimulator.simulate_a_microlensing_model(event)
 

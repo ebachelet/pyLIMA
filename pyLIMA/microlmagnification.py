@@ -7,11 +7,9 @@ Created on Tue Dec  8 14:37:33 2015
 
 from __future__ import division
 import numpy as np
-import sys
 
-sys.path.insert(0, '/path/to/application/app/folder')
 
-from subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinary
+from pyLIMA.subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinary
 
 
 def impact_parameter(tau, uo):
@@ -203,7 +201,6 @@ def amplification_USBL(separation, mass_ratio, x_source, y_source, rho, toleranc
     :rtype: array_like
     """
 
-
     amplification_usbl = []
     # print ''
     # print separation[0],q,rho
@@ -312,4 +309,3 @@ def amplification_FSPL_for_Lyrae(tau, uo, rho, gamma, yoo_table):
                                            z_yoo[indexes_FSPL]))
 
     return amplification_fspl
-

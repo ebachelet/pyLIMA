@@ -23,12 +23,12 @@ from collections import OrderedDict
 
 # from emcee.utils import MPIPool
 
-import microlmodels
-import microloutputs
-import microlguess
-import microltoolbox
-import microlpriors
-import microlcaustics
+from pyLIMA import microlmodels
+from pyLIMA import microloutputs
+from pyLIMA import microlguess
+from pyLIMA import microltoolbox
+from pyLIMA import microlpriors
+from pyLIMA import microlcaustics
 
 warnings.filterwarnings("ignore")
 
@@ -137,8 +137,8 @@ class MLFits(object):
         Note that a sanity check is done post-fit to assess the fit quality with the check_fit
         function.
         """
-        print ''
-        print 'Start fit on ' + self.event.name + ', with model ' + model.model_type + ' and method ' + method
+        print('')
+        print('Start fit on ' + self.event.name + ', with model ' + model.model_type + ' and method ' + method)
         self.event.check_event()
 
         self.model = model
@@ -151,10 +151,10 @@ class MLFits(object):
             number_of_data = self.event.total_number_of_data_points()
             if number_of_data <= (len(self.model.model_dictionnary)):
 
-                print "You do not have enough data points to use this method (LM), please switch to other methods." \
+                print("You do not have enough data points to use this method (LM), please switch to other methods." \
                       " Given the requested total model " + str(self.model.model_dictionnary.keys()) + \
                       " you need at least " + str(
-                    len(self.model.model_dictionnary)) + ' data points to use the method LM!'
+                    len(self.model.model_dictionnary)) + ' data points to use the method LM!')
                 return
 
             else:
@@ -162,9 +162,7 @@ class MLFits(object):
                 self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
         if self.method == 'TRF':
-
-
-                self.fit_results, self.fit_covariance, self.fit_time = self.trust_region_reflective()
+            self.fit_results, self.fit_covariance, self.fit_time = self.trust_region_reflective()
         if self.method == 'DE':
             self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
 
@@ -186,16 +184,16 @@ class MLFits(object):
 
             if self.method == 'LM':
 
-                print 'We have to change method, this fit was unsuccessfull. We decided to switch ' \
+                print('We have to change method, this fit was unsuccessfull. We decided to switch ' \
                       '' \
-                      'method to "DE"'
+                      'method to "DE"')
 
                 # self.method = 'DE'
                 # self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
             else:
 
-                print 'Unfortunately, this is too hard for pyLIMA :('
+                print('Unfortunately, this is too hard for pyLIMA :(')
 
     def check_fit(self):
         """Check if the fit results and covariance make sens.
@@ -217,21 +215,21 @@ class MLFits(object):
         if number_of_data >= (len(self.model.model_dictionnary) + 2 * len(self.event.telescopes)):
 
             if (0.0 in self.fit_covariance):
-                print 'Your fit probably wrong. Cause ==> bad covariance matrix'
+                print('Your fit probably wrong. Cause ==> bad covariance matrix')
                 flag_quality = 'Bad Fit'
                 return flag_quality
 
         if (True in negative_covariance_diagonal) | \
                 (np.isnan(self.fit_covariance).any()) | (np.isinf(self.fit_covariance).any()):
-            print 'Your fit probably wrong. Cause ==> bad covariance matrix'
+            print('Your fit probably wrong. Cause ==> bad covariance matrix')
             flag_quality = 'Bad Fit'
             return flag_quality
 
         for i in self.event.telescopes:
 
             if self.fit_results[self.model.model_dictionnary['fs_' + i.name]] < 0:
-                print 'Your fit probably wrong. Cause ==> negative source flux for telescope ' + \
-                      i.name
+                print('Your fit probably wrong. Cause ==> negative source flux for telescope ' + \
+                      i.name)
                 flag_quality = 'Bad Fit'
                 return flag_quality
 
@@ -239,7 +237,7 @@ class MLFits(object):
 
             if (self.fit_results[self.model.model_dictionnary['rho']] > 0.1) | \
                     (self.fit_results[self.model.model_dictionnary['rho']] < 0.0):
-                print 'Your fit probably wrong. Cause ==> bad rho '
+                print('Your fit probably wrong. Cause ==> bad rho ')
                 flag_quality = 'Bad Fit'
                 return flag_quality
 
@@ -318,7 +316,7 @@ class MLFits(object):
         for key_parameter in self.model.model_dictionnary.keys():
             model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
 
-        print sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS'
+        print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
         return model_guess_parameters
 
     def MCMC(self):
@@ -397,7 +395,7 @@ class MLFits(object):
                 count_walkers += 1
         # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
         # number_of_parameters = number_of_paczynski_parameters
-        print 'pre MCMC done'
+        print('pre MCMC done')
 
         number_of_parameters = len(individual)
 
@@ -412,7 +410,7 @@ class MLFits(object):
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
 
-        print 'MCMC preburn done'
+        print('MCMC preburn done')
 
         sampler.reset()
 
@@ -424,7 +422,7 @@ class MLFits(object):
         MCMC_probabilities = sampler.lnprobability
         # pool.close()
         # print python_time.time()-start
-        print sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS'
+        print(sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS')
         return MCMC_chains, MCMC_probabilities
 
     def chichi_MCMC(self, fit_process_parameters):
@@ -499,15 +497,15 @@ class MLFits(object):
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
         paczynski_parameters = differential_evolution_estimation['x'].tolist()
 
-        print 'DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun'])
+        print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
 
         number_of_data = self.event.total_number_of_data_points()
         if number_of_data <= (len(self.model.model_dictionnary)):
 
-            print "You do not have enough data points to use LM method to estimate the covariance matrix." \
-                  "The covariance matrix is set to 0.0. please switch to MCMC if you need errors estimation."
+            print("You do not have enough data points to use LM method to estimate the covariance matrix." \
+                  "The covariance matrix is set to 0.0. please switch to MCMC if you need errors estimation.")
 
             fit_results = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model) + \
                           [differential_evolution_estimation['fun']]
@@ -522,7 +520,7 @@ class MLFits(object):
 
         computation_time = python_time.time() - starting_time
 
-        print sys._getframe().f_code.co_name, ' : Differential evolution fit SUCCESS'
+        print(sys._getframe().f_code.co_name, ' : Differential evolution fit SUCCESS')
         return fit_results, fit_covariance, computation_time
 
     def chichi_differential_evolution(self, fit_process_parameters):
@@ -616,7 +614,7 @@ class MLFits(object):
             # Try to do it "manually"
             else:
 
-                print ' Attempt to construct a rough covariance matrix'
+                print(' Attempt to construct a rough covariance matrix')
                 jacobian = self.LM_Jacobian(fit_result)
 
                 covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
@@ -625,19 +623,19 @@ class MLFits(object):
 
                 # Construct a dummy covariance matrix
                 if np.any(lmarquardt_fit[1].diagonal() > 0):
-                    print 'Bad covariance covariance matrix'
+                    print('Bad covariance covariance matrix')
                     covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                                   len(self.model.model_dictionnary)))
 
         # Construct a dummy covariance matrix
         except:
-            print 'Bad covariance covariance matrix'
+            print('Bad covariance covariance matrix')
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
         # import pdb; pdb.set_trace()
-        print sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS'
-        print fit_result
+        print(sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS')
+        print(fit_result)
         return fit_result, covariance_matrix, computation_time
 
     def residuals_LM(self, fit_process_parameters):
@@ -723,30 +721,29 @@ class MLFits(object):
         if self.guess == []:
             self.guess = self.initial_guess()
 
-        for index,telescope in enumerate(self.event.telescopes):
-            if self.guess[self.model.model_dictionnary['g_'+telescope.name]] <-1.0:
+        for index, telescope in enumerate(self.event.telescopes):
+            if self.guess[self.model.model_dictionnary['g_' + telescope.name]] < -1.0:
                 self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -1.0
 
-       # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
-       # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
-        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
-        bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
+                # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
+                # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
+        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -1] * len(self.event.telescopes)
+        bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.event.telescopes)
         import pdb;
         pdb.set_trace()
         if self.model.Jacobian_flag == 'OK':
             trf_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, max_nfev=50000,
-                                                    jac=self.LM_Jacobian,bounds=(bounds_min,bounds_max),  ftol=10 ** -6,
-                                                    xtol=10 ** -10, gtol=10 ** -5)
+                                                   jac=self.LM_Jacobian, bounds=(bounds_min, bounds_max), ftol=10 ** -6,
+                                                   xtol=10 ** -10, gtol=10 ** -5)
         else:
 
             trf_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, max_nfev=50000,
-                                                    bounds=(bounds_min,bounds_max),  ftol=10 ** -6,
-                                                    xtol=10 ** -10, gtol=10 ** -5)
+                                                   bounds=(bounds_min, bounds_max), ftol=10 ** -6,
+                                                   xtol=10 ** -10, gtol=10 ** -5)
         computation_time = python_time.time() - starting_time
 
         fit_result = np.copy(trf_fit['x']).tolist()
-        fit_result += [2*trf_fit['cost']]
-
+        fit_result += [2 * trf_fit['cost']]
 
         try:
 
@@ -889,8 +886,8 @@ class MLFits(object):
             best_parameters += [differential_evolution_estimation['fun']]
 
             grid_results.append(best_parameters)
-            print sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_parameters_pixel).strip(
-                '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun'])
+            print(sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_parameters_pixel).strip(
+                '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun']))
         import pdb;
         pdb.set_trace()
 

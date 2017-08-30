@@ -6,7 +6,12 @@ Created on Thu Aug 27 16:39:32 2015
 """
 import collections
 import contextlib
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+
 
 _CLARET_COLUMNS = 'log_g, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, ' \
                   'filter, method, model'

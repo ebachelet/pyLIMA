@@ -8,7 +8,7 @@ Created on Mon May 23 16:00:51 2016
 import numpy as np
 import scipy.signal as ss
 
-import microltoolbox
+from pyLIMA import microltoolbox
 
 
 def initial_guess_PSPL(event):
@@ -117,7 +117,6 @@ def initial_guess_PSPL(event):
         baseline_flux = np.median(flux[indexes])
 
         if len(indexes) < 100:
-            print 'low'
             baseline_flux = np.median(flux[flux.argsort()[:100]])
             break
 
@@ -126,10 +125,9 @@ def initial_guess_PSPL(event):
     # uo estimation
     max_flux = maximum_flux_estimations[0]
     Amax = max_flux / fs_guess
-    if (Amax<1.0) | np.isnan(Amax):
-        Amax=1.1
+    if (Amax < 1.0) | np.isnan(Amax):
+        Amax = 1.1
     uo_guess = np.sqrt(-2 + 2 * np.sqrt(1 - 1 / (1 - Amax ** 2)))
-
 
     # tE estimations
     tE_guesses = []
@@ -283,7 +281,7 @@ def differential_evolution_parameters_boundaries(model):
     delta_uo_boundaries = (-1.0, 1.0)
     uo_boundaries = (0.0, 2.0)
     tE_boundaries = (1.0, 300)
-    rho_boundaries = (5*10 ** -5, 0.05)
+    rho_boundaries = (5 * 10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
     logs_boundaries = (-0.3, 0.7)
@@ -295,7 +293,7 @@ def differential_evolution_parameters_boundaries(model):
     XiEN_boundaries = (-2.0, 2.0)
     XiEE_boundaries = (-2.0, 2.0)
 
-    dsdt_boundaries = (-1*10**-2, 1*10**-2)
+    dsdt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
     dalphadt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
     # model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
@@ -305,7 +303,7 @@ def differential_evolution_parameters_boundaries(model):
 
     Period = (0.0, 2.0)
     phis = (-np.pi, np.pi)
-    amplitude = (0.0,  1.0)
+    amplitude = (0.0, 1.0)
     q_boundaries = (-2, 2)
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
@@ -338,9 +336,9 @@ def differential_evolution_parameters_boundaries(model):
 
         unique_filters = np.unique(filters)
         for i in range(model.number_of_harmonics):
-                for j in unique_filters :
-                    parameters_boundaries += [amplitude]
-                    parameters_boundaries += [phis]
+            for j in unique_filters:
+                parameters_boundaries += [amplitude]
+                parameters_boundaries += [phis]
 
     if model.model_type == 'RRLyraeFS':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, Period]
@@ -349,9 +347,9 @@ def differential_evolution_parameters_boundaries(model):
 
         unique_filters = np.unique(filters)
         for i in range(model.number_of_harmonics):
-                 for j in unique_filters:
-                     parameters_boundaries += [amplitude]
-                     parameters_boundaries += [phis]
+            for j in unique_filters:
+                parameters_boundaries += [amplitude]
+                parameters_boundaries += [phis]
     # Second order boundaries
     if model.parallax_model[0] != 'None':
         parameters_boundaries.append(piEN_boundaries)
@@ -385,7 +383,6 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         return [to_parameters_trial]
 
-
     if 'fs' in parameter_key:
         epsilon = np.random.uniform(0.99, 1.01)
 
@@ -393,7 +390,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
 
         return [fs_trial, g_trial]
-        #return
+        # return
     if 'g_' in parameter_key:
         return
 
@@ -408,7 +405,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
     if 'rho' in parameter_key:
         epsilon = np.random.uniform(-1, 1)
-        epsilon = 10**epsilon
+        epsilon = 10 ** epsilon
         rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         return [rho_parameters_trial]
 
@@ -422,7 +419,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.9 , 1.1)
+    epsilon = np.random.uniform(0.9, 1.1)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]
