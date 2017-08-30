@@ -291,4 +291,3 @@ def test_change_source_trajectory_center_to_caustics_center():
     assert x_center == 3.5970400319501321
     assert y_center == 0
 
-    
