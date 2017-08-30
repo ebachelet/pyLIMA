@@ -111,7 +111,7 @@ class Event(object):
     def telescopes_names(self):
         """Print the the telescope's names contain in the event.
         """
-        print([self.telescopes[i].name for i in xrange(len(self.telescopes))])
+        print([self.telescopes[i].name for i in range(len(self.telescopes))])
 
     def check_event(self):
         """Function to check if everything is correctly set before the fit.
@@ -125,7 +125,7 @@ class Event(object):
         Finally check if your telescopes have a lightcurve attributes different from None.
         """
 
-        if not isinstance(self.name, basestring):
+        if not isinstance(self.name, str):
             raise EventException('ERROR : The event name (' + str(
                 self.name) + ') is not correct, it has to be a string')
 

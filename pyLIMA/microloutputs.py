@@ -19,10 +19,9 @@ import numpy as np
 from astropy.time import Time
 from scipy.stats.distributions import t as student
 
-import microltoolbox
-import microlmodels
-import microlstats
-import microlcaustics
+from pyLIMA import microltoolbox
+from pyLIMA import microlstats
+from pyLIMA import microlcaustics
 
 
 plot_lightcurve_windows = 0.2

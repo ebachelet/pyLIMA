@@ -233,7 +233,7 @@ class MLFits(object):
                 flag_quality = 'Bad Fit'
                 return flag_quality
 
-        if 'rho' in self.model.model_dictionnary.keys():
+        if 'rho' in list(self.model.model_dictionnary.keys()):
 
             if (self.fit_results[self.model.model_dictionnary['rho']] > 0.1) | \
                     (self.fit_results[self.model.model_dictionnary['rho']] < 0.0):
@@ -313,7 +313,7 @@ class MLFits(object):
             guess_parameters_pyLIMA_standards)
 
         model_guess_parameters = []
-        for key_parameter in self.model.model_dictionnary.keys():
+        for key_parameter in list(self.model.model_dictionnary.keys()):
             model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
@@ -372,7 +372,7 @@ class MLFits(object):
 
             # Construct an individual of the population around the best solution.
             individual = []
-            for parameter_key in self.model.model_dictionnary.keys()[:limit_parameters]:
+            for parameter_key in list(self.model.model_dictionnary.keys())[:limit_parameters]:
 
                 parameter_trial = microlguess.MCMC_parameters_initialization(parameter_key,
                                                                              self.model.model_dictionnary,
@@ -488,7 +488,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5, 1.8), popsize=int(self.DE_population_size), maxiter=5000,
+            mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
             tol=0.0001, strategy='rand2bin',
             recombination=0.7, polish=True,
             disp=True
@@ -913,7 +913,7 @@ class MLFits(object):
         """
         fit_process_parameters = []
 
-        for key in self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]:
+        for key in list(self.model.model_dictionnary.keys())[:len(self.model.parameters_boundaries)]:
 
             if key in self.moving_parameters_dictionnary:
 
@@ -932,7 +932,7 @@ class MLFits(object):
         self.moving_parameters_dictionnary = {}
         count = 0
 
-        for indice, key in enumerate(self.model.model_dictionnary.keys()[:len(self.model.parameters_boundaries)]):
+        for indice, key in enumerate(list(self.model.model_dictionnary.keys())[:len(self.model.parameters_boundaries)]):
 
             if key not in self.fix_parameters_dictionnary.keys():
                 parameters_boundaries.append(self.model.parameters_boundaries[indice])

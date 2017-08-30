@@ -46,7 +46,7 @@ namespace VBBinaryLensingLibrary {
 		void ComputeParallax(double,double,double *);
 		void laguer(complex *, int, complex *, int*,double);
 		void zroots(complex *,int, complex *, int,double);
-
+		
 	public: 
 
 		double Tol;
@@ -56,10 +56,14 @@ namespace VBBinaryLensingLibrary {
 
 		_sols *PlotCrit(double,double);
 		void PrintCau(double,double);
+		
 
-		double BinaryMag0(double,double,double,double, _sols **);
+
+
+		double BinaryMag(double,double,double,double,double,double, _sols**);
+		double BinaryMag0(double,double,double,double, _sols**);
+		
 		double BinaryMag0(double,double,double,double);
-		double BinaryMag(double,double,double,double,double,double, _sols **);
 		double BinaryMag(double,double,double,double,double,double);
 		double BinaryMagDark(double,double,double,double,double,double,double);
 

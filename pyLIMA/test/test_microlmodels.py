@@ -88,8 +88,8 @@ def test_define_parameters_model_dictionnary():
 
     Model = microlmodels.create_model('FSPL', event)
     Model.define_model_parameters()
-    assert Model.model_dictionnary.keys() == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test']
-    assert Model.model_dictionnary.values() == [0, 1, 2, 3, 4, 5]
+    assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test']
+    assert list(Model.model_dictionnary.values()) == [0, 1, 2, 3, 4, 5]
 
 
 def test_define_parameters_boundaries():

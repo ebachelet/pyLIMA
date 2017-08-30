@@ -9,8 +9,7 @@ import contextlib
 try:
     import StringIO
 except ImportError:
-    from io import StringIO
-
+    import io as StringIO
 
 
 _CLARET_COLUMNS = 'log_g, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, ' \

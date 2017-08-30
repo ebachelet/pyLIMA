@@ -94,7 +94,7 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
     night_begin = time_start
 
     time_observed = []
-    for i in xrange(total_number_of_days):
+    for i in range(total_number_of_days):
 
         good_weather = np.random.uniform(0, 1)
 
@@ -127,7 +127,7 @@ def red_noise(time):
     red_noise_phase = np.random.random_sample(10) * 2 * np.pi
 
     red_noise = 0
-    for j in xrange(10):
+    for j in range(10):
         red_noise += np.sin(2 * np.pi * time / red_noise_period[j] + red_noise_phase[j]) * red_noise_amplitude[j]
 
     return red_noise
@@ -264,7 +264,7 @@ def simulate_microlensing_model_parameters(model):
 
     fake_parameters = []
 
-    for key in model.pyLIMA_standards_dictionnary.keys()[:len(model.parameters_boundaries)]:
+    for key in list(model.pyLIMA_standards_dictionnary.keys())[:len(model.parameters_boundaries)]:
 
         if key == 'to':
 
@@ -289,7 +289,7 @@ def simulate_microlensing_model_parameters(model):
         if np.abs(fake_parameters[2]) > 100:
             fake_parameters[2] = np.random.uniform(10, 15)
 
-        i
+        
     return fake_parameters
 
 

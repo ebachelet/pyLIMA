@@ -995,7 +995,7 @@ class ModelRRLyraePL(MLModel):
 
         for filter in unique_filters:
             # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
-            for i in xrange(self.number_of_harmonics):
+            for i in range(self.number_of_harmonics):
                 model_dictionary['A' + str(i + 1) + '_' + filter] = len(model_dictionary)
                 model_dictionary['phi' + str(i + 1) + '_' + filter] = len(model_dictionary)
                 # if filter != 'I':
@@ -1116,7 +1116,7 @@ class ModelRRLyraePL(MLModel):
         period = getattr(pyLIMA_parameters, 'period')
         # factor = 0.0
         # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
-        for i in xrange(self.number_of_harmonics):
+        for i in range(self.number_of_harmonics):
             amplitude = getattr(pyLIMA_parameters, 'A' + str(i + 1) + '_' + filter)
             phase = getattr(pyLIMA_parameters, 'phi' + str(i + 1) + '_' + filter)
 
@@ -1175,7 +1175,7 @@ class ModelRRLyraeFS(MLModel):
 
         for filter in unique_filters:
             # model_dictionary['AO' + '_' + filter] = len(model_dictionary)
-            for i in xrange(self.number_of_harmonics):
+            for i in range(self.number_of_harmonics):
                 model_dictionary['A' + str(i + 1) + '_' + filter] = len(model_dictionary)
                 model_dictionary['phi' + str(i + 1) + '_' + filter] = len(model_dictionary)
                 # if filter != 'I':
@@ -1322,7 +1322,7 @@ class ModelRRLyraeFS(MLModel):
         period = getattr(pyLIMA_parameters, 'period')
         # factor = 0.0
         # pulsations = getattr(pyLIMA_parameters, 'AO'+'_' + telescope.filter)
-        for i in xrange(self.number_of_harmonics):
+        for i in range(self.number_of_harmonics):
             amplitude = getattr(pyLIMA_parameters, 'A' + str(i + 1) + '_' + filter)
             phase = getattr(pyLIMA_parameters, 'phi' + str(i + 1) + '_' + filter)
 
