@@ -289,7 +289,7 @@ def simulate_microlensing_model_parameters(model):
         if np.abs(fake_parameters[2]) > 100:
             fake_parameters[2] = np.random.uniform(10, 15)
 
-        
+
     return fake_parameters
 
 

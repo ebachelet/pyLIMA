@@ -5,3 +5,4 @@
 #include "VBBinaryLensingLibrary.h"
 %}
 %include "VBBinaryLensingLibrary.h"
+

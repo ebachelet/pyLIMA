@@ -129,7 +129,7 @@ def test_magnification_PSBL_computation():
 
     to = 0
     uo = 0.70710678
-    tE = 1
+    tE = 1.0
     s = np.log10(1.0)
     q = np.log10(0.02)
     alpha = -np.pi/4

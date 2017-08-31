@@ -210,7 +210,6 @@ def amplification_USBL(separation, mass_ratio, x_source, y_source, rho, toleranc
         # print index,len(Xs)
         # print s,q,xs,ys,rho,tolerance
         magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s, mass_ratio, xs, ys, rho, tolerance)
-        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s, mass_ratio, xs, ys, rho, tolerance)
 
         amplification_usbl.append(magnification_VBB)
 
