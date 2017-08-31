@@ -74,7 +74,7 @@ def test_amplification_FSPL_two_points():
     assert np.allclose(magnification, np.array([216.97028636, 214.44622417]))
 
 def test_amplification_USBL():
-    s = np.array([1])
+    s = np.array([1.0])
     q = 0.02
     xs = np.array([0.5])
     ys = np.array([0.5])
@@ -88,7 +88,7 @@ def test_amplification_USBL():
 
 
 def test_amplification_PSBL():
-    s = np.array([1])
+    s = np.array([1.0])
     q = 0.02
     xs = np.array([0.5])
     ys = np.array([0.5])

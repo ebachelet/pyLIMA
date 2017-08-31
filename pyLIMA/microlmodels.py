@@ -757,12 +757,6 @@ class ModelUSBL(MLModel):
                                                         pyLIMA_parameters.tE, pyLIMA_parameters)
         magnification = np.zeros(len(source_trajectoire[0]))
 
-        # for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
-        #   param = getattr(pyLIMA_parameters, key)
-        #   limits = self.parameters_boundaries[self.model_dictionnary[key]]
-        #   if (param<limits[0]) | (limits[1]<param):
-        #           magnification += 0.1*np.inf
-        #           return magnification,magnification
         if 'dsdt' in pyLIMA_parameters._fields:
 
             separation = 10 ** pyLIMA_parameters.logs + \
@@ -889,12 +883,6 @@ class ModelPSBL(MLModel):
 
         magnification = np.zeros(len(source_trajectoire[0]))
 
-        # for key in self.model_dictionnary.keys()[:len(self.parameters_boundaries)]:
-        #   param = getattr(pyLIMA_parameters, key)
-        #   limits = self.parameters_boundaries[self.model_dictionnary[key]]
-        #   if (param<limits[0]) | (limits[1]<param):
-        #           magnification += 0.1*np.inf
-        #           return magnification,magnification
         if 'dsdt' in pyLIMA_parameters._fields:
 
             separation = 10 ** pyLIMA_parameters.logs + \

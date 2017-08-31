@@ -4,7 +4,7 @@ Created on Thu Aug 27 16:39:32 2015
 
 @author: ebachelet
 """
-from pyLIMA import microllimb_darkening 
+from pyLIMA import microllimb_darkening
 
 DATA = """ 0.00  3500. -5.0  2.0  0.6278 Kp L  ATLAS
  0.50  3500. -5.0  2.0  0.6161 Kp L  ATLAS

@@ -8,6 +8,7 @@ import numpy as np
 import mock
 import pytest
 
+
 from pyLIMA import event
 
 
