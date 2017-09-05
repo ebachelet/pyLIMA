@@ -325,7 +325,7 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, logs_boundaries,
                                  logq_boundaries, alpha_boundaries]
 
-    if model.model_type == 'USBL':
+    if (model.model_type == 'USBL') or (model.model_type == 'FSBL'):
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, logs_boundaries,
                                  logq_boundaries, alpha_boundaries]
 

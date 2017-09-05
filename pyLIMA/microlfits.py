@@ -84,10 +84,11 @@ class MLFits(object):
         self.fit_results = []
         self.fit_covariance = []
         self.fit_time = []
+        self.DE_population = []
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
-
+        ]   
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None):
         """This function realize the requested microlensing fit, and set the according results
@@ -488,7 +489,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
+            mutation=(0.3, 1.9), popsize=int(self.DE_population_size), maxiter=500,
             tol=0.0001, strategy='rand2bin',
             recombination=0.7, polish=True,
             disp=True
@@ -543,6 +544,7 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
+        self.DE_population.append(fit_process_parameters.tolist()+[chichi])
         self.model.x_center = None
         self.model.y_center = None
 

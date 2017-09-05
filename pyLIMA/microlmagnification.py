@@ -221,6 +221,47 @@ def amplification_USBL(separation, mass_ratio, x_source, y_source, rho, toleranc
     return np.array(amplification_usbl)
 
 
+def amplification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_darkening_coefficient, tolerance=0.001):
+    """
+    The Uniform Source Binary Lens amplification, based on the work of Valerio Bozza, thanks :)
+    "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
+    optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
+    http://mnras.oxfordjournals.org/content/408/4/2188
+
+    :param array_like separation: the projected normalised angular distance between the two bodies
+    :param float mass_ratio: the mass ratio of the two bodies
+    :param array_like x_source: the horizontal positions of the source center in the source plane
+    :param array_like y_source: the vertical positions of the source center in the source plane
+    :param float limb_darkening_coefficient: the linear limb-darkening coefficient
+    :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
+
+    :param float tolerance: the relative precision desired in the magnification
+
+    :return: the USBL magnification A_USBL(t)
+    :rtype: array_like
+    """
+
+    amplification_fsbl = []
+    # print ''
+    # print separation[0],q,rho
+    # start = time.time()
+
+    for xs, ys, s in zip(x_source, y_source, separation):
+        # print index,len(Xs)
+        # print s,q,xs,ys,rho,tolerance
+        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient,
+                                                                     tolerance)
+
+        amplification_fsbl.append(magnification_VBB)
+
+
+        # print time.time()-start
+    # import pdb;
+    # pdb.set_trace()
+    # print amplification_usbl
+    return np.array(amplification_fsbl)
+
+
 def amplification_PSBL(separation, mass_ratio, x_source, y_source):
     """
     The Point Source Binary Lens amplification, based on the work of Valerio Bozza, thanks :)

@@ -935,6 +935,134 @@ class ModelPSBL(MLModel):
 
         return new_to, new_uo
 
+class ModelFSBL(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns:FSBL
+        :rtype: string
+        """
+        return 'FSBL'
+
+    def paczynski_model_parameters(self):
+        """ Define the USBL standard parameters, [to,uo,tE,rho, s,q,alpha]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'logs': 4, 'logq': 5, 'alpha': 6}
+
+        self.Jacobian_flag = 'No way'
+        self.USBL_windows = None
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a USBL model.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification
+        :rtype: array_like
+        """
+
+        linear_limb_darkening = telescope.gamma*3/(2+telescope.gamma)
+
+        if self.optimal_geometric_center:
+
+            new_to, new_uo = self.change_origin_center(pyLIMA_parameters)
+
+            source_trajectoire = self.source_trajectory(telescope, new_to, new_uo,
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
+        else:
+
+            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
+        magnification = np.zeros(len(source_trajectoire[0]))
+
+        if 'dsdt' in pyLIMA_parameters._fields:
+
+            separation = 10 ** pyLIMA_parameters.logs + \
+                         microlorbitalmotion.orbital_motion_2D_separation_shift(self.orbital_motion_model[1],
+                                                                                telescope.lightcurve_flux[:, 0],
+                                                                                pyLIMA_parameters.dsdt)
+
+        else:
+
+            separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectoire[0]))
+
+        if self.USBL_windows:
+
+            index_USBL = np.where((telescope.lightcurve_flux[:, 0] <= self.USBL_windows[1]) & (
+                telescope.lightcurve_flux[:, 0] >= self.USBL_windows[0]))[0]
+
+            Xs = source_trajectoire[0][index_USBL]
+            Ys = source_trajectoire[1][index_USBL]
+
+
+
+            magnification_USBL = \
+                microlmagnification.amplification_FSBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
+                                                       Xs, Ys, pyLIMA_parameters.rho,  linear_limb_darkening,
+                                                       tolerance=0.001)
+
+            magnification[index_USBL] = magnification_USBL
+
+            index_PSBL = np.where((telescope.lightcurve_flux[:, 0] > self.USBL_windows[1]) | (
+                telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
+
+            magnification_PSBL = microlmagnification.amplification_PSBL(separation[index_PSBL],
+                                                                        10 ** pyLIMA_parameters.logq,
+                                                                        source_trajectoire[0][index_PSBL],
+                                                                        source_trajectoire[1][index_PSBL])
+
+            magnification[index_PSBL] = magnification_PSBL
+
+        else:
+
+            Xs, Ys = source_trajectoire
+            magnification = \
+                microlmagnification.amplification_FSBL(separation, 10 ** pyLIMA_parameters.logq,
+                                                       Xs, Ys, pyLIMA_parameters.rho,  linear_limb_darkening,
+                                                       tolerance=0.001)
+
+        return magnification
+
+    def find_caustics(self, separation, mass_ratio):
+
+        caustics, critical_curves = microlcaustics.compute_2_lenses_caustics_points(separation,
+                                                                                    mass_ratio,
+                                                                                    resolution=100)
+
+        area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.1)
+
+        self.caustics = caustics
+        self.critical_curves = critical_curves
+        self.area_of_interest = area_of_interest
+
+    def change_origin_center(self, pyLIMA_parameters):
+
+        if self.x_center:
+            new_origin_x = self.x_center
+            new_origin_y = self.y_center
+
+        else:
+
+            new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_caustics_center(
+                10 ** pyLIMA_parameters.logs,
+                10 ** pyLIMA_parameters.logq)
+
+            self.x_center = new_origin_x
+            self.y_center = new_origin_y
+
+        new_to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+                                                                new_origin_y * np.sin(pyLIMA_parameters.alpha))
+
+        new_uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+                                         new_origin_y * np.cos(pyLIMA_parameters.alpha))
+
+        return new_to, new_uo
+
 
 class ModelRRLyraePL(MLModel):
     @property

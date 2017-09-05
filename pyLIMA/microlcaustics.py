@@ -132,10 +132,14 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
     bottom_caustic = np.where((median_x < global_median_x) & (median_y < 0))[0]
     close_bottom_caustic = caustic_points[:, bottom_caustic]
     close_bottom_cc = critical_curves_points[:, bottom_caustic]
+    try :
+        index_left = np.arange(0, 4).tolist()
+        index_left.remove(top_caustic)
+        index_left.remove(bottom_caustic)
+    except :
 
-    index_left = np.arange(0, 4).tolist()
-    index_left.remove(top_caustic)
-    index_left.remove(bottom_caustic)
+        import pdb;
+        pdb.set_trace()
     central_caustic = np.r_[caustic_points[:, index_left[0]], caustic_points[:, index_left[1]]]
     central_cc = np.r_[critical_curves_points[:, index_left[0]], critical_curves_points[:, index_left[1]]]
 
@@ -201,7 +205,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
     lens_1_conjugate = np.conj(lens_1)
     lens_2_conjugate = np.conj(lens_2)
 
-    phi = np.linspace(0.01, 2 * np.pi, resolution)
+    phi = np.linspace(0.00, 2 * np.pi, resolution)
     roots = []
     wm_1 = 4.0 * lens_1 * delta_mass
     wm_3 = 0.0
@@ -222,7 +226,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
 
         polynomial_roots = np.roots(polynomial_coefficients)
 
-        # poly2 = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
+        #polynomial_roots = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
         # import pdb;
         # pdb.set_trace()
         if len(roots) == 0:
@@ -261,6 +265,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
     critical_curves += -center_of_mass + separation / 2
 
     return caustics, critical_curves
+
 
 
 def find_area_of_interest_around_caustics(caustics, secure_factor=0.1):
@@ -308,15 +313,17 @@ def find_2_lenses_caustic_regime(separation, mass_ratio):
 
     caustic_regime = 'resonant'
 
-    wide_limit = ((1 + mass_ratio ** (1 / 3.0)) ** 3 / (1 + mass_ratio)) ** 0.5
+    wide_limit = ((1 + mass_ratio ** (1 / 3.0)) ** 3.0 / (1 + mass_ratio)) ** 0.5
 
-    if separation > wide_limit:
+    if (separation > 1.0) & (separation > wide_limit):
         caustic_regime = 'wide'
+        return caustic_regime
 
-    close_limit = mass_ratio / (1 + mass_ratio) ** 2
+    close_limit = mass_ratio / (1 + mass_ratio) ** 2.0
 
-    if 1 / separation ** 8 * ((1 - separation ** 4) / 3) ** 3 > close_limit:
+    if (separation < 1.0) & (1 / separation ** 8.0 * ((1 - separation ** 4.0) / 3.0) ** 3.0 > close_limit):
         caustic_regime = 'close'
+        return caustic_regime
 
     return caustic_regime
 
@@ -346,19 +353,23 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
     caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
 
     if caustic_regime == 'wide':
-        caustic_regime, caustics, critical_curve = find_2_lenses_caustics_and_critical_curves(separation,
-                                                                                              mass_ratio,
-                                                                                              resolution=10)
+        caustics, critical_curve = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
 
-        x_center = np.median(caustics[-2].real)
+        global_median = np.median(caustics.real)
+
+        wide_caustics_cusps_index = np.where(caustics.real>global_median)[0]
+
+        x_center = np.median(caustics[wide_caustics_cusps_index].real)
 
     if caustic_regime == 'close':
-        caustic_regime, caustics, critical_curve = find_2_lenses_caustics_and_critical_curves(separation,
-                                                                                              mass_ratio,
-                                                                                              resolution=10)
+        caustics, critical_curve = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
 
-        x_center = np.median(caustics[1].real)
-        y_center = np.median(caustics[1].imag)
+        global_median = np.median(caustics.real)
+
+        close_top_caustics_cusps_index = np.where((caustics.real < global_median) & (caustics.imag>0))[0]
+
+        x_center = caustics[close_top_caustics_cusps_index].real
+        y_center = caustics[close_top_caustics_cusps_index].imag
 
     return x_center, y_center
 
