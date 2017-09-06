@@ -363,7 +363,7 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
 
         center_index = np.argmax(caustic_points.imag)
 
-        x_center = caustic_points[center_index].realc
+        x_center = caustic_points[center_index].real
         y_center = caustic_points[center_index].imag
 
     return x_center, y_center
