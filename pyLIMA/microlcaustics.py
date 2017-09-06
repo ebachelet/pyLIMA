@@ -353,23 +353,18 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
     caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
 
     if caustic_regime == 'wide':
-        caustics, critical_curve = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
+        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
 
-        global_median = np.median(caustics.real)
-
-        wide_caustics_cusps_index = np.where(caustics.real>global_median)[0]
-
-        x_center = np.median(caustics[wide_caustics_cusps_index].real)
+        x_points = np.sort(caustic_points.real)
+        x_center = (x_points[0]+x_points[1])/2.0
 
     if caustic_regime == 'close':
-        caustics, critical_curve = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
+        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
 
-        global_median = np.median(caustics.real)
+        center_index = np.argmax(caustic_points.imag)
 
-        close_top_caustics_cusps_index = np.where((caustics.real < global_median) & (caustics.imag>0))[0]
-
-        x_center = caustics[close_top_caustics_cusps_index].real
-        y_center = caustics[close_top_caustics_cusps_index].imag
+        x_center = caustic_points[center_index].realc
+        y_center = caustic_points[center_index].imag
 
     return x_center, y_center
 

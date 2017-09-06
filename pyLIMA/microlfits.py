@@ -88,7 +88,8 @@ class MLFits(object):
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
-        ]   
+
+
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None):
         """This function realize the requested microlensing fit, and set the according results
@@ -489,7 +490,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.3, 1.9), popsize=int(self.DE_population_size), maxiter=500,
+            mutation=(0.3, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
             tol=0.0001, strategy='rand2bin',
             recombination=0.7, polish=True,
             disp=True
@@ -517,7 +518,7 @@ class MLFits(object):
 
             self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
 
-            fit_results, fit_covariance, fit_time = self.lmarquardt()
+            fit_results, fit_covariance, fit_time = self.trust_region_reflective()
 
         computation_time = python_time.time() - starting_time
 
@@ -539,7 +540,7 @@ class MLFits(object):
         chichi = 0.0
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
-
+            print pyLIMA_parameters.logs, pyLIMA_parameters.logq
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             chichi += (residus ** 2).sum()
@@ -731,8 +732,7 @@ class MLFits(object):
                 # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
         bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -1] * len(self.event.telescopes)
         bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.event.telescopes)
-        import pdb;
-        pdb.set_trace()
+
         if self.model.Jacobian_flag == 'OK':
             trf_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, max_nfev=50000,
                                                    jac=self.LM_Jacobian, bounds=(bounds_min, bounds_max), ftol=10 ** -6,
@@ -762,6 +762,8 @@ class MLFits(object):
 
         n_parameters = len(self.model.model_dictionnary)
         covariance_matrix *= fit_result[-1] / (n_data - n_parameters)
+        print(sys._getframe().f_code.co_name, ' : TRF fit SUCCESS')
+        print(fit_result)
         return fit_result, covariance_matrix, computation_time
 
     def chichi_telescopes(self, fit_process_parameters):
