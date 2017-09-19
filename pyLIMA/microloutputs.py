@@ -601,6 +601,7 @@ def LM_fit_errors(fit):
     keys = ['err_' + parameter for parameter in fit.model.model_dictionnary.keys()]
     parameters_errors = collections.namedtuple('Errors_Parameters', keys)
     errors = fit.fit_covariance.diagonal() ** 0.5
+
     for i in fit.model.model_dictionnary.keys():
         setattr(parameters_errors, 'err_' + i, errors[fit.model.model_dictionnary[i]])
 
@@ -785,8 +786,8 @@ def LM_plot_align_data(fit, figure_axe):
                             marker=str(MARKER_SYMBOLS.next()), markersize=7.5,capsize=0.0,
                             label=telescope.name)
         count += 1
-    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), fontsize=25, loc=2, borderaxespad=0.)
-
+    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.,
+                      fancybox=True, framealpha=0.5)
 
 def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_telescope):
     """Align data to the survey telescope (i.e telescope 0).

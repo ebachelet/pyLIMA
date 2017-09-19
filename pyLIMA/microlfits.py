@@ -21,7 +21,6 @@ from collections import OrderedDict
 # MPI.pickle.dumps = dill.dumps
 # MPI.pickle.loads = dill.loads
 
-# from emcee.utils import MPIPool
 
 from pyLIMA import microlmodels
 from pyLIMA import microloutputs
@@ -85,13 +84,14 @@ class MLFits(object):
         self.fit_covariance = []
         self.fit_time = []
         self.DE_population = []
+        self.binary_regime = None
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
 
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-              grid_resolution=10, computational_pool=None):
+              grid_resolution=10, computational_pool=None, binary_regime=None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -149,6 +149,8 @@ class MLFits(object):
         self.DE_population_size = DE_population_size
         self.model.define_model_parameters()
         self.pool = computational_pool
+        self.binary_regime = binary_regime
+
         if self.method == 'LM':
             number_of_data = self.event.total_number_of_data_points()
             if number_of_data <= (len(self.model.model_dictionnary)):
@@ -358,7 +360,7 @@ class MLFits(object):
 
         # Best solution
 
-        best_solution = np.abs(self.guess)
+        best_solution = self.guess
 
         if self.fluxes_MCMC_method == 'MCMC':
             limit_parameters = len(self.model.model_dictionnary.keys())
@@ -458,6 +460,7 @@ class MLFits(object):
             # comm = MPI.COMM_WORLD
         # rank = comm.Get_rank()
         # print rank, fit_process_parameters, chichi
+        #print pyLIMA_parameters.logs, chichi
         return -chichi / 2
 
     def differential_evolution(self):
@@ -490,9 +493,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.3, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
-            tol=0.0001, strategy='rand2bin',
-            recombination=0.7, polish=True,
+            mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
+            tol=0.0001, strategy='best2bin',
+            recombination=0.5, polish=True,
             disp=True
         )
 
@@ -500,6 +503,8 @@ class MLFits(object):
         paczynski_parameters = differential_evolution_estimation['x'].tolist()
 
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
+        print('DE converge to parameters : = ',  differential_evolution_estimation['x'].astype(str))
+
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
 
@@ -518,7 +523,7 @@ class MLFits(object):
 
             self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
 
-            fit_results, fit_covariance, fit_time = self.trust_region_reflective()
+            fit_results, fit_covariance, fit_time = self.lmarquardt()
 
         computation_time = python_time.time() - starting_time
 
@@ -538,16 +543,14 @@ class MLFits(object):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
         chichi = 0.0
+
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
-            print pyLIMA_parameters.logs, pyLIMA_parameters.logq
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             chichi += (residus ** 2).sum()
 
         self.DE_population.append(fit_process_parameters.tolist()+[chichi])
-        self.model.x_center = None
-        self.model.y_center = None
 
         return chichi
 
@@ -804,8 +807,14 @@ class MLFits(object):
 
         microlensing_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-        residuals = (flux - microlensing_model[0]) / errflux
+        residuals = (flux - microlensing_model[0])/errflux
 
+       # if microlensing_model[2]<0:
+       #    if microlensing_model[2] < -1:
+        #        g = -0.99
+        #    else:
+        #        g = microlensing_model[2]
+        #    residuals += 1/(1+g)
         return residuals
 
     def all_telescope_residuals(self, pyLIMA_parameters):

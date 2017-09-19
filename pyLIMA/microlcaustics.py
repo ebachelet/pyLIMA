@@ -356,8 +356,8 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
         caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
 
         x_points = np.sort(caustic_points.real)
-        x_center = (x_points[0]+x_points[1])/2.0
-
+        x_center = (x_points[-2]+x_points[-1])/2.0
+        #x_center = +separation*mass_ratio/(1+mass_ratio)
     if caustic_regime == 'close':
         caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
 
@@ -368,6 +368,53 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
 
     return x_center, y_center
 
+def caustics_centers(separation, mass_ratio):
+    """  Define a new geometric center dependig of the caustic regime. This helps fit convergence sometimes:
+            resonant : (0,0)
+            close : (x_planetary_caustic, y_planetary_caustic)
+            wide : (x_planetary_caustic, y_planetary_caustic)
+
+        "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The Caustic Region Of INfluence"
+        Penny M.2014 http://adsabs.harvard.edu/abs/2014ApJ...790..142P
+        "Microlensing observations rapid search for exoplanets: MORSE code for GPUs"
+        McDougall A. and Albrow M. http://adsabs.harvard.edu/abs/2016MNRAS.456..565M
+
+       :param float separation: the projected normalised angular distance between the two bodies
+       :param float mass_ratio: the mass ratio of the two bodies
+
+
+       :return: x_center, y_center : the new system center
+       :rtype: str
+
+   """
+    x_center = 0
+    y_center = 0
+
+    caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
+
+    if caustic_regime == 'wide':
+        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
+
+        x_points = np.sort(caustic_points.real)
+        x_center_central = (x_points[0]+x_points[1])/2.0
+        x_center_wide = (x_points[-2] + x_points[-1]) / 2.0
+
+        return [x_center_central, x_center_wide], [0.0, 0.0]
+
+    if caustic_regime == 'close':
+        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
+
+        center_index = np.argmax(caustic_points.imag)
+
+        x_center_close = caustic_points[center_index].real
+        y_center_close = caustic_points[center_index].imag
+
+        x_points = np.sort(caustic_points.real)
+        x_center_central = (x_points[-2] + x_points[-1]) / 2.0
+
+        return [x_center_central, x_center_close], [0.0, y_center_close]
+
+    return [x_center], [y_center]
 
 ### DEPRECIATED
 def dx(function, x, args):

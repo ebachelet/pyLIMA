@@ -63,7 +63,7 @@ class ModelException(Exception):
 
 
 def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None'):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio = None):
     """
     Load a model according to the supplied model_type. Models are expected to be named
     Model<model_type> e.g. ModelPSPL
@@ -81,7 +81,7 @@ def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], 
         raise ModelException('Unknown model "{}"'.format(model_type))
 
     return model(event, model_arguments, parallax, xallarap,
-                 orbital_motion, source_spots)
+                 orbital_motion, source_spots, blend_flux_ratio)
 
 
 class MLModel(object):
@@ -160,7 +160,7 @@ class MLModel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None'):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio = None):
         """ Initialization of the attributes described above.
         """
         self.event = event
@@ -170,6 +170,7 @@ class MLModel(object):
         self.orbital_motion_model = orbital_motion
         self.source_spots_model = source_spots
         self.yoo_table = yoo_table
+        self.blend_flux_ratio = blend_flux_ratio
 
         self.model_dictionnary = {}
         self.pyLIMA_standards_dictionnary = {}
@@ -187,6 +188,8 @@ class MLModel(object):
 
         self.x_center = None
         self.y_center = None
+
+        self.area_inside = 0
 
     @abc.abstractproperty
     def model_type(self):
@@ -228,7 +231,11 @@ class MLModel(object):
 
         for telescope in self.event.telescopes:
             self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['g_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+
+            if self.blend_flux_ratio:
+                self.pyLIMA_standards_dictionnary['g_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+            else:
+                self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
 
         self.pyLIMA_standards_dictionnary = OrderedDict(
             sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
@@ -282,7 +289,10 @@ class MLModel(object):
 
         f_source, g_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
 
-        microlensing_model = f_source * (amplification + g_blending)
+        if self.blend_flux_ratio:
+            microlensing_model = f_source * (amplification + g_blending)
+        else:
+            microlensing_model = f_source * amplification + g_blending
 
         return microlensing_model, f_source, g_blending
 
@@ -301,7 +311,10 @@ class MLModel(object):
             # Fluxes parameters are fitted
             f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
 
-            g_blending = 2 * getattr(pyLIMA_parameters, 'g_' + telescope.name) / 2
+            if self.blend_flux_ratio:
+                g_blending = 2 * getattr(pyLIMA_parameters, 'g_' + telescope.name) / 2
+            else:
+                g_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
 
 
         except TypeError:
@@ -313,8 +326,14 @@ class MLModel(object):
 
             try:
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
-                g_blending = f_blending / f_source
+
+                if self.blend_flux_ratio:
+                    g_blending = f_blending/f_source
+                else:
+                    g_blending = f_blending
+
             except:
+
                 f_source = 0.0
                 g_blending = 0.0
 
@@ -512,8 +531,14 @@ class ModelPSPL(MLModel):
         dresdto = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdto / errflux
         dresduo = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUduo / errflux
         dresdtE = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdtE / errflux
-        dresdfs = (Amplification[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
-        dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
+
+        if self.blend_flux_ratio:
+            dresdfs = (Amplification[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
+            dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
+        else:
+            dresdfs = (Amplification[0]) / errflux
+            dresdg = 1 / errflux
+
 
         jacobi = np.array([dresdto, dresduo, dresdtE, dresdfs, dresdg])
 
@@ -648,9 +673,12 @@ class ModelFSPL(MLModel):
 
         Amplification_FSPL = self.model_magnification(telescope, pyLIMA_parameters)
 
-        dresdfs = (Amplification_FSPL + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
-
-        dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
+        if self.blend_flux_ratio:
+            dresdfs = (Amplification_FSPL + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
+            dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
+        else:
+            dresdfs = (Amplification_FSPL) / errflux
+            dresdg = 1 / errflux
 
         jacobi = np.array([dresdto, dresduo, dresdtE, dresdrho, dresdfs, dresdg])
 
@@ -838,6 +866,12 @@ class ModelUSBL(MLModel):
 
         return new_to, new_uo
 
+    def find_binary_regime(self, pyLIMA_parameters):
+
+        binary_regime = microlcaustics.find_2_lenses_caustic_regime(10 ** pyLIMA_parameters.logs,
+                                                                    10 ** pyLIMA_parameters.logq)
+        return binary_regime
+
 
 class ModelPSBL(MLModel):
     @property
@@ -906,7 +940,7 @@ class ModelPSBL(MLModel):
                                                                                     mass_ratio,
                                                                                     resolution=100)
 
-        area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.1)
+        area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.05)
 
         self.caustics = caustics
         self.critical_curves = critical_curves
@@ -927,7 +961,6 @@ class ModelPSBL(MLModel):
             self.x_center = new_origin_x
             self.y_center = new_origin_y
 
-
         new_to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
                                                                 new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
@@ -935,6 +968,26 @@ class ModelPSBL(MLModel):
                                          new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         return new_to, new_uo
+
+    def find_binary_regime(self, pyLIMA_parameters):
+
+        binary_regime = microlcaustics.find_2_lenses_caustic_regime(10 ** pyLIMA_parameters.logs,
+                                                                    10 ** pyLIMA_parameters.logq)
+        return binary_regime
+
+    def distances_to_caustics(self, pyLIMA_parameters):
+
+        x_centers, y_centers = microlcaustics.caustics_centers(10 ** pyLIMA_parameters.logs,
+                                                               10 ** pyLIMA_parameters.logq)
+
+        distances = []
+
+        for index in range(len(x_centers)):
+            distance = pyLIMA_parameters.uo - (x_centers[index] * np.sin(pyLIMA_parameters.alpha) -
+                                               y_centers[index] * np.cos(pyLIMA_parameters.alpha))
+            distances.append(distance)
+        return distances
+
 
 class ModelFSBL(MLModel):
     @property
@@ -967,7 +1020,7 @@ class ModelFSBL(MLModel):
         :rtype: array_like
         """
 
-        linear_limb_darkening = telescope.gamma*3/(2+telescope.gamma)
+        linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
 
         if self.optimal_geometric_center:
 
@@ -1000,11 +1053,9 @@ class ModelFSBL(MLModel):
             Xs = source_trajectoire[0][index_USBL]
             Ys = source_trajectoire[1][index_USBL]
 
-
-
             magnification_USBL = \
                 microlmagnification.amplification_FSBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
-                                                       Xs, Ys, pyLIMA_parameters.rho,  linear_limb_darkening,
+                                                       Xs, Ys, pyLIMA_parameters.rho, linear_limb_darkening,
                                                        tolerance=0.001)
 
             magnification[index_USBL] = magnification_USBL
@@ -1024,7 +1075,7 @@ class ModelFSBL(MLModel):
             Xs, Ys = source_trajectoire
             magnification = \
                 microlmagnification.amplification_FSBL(separation, 10 ** pyLIMA_parameters.logq,
-                                                       Xs, Ys, pyLIMA_parameters.rho,  linear_limb_darkening,
+                                                       Xs, Ys, pyLIMA_parameters.rho, linear_limb_darkening,
                                                        tolerance=0.001)
 
         return magnification
@@ -1063,6 +1114,25 @@ class ModelFSBL(MLModel):
                                          new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         return new_to, new_uo
+
+    def find_binary_regime(self, pyLIMA_parameters):
+
+        binary_regime = microlcaustics.find_2_lenses_caustic_regime(10 ** pyLIMA_parameters.logs,
+                                                                    10 ** pyLIMA_parameters.logq)
+        return binary_regime
+
+    def distances_to_caustics(self, pyLIMA_parameters):
+
+        x_centers, y_centers = microlcaustics.caustics_center(10 ** pyLIMA_parameters.logs,
+                                                              10 ** pyLIMA_parameters.logq)
+
+        distances = []
+
+        for index in range(len(x_centers)):
+            distance = pyLIMA_parameters.uo - (x_centers[index] * np.sin(pyLIMA_parameters.alpha) -
+                                               y_centers[index] * np.cos(pyLIMA_parameters.alpha))
+            distances.append(distance)
+        return distances
 
 
 class ModelRRLyraePL(MLModel):

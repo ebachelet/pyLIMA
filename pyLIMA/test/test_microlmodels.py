@@ -88,7 +88,7 @@ def test_define_parameters_model_dictionnary():
 
     Model = microlmodels.create_model('FSPL', event)
     Model.define_model_parameters()
-    assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test']
+    assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test']
     assert list(Model.model_dictionnary.values()) == [0, 1, 2, 3, 4, 5]
 
 
@@ -97,7 +97,7 @@ def test_define_parameters_boundaries():
 
     Model = microlmodels.create_model('FSPL', event)
 
-    assert Model.parameters_boundaries == [(0,42), (0.0, 2.0), (1.0, 300), (5*10**-5, 0.05)]
+    assert Model.parameters_boundaries == [(0,42), (0.0, 1.0), (1.0, 300), (5*10**-5, 0.05)]
 
 def test_magnification_USBL_computation():
     event = _create_event()
@@ -197,18 +197,18 @@ def test_PSPL_computate_microlensing_model():
     event = _create_event()
 
     Model = microlmodels.create_model('PSPL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'g_Test'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'fb_Test'])
 
     to = 0.0
     uo = 0.1
     tE = 1.0
     fs = 10
-    g = 1
+    fb = 1
 
-    parameters = Parameters(to, uo, tE, fs, g)
+    parameters = Parameters(to, uo, tE, fs, fb)
 
     model,fs,fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
-    assert np.allclose(model, np.array([fs * (10.03746101 + g), fs * (1.00 + g)]))
+    assert np.allclose(model, np.array([fs * (10.03746101) + fb, fs * (1.00) + fb]))
 
 
 def test_FSPL_computate_microlensing_model():
@@ -216,26 +216,26 @@ def test_FSPL_computate_microlensing_model():
 
     Model = microlmodels.create_model('FSPL', event)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test',
-                                                       'g_Test'])
+                                                       'fb_Test'])
 
     to = 0.0
     uo = 0.1
     tE = 1.0
     rho = 0.05
     fs = 10
-    g = 1
+    fb = 1
 
-    parameters = Parameters(to, uo, tE, rho, fs, g)
+    parameters = Parameters(to, uo, tE, rho, fs, fb)
 
     model, fs, fb = Model.compute_the_microlensing_model(event.telescopes[0], parameters)
-    assert np.allclose(model, np.array([fs * (10.34817832 + g), fs * (1.00 + g)]))
+    assert np.allclose(model, np.array([fs * (10.34817832) + fb, fs * (1.00) + fb]))
 
 
 def test_DSPL_computate_microlensing_model():
     event = _create_event()
     Model = microlmodels.create_model('DSPL', event)
     Parameters = collections.namedtuple('parameters',
-                                        ['to', 'uo', 'delta_to', 'delta_uo', 'tE', 'q_flux_I', 'fs_Test', 'g_Test'])
+                                        ['to', 'uo', 'delta_to', 'delta_uo', 'tE', 'q_flux_I', 'fs_Test', 'fb_Test'])
     to = 0.0
     uo = 0.1
     delta_to = 42.0
@@ -243,11 +243,11 @@ def test_DSPL_computate_microlensing_model():
     tE = 5.0
     q_flux_I = 0.1
     fs = 10
-    g = 1
-    parameters = Parameters(to, uo, delta_to, delta_uo, tE, q_flux_I, fs, g)
+    fb = 1
+    parameters = Parameters(to, uo, delta_to, delta_uo, tE, q_flux_I, fs, fb)
 
     model, fs, fb= Model.compute_the_microlensing_model(event.telescopes[0], parameters)
-    assert np.allclose(model, np.array([fs * (9.21590819 + g), fs * (2.72932227 + g)]))
+    assert np.allclose(model, np.array([fs * (9.21590819) + fb, fs * (2.72932227) + fb]))
 
 
 def test_no_fancy_parameters_to_pyLIMA_standard_parameters():
@@ -456,7 +456,7 @@ def test_default_microlensing_model_no_fluxes():
     event = _create_event()
 
     Model = microlmodels.create_model('PSPL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'g_Test'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'fb_Test'])
 
     to = 0.0
     uo = 0.1
@@ -473,7 +473,7 @@ def test_PSPL_Jacobian():
     event = _create_event()
 
     Model = microlmodels.create_model('PSPL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'g_Test'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'fb_Test'])
 
     to = 0.0
     uo = 0.1
@@ -492,7 +492,7 @@ def test_FSPL_Jacobian():
     event = _create_event()
 
     Model = microlmodels.create_model('FSPL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test'])
 
     to = 0.0
     uo = 0.1
@@ -511,7 +511,7 @@ def test_FSPL_Jacobian_model_magnification():
     event = _create_event()
 
     Model = microlmodels.create_model('FSPL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test'])
 
     to = 0.0
     uo = 0.1
@@ -526,3 +526,11 @@ def test_FSPL_Jacobian_model_magnification():
 
     assert np.allclose(Jacobian[0], np.array([ 7.92527951,  1.00000064]))
     assert np.allclose(Jacobian[1], np.array([  0.1       ,  42.00011905]))
+
+def test_define_parameters_model_dictionnary_with_blend_ratio():
+    event = _create_event()
+
+    Model = microlmodels.create_model('FSPL', event, blend_flux_ratio=True)
+    Model.define_model_parameters()
+    assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test']
+    assert list(Model.model_dictionnary.values()) == [0, 1, 2, 3, 4, 5]
