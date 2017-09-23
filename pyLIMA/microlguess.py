@@ -284,7 +284,7 @@ def differential_evolution_parameters_boundaries(model):
     rho_boundaries = (5 * 10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    logs_boundaries = (-0.5, 0.5)
+    logs_boundaries = (-0.7, 0.7)
     logq_boundaries = (-6.0, 0.0)
     alpha_boundaries = (-np.pi, np.pi)
 
@@ -383,7 +383,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :rtype: list of float
      """
     if 'to' in parameter_key:
-        epsilon = np.random.uniform(-0.1, 0.1)
+        epsilon = np.random.uniform(-0.01, 0.01)
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
         return [to_parameters_trial]
@@ -396,7 +396,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
         return [fs_trial, g_trial]
         # return
-    if 'g_' in parameter_key:
+    if ('g_' in parameter_key) or ('fb_' in parameter_key):
         return
 
     # if 'pi' in parameter_key:
@@ -409,22 +409,21 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
     #    return [pi_trial]
 
     if 'rho' in parameter_key:
-        epsilon = np.random.uniform(-1, 1)
-        epsilon = 10 ** epsilon
+        epsilon = np.random.uniform(1-0.005, 1+0.005)
         rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         return [rho_parameters_trial]
 
     if 'logs' in parameter_key:
-        epsilon = np.random.uniform(-0.1, 0.1)
+        epsilon = np.random.uniform(-0.05, 0.05)
 
         logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logs_parameters_trial]
     if 'logq' in parameter_key:
-        epsilon = np.random.uniform(-0.1, 0.1)
+        epsilon = np.random.uniform(-0.05, 0.05)
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.9, 1.1)
+    epsilon = np.random.uniform(0.99, 1.01)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]

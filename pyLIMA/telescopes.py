@@ -145,6 +145,7 @@ class Telescope(object):
         self.gamma = 0.0  # This mean you will fit uniform source brightness
         self.deltas_positions = []
 
+        #self.hidden()
     def arrange_the_lightcurve_columns(self, choice):
         """Rearange the lightcurve to the pyLIMA convention.
 
@@ -307,3 +308,11 @@ class Telescope(object):
         ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T
 
         return ligthcurve_magnitude
+
+   # def hidden(self):
+
+        #import webbrowser
+        #controller = webbrowser.get()
+
+        #if self.name =='Mexicola':
+            #controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")

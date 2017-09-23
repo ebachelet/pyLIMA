@@ -65,47 +65,38 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
         :return: the resonant caustic,  the resonant critical curve
         :rtype:  array_like, array_like
     """
+    try:
+        medians_y = np.median(caustic_points[:, :].imag, axis=0)
 
-    median_x = np.median(caustic_points[:, :].real, axis=0)
-    median_y = np.median(caustic_points[:, :].imag, axis=0)
+        positive_y_branches = np.where(medians_y > 0)[0]
 
-    global_median_x = np.median(caustic_points[:, :-1].real, axis=(0, 1))
+        first_branch = positive_y_branches[0]
+        second_branch = positive_y_branches[1]
 
-    starting_points = caustic_points[0]
-    order = np.where(median_y > 0)[0]
+        if np.max((caustic_points[:, first_branch]).real) > np.max((caustic_points[:, second_branch]).real):
 
-    if starting_points[order[0]].imag < starting_points[order[1]].imag:
+            resonant_caustic = np.r_[caustic_points[:, second_branch], caustic_points[:, first_branch],
+                                     np.conj(caustic_points[:, first_branch][::-1]),
+                                     np.conj(caustic_points[:, second_branch][::-1])]
 
-        resonant_caustic = caustic_points[:, order[0]]
-        resonant_cc = critical_curves_points[:, order[0]]
-        resonant_caustic = np.r_[resonant_caustic, caustic_points[:, order[1]]]
-        resonant_cc = np.r_[resonant_cc, critical_curves_points[:, order[1]]]
+            resonant_cc = np.r_[critical_curves_points[:, second_branch], critical_curves_points[:, first_branch],
+                                np.conj(critical_curves_points[:, first_branch][::-1]),
+                                np.conj(critical_curves_points[:, second_branch][::-1])]
+        else:
 
-    else:
+            resonant_caustic = np.r_[caustic_points[:, first_branch], caustic_points[:, second_branch],
+                                     np.conj(caustic_points[:, second_branch][::-1]),
+                                     np.conj(caustic_points[:, first_branch][::-1])]
 
-        resonant_caustic = caustic_points[:, order[1]]
-        resonant_cc = critical_curves_points[:, order[1]]
+            resonant_cc = np.r_[critical_curves_points[:, first_branch], critical_curves_points[:, second_branch],
+                                np.conj(critical_curves_points[:, second_branch][::-1]),
+                                np.conj(critical_curves_points[:, first_branch][::-1])]
 
-        resonant_caustic = np.r_[resonant_caustic, caustic_points[:, order[0]]]
-        resonant_cc = np.r_[resonant_cc, critical_curves_points[:, order[0]]]
+    except:
 
-    order = np.where(median_y < 0)[0]
+        resonant_caustic = caustic_points
 
-    if starting_points[order[0]].imag < starting_points[order[1]].imag:
-
-        resonant_caustic = np.r_[resonant_caustic, caustic_points[:, order[1]]]
-        resonant_caustic = np.r_[resonant_caustic, caustic_points[:, order[0]]]
-        resonant_cc = np.r_[resonant_cc, critical_curves_points[:, order[1]]]
-        resonant_cc = np.r_[resonant_cc, critical_curves_points[:, order[0]]]
-
-
-
-    else:
-
-        resonant_caustic = np.r_[resonant_caustic, caustic_points[:, order[0]]]
-        resonant_caustic = np.r_[resonant_caustic, caustic_points[:, order[1]]]
-        resonant_cc = np.r_[resonant_cc, critical_curves_points[:, order[0]]]
-        resonant_cc = np.r_[resonant_cc, critical_curves_points[:, order[1]]]
+        resonant_cc = critical_curves_points
 
     return resonant_caustic, resonant_cc
 
@@ -120,28 +111,51 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
         the central critical curve, the top critical curve, the bottom critical curve
         :rtype:  array_like, array_like, array_like, array_like, array_like, array_like
     """
-    median_x = np.median(caustic_points[:, :].real, axis=0)
-    median_y = np.median(caustic_points[:, :].imag, axis=0)
+    try:
+        medians_y = np.median(caustic_points[:, :].imag, axis=0)
+        positive_y_branches = np.where(medians_y > 0)[0]
 
-    global_median_x = np.median(caustic_points[:, :].real, axis=(0, 1))
+        first_branch = positive_y_branches[0]
+        second_branch = positive_y_branches[1]
 
-    top_caustic = np.where((median_x < global_median_x) & (median_y > 0))[0]
-    close_top_caustic = caustic_points[:, top_caustic]
-    close_top_cc = critical_curves_points[:, top_caustic]
+        if np.max((caustic_points[:, first_branch]).real) > np.max((caustic_points[:, second_branch]).real):
 
-    bottom_caustic = np.where((median_x < global_median_x) & (median_y < 0))[0]
-    close_bottom_caustic = caustic_points[:, bottom_caustic]
-    close_bottom_cc = critical_curves_points[:, bottom_caustic]
-    try :
-        index_left = np.arange(0, 4).tolist()
-        index_left.remove(top_caustic)
-        index_left.remove(bottom_caustic)
-    except :
+            central_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
+            central_cc = np.r_[critical_curves_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
 
-        import pdb;
-        pdb.set_trace()
-    central_caustic = np.r_[caustic_points[:, index_left[0]], caustic_points[:, index_left[1]]]
-    central_cc = np.r_[critical_curves_points[:, index_left[0]], critical_curves_points[:, index_left[1]]]
+            close_top_caustic = caustic_points[:, second_branch]
+            close_top_cc = critical_curves_points[:, second_branch]
+
+            close_bottom_caustic = np.conj(close_top_caustic)
+            close_bottom_cc = np.conj(close_top_cc)
+
+        else:
+            central_caustic = np.r_[caustic_points[:, second_branch], np.conj(caustic_points[:, second_branch])[::-1]]
+            central_cc = np.r_[
+                critical_curves_points[:, second_branch], np.conj(caustic_points[:, second_branch])[::-1]]
+
+            close_top_caustic = caustic_points[:, first_branch]
+            close_top_cc = critical_curves_points[:, first_branch]
+
+            close_bottom_caustic = np.conj(close_top_caustic)
+            close_bottom_cc = np.conj(close_top_cc)
+
+    except:
+
+        positive_y_branches = np.where(caustic_points > 0)[0]
+
+        first_branch = positive_y_branches[0]
+
+        close_top_caustic = caustic_points[first_branch]
+        close_top_cc = critical_curves_points[first_branch]
+
+        close_bottom_caustic = np.conj(close_top_caustic)
+        close_bottom_cc = np.conj(close_top_cc)
+
+        central_branch = np.argmin(np.abs(caustic_points))
+
+        central_caustic = np.r_[caustic_points[central_branch]]
+        central_cc = np.r_[critical_curves_points[central_branch]]
 
     return central_caustic, close_top_caustic, close_bottom_caustic, central_cc, close_top_cc, close_bottom_cc
 
@@ -156,22 +170,42 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
         the planetary critical curve
         :rtype:  array_like, array_like, array_like, array_like
     """
+    try:
+        medians_y = np.median(caustic_points[:, :].imag, axis=0)
 
-    median_x = np.median(caustic_points[:, :].real, axis=0)
+        positive_y_branches = np.where(medians_y > 0)[0]
 
-    global_median_x = np.median(caustic_points[:, :].real, axis=(0, 1))
+        first_branch = positive_y_branches[0]
+        second_branch = positive_y_branches[1]
 
-    wide_caustic_index = np.where((median_x > global_median_x))[0]
-    wide_caustic = np.r_[caustic_points[:, wide_caustic_index[0]], caustic_points[:, wide_caustic_index[1]]]
-    wide_cc = np.r_[critical_curves_points[:, wide_caustic_index[0]],
-                    critical_curves_points[:, wide_caustic_index[1]]]
+        if np.max((caustic_points[:, first_branch]).real) > np.max((caustic_points[:, second_branch]).real):
 
-    index_left = np.arange(0, 4).tolist()
-    index_left.remove(wide_caustic_index[0])
-    index_left.remove(wide_caustic_index[1])
-    central_caustic = np.r_[caustic_points[:, index_left[0]], caustic_points[:, index_left[1]]]
-    central_cc = np.r_[critical_curves_points[:, index_left[0]],
-                       critical_curves_points[:, index_left[1]]]
+            central_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
+            central_cc = np.r_[critical_curves_points[:, first_branch],
+                               np.conj(critical_curves_points[:, first_branch])[::-1]]
+
+            wide_caustic = np.r_[caustic_points[:, second_branch], np.conj(caustic_points[:, second_branch])[::-1]]
+            wide_cc = np.r_[critical_curves_points[:, second_branch],
+                            np.conj(critical_curves_points[:, second_branch])[::-1]]
+        else:
+
+            central_caustic = np.r_[caustic_points[:, second_branch], np.conj(caustic_points[:, second_branch])[::-1]]
+            central_cc = np.r_[critical_curves_points[:, second_branch],
+                               np.conj(critical_curves_points[:, second_branch])[::-1]]
+
+            wide_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
+            wide_cc = np.r_[critical_curves_points[:, first_branch],
+                            np.conj(critical_curves_points[:, first_branch])[::-1]]
+
+
+    except:
+
+        order = np.argsort(caustic_points.real)
+        central_caustic = np.r_[caustic_points[order[0]], caustic_points[order[1]]]
+        central_cc = np.r_[critical_curves_points[order[0]], critical_curves_points[order[1]]]
+
+        wide_caustic = np.r_[caustic_points[order[2]], caustic_points[order[3]]]
+        wide_cc =  np.r_[critical_curves_points[order[2]], critical_curves_points[order[3]]]
 
     return central_caustic, wide_caustic, central_cc, wide_cc
 
@@ -226,7 +260,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
 
         polynomial_roots = np.roots(polynomial_coefficients)
 
-        #polynomial_roots = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
+        # polynomial_roots = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
         # import pdb;
         # pdb.set_trace()
         if len(roots) == 0:
@@ -265,7 +299,6 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
     critical_curves += -center_of_mass + separation / 2
 
     return caustics, critical_curves
-
 
 
 def find_area_of_interest_around_caustics(caustics, secure_factor=0.1):
@@ -328,11 +361,11 @@ def find_2_lenses_caustic_regime(separation, mass_ratio):
     return caustic_regime
 
 
-def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
-    """  Define a new geometric center dependig of the caustic regime. This helps fit convergence sometimes:
+def change_source_trajectory_center_to_central_caustics_center(separation, mass_ratio):
+    """  Define a new geometric center, on the central caustic
             resonant : (0,0)
-            close : (x_planetary_caustic, y_planetary_caustic)
-            wide : (x_planetary_caustic, y_planetary_caustic)
+            close : (x_central_caustic,0)
+            wide : (x_central_caustic, 0)
 
         "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The Caustic Region Of INfluence"
         Penny M.2014 http://adsabs.harvard.edu/abs/2014ApJ...790..142P
@@ -350,26 +383,20 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio):
     x_center = 0
     y_center = 0
 
-    caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
+    caustic_regime, caustics, critical_curves = find_2_lenses_caustics_and_critical_curves(separation, mass_ratio,
+                                                                                           resolution=1)
 
     if caustic_regime == 'wide':
-        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
+        x_center = np.median(caustics[0].real)
 
-        x_points = np.sort(caustic_points.real)
-        x_center = (x_points[-2]+x_points[-1])/2.0
-        #x_center = +separation*mass_ratio/(1+mass_ratio)
     if caustic_regime == 'close':
-        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
-
-        center_index = np.argmax(caustic_points.imag)
-
-        x_center = caustic_points[center_index].real
-        y_center = caustic_points[center_index].imag
+        x_center = np.median(caustics[0].real)
 
     return x_center, y_center
 
-def caustics_centers(separation, mass_ratio):
-    """  Define a new geometric center dependig of the caustic regime. This helps fit convergence sometimes:
+
+def change_source_trajectory_center_to_planetary_caustics_center(separation, mass_ratio):
+    """  Define a new geometric center depending of the caustic regime. This helps fit convergence sometimes:
             resonant : (0,0)
             close : (x_planetary_caustic, y_planetary_caustic)
             wide : (x_planetary_caustic, y_planetary_caustic)
@@ -390,31 +417,18 @@ def caustics_centers(separation, mass_ratio):
     x_center = 0
     y_center = 0
 
-    caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
+    caustic_regime, caustics, critical_curves = find_2_lenses_caustics_and_critical_curves(separation, mass_ratio,
+                                                                                           resolution=100)
 
     if caustic_regime == 'wide':
-        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
-
-        x_points = np.sort(caustic_points.real)
-        x_center_central = (x_points[0]+x_points[1])/2.0
-        x_center_wide = (x_points[-2] + x_points[-1]) / 2.0
-
-        return [x_center_central, x_center_wide], [0.0, 0.0]
+        x_center = np.median(caustics[-2].real)
 
     if caustic_regime == 'close':
-        caustic_points, cc_points = compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1)
+        x_center = np.median(caustics[2].real)
+        y_center = np.median(caustics[2].imag)
 
-        center_index = np.argmax(caustic_points.imag)
+    return x_center, y_center
 
-        x_center_close = caustic_points[center_index].real
-        y_center_close = caustic_points[center_index].imag
-
-        x_points = np.sort(caustic_points.real)
-        x_center_central = (x_points[-2] + x_points[-1]) / 2.0
-
-        return [x_center_central, x_center_close], [0.0, y_center_close]
-
-    return [x_center], [y_center]
 
 ### DEPRECIATED
 def dx(function, x, args):

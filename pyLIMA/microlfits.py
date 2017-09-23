@@ -439,12 +439,7 @@ class MLFits(object):
 
         :rtype: float
         """
-        # prior_limit = microlpriors.microlensing_parameters_limits_priors(
-        # fit_process_parameters, self.model.parameters_boundaries)
 
-        # if prior_limit == np.inf:
-        # import pdb;pdb.set_trace()
-        #    return -np.inf
 
         chichi = 0
 
@@ -493,9 +488,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.1, 1.9), popsize=int(self.DE_population_size), maxiter=5000,
-            tol=0.0001, strategy='best2bin',
-            recombination=0.5, polish=True,
+            mutation=(0.4,1.5), popsize=int(self.DE_population_size), maxiter=5000,tol=0.0,
+            atol=0.1, strategy='rand2bin',
+            recombination=0.5, polish=True,init='latinhypercube',
             disp=True
         )
 
@@ -540,8 +535,13 @@ class MLFits(object):
 
         :rtype: float
         """
-
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
+        try:
+            self.model.x_center = None
+            self.model.y_center = None
+        except:
+            pass
         chichi = 0.0
 
         for telescope in self.event.telescopes:
@@ -656,10 +656,13 @@ class MLFits(object):
            The sum of square residuals gives chi^2.
         """
 
-        # Construct an np.array with each telescope residuals
-        residuals = np.array([])
-        # start = python_time.time()
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        try:
+            self.model.x_center = None
+            self.model.y_center = None
+        except:
+            pass
+        residuals = np.array([])
 
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
@@ -667,6 +670,7 @@ class MLFits(object):
 
             residuals = np.append(residuals, residus)
         # print python_time.time()-start
+
         return residuals
 
     def LM_Jacobian(self, fit_process_parameters):
@@ -728,12 +732,12 @@ class MLFits(object):
             self.guess = self.initial_guess()
 
         for index, telescope in enumerate(self.event.telescopes):
-            if self.guess[self.model.model_dictionnary['g_' + telescope.name]] < -1.0:
-                self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -1.0
-
+            #if self.guess[self.model.model_dictionnary['g_' + telescope.name]] < -10.0:
+                #self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -10.0
+                pass
                 # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
                 # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
-        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -1] * len(self.event.telescopes)
+        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -np.inf] * len(self.event.telescopes)
         bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.event.telescopes)
 
         if self.model.Jacobian_flag == 'OK':
@@ -809,12 +813,7 @@ class MLFits(object):
 
         residuals = (flux - microlensing_model[0])/errflux
 
-       # if microlensing_model[2]<0:
-       #    if microlensing_model[2] < -1:
-        #        g = -0.99
-        #    else:
-        #        g = microlensing_model[2]
-        #    residuals += 1/(1+g)
+
         return residuals
 
     def all_telescope_residuals(self, pyLIMA_parameters):
