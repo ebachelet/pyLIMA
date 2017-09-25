@@ -178,7 +178,7 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
         first_branch = positive_y_branches[0]
         second_branch = positive_y_branches[1]
 
-        if np.max((caustic_points[:, first_branch]).real) > np.max((caustic_points[:, second_branch]).real):
+        if np.max((caustic_points[:, first_branch]).real) < np.max((caustic_points[:, second_branch]).real):
 
             central_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
             central_cc = np.r_[critical_curves_points[:, first_branch],

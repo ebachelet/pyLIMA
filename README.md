@@ -16,6 +16,7 @@ You can also practice by simulating events.
 # Documentation and Installation
 
 
+
 [Documentation](https://ebachelet.github.io/pyLIMA/)
 
 ### Required materials 
@@ -26,8 +27,11 @@ You also need [SWIG](http://www.swig.org/download.html)
 You need [pip](https://pip.pypa.io/en/stable/installing/) or you can install manually
 the required libraries [Documentation](https://ebachelet.github.io/pyLIMA/)
 
-
+pyLIMA should now run both on python2 and python3 !
 ### Installation and use
+
+
+
 
 Clone the repository or download as a ZIP file. Then
 
@@ -55,9 +59,13 @@ from pyLIMA import whatyouneed
 
 ### Examples
 Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
+There is two version for each examples, one using [Jupyter notebook](https://jupyter.org/) (*.ipynb) or 
+classic Python file (*.py).
 
-
-
+Example_1 : [HOW TO FIT MY DATA?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+Example_2 : [HOW TO USE YOUR PREFERED PARAMETERS?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+Example_3 : [HOW TO SIMULATE EVENST?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+Example_4 : [HOW TO USE YOUR OWN FITTING ROUTINES?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
 # What can you do?
 
 
