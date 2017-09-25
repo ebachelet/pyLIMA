@@ -63,8 +63,11 @@ There is two version for each examples, one using [Jupyter notebook](https://jup
 classic Python file (*.py).
 
 Example_1 : [HOW TO FIT MY DATA?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+
 Example_2 : [HOW TO USE YOUR PREFERED PARAMETERS?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+
 Example_3 : [HOW TO SIMULATE EVENST?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+
 Example_4 : [HOW TO USE YOUR OWN FITTING ROUTINES?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
 # What can you do?
 
