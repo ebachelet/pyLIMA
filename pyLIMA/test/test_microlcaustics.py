@@ -259,23 +259,27 @@ def test_change_source_trajectory_center_to_caustics_center():
     separation = 0.6
     mass_ratio = 10 ** -3.98
 
-    x_center, y_center = microlcaustics.change_source_trajectory_center_to_caustics_center(separation, mass_ratio)
+    x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
+                                                                                                     mass_ratio)
 
-    assert x_center == -1.0665887985841074
-    assert y_center == 0.027286112974103965
+    assert x_center == -1.0665126064960062
+
+    assert y_center == 0.027517790201391959
 
     separation = 0.8
     mass_ratio = 0.85
 
-    x_center, y_center = microlcaustics.change_source_trajectory_center_to_caustics_center(separation, mass_ratio)
+    x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
+                                                                                                     mass_ratio)
 
     assert x_center == 0
     assert y_center == 0
 
     separation = 6.8
     mass_ratio = 0.85
+   
+    x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
+                                                                                                     mass_ratio)
 
-    x_center, y_center = microlcaustics.change_source_trajectory_center_to_caustics_center(separation, mass_ratio)
-
-    assert x_center == 3.5937246394666111
+    assert x_center == 3.5970425350167305
     assert y_center == 0

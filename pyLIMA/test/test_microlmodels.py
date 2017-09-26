@@ -102,17 +102,17 @@ def test_define_parameters_boundaries():
 def test_magnification_USBL_computation():
     event = _create_event()
     Model = microlmodels.create_model('USBL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'logs', 'logq','alpha'])
+    Parameters = collections.namedtuple('parameters', ['tc', 'uc', 'tE', 'rho', 'logs', 'logq','alpha'])
 
 
-    to = 0
-    uo = 0.70710678
+    tc = 0
+    uc = 0.70710678
     tE = 1
     rho = 0.0033
     s = np.log10(1.0)
     q = np.log10(0.02)
     alpha = -np.pi/4
-    parameters = Parameters(to, uo, tE, rho, s, q,alpha)
+    parameters = Parameters(tc, uc, tE, rho, s, q,alpha)
 
     magnification = Model.model_magnification(event.telescopes[0], parameters)
     assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
@@ -124,16 +124,16 @@ def test_magnification_USBL_computation():
 def test_magnification_PSBL_computation():
     event = _create_event()
     Model = microlmodels.create_model('PSBL', event)
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'logs', 'logq','alpha'])
+    Parameters = collections.namedtuple('parameters', ['tc', 'uc', 'tE', 'logs', 'logq','alpha'])
 
 
-    to = 0
-    uo = 0.70710678
+    tc = 0
+    uc = 0.70710678
     tE = 1.0
     s = np.log10(1.0)
     q = np.log10(0.02)
     alpha = -np.pi/4
-    parameters = Parameters(to, uo, tE, s, q,alpha)
+    parameters = Parameters(tc, uc, tE, s, q,alpha)
 
     magnification = Model.model_magnification(event.telescopes[0], parameters)
 

@@ -111,6 +111,7 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
         the central critical curve, the top critical curve, the bottom critical curve
         :rtype:  array_like, array_like, array_like, array_like, array_like, array_like
     """
+
     try:
         medians_y = np.median(caustic_points[:, :].imag, axis=0)
         positive_y_branches = np.where(medians_y > 0)[0]
@@ -384,7 +385,7 @@ def change_source_trajectory_center_to_central_caustics_center(separation, mass_
     y_center = 0
 
     caustic_regime, caustics, critical_curves = find_2_lenses_caustics_and_critical_curves(separation, mass_ratio,
-                                                                                           resolution=1)
+                                                                                           resolution=10)
 
     if caustic_regime == 'wide':
         x_center = np.median(caustics[0].real)
@@ -418,14 +419,14 @@ def change_source_trajectory_center_to_planetary_caustics_center(separation, mas
     y_center = 0
 
     caustic_regime, caustics, critical_curves = find_2_lenses_caustics_and_critical_curves(separation, mass_ratio,
-                                                                                           resolution=100)
+                                                                                           resolution=10)
 
     if caustic_regime == 'wide':
         x_center = np.median(caustics[-2].real)
 
     if caustic_regime == 'close':
-        x_center = np.median(caustics[2].real)
-        y_center = np.median(caustics[2].imag)
+        x_center = np.median(caustics[1].real)
+        y_center = np.median(caustics[1].imag)
 
     return x_center, y_center
 
