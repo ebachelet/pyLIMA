@@ -277,7 +277,7 @@ def test_change_source_trajectory_center_to_caustics_center():
 
     separation = 6.8
     mass_ratio = 0.85
-   
+
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
                                                                                                      mass_ratio)
 

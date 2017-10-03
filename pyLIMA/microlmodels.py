@@ -879,7 +879,7 @@ class ModelUSBL(MLModel):
 
         return to, uo
 
-    def uc_tc_from_uo_to(self, pyLIMA_parameters, uo, to):
+    def uc_tc_from_uo_to(self, pyLIMA_parameters, to, uo):
         new_origin_x = self.x_center
         new_origin_y = self.y_center
 
@@ -1009,7 +1009,7 @@ class ModelPSBL(MLModel):
         return to, uo
 
 
-    def uc_tc_from_uo_to(self, pyLIMA_parameters, uo, to):
+    def uc_tc_from_uo_to(self, pyLIMA_parameters, to, uo):
         new_origin_x = self.x_center
         new_origin_y = self.y_center
 
@@ -1133,46 +1133,64 @@ class ModelFSBL(MLModel):
         self.critical_curves = critical_curves
         self.area_of_interest = area_of_interest
 
-    def change_origin_center(self, pyLIMA_parameters):
+    def find_new_origin(self, pyLIMA_parameters):
+
+        if self.planetary_caustic_geometric_center:
+            new_origin = 'planetary_caustic'
+
+        else:
+            new_origin = 'central_caustic'
+
         if self.x_center:
-            new_origin_x = self.x_center
-            new_origin_y = self.y_center
+            pass
 
         else:
 
-            new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_caustics_center(
-                10 ** pyLIMA_parameters.logs,
-                10 ** pyLIMA_parameters.logq)
+            if new_origin == 'central_caustic':
+
+                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+                    10 ** pyLIMA_parameters.logs,
+                    10 ** pyLIMA_parameters.logq)
+
+            else:
+
+                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+                    10 ** pyLIMA_parameters.logs,
+                    10 ** pyLIMA_parameters.logq)
 
             self.x_center = new_origin_x
             self.y_center = new_origin_y
 
-        new_to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
-                                                                new_origin_y * np.sin(pyLIMA_parameters.alpha))
+    def uo_to_from_uc_tc(self, pyLIMA_parameters):
 
-        new_uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
-                                         new_origin_y * np.cos(pyLIMA_parameters.alpha))
+        new_origin_x = self.x_center
+        new_origin_y = self.y_center
 
-        return new_to, new_uo
+        to = pyLIMA_parameters.tc - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+                                                            new_origin_y * np.sin(pyLIMA_parameters.alpha))
+
+        uo = pyLIMA_parameters.uc - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
+
+        return to, uo
+
+    def uc_tc_from_uo_to(self, pyLIMA_parameters, to, uo):
+        new_origin_x = self.x_center
+        new_origin_y = self.y_center
+
+        tc = to + pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+                                          new_origin_y * np.sin(pyLIMA_parameters.alpha))
+
+        uc = uo + (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+                   new_origin_y * np.cos(pyLIMA_parameters.alpha))
+
+        return tc, uc
 
     def find_binary_regime(self, pyLIMA_parameters):
 
         binary_regime = microlcaustics.find_2_lenses_caustic_regime(10 ** pyLIMA_parameters.logs,
                                                                     10 ** pyLIMA_parameters.logq)
         return binary_regime
-
-    def distances_to_caustics(self, pyLIMA_parameters):
-
-        x_centers, y_centers = microlcaustics.caustics_center(10 ** pyLIMA_parameters.logs,
-                                                              10 ** pyLIMA_parameters.logq)
-
-        distances = []
-
-        for index in range(len(x_centers)):
-            distance = pyLIMA_parameters.uo - (x_centers[index] * np.sin(pyLIMA_parameters.alpha) -
-                                               y_centers[index] * np.cos(pyLIMA_parameters.alpha))
-            distances.append(distance)
-        return distances
 
 
 class ModelRRLyraePL(MLModel):

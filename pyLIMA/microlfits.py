@@ -342,7 +342,7 @@ class MLFits(object):
                    nwalkers*nlinks MCMC steps in total
         """
 
-        nwalkers = 100
+        nwalkers = 300
         nlinks = 100
 
         # start = python_time.time()
@@ -372,6 +372,7 @@ class MLFits(object):
         population = []
 
         count_walkers = 0
+
         while count_walkers < nwalkers:
 
             # Construct an individual of the population around the best solution.
@@ -391,14 +392,15 @@ class MLFits(object):
             # individual += fluxes
 
             chichi = self.chichi_MCMC(individual)
+
+
             if chichi != -np.inf:
                 # np.array(individual)
                 # print count_walkers
 
                 population.append(np.array(individual))
                 count_walkers += 1
-        # number_of_parameters = number_of_paczynski_parameters + len(fluxes)
-        # number_of_parameters = number_of_paczynski_parameters
+
         print('pre MCMC done')
 
         number_of_parameters = len(individual)
@@ -420,7 +422,7 @@ class MLFits(object):
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions, 3 * nlinks)
+        sampler.run_mcmc(final_positions,  nlinks)
 
         MCMC_chains = sampler.chain
         MCMC_probabilities = sampler.lnprobability
@@ -452,10 +454,7 @@ class MLFits(object):
             chichi += (residus ** 2).sum()
 
 
-            # comm = MPI.COMM_WORLD
-        # rank = comm.Get_rank()
-        # print rank, fit_process_parameters, chichi
-        #print pyLIMA_parameters.logs, chichi
+        print chichi
         return -chichi / 2
 
     def differential_evolution(self):
@@ -488,9 +487,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.4,1.5), popsize=int(self.DE_population_size), maxiter=5000,tol=0.0,
-            atol=0.1, strategy='rand2bin',
-            recombination=0.5, polish=True,init='latinhypercube',
+            mutation=(0.5,1.0), popsize=int(self.DE_population_size), maxiter=5000,tol=0.0,
+            atol=0.1, strategy='rand1bin',
+            recombination=0.7, polish=True,init='latinhypercube',
             disp=True
         )
 

@@ -382,14 +382,14 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :return: a list containing the trial(s) associated to the parameter_key string
         :rtype: list of float
      """
-    if 'to' in parameter_key:
-        epsilon = np.random.uniform(-0.01, 0.01)
+    if ('to' in parameter_key) | ('tc' in parameter_key):
+        epsilon = np.random.uniform(-0.001, 0.001)
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
         return [to_parameters_trial]
 
     if 'fs' in parameter_key:
-        epsilon = np.random.uniform(0.99, 1.01)
+        epsilon = np.random.uniform(0.999, 1.001)
 
         fs_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
@@ -409,21 +409,21 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
     #    return [pi_trial]
 
     if 'rho' in parameter_key:
-        epsilon = np.random.uniform(1-0.005, 1+0.005)
+        epsilon = np.random.uniform(0.999, 1.001)
         rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         return [rho_parameters_trial]
 
     if 'logs' in parameter_key:
-        epsilon = np.random.uniform(-0.05, 0.05)
+        epsilon = np.random.uniform(-0.005, 0.005)
 
         logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logs_parameters_trial]
     if 'logq' in parameter_key:
-        epsilon = np.random.uniform(-0.05, 0.05)
+        epsilon = np.random.uniform(-0.005, 0.005)
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.99, 1.01)
+    epsilon = np.random.uniform(0.999, 1.001)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]
