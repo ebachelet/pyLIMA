@@ -15,11 +15,11 @@ import emcee
 import sys
 import copy
 from collections import OrderedDict
-# from mpi4py import MPI
-# import dill
+from mpi4py import MPI
+import dill
 
-# MPI.pickle.dumps = dill.dumps
-# MPI.pickle.loads = dill.loads
+MPI.pickle.dumps = dill.dumps
+MPI.pickle.loads = dill.loads
 
 
 from pyLIMA import microlmodels
@@ -453,8 +453,6 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
-
-        print chichi
         return -chichi / 2
 
     def differential_evolution(self):
@@ -487,7 +485,7 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5,1.0), popsize=int(self.DE_population_size), maxiter=5000,tol=0.0,
+            mutation=(0.5,1.5), popsize=int(self.DE_population_size), maxiter=5000,tol=0.0,
             atol=0.1, strategy='rand1bin',
             recombination=0.7, polish=True,init='latinhypercube',
             disp=True
