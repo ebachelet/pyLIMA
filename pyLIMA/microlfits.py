@@ -21,7 +21,6 @@ import dill
 MPI.pickle.dumps = dill.dumps
 MPI.pickle.loads = dill.loads
 
-
 from pyLIMA import microlmodels
 from pyLIMA import microloutputs
 from pyLIMA import microlguess
@@ -88,7 +87,6 @@ class MLFits(object):
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
-
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None):
@@ -393,7 +391,6 @@ class MLFits(object):
 
             chichi = self.chichi_MCMC(individual)
 
-
             if chichi != -np.inf:
                 # np.array(individual)
                 # print count_walkers
@@ -422,9 +419,10 @@ class MLFits(object):
 
         # Final estimation using the previous output.
 
-        sampler.run_mcmc(final_positions,  nlinks)
+        sampler.run_mcmc(final_positions, nlinks)
 
         MCMC_chains = sampler.chain
+        MCMC_chains = MCMC_chains.reshape(MCMC_chains.shape[0]*MCMC_chains.shape[1],MCMC_chains.shape[2])
         MCMC_probabilities = sampler.lnprobability
         # pool.close()
         # print python_time.time()-start
@@ -441,7 +439,6 @@ class MLFits(object):
 
         :rtype: float
         """
-
 
         chichi = 0
 
@@ -485,9 +482,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5,1.5), popsize=int(self.DE_population_size), maxiter=5000,tol=0.0,
+            mutation=(0.5, 1.5), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
             atol=0.1, strategy='rand1bin',
-            recombination=0.7, polish=True,init='latinhypercube',
+            recombination=0.7, polish=True, init='latinhypercube',
             disp=True
         )
 
@@ -495,7 +492,7 @@ class MLFits(object):
         paczynski_parameters = differential_evolution_estimation['x'].tolist()
 
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
-        print('DE converge to parameters : = ',  differential_evolution_estimation['x'].astype(str))
+        print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
 
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
@@ -547,7 +544,7 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
-        self.DE_population.append(fit_process_parameters.tolist()+[chichi])
+        self.DE_population.append(fit_process_parameters.tolist() + [chichi])
 
         return chichi
 
@@ -729,11 +726,11 @@ class MLFits(object):
             self.guess = self.initial_guess()
 
         for index, telescope in enumerate(self.event.telescopes):
-            #if self.guess[self.model.model_dictionnary['g_' + telescope.name]] < -10.0:
-                #self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -10.0
-                pass
-                # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
-                # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
+            # if self.guess[self.model.model_dictionnary['g_' + telescope.name]] < -10.0:
+            # self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -10.0
+            pass
+            # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
+            # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
         bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -np.inf] * len(self.event.telescopes)
         bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.event.telescopes)
 
@@ -808,8 +805,7 @@ class MLFits(object):
 
         microlensing_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-        residuals = (flux - microlensing_model[0])/errflux
-
+        residuals = (flux - microlensing_model[0]) / errflux
 
         return residuals
 
@@ -877,28 +873,42 @@ class MLFits(object):
 
         hyper_grid = self.construct_the_hyper_grid(parameters_on_the_grid)
 
-        parameters_boundaries = self.redefine_parameters_boundaries()
+        self.new_parameters_boundaries = self.redefine_parameters_boundaries()
 
-        grid_results = []
-        for grid_parameters_pixel in hyper_grid:
-            differential_evolution_estimation = scipy.optimize.differential_evolution(
-                self.chichi_grids,
-                bounds=parameters_boundaries, args=tuple(grid_parameters_pixel.tolist()),
-                mutation=(1.1, 1.9), popsize=10, maxiter=10,
-                tol=0.0001,
-                recombination=0.6, polish=None,
-                disp=True
-            )
+        if self.pool is not None:
+            computational_map = self.pool.map
 
-            best_parameters = self.reconstruct_fit_process_parameters(differential_evolution_estimation['x'],
-                                                                      grid_parameters_pixel)
-            best_parameters += [differential_evolution_estimation['fun']]
+        else:
+            computational_map = map
 
-            grid_results.append(best_parameters)
-            print(sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_parameters_pixel).strip(
-                '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun']))
+
+        grid_results = list(computational_map(self.optimization_on_grid_pixel, hyper_grid))
         import pdb;
         pdb.set_trace()
+        return grid_results
+
+    def optimization_on_grid_pixel(self, grid_pixel_parameters):
+        print grid_pixel_parameters
+        differential_evolution_estimation = scipy.optimize.differential_evolution(
+            self.chichi_grids,
+            bounds=self.new_parameters_boundaries, args=tuple(grid_pixel_parameters.tolist()),
+            mutation=(0.5, 1.0), popsize=1, maxiter=100,
+            tol=0.0, atol=0.1, strategy='best1bin',
+            recombination=0.7, polish=True, init='latinhypercube',
+            disp=True
+        )
+
+        best_parameters = self.reconstruct_fit_process_parameters(differential_evolution_estimation['x'],
+                                                                  grid_pixel_parameters)
+
+        best_parameters += [differential_evolution_estimation['fun']]
+
+        print(sys._getframe().f_code.co_name, ' Grid step on ' + str(grid_pixel_parameters.tolist()).strip(
+            '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun']))
+
+        return best_parameters
+
+
 
     def chichi_grids(self, moving_parameters, *fix_parameters):
         """ Compute chi^2. ON CONSTRUCTION.

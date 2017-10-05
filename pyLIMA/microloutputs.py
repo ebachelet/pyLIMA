@@ -261,12 +261,7 @@ def MCMC_outputs(fit):
     raw_chains = fit.MCMC_chains
     probabilities = fit.MCMC_probabilities
 
-    mcmc_chains = raw_chains[:, :, 0].ravel()
-
-    for i in xrange(raw_chains[0].shape[1] - 1):
-        i += 1
-        mcmc_chains = np.c_[mcmc_chains, raw_chains[:, :, i].ravel()]
-
+    mcmc_chains = raw_chains
 
     if raw_chains[0].shape[1] != len(fit.model.model_dictionnary):
         fluxes = MCMC_compute_fs_g(fit, mcmc_chains)
@@ -434,13 +429,9 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
     time_of_model = np.linspace(min_time, max_time + 100, 30000)
-    try:
-        extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
+    extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
                                  pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
-    except:
 
-        extra_time = np.linspace(pyLIMA_parameters.tc - 2 * np.abs(pyLIMA_parameters.tE),
-                                 pyLIMA_parameters.tc + 2 * np.abs(pyLIMA_parameters.tE), 30000)
     time_of_model = np.sort(np.append(time_of_model, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -718,13 +709,9 @@ def LM_plot_model(fit, figure_axe):
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
     time = np.linspace(min_time, max_time + 100, 30000)
-    try:
-        extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
+    extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
                                  pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
-    except:
 
-        extra_time = np.linspace(pyLIMA_parameters.tc - 2 * np.abs(pyLIMA_parameters.tE),
-                                 pyLIMA_parameters.tc + 2 * np.abs(pyLIMA_parameters.tE), 30000)
     time = np.sort(np.append(time, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -740,13 +727,9 @@ def LM_plot_model(fit, figure_axe):
     figure_axe.plot(time, magnitude, '--k', label=fit.model.model_type, lw=2)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
-    try:
-        figure_axe.set_xlim(
+    figure_axe.set_xlim(
             [pyLIMA_parameters.to-3*np.abs(pyLIMA_parameters.tE), pyLIMA_parameters.to+3*np.abs(pyLIMA_parameters.tE)+100])
-    except:
-        figure_axe.set_xlim(
-            [pyLIMA_parameters.tc - 3 * np.abs(pyLIMA_parameters.tE),
-             pyLIMA_parameters.tc + 3 * np.abs(pyLIMA_parameters.tE) + 100])
+
     figure_axe.invert_yaxis()
     figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                     transform=figure_axe.transAxes)
@@ -869,7 +852,7 @@ def plot_LM_ML_geometry(fit):
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     if 'BL' in fit.model.model_type:
-        fit.model.find_new_origin(pyLIMA_parameters)
+        fit.model.find_origin(pyLIMA_parameters)
         to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
 
 
@@ -885,12 +868,8 @@ def plot_LM_ML_geometry(fit):
     # index_trajectory_limits = \
     #    np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[
     #        0]
-    try:
+    index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
 
-        index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.to) < 50))[0]
-    except:
-
-        index_trajectory_limits = np.where((np.abs(time - pyLIMA_parameters.tc) < 50))[0]
 
     if len(index_trajectory_limits) >= 3:
         midle = int(len(index_trajectory_limits) / 2)

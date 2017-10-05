@@ -63,7 +63,7 @@ class ModelException(Exception):
 
 
 def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio = None):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=None):
     """
     Load a model according to the supplied model_type. Models are expected to be named
     Model<model_type> e.g. ModelPSPL
@@ -160,7 +160,7 @@ class MLModel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio = None):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=None):
         """ Initialization of the attributes described above.
         """
         self.event = event
@@ -184,12 +184,10 @@ class MLModel(object):
 
         self.define_pyLIMA_standard_parameters()
 
-        self.planetary_caustic_geometric_center = None
-
+        # binary lens model specific
+        self.binary_origin = None
         self.x_center = None
         self.y_center = None
-
-        self.area_inside = 0
 
     @abc.abstractproperty
     def model_type(self):
@@ -328,7 +326,7 @@ class MLModel(object):
                 f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
 
                 if self.blend_flux_ratio:
-                    g_blending = f_blending/f_source
+                    g_blending = f_blending / f_source
                 else:
                     g_blending = f_blending
 
@@ -538,7 +536,6 @@ class ModelPSPL(MLModel):
         else:
             dresdfs = (Amplification[0]) / errflux
             dresdg = 1 / errflux
-
 
         jacobi = np.array([dresdto, dresduo, dresdtE, dresdfs, dresdg])
 
@@ -758,7 +755,7 @@ class ModelUSBL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'tc': 0, 'uc': 1, 'tE': 2, 'rho': 3, 'logs': 4, 'logq': 5, 'alpha': 6}
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'logs': 4, 'logq': 5, 'alpha': 6}
 
         self.Jacobian_flag = 'No way'
         self.USBL_windows = None
@@ -773,11 +770,11 @@ class ModelUSBL(MLModel):
         :rtype: array_like
         """
 
-        self.find_new_origin(pyLIMA_parameters)
+        self.find_origin(pyLIMA_parameters)
         to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
-
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
+
         magnification = np.zeros(len(source_trajectoire[0]))
 
         if 'dsdt' in pyLIMA_parameters._fields:
@@ -838,30 +835,27 @@ class ModelUSBL(MLModel):
         self.critical_curves = critical_curves
         self.area_of_interest = area_of_interest
 
-    def find_new_origin(self, pyLIMA_parameters):
-
-        if self.planetary_caustic_geometric_center:
-            new_origin = 'planetary_caustic'
-
-        else:
-            new_origin = 'central_caustic'
+    def find_origin(self, pyLIMA_parameters):
 
         if self.x_center:
-           pass
+            pass
 
         else:
+            new_origin_x = 0
+            new_origin_y = 0
 
-            if new_origin == 'central_caustic':
+            if self.binary_origin:
 
-                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
-                    10 ** pyLIMA_parameters.logs,
-                    10 ** pyLIMA_parameters.logq)
+                if self.binary_origin == 'central_caustic':
+                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+                        10 ** pyLIMA_parameters.logs,
+                        10 ** pyLIMA_parameters.logq)
 
-            else:
+                if self.binary_origin == 'planetary_caustic':
 
-                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
-                    10 ** pyLIMA_parameters.logs,
-                    10 ** pyLIMA_parameters.logq)
+                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+                        10 ** pyLIMA_parameters.logs,
+                        10 ** pyLIMA_parameters.logq)
 
             self.x_center = new_origin_x
             self.y_center = new_origin_y
@@ -871,10 +865,10 @@ class ModelUSBL(MLModel):
         new_origin_x = self.x_center
         new_origin_y = self.y_center
 
-        to = pyLIMA_parameters.tc - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+        to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
                                                             new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
-        uo = pyLIMA_parameters.uc - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+        uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
                                      new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         return to, uo
@@ -914,7 +908,7 @@ class ModelPSBL(MLModel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'tc': 0, 'uc': 1, 'tE': 2, 'logs': 3, 'logq': 4, 'alpha': 5}
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'logs': 3, 'logq': 4, 'alpha': 5}
 
         self.Jacobian_flag = 'No way'
 
@@ -929,12 +923,11 @@ class ModelPSBL(MLModel):
         :rtype: array_like,array_like
         """
 
-        self.find_new_origin(pyLIMA_parameters)
-        to, uo = self.uo_to_from_uc_tc( pyLIMA_parameters)
+        self.find_origin(pyLIMA_parameters)
+        to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
 
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
-
 
         if 'dsdt' in pyLIMA_parameters._fields:
 
@@ -965,59 +958,53 @@ class ModelPSBL(MLModel):
         self.critical_curves = critical_curves
         self.area_of_interest = area_of_interest
 
-    def find_new_origin(self, pyLIMA_parameters):
-
-        if self.planetary_caustic_geometric_center:
-            new_origin = 'planetary_caustic'
-
-        else:
-            new_origin = 'central_caustic'
+    def find_origin(self, pyLIMA_parameters):
 
         if self.x_center:
-           pass
+            pass
 
         else:
+            new_origin_x = 0
+            new_origin_y = 0
 
-            if new_origin == 'central_caustic':
+            if self.binary_origin:
 
-                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
-                    10 ** pyLIMA_parameters.logs,
-                    10 ** pyLIMA_parameters.logq)
+                if self.binary_origin == 'central_caustic':
+                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+                        10 ** pyLIMA_parameters.logs,
+                        10 ** pyLIMA_parameters.logq)
 
-            else:
+                if self.binary_origin == 'planetary_caustic':
 
-
-                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
-                    10 ** pyLIMA_parameters.logs,
-                    10 ** pyLIMA_parameters.logq)
+                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+                        10 ** pyLIMA_parameters.logs,
+                        10 ** pyLIMA_parameters.logq)
 
             self.x_center = new_origin_x
             self.y_center = new_origin_y
-
 
     def uo_to_from_uc_tc(self, pyLIMA_parameters):
 
         new_origin_x = self.x_center
         new_origin_y = self.y_center
 
-        to = pyLIMA_parameters.tc - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+        to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
                                                             new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
-        uo = pyLIMA_parameters.uc - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+        uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
                                      new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         return to, uo
-
 
     def uc_tc_from_uo_to(self, pyLIMA_parameters, to, uo):
         new_origin_x = self.x_center
         new_origin_y = self.y_center
 
         tc = to + pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
-                                                            new_origin_y * np.sin(pyLIMA_parameters.alpha))
+                                          new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
         uc = uo + (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
-                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
+                   new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         return tc, uc
 
@@ -1026,8 +1013,6 @@ class ModelPSBL(MLModel):
         binary_regime = microlcaustics.find_2_lenses_caustic_regime(10 ** pyLIMA_parameters.logs,
                                                                     10 ** pyLIMA_parameters.logq)
         return binary_regime
-
-
 
 
 class ModelFSBL(MLModel):
@@ -1063,16 +1048,11 @@ class ModelFSBL(MLModel):
 
         linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
 
-        if self.optimal_geometric_center:
+        self.find_origin(pyLIMA_parameters)
+        to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
+        source_trajectoire = self.source_trajectory(telescope, to, uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
 
-            new_to, new_uo = self.change_origin_center(pyLIMA_parameters)
-
-            source_trajectoire = self.source_trajectory(telescope, new_to, new_uo,
-                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
-        else:
-
-            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
-                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
         magnification = np.zeros(len(source_trajectoire[0]))
 
         if 'dsdt' in pyLIMA_parameters._fields:
@@ -1133,30 +1113,27 @@ class ModelFSBL(MLModel):
         self.critical_curves = critical_curves
         self.area_of_interest = area_of_interest
 
-    def find_new_origin(self, pyLIMA_parameters):
-
-        if self.planetary_caustic_geometric_center:
-            new_origin = 'planetary_caustic'
-
-        else:
-            new_origin = 'central_caustic'
+    def find_origin(self, pyLIMA_parameters):
 
         if self.x_center:
             pass
 
         else:
+            new_origin_x = 0
+            new_origin_y = 0
 
-            if new_origin == 'central_caustic':
+            if self.binary_origin:
 
-                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
-                    10 ** pyLIMA_parameters.logs,
-                    10 ** pyLIMA_parameters.logq)
+                if self.binary_origin == 'central_caustic':
+                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+                        10 ** pyLIMA_parameters.logs,
+                        10 ** pyLIMA_parameters.logq)
 
-            else:
+                if self.binary_origin == 'planetary_caustic':
 
-                new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
-                    10 ** pyLIMA_parameters.logs,
-                    10 ** pyLIMA_parameters.logq)
+                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+                        10 ** pyLIMA_parameters.logs,
+                        10 ** pyLIMA_parameters.logq)
 
             self.x_center = new_origin_x
             self.y_center = new_origin_y
@@ -1166,10 +1143,10 @@ class ModelFSBL(MLModel):
         new_origin_x = self.x_center
         new_origin_y = self.y_center
 
-        to = pyLIMA_parameters.tc - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+        to = pyLIMA_parameters.to - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
                                                             new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
-        uo = pyLIMA_parameters.uc - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+        uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
                                      new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         return to, uo

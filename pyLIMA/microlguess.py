@@ -284,8 +284,8 @@ def differential_evolution_parameters_boundaries(model):
     rho_boundaries = (5 * 10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
-    logs_boundaries = (-0.7, 0.7)
-    logq_boundaries = (-6.0, 0.0)
+    logs_boundaries = (-0.31, -0.29)
+    logq_boundaries = (-0.94, -0.92)
     alpha_boundaries = (-np.pi, np.pi)
 
     piEN_boundaries = (-2.0, 2.0)
@@ -382,7 +382,7 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :return: a list containing the trial(s) associated to the parameter_key string
         :rtype: list of float
      """
-    if ('to' in parameter_key) | ('tc' in parameter_key):
+    if ('to' in parameter_key) :
         epsilon = np.random.uniform(-0.001, 0.001)
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
