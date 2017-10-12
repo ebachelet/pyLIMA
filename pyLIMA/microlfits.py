@@ -416,16 +416,21 @@ class MLFits(object):
         print('MCMC preburn done')
 
         sampler.reset()
+        MCMC_chains = None
 
         # Final estimation using the previous output.
-        self.MCMC_chains = []
-        sampler.run_mcmc(final_positions, 5*nlinks)
+        for positions, probabilities, states in sampler.sample(final_positions, iterations=5 * nlinks,
+                                                               storechain=False):
+            chains = np.c_[positions, probabilities]
+            if MCMC_chains is not None:
 
+                MCMC_chains = np.r_[MCMC_chains, chains]
+            else:
 
-        # pool.close()
-        # print python_time.time()-start
+                MCMC_chains = chains
+
         print(sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS')
-
+        return MCMC_chains
 
     def chichi_MCMC(self, fit_process_parameters):
         """Return the chi^2 for the MCMC method. There is some priors here.
@@ -448,7 +453,6 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
-        self.MCMC_chains.append(fit_process_parameters + [-chichi/2])
         return -chichi / 2
 
     def differential_evolution(self):
