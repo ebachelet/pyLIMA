@@ -259,17 +259,10 @@ def MCMC_outputs(fit):
     matplotlib.rcParams['axes.color_cycle'] = hexcolor
     hexcolor[0] = '#000000'
     raw_chains = fit.MCMC_chains
-    probabilities = fit.MCMC_probabilities
 
     mcmc_chains = raw_chains
 
-    if raw_chains[0].shape[1] != len(fit.model.model_dictionnary):
-        fluxes = MCMC_compute_fs_g(fit, mcmc_chains)
-
-        mcmc_chains = np.c_[mcmc_chains, fluxes]
-
-    mcmc_chains = np.c_[mcmc_chains, probabilities.ravel()]
-
+   
     best_probability = np.argmax(mcmc_chains[:, -1])
 
     # cut to 6 sigma for plots

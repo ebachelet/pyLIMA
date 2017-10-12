@@ -169,7 +169,7 @@ class MLFits(object):
             self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
 
         if self.method == 'MCMC':
-            self.MCMC_chains, self.MCMC_probabilities = self.MCMC()
+            self.MCMC_chains = self.MCMC()
 
         if self.method == 'GRIDS':
             self.fix_parameters_dictionnary = OrderedDict(
@@ -337,7 +337,7 @@ class MLFits(object):
             **WARNING** :
                    nwalkers is set to 100
                    nlinks is set to 300
-                   nwalkers*nlinks MCMC steps in total
+                   5*nwalkers*nlinks MCMC steps in total
         """
 
         nwalkers = 300
@@ -418,16 +418,14 @@ class MLFits(object):
         sampler.reset()
 
         # Final estimation using the previous output.
+        self.MCMC_chains = []
+        sampler.run_mcmc(final_positions, 5*nlinks)
 
-        sampler.run_mcmc(final_positions, nlinks)
 
-        MCMC_chains = sampler.chain
-        MCMC_chains = MCMC_chains.reshape(MCMC_chains.shape[0]*MCMC_chains.shape[1],MCMC_chains.shape[2])
-        MCMC_probabilities = sampler.lnprobability
         # pool.close()
         # print python_time.time()-start
         print(sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS')
-        return MCMC_chains, MCMC_probabilities
+
 
     def chichi_MCMC(self, fit_process_parameters):
         """Return the chi^2 for the MCMC method. There is some priors here.
@@ -450,6 +448,7 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
+        self.MCMC_chains.append(fit_process_parameters.tolist() + [-chichi/2])
         return -chichi / 2
 
     def differential_evolution(self):
@@ -483,7 +482,7 @@ class MLFits(object):
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
             mutation=(0.5, 1.5), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
-            atol=0.1, strategy='rand1bin',
+            atol=0.001, strategy='rand1bin',
             recombination=0.7, polish=True, init='latinhypercube',
             disp=True
         )
