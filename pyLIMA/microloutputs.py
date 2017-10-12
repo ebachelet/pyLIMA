@@ -262,7 +262,7 @@ def MCMC_outputs(fit):
 
     mcmc_chains = raw_chains
 
-   
+
     best_probability = np.argmax(mcmc_chains[:, -1])
 
     # cut to 6 sigma for plots

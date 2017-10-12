@@ -448,7 +448,7 @@ class MLFits(object):
 
             chichi += (residus ** 2).sum()
 
-        self.MCMC_chains.append(fit_process_parameters.tolist() + [-chichi/2])
+        self.MCMC_chains.append(fit_process_parameters + [-chichi/2])
         return -chichi / 2
 
     def differential_evolution(self):
