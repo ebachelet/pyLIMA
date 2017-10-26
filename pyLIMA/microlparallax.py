@@ -245,7 +245,8 @@ class MLParallaxes(object):
             delta_East = np.append(delta_East, telescope_positions[1])
             name = telescope.spacecraft_name
 
-            telescope_positions = self.space_parallax(time, name)
+
+            telescope_positions = self.space_parallax(time, name, telescope)
             # import pdb;
             # pdb.set_trace()
             delta_North = delta_North + telescope_positions[0]
@@ -328,7 +329,7 @@ class MLParallaxes(object):
             [np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])
         return delta_telescope_projected
 
-    def space_parallax(self, time_to_treat, satellite_name):
+    def space_parallax(self, time_to_treat, satellite_name, telescope):
         """ Compute the position shift due to the distance of the obervatories from the Earth
         center.
         Please have a look on :
@@ -345,8 +346,12 @@ class MLParallaxes(object):
 
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
-
-        satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
+        if len(telescope.spacecraft_positions) != 0:
+        # allow to pass the user to give his own ephemeris
+            satellite_positions = np.array(telescope.spacecraft_positions)
+        else:
+            #call JPL!
+            satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
                                                      step_size='60m', verbose=False)[1]
 
         satellite_positions = np.array(satellite_positions)

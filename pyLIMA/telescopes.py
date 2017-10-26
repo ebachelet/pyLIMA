@@ -144,8 +144,10 @@ class Telescope(object):
         self.latitude = 49.49  # degrees
         self.gamma = 0.0  # This mean you will fit uniform source brightness
         self.deltas_positions = []
+        self.spacecraft_positions = [] #only for space base observatory, should be a list as
+                                       # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
+        self.hidden()
 
-        #self.hidden()
     def arrange_the_lightcurve_columns(self, choice):
         """Rearange the lightcurve to the pyLIMA convention.
 
@@ -309,10 +311,10 @@ class Telescope(object):
 
         return ligthcurve_magnitude
 
-   # def hidden(self):
+    def hidden(self):
 
-        #import webbrowser
-        #controller = webbrowser.get()
+        import webbrowser
+        controller = webbrowser.get()
 
-        #if self.name =='Mexicola':
-            #controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
+        if self.name =='Mexicola':
+            controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")

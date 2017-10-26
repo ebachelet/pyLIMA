@@ -72,6 +72,8 @@ Example_2 : [HOW TO USE YOUR PREFERED PARAMETERS?](https://github.com/ebachelet/
 Example_3 : [HOW TO SIMULATE EVENST?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
 
 Example_4 : [HOW TO USE YOUR OWN FITTING ROUTINES?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
+
+Example_5 : [HOW TO FIT PARALLAX?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
 # What can you do?
 
 
