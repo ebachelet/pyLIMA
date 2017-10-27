@@ -9,3 +9,5 @@ matplotlib
 astropy
 emcee
 pyslalib
+mpi4py
+dill
