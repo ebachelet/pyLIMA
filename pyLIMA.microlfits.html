@@ -122,7 +122,7 @@ Have a look here : <a class="reference external" href="http://dan.iel.fm/emcee/c
 <dt><strong>WARNING</strong> :</dt>
 <dd>nwalkers is set to 100
 nlinks is set to 300
-nwalkers*nlinks MCMC steps in total</dd>
+5*nwalkers*nlinks MCMC steps in total</dd>
 </dl>
 </dd></dl>
 
@@ -359,7 +359,7 @@ These limits can avoid the fit to properly converge (expected to be rare :))</dd
 
 <dl class="method">
 <dt id="pyLIMA.microlfits.MLFits.mlfit">
-<code class="descname">mlfit</code><span class="sig-paren">(</span><em>model</em>, <em>method</em>, <em>DE_population_size=10</em>, <em>flux_estimation_MCMC='MCMC'</em>, <em>fix_parameters_dictionnary=None</em>, <em>grid_resolution=10</em>, <em>computational_pool=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.mlfit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.mlfit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mlfit</code><span class="sig-paren">(</span><em>model</em>, <em>method</em>, <em>DE_population_size=10</em>, <em>flux_estimation_MCMC='MCMC'</em>, <em>fix_parameters_dictionnary=None</em>, <em>grid_resolution=10</em>, <em>computational_pool=None</em>, <em>binary_regime=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.mlfit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.mlfit" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function realize the requested microlensing fit, and set the according results
 attributes.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -437,6 +437,11 @@ function.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.optimization_on_grid_pixel">
+<code class="descname">optimization_on_grid_pixel</code><span class="sig-paren">(</span><em>grid_pixel_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.optimization_on_grid_pixel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.optimization_on_grid_pixel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pyLIMA.microlfits.MLFits.produce_fit_statistics">
 <code class="descname">produce_fit_statistics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.produce_fit_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.produce_fit_statistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce the standard outputs for a fit.
@@ -488,6 +493,11 @@ residuals_i=(data_i-model_i)/sigma_i</td>
 </table>
 <p>The sum of square residuals gives chi^2.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="pyLIMA.microlfits.MLFits.trust_region_reflective">
+<code class="descname">trust_region_reflective</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits.trust_region_reflective"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits.trust_region_reflective" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

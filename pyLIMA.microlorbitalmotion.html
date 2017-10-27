@@ -45,12 +45,77 @@
 <dl class="function">
 <dt id="pyLIMA.microlorbitalmotion.orbital_motion_2D_separation_shift">
 <code class="descclassname">pyLIMA.microlorbitalmotion.</code><code class="descname">orbital_motion_2D_separation_shift</code><span class="sig-paren">(</span><em>to_om</em>, <em>time</em>, <em>ds_dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlorbitalmotion.html#orbital_motion_2D_separation_shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlorbitalmotion.orbital_motion_2D_separation_shift" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the binary separation change induced by the orbital motion of the lens.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>to_om</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the reference time for the orbital motion</li>
+<li><strong>time</strong> (<em>array_like</em>) &#8211; the time array to compute the trajectory shift</li>
+<li><strong>ds_dt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the binary separation change rate, in einstein_ring_unit/yr</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dseparation, the binary separation shift</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="pyLIMA.microlorbitalmotion.orbital_motion_2D_trajectory_shift">
 <code class="descclassname">pyLIMA.microlorbitalmotion.</code><code class="descname">orbital_motion_2D_trajectory_shift</code><span class="sig-paren">(</span><em>to_om</em>, <em>time</em>, <em>dalpha_dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlorbitalmotion.html#orbital_motion_2D_trajectory_shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlorbitalmotion.orbital_motion_2D_trajectory_shift" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Compute the trajectory curvature induced by the orbital motion of the lens.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>to_om</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the reference time for the orbital motion</li>
+<li><strong>time</strong> (<em>array_like</em>) &#8211; the time array to compute the trajectory shift</li>
+<li><strong>dalpha_dt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the angle change rate, in radian/yr</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dalpha, the angle shift</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlorbitalmotion.orbital_motion_3D_separation_shift">
+<code class="descclassname">pyLIMA.microlorbitalmotion.</code><code class="descname">orbital_motion_3D_separation_shift</code><span class="sig-paren">(</span><em>time</em>, <em>period</em>, <em>ds_dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlorbitalmotion.html#orbital_motion_3D_separation_shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlorbitalmotion.orbital_motion_3D_separation_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the binary separation change induced by the orbital motion of the lens.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>to_om</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the reference time for the orbital motion</li>
+<li><strong>time</strong> (<em>array_like</em>) &#8211; the time array to compute the trajectory shift</li>
+<li><strong>ds_dt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the binary separation change rate, in einstein_ring_unit/yr</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dseparation, the binary separation shift</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 
