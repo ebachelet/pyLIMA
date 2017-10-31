@@ -13,6 +13,8 @@ Install virtualenv:
 
 close and reopen terminal, or virtualenv command may not work
 
+[!!!!! WARNING !!!!! : SPHYNX is bugged for double hyphen. There is a double hyphen before user, not a single one!]
+
 Create an environnement, here we called it pyLIMA:
 
 **> virtualenv ~/envs/pyLIMA**

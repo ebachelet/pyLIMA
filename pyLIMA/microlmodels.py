@@ -11,6 +11,7 @@ import os.path
 import abc
 import sys
 from scipy import interpolate, misc
+import pkg_resources
 
 thismodule = sys.modules[__name__]
 
@@ -26,13 +27,14 @@ from pyLIMA import microlorbitalmotion
 from pyLIMA import microlcaustics
 from pyLIMA import stars
 
-full_path = os.path.abspath(__file__)
-directory, filename = os.path.split(full_path)
 
+resource_package = __name__
+resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
+template = pkg_resources.resource_stream(resource_package, resource_path)
 try:
 
     # yoo_table = np.loadtxt('b0b1.dat')
-    yoo_table = np.loadtxt(os.path.join(directory, 'data/Yoo_B0B1.dat'))
+    yoo_table = np.loadtxt(template)
 except:
 
     print('ERROR : No Yoo_B0B1.dat file found, please check!')

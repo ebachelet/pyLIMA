@@ -6,15 +6,18 @@ Created on Thu March 03 12:51:19 2017
 """
 
 from __future__ import division
+import pkg_resources
 
 import numpy as np
 import os
 import astropy.io.fits as fits
 import scipy.interpolate as si
+resource_package = __name__
+resource_path = '/'.join(('data', 'Claret2011.fits'))
+template = pkg_resources.resource_stream(resource_package, resource_path)
 
-claret_path = os.path.abspath(__file__)
-CLARET_PATH, filename = os.path.split(claret_path)
-CLARET_PATH += '/data/'
+
+CLARET_PATH = template
 
 
 class Star(object):

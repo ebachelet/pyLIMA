@@ -20,6 +20,7 @@ setup(
     author_email="ebachelet@lcogt.net",
     url="http://github.com/ebachelet/pyLIMA",
     packages=find_packages('.'),
+    include_package_data=True,
     test_suite="nose.collector",
     ext_modules = [VBB],
     py_modules = ["VBBinaryLensingLibrary"],
