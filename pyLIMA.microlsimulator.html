@@ -183,7 +183,7 @@ More details in microlmodels module</li>
 
 <dl class="function">
 <dt id="pyLIMA.microlsimulator.simulate_a_telescope">
-<code class="descclassname">pyLIMA.microlsimulator.</code><code class="descname">simulate_a_telescope</code><span class="sig-paren">(</span><em>name</em>, <em>altitude</em>, <em>longitude</em>, <em>latitude</em>, <em>filter</em>, <em>time_start</em>, <em>time_end</em>, <em>sampling</em>, <em>event</em>, <em>location</em>, <em>bad_weather_percentage=0.0</em>, <em>minimum_alt=20</em>, <em>moon_windows_avoidance=20</em>, <em>maximum_moon_illumination=100.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlsimulator.html#simulate_a_telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlsimulator.simulate_a_telescope" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microlsimulator.</code><code class="descname">simulate_a_telescope</code><span class="sig-paren">(</span><em>name</em>, <em>event</em>, <em>time_start</em>, <em>time_end</em>, <em>sampling</em>, <em>location</em>, <em>filter</em>, <em>uniform_sampling=False</em>, <em>altitude=0</em>, <em>longitude=0</em>, <em>latitude=0</em>, <em>spacecraft_name=None</em>, <em>bad_weather_percentage=0.0</em>, <em>minimum_alt=20</em>, <em>moon_windows_avoidance=20</em>, <em>maximum_moon_illumination=100.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlsimulator.html#simulate_a_telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlsimulator.simulate_a_telescope" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Simulate a telescope. More details in the telescopes module. The observations simulation are made for the</dt>
 <dd><dl class="first last docutils">
@@ -203,16 +203,17 @@ More details in microlmodels module</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of the telescope.</li>
-<li><strong>altitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the altitude in meters if the telescope</li>
-<li><strong>longitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the longitude in degree of the telescope location</li>
-<li><strong>latitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the latitude in degree of the telescope location</li>
-<li><strong>filter</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the filter used for observations</li>
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the microlensing event you look at</li>
 <li><strong>time_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the start of observations in JD</li>
 <li><strong>time_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the end of observations in JD</li>
 <li><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the hour sampling.</li>
-<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the microlensing event you look at</li>
-<li><strong>location</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the location of the telescope. If it is &#8216;Space&#8217;, then the observations are made
-continuously given the observing windows and the sampling.</li>
+<li><strong>location</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the location of the telescope.</li>
+<li><strong>filter</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the filter used for observations</li>
+<li><strong>uniform_sampling</strong> (<em>boolean</em>) &#8211; set it to True if you want no bad weather, no moon avoidance etc....</li>
+<li><strong>altitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the altitude in meters if the telescope</li>
+<li><strong>longitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the longitude in degree of the telescope location</li>
+<li><strong>latitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the latitude in degree of the telescope location</li>
+<li><strong>spacecraft_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of your satellite according to JPL horizons</li>
 <li><strong>bad_weather_percentage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the percentage of bad nights</li>
 <li><strong>minimum_alt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the minimum altitude ini degrees that your telescope can go to.</li>
 <li><strong>moon_windows_avoidance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the minimum distance in degrees accepted between the target and the Moon</li>
