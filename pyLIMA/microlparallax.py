@@ -38,7 +38,8 @@ def horizons_obscodes(observatory):
         'Kepler': '-227',
         'Spitzer': '-79',
         'HST': '-48',
-        'Gaia': '-139479'
+        'Gaia': '-139479',
+        'New Horizons': '-98'
     }
 
     # Check if we were passed the JPL site code directly

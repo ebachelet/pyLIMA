@@ -35,7 +35,7 @@ try:
     yoo_table = np.loadtxt(os.path.join(directory, 'data/Yoo_B0B1.dat'))
 except:
 
-    print('ERROR : No b0b1.dat file found, please check!')
+    print('ERROR : No Yoo_B0B1.dat file found, please check!')
 
 b0b1 = yoo_table
 zz = b0b1[:, 0]

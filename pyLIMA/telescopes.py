@@ -88,7 +88,8 @@ class Telescope(object):
     def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None,
                  light_curve_magnitude_dictionnary=None,
                  light_curve_flux=None, light_curve_flux_dictionnary=None,
-                 reference_flux=0.0, clean_the_lightcurve='Yes'):
+                 reference_flux=0.0, clean_the_lightcurve='Yes',
+                 location = 'Earth', spacecraft_name=None):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -138,12 +139,13 @@ class Telescope(object):
 
             self.lightcurve_magnitude = self.lightcurve_in_magnitude()
 
-        self.location = 'Earth'
+        self.location = location
         self.altitude = 0.0  # meters
         self.longitude = 0.57  # degrees
         self.latitude = 49.49  # degrees
         self.gamma = 0.0  # This mean you will fit uniform source brightness
         self.deltas_positions = []
+        self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
         self.spacecraft_positions = [] #only for space base observatory, should be a list as
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
         self.hidden()

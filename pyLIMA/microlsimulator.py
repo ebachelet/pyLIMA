@@ -62,11 +62,11 @@ def noisy_observations(flux, error_flux):
         :rtype: array_like
 
     """
-    try :
+    try:
 
         flux_observed = np.random.normal(flux, error_flux)
 
-    except :
+    except:
 
         flux_observed = flux
 
@@ -155,7 +155,8 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 
 
 def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start, time_end, sampling, event, location,
-                         bad_weather_percentage=0.0, minimum_alt=20, moon_windows_avoidance=20,
+                         spacecraft_name=None, uniform_sampling=False, bad_weather_percentage=0.0, minimum_alt=20,
+                         moon_windows_avoidance=20,
                          maximum_moon_illumination=100.0):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
         full time windows, then limitation are applied :
@@ -178,13 +179,13 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
     :param float minimum_alt: the minimum altitude ini degrees that your telescope can go to.
     :param float moon_windows_avoidance: the minimum distance in degrees accepted between the target and the Moon
     :param float maximum_moon_illumination: the maximum Moon brightness you allow in percentage
-
+    :param boolean uniform_sampling: set it to True if you want no bad weather, no monn etc....
     :return: a telescope object
     :rtype: object
     """
 
     # fake lightcurve
-    if location != 'Space':
+    if (uniform_sampling == False) & (location!='Space'):
         earth_location = EarthLocation(lon=longitude * astropy.units.deg,
                                        lat=latitude * astropy.units.deg,
                                        height=altitude * astropy.units.m)
@@ -208,7 +209,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
         observing_windows = np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
                                      & (Sun.alt < -18 * astropy.units.deg)
                                      & (Moon_separation > moon_windows_avoidance * astropy.units.deg)
-                                     & (Moon_illumination<maximum_moon_illumination)
+                                     & (Moon_illumination < maximum_moon_illumination)
                                      )[0]
 
         time_of_observations = time_of_observations[observing_windows]
@@ -221,12 +222,13 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
     lightcurveflux = np.ones((len(time_of_observations), 3)) * 42
     lightcurveflux[:, 0] = time_of_observations
 
-    telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve_flux=lightcurveflux)
+    telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve_flux=lightcurveflux,
+                                     location=location, spacecraft_name = spacecraft_name)
 
     return telescope
 
 
-def simulate_a_microlensing_model(event, model='PSPL', args = (), parallax=['None', 0.0], xallarap=['None', 0.0],
+def simulate_a_microlensing_model(event, model='PSPL', args=(), parallax=['None', 0.0], xallarap=['None', 0.0],
                                   orbital_motion=['None', 0.0], source_spots='None'):
     """ Simulate a a microlensing model.
 
@@ -289,7 +291,6 @@ def simulate_microlensing_model_parameters(model):
         if np.abs(fake_parameters[2]) > 100:
             fake_parameters[2] = np.random.uniform(10, 15)
 
-
     return fake_parameters
 
 
@@ -330,9 +331,8 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
 
     for telescope in model.event.telescopes:
 
-
         theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
-        if np.min(theoritical_flux>0):
+        if np.min(theoritical_flux > 0):
             pass
         else:
             import pdb;
