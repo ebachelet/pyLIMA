@@ -102,7 +102,7 @@ def test_define_parameters_boundaries():
 def test_magnification_USBL_computation():
     event = _create_event()
     Model = microlmodels.create_model('USBL', event)
-    Parameters = collections.namedtuple('parameters', ['tc', 'uc', 'tE', 'rho', 'logs', 'logq','alpha'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'logs', 'logq','alpha'])
 
 
     tc = 0
@@ -124,7 +124,7 @@ def test_magnification_USBL_computation():
 def test_magnification_PSBL_computation():
     event = _create_event()
     Model = microlmodels.create_model('PSBL', event)
-    Parameters = collections.namedtuple('parameters', ['tc', 'uc', 'tE', 'logs', 'logq','alpha'])
+    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'logs', 'logq','alpha'])
 
 
     tc = 0

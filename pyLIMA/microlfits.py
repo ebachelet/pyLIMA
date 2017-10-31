@@ -891,7 +891,7 @@ class MLFits(object):
         return grid_results
 
     def optimization_on_grid_pixel(self, grid_pixel_parameters):
-        print grid_pixel_parameters
+
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_grids,
             bounds=self.new_parameters_boundaries, args=tuple(grid_pixel_parameters.tolist()),

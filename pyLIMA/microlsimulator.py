@@ -154,10 +154,9 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
     return fake_event
 
 
-def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start, time_end, sampling, event, location,
-                         spacecraft_name=None, uniform_sampling=False, bad_weather_percentage=0.0, minimum_alt=20,
-                         moon_windows_avoidance=20,
-                         maximum_moon_illumination=100.0):
+def simulate_a_telescope(name, event, time_start, time_end, sampling, location, filter, uniform_sampling=False,
+                         altitude=0, longitude=0, latitude=0, spacecraft_name=None, bad_weather_percentage=0.0,
+                         minimum_alt=20, moon_windows_avoidance=20, maximum_moon_illumination=100.0):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
         full time windows, then limitation are applied :
             - Sun has to be below horizon : Sun< -18
@@ -165,27 +164,30 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
             - Observations altitude of the target have to be bigger than minimum_alt
 
     :param str name:  the name of the telescope.
-    :param float altitude: the altitude in meters if the telescope
-    :param float longitude: the longitude in degree of the telescope location
-    :param float latitude: the latitude in degree of the telescope location
-    :param str filter: the filter used for observations
+    :param object event: the microlensing event you look at
     :param float time_start: the start of observations in JD
     :param float time_end: the end of observations in JD
     :param float sampling: the hour sampling.
-    :param object event: the microlensing event you look at
-    :param str location: the location of the telescope. If it is 'Space', then the observations are made
-                             continuously given the observing windows and the sampling.
+    :param str location: the location of the telescope.
+    :param str filter: the filter used for observations
+    :param boolean uniform_sampling: set it to True if you want no bad weather, no moon avoidance etc....
+
+    :param float altitude: the altitude in meters if the telescope
+    :param float longitude: the longitude in degree of the telescope location
+    :param float latitude: the latitude in degree of the telescope location
+
+    :param str spacecraft_name: the name of your satellite according to JPL horizons
+
     :param float bad_weather_percentage: the percentage of bad nights
     :param float minimum_alt: the minimum altitude ini degrees that your telescope can go to.
     :param float moon_windows_avoidance: the minimum distance in degrees accepted between the target and the Moon
     :param float maximum_moon_illumination: the maximum Moon brightness you allow in percentage
-    :param boolean uniform_sampling: set it to True if you want no bad weather, no monn etc....
     :return: a telescope object
     :rtype: object
     """
 
     # fake lightcurve
-    if (uniform_sampling == False) & (location!='Space'):
+    if (uniform_sampling == False) & (location != 'Space'):
         earth_location = EarthLocation(lon=longitude * astropy.units.deg,
                                        lat=latitude * astropy.units.deg,
                                        height=altitude * astropy.units.m)
@@ -223,7 +225,7 @@ def simulate_a_telescope(name, altitude, longitude, latitude, filter, time_start
     lightcurveflux[:, 0] = time_of_observations
 
     telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve_flux=lightcurveflux,
-                                     location=location, spacecraft_name = spacecraft_name)
+                                     location=location, spacecraft_name=spacecraft_name)
 
     return telescope
 
