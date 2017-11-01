@@ -113,7 +113,7 @@ def test_sort_2lenses_resonant_caustic():
 
 
 def test_sort_2lenses_wide_caustic():
-    separation = 50.8
+    separation = 10.8
     mass_ratio = 0.8
 
     caustics, critical_curves = microlcaustics.compute_2_lenses_caustics_points(separation, mass_ratio,
@@ -226,8 +226,9 @@ def test_find_area_of_interest_around_caustics():
 
     area_of_interest = microlcaustics.find_area_of_interest_around_caustics(caustics, secure_factor=0.1)
 
-    expected_area = np.array([[-1.6504915797261186, 0.14873646914727098], [-0.11476825367160942, 0.11476825367161236],
-                              [-0.75087755528942379, 1.4710455076283324e-15]])
+    expected_area = np.array([[-0.16472971920662491, 0.1487364691472782], [-0.11476825367160942, 0.11476825367161236],
+                              [-0.0079966250296733543, 1.4710455076283324e-15]]
+                             )
 
     assert np.allclose(expected_area, area_of_interest)
 
@@ -255,16 +256,15 @@ def test_find_2_lenses_caustic_regime():
     assert regime == 'wide'
 
 
-def test_change_source_trajectory_center_to_caustics_center():
-    separation = 0.6
+def test_change_source_trajectory_center_to_planetary_caustics_center():
+    separation = 0.5
     mass_ratio = 10 ** -3.98
 
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
                                                                                                      mass_ratio)
 
-    assert x_center == -1.0665126064960062
-
-    assert y_center == 0.027517790201391959
+    assert x_center ==-1.4997160687085691
+    assert y_center == 0.035497175763441399
 
     separation = 0.8
     mass_ratio = 0.85
@@ -281,5 +281,33 @@ def test_change_source_trajectory_center_to_caustics_center():
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
                                                                                                      mass_ratio)
 
-    assert x_center == 3.5970425350167305
+    assert x_center == 3.597042535016731
+    assert y_center == 0
+
+def test_change_source_trajectory_center_to_central_caustics_center():
+    separation = 0.5
+    mass_ratio = 10 ** -1
+
+    x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
+                                                                                                     mass_ratio)
+
+    assert x_center == -0.010300719769916603
+    assert y_center == 0
+
+    separation = 0.8
+    mass_ratio = 0.85
+
+    x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
+                                                                                                     mass_ratio)
+
+    assert x_center == 0
+    assert y_center == 0
+
+    separation = 6.8
+    mass_ratio = 0.85
+
+    x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
+                                                                                                     mass_ratio)
+
+    assert x_center == -3.0576148720596557
     assert y_center == 0

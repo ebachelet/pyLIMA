@@ -115,70 +115,50 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
 
     try:
         medians_y = np.median(caustic_points[:, :].imag, axis=0)
-        positive_y_branches = np.where(medians_y > 0)[0]
 
-        first_branch = positive_y_branches[0]
-        second_branch = positive_y_branches[1]
+        order = np.argsort(medians_y)
 
-        medians_y = np.median(caustic_points[:, :].imag, axis=0)
-        negative_y_branches = np.where(medians_y < 0)[0]
+        close_bottom_caustic = caustic_points[:, order[0]]
+        close_bottom_cc = critical_curves_points[:, order[0]]
 
-        third_branch = negative_y_branches[0]
-        fourth_branch = negative_y_branches[1]
+        close_top_caustic = caustic_points[:, order[-1]]
+        close_top_cc = critical_curves_points[:, order[-1]]
 
-        if np.min((caustic_points[:, third_branch]).imag) < np.max((caustic_points[:, fourth_branch]).imag):
-            good_branch = fourth_branch
+        if np.abs(caustic_points[-1, order[1]].real - caustic_points[0, order[2]].real) < np.abs(
+            caustic_points[-1, order[1]].real - caustic_points[:, order[2]][::-1][0].real):
 
-        else:
-            good_branch = third_branch
-
-        if np.max((caustic_points[:, first_branch]).imag) < np.max((caustic_points[:, second_branch]).imag):
-
-            central_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, good_branch]),
-                                    caustic_points[:, good_branch][::-1],np.conj(caustic_points[:, first_branch][::-1])]
-            central_cc = np.r_[critical_curves_points[:, first_branch],
-                               np.conj(critical_curves_points[:, good_branch])[::-1],
-                               critical_curves_points[:, good_branch],
-                               np.conj(critical_curves_points[:, first_branch][::-1])]
-
-            close_top_caustic = caustic_points[:, second_branch]
-            close_top_cc = critical_curves_points[:, second_branch]
-
-            close_bottom_caustic = np.conj(close_top_caustic)
-            close_bottom_cc = np.conj(close_top_cc)
+            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]]]
+            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]]]
 
         else:
-            import pdb;
-            pdb.set_trace()
-            central_caustic = np.r_[caustic_points[:, second_branch], np.conj(caustic_points[:, good_branch])[::-1],
-            caustic_points[:, good_branch], np.conj(caustic_points[:, second_branch][::-1])]
-            central_cc = np.r_[critical_curves_points[:, second_branch],
-                               np.conj(critical_curves_points[:, good_branch])[::-1],
-                               critical_curves_points[:, good_branch],
-                               np.conj(critical_curves_points[:, second_branch][::-1])]
 
-            close_top_caustic = caustic_points[:, first_branch]
-            close_top_cc = critical_curves_points[:, first_branch]
+            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]][::-1]]
+            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]][::-1]]
 
-            close_bottom_caustic = np.conj(close_top_caustic)
-            close_bottom_cc = np.conj(close_top_cc)
 
     except:
 
-        positive_y_branches = np.where(caustic_points > 0)[0]
+        medians_y = np.median(caustic_points[:, :].imag)
 
-        first_branch = positive_y_branches[0]
+        order = np.argsort(medians_y)
 
-        close_top_caustic = caustic_points[first_branch]
-        close_top_cc = critical_curves_points[first_branch]
+        close_bottom_caustic = caustic_points[:, order[0]]
+        close_bottom_cc = critical_curves_points[:, order[0]]
 
-        close_bottom_caustic = np.conj(close_top_caustic)
-        close_bottom_cc = np.conj(close_top_cc)
+        close_top_caustic = caustic_points[:, order[-1]]
+        close_top_cc = critical_curves_points[:, order[-1]]
 
-        central_branch = np.argmin(np.abs(caustic_points))
+        if np.abs(caustic_points[-1, order[1]].real - caustic_points[0, order[2]].real) < np.abs(
+                        caustic_points[-1, order[1]].real - caustic_points[:, order[2]][::-1][0].real):
 
-        central_caustic = np.r_[caustic_points[central_branch]]
-        central_cc = np.r_[critical_curves_points[central_branch]]
+            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]]]
+            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]]]
+
+        else:
+
+            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]][::-1]]
+            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]][::-1]]
+
 
     return central_caustic, close_top_caustic, close_bottom_caustic, central_cc, close_top_cc, close_bottom_cc
 
@@ -196,39 +176,49 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
     try:
         medians_y = np.median(caustic_points[:, :].imag, axis=0)
 
-        positive_y_branches = np.where(medians_y > 0)[0]
+        order = np.argsort(medians_y)
 
-        first_branch = positive_y_branches[0]
-        second_branch = positive_y_branches[1]
+        wide_bottom_caustic = caustic_points[:, order[0]]
+        wide_bottom_cc = critical_curves_points[:, order[0]]
 
-        if np.max((caustic_points[:, first_branch]).real) < np.max((caustic_points[:, second_branch]).real):
+        central_bottom_caustic = caustic_points[:, order[1]]
+        central_bottom_cc = critical_curves_points[:, order[1]]
 
-            central_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
-            central_cc = np.r_[critical_curves_points[:, first_branch],
-                               np.conj(critical_curves_points[:, first_branch])[::-1]]
+        wide_top_caustic = caustic_points[:, order[-1]]
+        wide_top_cc = critical_curves_points[:, order[-1]]
 
-            wide_caustic = np.r_[caustic_points[:, second_branch], np.conj(caustic_points[:, second_branch])[::-1]]
-            wide_cc = np.r_[critical_curves_points[:, second_branch],
-                            np.conj(critical_curves_points[:, second_branch])[::-1]]
-        else:
+        central_top_caustic = caustic_points[:, order[2]]
+        central_top_cc = critical_curves_points[:, order[2]]
 
-            central_caustic = np.r_[caustic_points[:, second_branch], np.conj(caustic_points[:, second_branch])[::-1]]
-            central_cc = np.r_[critical_curves_points[:, second_branch],
-                               np.conj(critical_curves_points[:, second_branch])[::-1]]
+        central_caustic = np.r_[central_bottom_caustic, central_top_caustic[::-1]]
+        central_cc = np.r_[central_bottom_cc, central_top_cc[::-1]]
 
-            wide_caustic = np.r_[caustic_points[:, first_branch], np.conj(caustic_points[:, first_branch])[::-1]]
-            wide_cc = np.r_[critical_curves_points[:, first_branch],
-                            np.conj(critical_curves_points[:, first_branch])[::-1]]
-
+        wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic[::-1]]
+        wide_cc = np.r_[wide_bottom_cc, wide_top_cc[::-1]]
 
     except:
 
-        order = np.argsort(caustic_points.real)
-        central_caustic = np.r_[caustic_points[order[0]], caustic_points[order[1]]]
-        central_cc = np.r_[critical_curves_points[order[0]], critical_curves_points[order[1]]]
+        medians_y = np.median(caustic_points[:, :].imag)
 
-        wide_caustic = np.r_[caustic_points[order[2]], caustic_points[order[3]]]
-        wide_cc = np.r_[critical_curves_points[order[2]], critical_curves_points[order[3]]]
+        order = np.argsort(medians_y)
+
+        wide_bottom_caustic = caustic_points[:, order[0]]
+        wide_bottom_cc = critical_curves_points[:, order[0]]
+
+        central_bottom_caustic = caustic_points[:, order[1]]
+        central_bottom_cc = critical_curves_points[:, order[1]]
+
+        wide_top_caustic = caustic_points[:, order[-1]]
+        wide_top_cc = critical_curves_points[:, order[-1]]
+
+        central_top_caustic = caustic_points[:, order[2]]
+        central_top_cc = critical_curves_points[:, order[2]]
+
+        central_caustic = np.r_[central_bottom_caustic, central_top_caustic[::-1]]
+        central_cc = np.r_[central_bottom_cc, central_top_cc[::-1]]
+
+        wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic[::-1]]
+        wide_cc = np.r_[wide_bottom_cc, wide_top_cc[::-1]]
 
     return central_caustic, wide_caustic, central_cc, wide_cc
 
@@ -285,7 +275,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
 
         checks = np.polyval(polynomial_coefficients, polynomial_roots)
 
-        if np.max(np.abs(checks)) > 10**-10:
+        if np.max(np.abs(checks)) > 10 ** -10:
             pass
         else:
             # polynomial_roots = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
@@ -303,10 +293,10 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
                 good_order = [0, 0, 0, 0]
 
                 for i in range(4):
-                    line, column = np.where((distances)==np.min(distances))
+                    line, column = np.where((distances) == np.min(distances))
                     good_order[column[0]] = polynomial_roots[line[0]]
-                    distances[line[0],:] += 10**10
-                    distances[:,column[0]] += 10**10
+                    distances[line[0], :] += 10 ** 10
+                    distances[:, column[0]] += 10 ** 10
 
                 pol_roots = np.array(good_order)
 
@@ -415,26 +405,17 @@ def change_source_trajectory_center_to_central_caustics_center(separation, mass_
 
     caustic_regime, caustics, critical_curves = find_2_lenses_caustics_and_critical_curves(separation, mass_ratio,
                                                                                            resolution=10)
-    #caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
+    # caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
 
     if caustic_regime == 'wide':
         x_center = np.median(caustics[0].real)
-        #plt.scatter(caustics[0].real,caustics[0].imag)
-        #plt.scatter(x_center,0,c='r')
-       # print x_center
-        #x_center = -separation*mass_ratio/(1+mass_ratio) + mass_ratio/(separation*(1+mass_ratio))
-        #plt.scatter(x_center,0,c='y')
-        #plt.axis([min(caustics[0].real),max(caustics[0].real),min(caustics[0].imag),max(caustics[0].imag)])
-        #plt.show()
 
-        #print x_center
 
-        #pass
+        # pass
     if caustic_regime == 'close':
-        #x_center = np.median(caustics[0].real)
-        x_center = -separation * mass_ratio / (1 + mass_ratio) + separation*mass_ratio / (1 + mass_ratio)
+        x_center = np.median(caustics[0].real)
+        y_center = 0
 
-        #pass
     return x_center, y_center
 
 
@@ -464,12 +445,12 @@ def change_source_trajectory_center_to_planetary_caustics_center(separation, mas
                                                                                            resolution=10)
 
     if caustic_regime == 'wide':
-        #x_center = np.median(caustics[-2].real)
-        pass
+        x_center = np.median(caustics[-2].real)
+
     if caustic_regime == 'close':
-        #x_center = np.median(caustics[1].real)
-        #y_center = np.median(caustics[1].imag)
-        pass
+        x_center = np.median(caustics[1].real)
+        y_center = np.median(caustics[1].imag)
+
     return x_center, y_center
 
 

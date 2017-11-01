@@ -14,7 +14,7 @@ import astropy.io.fits as fits
 import scipy.interpolate as si
 resource_package = __name__
 resource_path = '/'.join(('data', 'Claret2011.fits'))
-template = pkg_resources.resource_stream(resource_package, resource_path)
+template = pkg_resources.resource_filename(resource_package, resource_path)
 
 
 CLARET_PATH = template
@@ -54,8 +54,9 @@ class Star(object):
         self.turbulent_velocity = 2.0 # km/s
         self.mass = 1.0  # Solar mass unit
         self.gammas = []  # microlensing limb-darkening coefficient
+
         claret_path = CLARET_PATH
-        claret_table = fits.open(claret_path + 'Claret2011.fits')
+        claret_table = fits.open(claret_path)
 
         self.claret_table = np.array([claret_table[1].data['log g'], claret_table[1].data['Teff (K)'],
                              claret_table[1].data['Z (Sun)'], claret_table[1].data['Xi (km/s)'],

@@ -78,8 +78,7 @@ def test_lightcurve_in_flux():
 
 def test_find_gamma():
     telescope = telescopes.Telescope(camera_filter="z'")
-    full_path = os.path.abspath(__file__)
-    directory, filename = os.path.split(full_path)
+
 
     star = stars.Star()
     telescope.find_gamma(star)

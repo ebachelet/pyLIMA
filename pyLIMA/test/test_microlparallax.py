@@ -135,11 +135,11 @@ def test_parallax_combination_on_Space():
 
     event.telescopes[0].lightcurve_flux[:,0] = 2458000.5 +  event.telescopes[0].lightcurve_flux[:,0]
     parallax_model = ['Full', 1664.51]
-    parallax = microlparallax.MLParallaxes(event, parallax_model, event.telescopes[0])
+    parallax = microlparallax.MLParallaxes(event, parallax_model)
 
 
     positions_annual = parallax.annual_parallax(event.telescopes[0].lightcurve_flux[:,0])
-    positions_space = parallax.space_parallax(event.telescopes[0].lightcurve_flux[:,0], 'Kepler')
+    positions_space = parallax.space_parallax(event.telescopes[0].lightcurve_flux[:,0], 'Kepler', event.telescopes[0])
 
     parallax.parallax_combination(event.telescopes[0])
 

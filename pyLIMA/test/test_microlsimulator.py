@@ -55,17 +55,23 @@ def test_simulate_a_microlensing_event():
 
 def test_simulate_a_telescope():
     event = mock.MagicMock()
-    telescope = microlsimulator.simulate_a_telescope('blabli', 51, 51, 51, 'orange', 0, 42, 1.0, event, 'Space')
+    telescope = microlsimulator.simulate_a_telescope('blabli', event, 0,42,1, 'Space',
+                                                     'orange', altitude = 51, longitude = 51, latitude=51)
 
     assert len(telescope.lightcurve_flux[:, 0]) == 42*24
 
     event.ra = 270
     event.dec = -30
 
-    telescope = microlsimulator.simulate_a_telescope('blabli', 0, 0, -30, 'orange', 2457850, 2457900, 1.0, event,
-                                                     'Earth',0,0,0,100)
+    telescope = microlsimulator.simulate_a_telescope('blabli', event,2457850,2457900,1, 'Earth',
+                                                     'orange', altitude = 0, longitude = 0, latitude=-30,
+                                                     bad_weather_percentage=0.0,
+                                                     minimum_alt=0, moon_windows_avoidance=0,
+                                                     maximum_moon_illumination=100.0
+                                                     )
     
     histogram, windows = np.histogram(telescope.lightcurve_flux[:,0],np.arange(2457850,2457900))
+
     assert len(telescope.lightcurve_flux[:, 0]) == 461.0
     assert histogram[0]<histogram[-1]
 

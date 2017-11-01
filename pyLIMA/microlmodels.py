@@ -30,7 +30,7 @@ from pyLIMA import stars
 
 resource_package = __name__
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
-template = pkg_resources.resource_stream(resource_package, resource_path)
+template = pkg_resources.resource_filename(resource_package, resource_path)
 try:
 
     # yoo_table = np.loadtxt('b0b1.dat')
