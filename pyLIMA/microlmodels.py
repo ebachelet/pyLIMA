@@ -65,7 +65,7 @@ class ModelException(Exception):
 
 
 def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=None):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
     """
     Load a model according to the supplied model_type. Models are expected to be named
     Model<model_type> e.g. ModelPSPL
@@ -162,7 +162,7 @@ class MLModel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
-                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=None):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
         """ Initialization of the attributes described above.
         """
         self.event = event

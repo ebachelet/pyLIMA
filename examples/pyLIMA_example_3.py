@@ -34,36 +34,48 @@ my_own_creation = microlsimulator.simulate_a_microlensing_event(name ='A spectac
 #You need to create a telescope class for each filter with a different name. For example here, SAAO_I and SAAO_V.
 #We need to build telescopes before the model that we gonna simulate because models need informations about filters and how many telescopes did observe your simulation.
 
-### Create some telescopes
+# Create some telescopes
 
-# Name = Survey, location = 'Earth', altitude = 1000 m, longitude = -109.285399, latitude = -27.130814,filter = 'I',start_obs =2457465.500000,
-# end_obs = 2457665.500000 sampling(hours) = 4, your_event, bad_weather_percentage = 10%, mmoon_windows_avoidance (degree)=30, 
+# Name = survey,your_event, location = 'Earth', start_obs =2457465.500000, end_obs = 2457665.500000,
+# sampling(hours) = 4, location='Earth', uniform_sampling=False, filter = 'I', altitude = 1000 m, longitude = -109.285399, 
+# latitude = -27.130814, bad_weather_percentage = 10%, moon_windows_avoidance (degree)=30, 
 # minimum_alt=30)
-my_survey = microlsimulator.simulate_a_telescope('survey',  1000, -109.285399, -27.130, 'I', 2457365.500000,2457965.500000,
-                                                 4, my_own_creation, location = 'Earth',
-                                                 bad_weather_percentage=10.0 / 100, moon_windows_avoidance=30, 
-                                                 minimum_alt=30)
+my_survey = microlsimulator.simulate_a_telescope('survey',my_own_creation, 2457365.500000,2457965.500000,4, 'Earth','I',
+                                                  uniform_sampling=False, altitude=1000, longitude = -109.285399, latitude = -27.130, 
+                                                  bad_weather_percentage=10.0 / 100, moon_windows_avoidance=30, 
+                                                  minimum_alt=30)
 
 
-# Name = 'SAAO_I', altitude = 400 m, longitude = 20.659279, latitude = -32.3959,filter = 'I',start_obs =2457585.500000,
-# end_obs = 2457615.500000, sampling(hours) = 2,  your_event,bad_weather_percentage = 20%, moon_windows_avoidance (degree)=15, 
-#minimum_alt=15)
-my_own_telescope_1 = microlsimulator.simulate_a_telescope('SAAO_I', 400, 20.659279, -32.3959, 'I', 2457585.5, 2457615.5, 
-                                                          2,  my_own_creation, location = 'Earth', 
-                                                          bad_weather_percentage=20.0 / 100, 
-                                                          moon_windows_avoidance=15, minimum_alt=15)
-# Name = 'SAAO_V', altitude = 400 m, longitude = 20.659279, latitude = -32.3959,filter = 'V',start_obs =2457689,
-# end_obs = 2457750, sampling(hours) = 12, your_event, bad_weather_percentage = 20%, moon_windows_avoidance (degree)=20, 
+# Name = SAAO_I,your_event, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
+# sampling(hours) = 2, location='Earth', uniform_sampling=False, filter = 'I', altitude = 400 m, longitude = 20.659279, 
+# latitude = -32.3959, bad_weather_percentage = 20%, mmoon_windows_avoidance (degree)=15, 
 # minimum_alt=15)
-my_own_telescope_2 = microlsimulator.simulate_a_telescope('SAAO_V', 400, 20.659279, -32.3959, 'V', 2457585.5, 2457615.5, 
-                                                          12,  my_own_creation, location = 'Earth',
-                                                          bad_weather_percentage=20.0 / 100, 
-                                                          moon_windows_avoidance=20, minimum_alt=15)
+my_own_telescope_1 = microlsimulator.simulate_a_telescope('SAAO_I',my_own_creation,  2457585.5, 2457615.5,2, 'Earth','I',
+                                                          uniform_sampling=False, altitude=400, longitude = 20.659279, latitude = -32.3959, 
+                                                          bad_weather_percentage=20.0 / 100, moon_windows_avoidance=20, 
+                                                          minimum_alt=15)
+# Name = SAAO_V,your_event, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
+# sampling(hours) = 12, location='Earth', uniform_sampling=False, filter = 'V', altitude = 400 m, longitude = 20.659279, 
+# latitude = -32.3959, bad_weather_percentage = 20%, mmoon_windows_avoidance (degree)=15, 
+# minimum_alt=15)
+my_own_telescope_2 = microlsimulator.simulate_a_telescope('SAAO_V',my_own_creation,  2457585.5, 2457615.5,2, 'Earth','V',
+                                                          uniform_sampling=False, altitude=400, longitude = 20.659279, latitude = -32.3959, 
+                                                          bad_weather_percentage=20.0 / 100, moon_windows_avoidance=20, 
+                                                          minimum_alt=15)
 
-### Add them to your event
+# Add them to your event
 my_own_creation.telescopes.append(my_survey)
 my_own_creation.telescopes.append(my_own_telescope_1)
 my_own_creation.telescopes.append(my_own_telescope_2)
+
+
+### If you want to simulate a event from space, you can use :
+
+#my_space_telescope = microlsimulator.simulate_a_telescope('Gaia',my_own_creation,  2457585.5, 2457615.5,2, 'Space','G',
+#                                                          uniform_sampling=True, spacecraft_name='Gaia')
+# Note that the spacecraft name shoudl match JPL horizon ephemeris, see microlparallax. If you include this 
+# telescope in your analysis, you will need to give to the model parallax = ['Full,to_par] in order to have 
+# correct simulation. 
 
 #OK now we can choose the model we would like to simulate, here let's have a double source point lens one (DSPL). More details on models can be seen here [pyLIMA documentation](file/../../doc/build/html/pyLIMA.microlmodels.html)
 #More details on parameters generation can be found here [pyLIMA documentation](file/../../doc/build/html/pyLIMA.microlsimulator.html)
@@ -118,6 +130,7 @@ parameter_commentary = ['time of minimum impact parameter for source 1',
                         'source flux of source 1 for telescope SAAO_V',
                         'blending ratio of source 1 for telescope SAAO_V',
                         ]
+
 for key in my_own_model.model_dictionnary.keys():
     
     indice = my_own_model.model_dictionnary[key]
