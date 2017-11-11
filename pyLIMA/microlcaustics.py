@@ -190,11 +190,11 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
         central_top_caustic = caustic_points[:, order[2]]
         central_top_cc = critical_curves_points[:, order[2]]
 
-        central_caustic = np.r_[central_bottom_caustic, central_top_caustic[::-1]]
-        central_cc = np.r_[central_bottom_cc, central_top_cc[::-1]]
+        central_caustic = np.r_[central_bottom_caustic, central_top_caustic]
+        central_cc = np.r_[central_bottom_cc, central_top_cc]
 
-        wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic[::-1]]
-        wide_cc = np.r_[wide_bottom_cc, wide_top_cc[::-1]]
+        wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic]
+        wide_cc = np.r_[wide_bottom_cc, wide_top_cc]
 
     except:
 
@@ -214,11 +214,11 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
         central_top_caustic = caustic_points[:, order[2]]
         central_top_cc = critical_curves_points[:, order[2]]
 
-        central_caustic = np.r_[central_bottom_caustic, central_top_caustic[::-1]]
-        central_cc = np.r_[central_bottom_cc, central_top_cc[::-1]]
+        central_caustic = np.r_[central_bottom_caustic, central_top_caustic]
+        central_cc = np.r_[central_bottom_cc, central_top_cc]
 
-        wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic[::-1]]
-        wide_cc = np.r_[wide_bottom_cc, wide_top_cc[::-1]]
+        wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic]
+        wide_cc = np.r_[wide_bottom_cc, wide_top_cc]
 
     return central_caustic, wide_caustic, central_cc, wide_cc
 

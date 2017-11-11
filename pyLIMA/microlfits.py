@@ -360,11 +360,8 @@ class MLFits(object):
 
         best_solution = self.guess
 
-        if self.fluxes_MCMC_method == 'MCMC':
-            limit_parameters = len(self.model.model_dictionnary.keys())
 
-        else:
-            limit_parameters = len(self.model.parameters_boundaries)
+        limit_parameters = len(self.model.parameters_boundaries)
 
         # Initialize the population of MCMC
         population = []
@@ -386,8 +383,14 @@ class MLFits(object):
                     for parameter in parameter_trial:
                         individual.append(parameter)
 
-            # fluxes = self.find_fluxes(individual,self.model)
-            # individual += fluxes
+
+            if self.fluxes_MCMC_method == 'MCMC':
+                fluxes = self.find_fluxes(individual,self.model)
+                individual += fluxes
+
+
+
+
 
             chichi = self.chichi_MCMC(individual)
 
