@@ -15,11 +15,7 @@ import emcee
 import sys
 import copy
 from collections import OrderedDict
-from mpi4py import MPI
-import dill
 
-MPI.pickle.dumps = dill.dumps
-MPI.pickle.loads = dill.loads
 
 from pyLIMA import microlmodels
 from pyLIMA import microloutputs
@@ -146,7 +142,13 @@ class MLFits(object):
         self.fluxes_MCMC_method = flux_estimation_MCMC
         self.DE_population_size = DE_population_size
         self.model.define_model_parameters()
-        self.pool = computational_pool
+        if computational_pool:
+            from mpi4py import MPI
+            import dill
+
+            MPI.pickle.dumps = dill.dumps
+            MPI.pickle.loads = dill.loads
+            self.pool = computational_pool
         self.binary_regime = binary_regime
 
         if self.method == 'LM':
@@ -360,7 +362,6 @@ class MLFits(object):
 
         best_solution = self.guess
 
-
         limit_parameters = len(self.model.parameters_boundaries)
 
         # Initialize the population of MCMC
@@ -383,14 +384,9 @@ class MLFits(object):
                     for parameter in parameter_trial:
                         individual.append(parameter)
 
-
             if self.fluxes_MCMC_method == 'MCMC':
-                fluxes = self.find_fluxes(individual,self.model)
+                fluxes = self.find_fluxes(individual, self.model)
                 individual += fluxes
-
-
-
-
 
             chichi = self.chichi_MCMC(individual)
 
@@ -594,8 +590,8 @@ class MLFits(object):
         else:
 
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
-                                                    ftol=10 ** -6, xtol=10 ** -10,
-                                                    gtol=10 ** -5, factor=0.1)
+                                                    ftol=10 ** -6, xtol=10 ** -10, gtol=10 ** -5,
+                                                    epsfcn=10**-10)
         # import pdb;
         # pdb.set_trace()
         computation_time = python_time.time() - starting_time
@@ -887,7 +883,6 @@ class MLFits(object):
         else:
             computational_map = map
 
-
         grid_results = list(computational_map(self.optimization_on_grid_pixel, hyper_grid))
         import pdb;
         pdb.set_trace()
@@ -913,8 +908,6 @@ class MLFits(object):
             '[]') + ' converge to f(x) = ' + str(differential_evolution_estimation['fun']))
 
         return best_parameters
-
-
 
     def chichi_grids(self, moving_parameters, *fix_parameters):
         """ Compute chi^2. ON CONSTRUCTION.
