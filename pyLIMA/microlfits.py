@@ -582,63 +582,59 @@ class MLFits(object):
         # algorithm find it.
         if self.guess == []:
             self.guess = self.initial_guess()
-
-        if self.model.Jacobian_flag == 'OK':
-            lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
-                                                    Dfun=self.LM_Jacobian, col_deriv=0, full_output=1, ftol=10 ** -6,
-                                                    xtol=10 ** -10, gtol=10 ** -5)
-        else:
-
-            lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000, full_output=1,
-                                                    ftol=10 ** -6, xtol=10 ** -10, gtol=10 ** -5,
-                                                    epsfcn=10**-10)
-        # import pdb;
-        # pdb.set_trace()
-        computation_time = python_time.time() - starting_time
-
-        fit_result = lmarquardt_fit[0].tolist()
-        fit_result.append(microltoolbox.chichi(self.residuals_LM, lmarquardt_fit[0]))
-
-        n_data = 0.0
-
+        n_data = 0
         for telescope in self.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
         n_parameters = len(self.model.model_dictionnary)
 
-        try:
+        if self.model.Jacobian_flag == 'OK':
+            lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
+                                                    Dfun=self.LM_Jacobian, col_deriv=0, full_output=1, ftol=10 ** -8,
+                                                    xtol=10 ** -10, gtol=10 ** -10)
+            fit_result = lmarquardt_fit[0].tolist()
+            fit_result.append(microltoolbox.chichi(self.residuals_LM, lmarquardt_fit[0]))
+
+            try:
             # Try to extract the covariance matrix from the lmarquard_fit output
 
-            if np.all(lmarquardt_fit[1].diagonal() > 0) & (lmarquardt_fit[1] is not None):
-                # Normalise the output by the reduced chichi
                 covariance_matrix = lmarquardt_fit[1] * fit_result[-1] / (n_data - n_parameters)
 
-            # Try to do it "manually"
-            else:
+            except:
 
-                print(' Attempt to construct a rough covariance matrix')
-                jacobian = self.LM_Jacobian(fit_result)
+                covariance_matrix = np.zeros((len(self.model.model_dictionnary),
+                                              len(self.model.model_dictionnary)))
+        else:
+
+
+            lmarquardt_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, method='lm', x_scale='jac', ftol=10 ** -10,
+                                                          xtol=10 ** -10, gtol=10 ** -10,
+                                                         )
+            fit_result = lmarquardt_fit['x'].tolist()
+            fit_result.append(microltoolbox.chichi(self.residuals_LM, lmarquardt_fit['x']))
+
+            try:
+                # Try to extract the covariance matrix from the lmarquard_fit output
+                jacobian = lmarquardt_fit['jac']
 
                 covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
-                # Normalise the output by the reduced chichi
-                covariance_matrix = covariance_matrix * fit_result[-1] / (n_data - n_parameters)
 
-                # Construct a dummy covariance matrix
-                if np.any(lmarquardt_fit[1].diagonal() > 0):
-                    print('Bad covariance covariance matrix')
-                    covariance_matrix = np.zeros((len(self.model.model_dictionnary),
-                                                  len(self.model.model_dictionnary)))
 
-        # Construct a dummy covariance matrix
-        except:
-            print('Bad covariance covariance matrix')
-            covariance_matrix = np.zeros((len(self.model.model_dictionnary),
-                                          len(self.model.model_dictionnary)))
+
+            except:
+
+                covariance_matrix = np.zeros((len(self.model.model_dictionnary),
+                                              len(self.model.model_dictionnary)))
+
+
+        computation_time = python_time.time() - starting_time
+
 
         # import pdb; pdb.set_trace()
         print(sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS')
         print(fit_result)
         return fit_result, covariance_matrix, computation_time
+
 
     def residuals_LM(self, fit_process_parameters):
         """The normalized residuals associated to the model and parameters.
@@ -727,12 +723,6 @@ class MLFits(object):
         if self.guess == []:
             self.guess = self.initial_guess()
 
-        for index, telescope in enumerate(self.event.telescopes):
-            # if self.guess[self.model.model_dictionnary['g_' + telescope.name]] < -10.0:
-            # self.guess[self.model.model_dictionnary['g_' + telescope.name]] = -10.0
-            pass
-            # bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0,-1]*len(self.event.telescopes)
-            # bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf,np.inf] * len(self.event.telescopes)
         bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -np.inf] * len(self.event.telescopes)
         bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.event.telescopes)
 

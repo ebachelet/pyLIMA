@@ -279,8 +279,8 @@ def differential_evolution_parameters_boundaries(model):
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     delta_to_boundaries = (-150, 150)
     delta_uo_boundaries = (-1.0, 1.0)
-    uo_boundaries = (0.0, 1.0)
-    tE_boundaries = (1.0, 300)
+    uo_boundaries = (-0.0, 1.0)
+    tE_boundaries = (1.0, 500)
     rho_boundaries = (5 * 10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
 
