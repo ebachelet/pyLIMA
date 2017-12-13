@@ -27,7 +27,6 @@ from pyLIMA import microlcaustics
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
-MARKER_SYMBOLS = np.nditer([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
 MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
 #plt.style.use('ggplot')
 
@@ -490,7 +489,6 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
     :param parameters: the parameters [list] of the model you want to plot.
     :param plot_axe: the matplotlib axes where you plot the data
     """
-    #MARKER_SYMBOLS.reset()
     reference_telescope = fit.event.telescopes[0]
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
 
@@ -526,7 +524,6 @@ def MCMC_plot_residuals(fit, parameters, ax):
     :param parameters: the parameters [list] of the model you want to plot.
     :param ax: the matplotlib axes where you plot the data
     """
-    #MARKER_SYMBOLS.reset()
 
     for index, telescope in enumerate(fit.event.telescopes):
         time = telescope.lightcurve_flux[:, 0]
@@ -740,7 +737,6 @@ def LM_plot_residuals(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
-    #MARKER_SYMBOLS.reset()
 
     for index, telescope in enumerate(fit.event.telescopes):
         time = telescope.lightcurve_flux[:, 0]
@@ -769,7 +765,6 @@ def LM_plot_align_data(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
-    #MARKER_SYMBOLS.reset()
 
     normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit)
 
