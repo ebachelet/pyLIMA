@@ -28,6 +28,7 @@ plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.2
 MAX_PLOT_TICKS = 2
 MARKER_SYMBOLS = np.nditer([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
+MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x']*10])
 #plt.style.use('ggplot')
 
 
@@ -147,7 +148,7 @@ def statistical_outputs(fit) :
     table_colors = []
     colors_dictionary = {0:'r',1:'y',2:'g'}
 
-    for i in xrange(len(raw_labels)):
+    for i in range(len(raw_labels)):
         table_val.append([np.round(telescope_Kolmogorv_Smirnov_residuals_test[i][:2],3),
                           np.round(telescope_Anderson_Darling_residuals_test[i][:2],3),
                           np.round(telescope_Shapiro_Wilk_residuals_test[i][:2],3),
@@ -203,8 +204,11 @@ def LM_outputs(fit):
     # Change matplotlib default colors
     n = len(fit.event.telescopes)
     color = plt.cm.jet(np.linspace(0.01, 0.99, n))  # This returns RGBA; convert:
-    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
-                   tuple(color[:, 0:-1]))
+   # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
+   #                tuple(color[:, 0:-1]))
+    hexcolor = ['#'+format(int(i[0]*255),'x').zfill(2)+format(int(i[1]*255),'x').zfill(2)+
+                format(int(i[2]*255),'x').zfill(2) for i in color]
+
     matplotlib.rcParams['axes.color_cycle'] = hexcolor
     #hexcolor[0] = '#000000'
 
@@ -254,8 +258,10 @@ def MCMC_outputs(fit):
 
     n = len(fit.event.telescopes)
     color = plt.cm.jet(np.linspace(0.01, 0.99, n))  # This returns RGBA; convert:
-    hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
-                   tuple(color[:, 0:-1]))
+    #hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
+    #              tuple(color[:, 0:-1]))
+    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255), 'x').zfill(2) +
+                format(int(i[2] * 255), 'x').zfill(2) for i in color]
     matplotlib.rcParams['axes.color_cycle'] = hexcolor
     hexcolor[0] = '#000000'
     raw_chains = fit.MCMC_chains
@@ -305,7 +311,7 @@ def MCMC_compute_fs_g(fit, mcmc_chains):
 
     """
     fluxes_chains = np.zeros((len(mcmc_chains), 2 * len(fit.event.telescopes)))
-    for i in xrange(len(mcmc_chains)):
+    for i in range(len(mcmc_chains)):
 
             fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
             fluxes_chains[i] = fluxes
@@ -484,11 +490,11 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
     :param parameters: the parameters [list] of the model you want to plot.
     :param plot_axe: the matplotlib axes where you plot the data
     """
-    MARKER_SYMBOLS.reset()
+    #MARKER_SYMBOLS.reset()
     reference_telescope = fit.event.telescopes[0]
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
 
-    for telescope in fit.event.telescopes:
+    for index, telescope in enumerate(fit.event.telescopes):
 
         if telescope.name == reference_telescope:
 
@@ -505,7 +511,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
             lightcurve_magnitude = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
 
         plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2],
-                          ls='None', marker=str(MARKER_SYMBOLS.next()), label=telescope.name)
+                          ls='None', marker=str(MARKER_SYMBOLS[0][index]), label=telescope.name)
 
     plot_axe.plot(fit.event.telescopes[0].lightcurve_magnitude[0, 0],
                   fit.event.telescopes[0].lightcurve_magnitude[0, 1],
@@ -520,9 +526,9 @@ def MCMC_plot_residuals(fit, parameters, ax):
     :param parameters: the parameters [list] of the model you want to plot.
     :param ax: the matplotlib axes where you plot the data
     """
-    MARKER_SYMBOLS.reset()
+    #MARKER_SYMBOLS.reset()
 
-    for telescope in fit.event.telescopes:
+    for index, telescope in enumerate(fit.event.telescopes):
         time = telescope.lightcurve_flux[:, 0]
         flux = telescope.lightcurve_flux[:, 1]
         error_flux = telescope.lightcurve_flux[:, 2]
@@ -532,7 +538,7 @@ def MCMC_plot_residuals(fit, parameters, ax):
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
         residuals = 2.5 * np.log10(flux_model / flux)
-        ax.errorbar(time, residuals, yerr=err_mag, ls='None', marker=str(MARKER_SYMBOLS.next()))
+        ax.errorbar(time, residuals, yerr=err_mag, ls='None', marker=str(MARKER_SYMBOLS[0][index]))
     ax.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     ax.invert_yaxis()
     ax.xaxis.get_major_ticks()[0].draw = lambda *args: None
@@ -564,12 +570,12 @@ def MCMC_covariance(mcmc_chains):
     :rtype: array_like
     """
     esperances = []
-    for i in xrange(mcmc_chains.shape[1] - 1):
+    for i in range(mcmc_chains.shape[1] - 1):
         esperances.append(mcmc_chains[:, i] - np.median(mcmc_chains[:, i]))
 
     covariance_matrix = np.zeros((mcmc_chains.shape[1] - 1, mcmc_chains.shape[1] - 1))
 
-    for i in xrange(mcmc_chains.shape[1] - 1):
+    for i in range(mcmc_chains.shape[1] - 1):
         for j in np.arange(i, mcmc_chains.shape[1] - 1):
             covariance_matrix[i, j] = 1 / (len(mcmc_chains) - 1) * np.sum(
                 esperances[i] * esperances[j])
@@ -734,9 +740,9 @@ def LM_plot_residuals(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
-    MARKER_SYMBOLS.reset()
+    #MARKER_SYMBOLS.reset()
 
-    for telescope in fit.event.telescopes:
+    for index, telescope in enumerate(fit.event.telescopes):
         time = telescope.lightcurve_flux[:, 0]
         flux = telescope.lightcurve_flux[:, 1]
         error_flux = telescope.lightcurve_flux[:, 2]
@@ -748,7 +754,7 @@ def LM_plot_residuals(fit, figure_axe):
         residuals = 2.5 * np.log10(flux_model / flux)
 
         figure_axe.errorbar(time, residuals, yerr=err_mag, ls='None', markersize=7.5,
-                            marker=str(MARKER_SYMBOLS.next()),capsize=0.0)
+                            marker=str(MARKER_SYMBOLS[0][index]),capsize=0.0)
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
     figure_axe.yaxis.get_major_ticks()[-1].draw = lambda *args: None
@@ -763,17 +769,17 @@ def LM_plot_align_data(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
-    MARKER_SYMBOLS.reset()
+    #MARKER_SYMBOLS.reset()
 
     normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit)
 
     count = 0
-    for telescope in fit.event.telescopes:
+    for index, telescope in enumerate(fit.event.telescopes):
 
         lightcurve = normalised_lightcurves[count]
 
         figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
-                            marker=str(MARKER_SYMBOLS.next()), markersize=7.5,capsize=0.0,
+                            marker=str(MARKER_SYMBOLS[0][index]), markersize=7.5,capsize=0.0,
                             label=telescope.name)
         count += 1
     figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.,
@@ -934,7 +940,7 @@ def plot_LM_ML_geometry(fit):
     figure_axes.tick_params(axis='x', labelsize=25)
     figure_axes.tick_params(axis='y', labelsize=25)
 
-    raw_labels = fit.model.model_dictionnary.keys() + ['Chi^2']
+    raw_labels = list(fit.model.model_dictionnary.keys()) + ['Chi^2']
     column_labels = ['Parameters', 'Errors']
 
     table_val = [fit.fit_results, (fit.fit_covariance.diagonal() ** 0.5).tolist() + [0.0]]
@@ -944,7 +950,7 @@ def plot_LM_ML_geometry(fit):
     table_colors = []
     raw_colors = []
     last_color = 'dodgerblue'
-    for i in xrange(len(table_val)):
+    for i in range(len(table_val)):
         table_colors.append([last_color, last_color])
         raw_colors.append(last_color)
 
@@ -1062,10 +1068,10 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     figure_axes.axis(
         [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_ylimit])
 
-    raw_labels = fit.model.model_dictionnary.keys()
+    raw_labels = list(fit.model.model_dictionnary.keys())
     column_labels = ['Parameters 16%', 'Parameters 50%', 'Parameters 84%']
     table_val = []
-    for i in xrange(len(fit.model.model_dictionnary.keys())):
+    for i in range(len(fit.model.model_dictionnary.keys())):
         table_val.append([np.percentile(best_chains[:, i], 16), np.percentile(best_chains[:, i], 50),
                           np.percentile(best_chains[:, i], 84)])
 
@@ -1074,7 +1080,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     table_colors = []
     raw_colors = []
     last_color = 'dodgerblue'
-    for i in xrange(len(table_val)):
+    for i in range(len(table_val)):
 
         table_colors.append([last_color, last_color, last_color])
         raw_colors.append(last_color)
