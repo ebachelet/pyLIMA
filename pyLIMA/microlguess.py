@@ -295,6 +295,14 @@ def differential_evolution_parameters_boundaries(model):
 
     dsdt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
     dalphadt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
+
+    ra_xal_boundaries = [0,360]
+    dec_xal_boundaries = [-90,90]
+    period_xal_boundaries = [0.001,1000]
+    ecc_xal_boundaries = [0,1]
+    t_peri_xal_boundaries = to_boundaries
+
+
     # model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
     # model_orbital_motion_boundaries = {'None': [], '2D': [], '3D': []}
@@ -355,14 +363,22 @@ def differential_evolution_parameters_boundaries(model):
             for j in unique_filters:
                 parameters_boundaries += [amplitude]
                 parameters_boundaries += [phis]
+
     # Second order boundaries
     if model.parallax_model[0] != 'None':
         parameters_boundaries.append(piEN_boundaries)
         parameters_boundaries.append(piEE_boundaries)
 
-    if model.xallarap_model[0] != 'None':
+    if model.xallarap_model != 'None':
         parameters_boundaries.append(XiEN_boundaries)
         parameters_boundaries.append(XiEE_boundaries)
+        parameters_boundaries.append(ra_xal_boundaries)
+        parameters_boundaries.append(dec_xal_boundaries)
+        parameters_boundaries.append(period_xal_boundaries)
+
+        if model.xallarap_model != 'circular':
+            parameters_boundaries.append(ecc_xal_boundaries)
+            parameters_boundaries.append(t_peri_xal_boundaries)
 
     if model.orbital_motion_model[0] != 'None':
         parameters_boundaries.append(dsdt_boundaries)

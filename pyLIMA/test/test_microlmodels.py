@@ -86,7 +86,7 @@ def test_create_bad_model():
 def test_define_parameters_model_dictionnary():
     event = _create_event()
 
-    Model = microlmodels.create_model('FSPL', event)
+    Model = microlmodels.create_model('FSPL', event,)
     Model.define_model_parameters()
     assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test']
     assert list(Model.model_dictionnary.values()) == [0, 1, 2, 3, 4, 5]
@@ -95,9 +95,9 @@ def test_define_parameters_model_dictionnary():
 def test_define_parameters_boundaries():
     event = _create_event()
 
-    Model = microlmodels.create_model('FSPL', event)
+    Model = microlmodels.create_model('FSPL', event, blend_flux_ratio=False)
 
-    assert Model.parameters_boundaries == [(0,42), (0.0, 1.0), (1.0, 300), (5*10**-5, 0.05)]
+    assert Model.parameters_boundaries == [(0,42), (0.0, 1.0), (1.0, 500), (5*10**-5, 0.05)]
 
 def test_magnification_USBL_computation():
     event = _create_event()
@@ -196,7 +196,7 @@ def test_magnification_PSPL_computation():
 def test_PSPL_computate_microlensing_model():
     event = _create_event()
 
-    Model = microlmodels.create_model('PSPL', event)
+    Model = microlmodels.create_model('PSPL', event, blend_flux_ratio=False)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'fb_Test'])
 
     to = 0.0
@@ -214,7 +214,7 @@ def test_PSPL_computate_microlensing_model():
 def test_FSPL_computate_microlensing_model():
     event = _create_event()
 
-    Model = microlmodels.create_model('FSPL', event)
+    Model = microlmodels.create_model('FSPL', event, blend_flux_ratio=False)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test',
                                                        'fb_Test'])
 
@@ -233,7 +233,7 @@ def test_FSPL_computate_microlensing_model():
 
 def test_DSPL_computate_microlensing_model():
     event = _create_event()
-    Model = microlmodels.create_model('DSPL', event)
+    Model = microlmodels.create_model('DSPL', event, blend_flux_ratio=False)
     Parameters = collections.namedtuple('parameters',
                                         ['to', 'uo', 'delta_to', 'delta_uo', 'tE', 'q_flux_I', 'fs_Test', 'fb_Test'])
     to = 0.0
@@ -472,7 +472,7 @@ def test_default_microlensing_model_no_fluxes():
 def test_PSPL_Jacobian():
     event = _create_event()
 
-    Model = microlmodels.create_model('PSPL', event)
+    Model = microlmodels.create_model('PSPL', event, blend_flux_ratio=False)
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'fs_Test', 'fb_Test'])
 
     to = 0.0
@@ -491,7 +491,7 @@ def test_PSPL_Jacobian():
 def test_FSPL_Jacobian():
     event = _create_event()
 
-    Model = microlmodels.create_model('FSPL', event)
+    Model = microlmodels.create_model('FSPL', event, )
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test'])
 
     to = 0.0

@@ -26,7 +26,7 @@ from pyLIMA import microlparallax
 from pyLIMA import microlorbitalmotion
 from pyLIMA import microlcaustics
 from pyLIMA import stars
-
+from pyLIMA import microlxallarap
 
 resource_package = __name__
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
@@ -64,7 +64,7 @@ class ModelException(Exception):
     pass
 
 
-def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
+def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap='None',
                  orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
     """
     Load a model according to the supplied model_type. Models are expected to be named
@@ -161,7 +161,7 @@ class MLModel(object):
        """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None', 0.0],
+    def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap='None',
                  orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
         """ Initialization of the attributes described above.
         """
@@ -215,10 +215,17 @@ class MLModel(object):
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
 
-        if self.xallarap_model[0] != 'None':
+        if self.xallarap_model != 'None':
             self.Jacobian_flag = 'No way'
             self.pyLIMA_standards_dictionnary['XiEN'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['XiEE'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['ra_xallarap'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['dec_xallarap'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['period_xallarap'] = len(self.pyLIMA_standards_dictionnary)
+            if self.xallarap_model != 'circular' :
+                self.pyLIMA_standards_dictionnary['eccentricity_xallarap'] = len(self.pyLIMA_standards_dictionnary)
+                self.pyLIMA_standards_dictionnary['t_periastron_xallarap'] = len(self.pyLIMA_standards_dictionnary)
+
 
         if self.orbital_motion_model[0] != 'None':
             self.Jacobian_flag = 'No way'
@@ -430,7 +437,26 @@ class MLModel(object):
             beta += parallax_delta_beta
 
         # Xallarap?
+        if 'XiEN' in pyLIMA_parameters._fields:
+            XiE = np.array([pyLIMA_parameters.XiEN, pyLIMA_parameters.XiEE])
+            ra = pyLIMA_parameters.ra_xallarap
+            dec = pyLIMA_parameters.dec_xallarap
+            period = pyLIMA_parameters.period_xallarap
+            if 'eccentricity_xallarap' in pyLIMA_parameters._fields:
+                eccentricity = pyLIMA_parameters.eccentricity_xallarap
+                t_periastron = pyLIMA_parameters.t_periastron_xallarap
 
+                orbital_elements = [telescope.lightcurve_flux[:,0], ra,dec,period,eccentricity,t_periastron]
+                xallarap_delta_tau, xallarap_delta_beta = microlxallarap.compute_xallarap_curvature(XiE, orbital_elements,
+                                                                                                    mode ='elliptic')
+            else:
+
+                orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period]
+                xallarap_delta_tau, xallarap_delta_beta = microlxallarap.compute_xallarap_curvature(XiE,
+                                                                                                    orbital_elements)
+
+            tau += xallarap_delta_tau
+            beta += xallarap_delta_beta
         # Orbital motion?
         if 'alpha' in pyLIMA_parameters._fields:
 
@@ -532,7 +558,7 @@ class ModelPSPL(MLModel):
         dresduo = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUduo / errflux
         dresdtE = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdtE / errflux
 
-        if self.blend_flux_ratio:
+        if self.blend_flux_ratio==True:
             dresdfs = (Amplification[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
             dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
         else:
@@ -672,7 +698,7 @@ class ModelFSPL(MLModel):
 
         Amplification_FSPL = self.model_magnification(telescope, pyLIMA_parameters)
 
-        if self.blend_flux_ratio:
+        if self.blend_flux_ratio == True:
             dresdfs = (Amplification_FSPL + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
             dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
         else:

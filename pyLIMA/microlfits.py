@@ -83,6 +83,7 @@ class MLFits(object):
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
+        self.pool = None
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None):
@@ -416,10 +417,11 @@ class MLFits(object):
 
         sampler.reset()
         MCMC_chains = None
-
+        import pdb;
+        pdb.set_trace()
         # Final estimation using the previous output.
         for positions, probabilities, states in sampler.sample(final_positions, iterations=5 * nlinks,
-                                                               storechain=False):
+                                                               storechain=True):
             chains = np.c_[positions, probabilities]
             if MCMC_chains is not None:
 
