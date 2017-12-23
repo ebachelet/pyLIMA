@@ -417,8 +417,7 @@ class MLFits(object):
 
         sampler.reset()
         MCMC_chains = None
-        import pdb;
-        pdb.set_trace()
+       
         # Final estimation using the previous output.
         for positions, probabilities, states in sampler.sample(final_positions, iterations=5 * nlinks,
                                                                storechain=True):
