@@ -120,8 +120,7 @@ def test_mlfit_PSPL_MCMC_with_guess():
 
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'MCMC')
-    import pdb;
-    pdb.set_trace()
+
     assert fit.MCMC_chains.shape == (150000, 6)
 
 
