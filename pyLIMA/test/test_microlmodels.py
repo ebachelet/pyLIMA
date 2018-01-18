@@ -491,13 +491,10 @@ def test_PSPL_Jacobian():
 def test_FSPL_Jacobian():
     event = _create_event()
 
-<<<<<<< HEAD
     Model = microlmodels.create_model('FSPL', event, )
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test'])
-=======
     Model = microlmodels.create_model('FSPL', event,blend_flux_ratio=False )
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test'])
->>>>>>> 867407ee60a1bf2c1d177df741a84e90ba796927
 
     to = 0.0
     uo = 0.1
