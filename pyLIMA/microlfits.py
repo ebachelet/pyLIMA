@@ -343,8 +343,7 @@ class MLFits(object):
                    5*nwalkers*nlinks MCMC steps in total
         """
 
-        nwalkers = 300
-        nlinks = 100
+
 
         # start = python_time.time()
 
@@ -361,9 +360,11 @@ class MLFits(object):
 
         # Best solution
 
-        best_solution = self.guess
-
         limit_parameters = len(self.model.parameters_boundaries)
+        best_solution = self.guess[:limit_parameters]
+
+        nwalkers = 100 * len(best_solution)
+        nlinks = 100
 
         # Initialize the population of MCMC
         population = []
@@ -417,10 +418,9 @@ class MLFits(object):
 
         sampler.reset()
         MCMC_chains = None
-        import pdb;
-        pdb.set_trace()
+
         # Final estimation using the previous output.
-        for positions, probabilities, states in sampler.sample(final_positions, iterations=5 * nlinks,
+        for positions, probabilities, states in sampler.sample(final_positions, iterations= 5 * nlinks,
                                                                storechain=True):
             chains = np.c_[positions, probabilities]
             if MCMC_chains is not None:
@@ -855,7 +855,6 @@ class MLFits(object):
     def grids(self):
         """ Compute models on a grid. ON CONSTRUCTION.
         """
-
         parameters_on_the_grid = []
 
         for parameter_name in self.fix_parameters_dictionnary:
@@ -875,19 +874,20 @@ class MLFits(object):
         else:
             computational_map = map
 
-        grid_results = list(computational_map(self.optimization_on_grid_pixel, hyper_grid))
-        import pdb;
-        pdb.set_trace()
-        return grid_results
+        grid_results = list(
+            computational_map(emcee.ensemble._function_wrapper(self.optimization_on_grid_pixel, args=[], kwargs={}),
+                              hyper_grid))
+
+        return np.array(grid_results)
 
     def optimization_on_grid_pixel(self, grid_pixel_parameters):
 
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_grids,
             bounds=self.new_parameters_boundaries, args=tuple(grid_pixel_parameters.tolist()),
-            mutation=(0.5, 1.0), popsize=1, maxiter=100,
-            tol=0.0, atol=0.1, strategy='best1bin',
-            recombination=0.7, polish=True, init='latinhypercube',
+            mutation=(0.5, 1.5), popsize=10, maxiter=1000,
+            tol=0.0, atol=0.001, strategy='best1bin',
+            recombination=0.5, polish=True,
             disp=True
         )
 

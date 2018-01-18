@@ -1,5 +1,5 @@
-from setuptools import setup, find_packages
-from distutils.core import setup, Extension
+from setuptools import setup, find_packages, Extension
+#from distutils.core import setup, Extension
 
 
 
@@ -15,7 +15,7 @@ VBB = Extension('_VBBinaryLensingLibrary',
 
 setup(
     name="pyLIMA",
-    version="0.1.4",
+    version="0.1.5",
     description="Microlsening analysis package.",
     keywords='Microlsening analysis package.',
     author="Etienne Bachelet",

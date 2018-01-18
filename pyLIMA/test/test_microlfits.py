@@ -33,6 +33,8 @@ def _create_model(kind):
     
     model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'fs_Test': 3, 'g_Test': 4}
     model.pyLIMA_standards_dictionnary = model.model_dictionnary
+    model.model_dictionnary = OrderedDict(
+        sorted(model.model_dictionnary.items(), key=lambda x: x[1]))
     model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0,0.0
     model.model_magnification.return_value = np.random.random(100).tolist()
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())

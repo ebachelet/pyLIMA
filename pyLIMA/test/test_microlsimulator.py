@@ -108,7 +108,7 @@ def test_simulate_microlensing_model_parameters():
     assert parameters[1] < 2
 
     assert 1 < parameters[2]
-    assert parameters[2] < 300
+    assert parameters[2] < 500
 
     model = microlsimulator.simulate_a_microlensing_model(event,'FSPL')
 
