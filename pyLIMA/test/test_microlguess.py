@@ -49,6 +49,7 @@ def test_differential_evolution_parameters_boundaries_PSPL():
     model.model_type = 'PSPL'
     model.parallax_model = ['None']
     model.xallarap_model = 'None'
+    model.parallax_model = ['None']
     model.orbital_motion_model = ['None']
     parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(model)
 
@@ -61,6 +62,7 @@ def test_differential_evolution_parameters_boundaries_FSPL():
     model.model_type = 'FSPL'
     model.parallax_model = ['None']
     model.xallarap_model = 'None'
+    model.parallax_model = ['None']
     model.orbital_motion_model = ['None']
     parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(model)
 
@@ -73,6 +75,7 @@ def test_differential_evolution_parameters_boundaries_DSPL():
     model.model_type = 'DSPL'
     model.parallax_model = ['None']
     model.xallarap_model = 'None'
+    model.parallax_model = ['None']
     model.orbital_motion_model = ['None']
     parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(model)
 

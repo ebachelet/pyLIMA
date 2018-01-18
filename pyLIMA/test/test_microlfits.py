@@ -31,10 +31,11 @@ def _create_model(kind):
     model.parameters_boundaries = [[0, 100], [0, 1], [0, 300]]
     model.Jacobian_flag = 'Not OK'
     
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'fs_Test': 3, 'g_Test': 4}
-    model.pyLIMA_standards_dictionnary = model.model_dictionnary
+    model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'fs_Test': 3, 'g_Test': 4}
     model.model_dictionnary = OrderedDict(
-        sorted(model.model_dictionnary.items(), key=lambda x: x[1]))
+                sorted(model_dictionnary.items(), key=lambda x: x[1]))
+
+    model.pyLIMA_standards_dictionnary = model.model_dictionnary
     model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0,0.0
     model.model_magnification.return_value = np.random.random(100).tolist()
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
@@ -122,6 +123,7 @@ def test_mlfit_PSPL_MCMC_with_guess():
 
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'MCMC')
+
 
     assert fit.MCMC_chains.shape == (150000, 6)
 
