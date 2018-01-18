@@ -88,7 +88,7 @@ def test_define_parameters_model_dictionnary():
 
     Model = microlmodels.create_model('FSPL', event,blend_flux_ratio=False)
     Model.define_model_parameters()
-    assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test']
+    assert list(Model.model_dictionnary.keys()) == ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test']
     assert list(Model.model_dictionnary.values()) == [0, 1, 2, 3, 4, 5]
 
 
@@ -493,8 +493,7 @@ def test_FSPL_Jacobian():
 
     Model = microlmodels.create_model('FSPL', event, )
     Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'g_Test'])
-    Model = microlmodels.create_model('FSPL', event,blend_flux_ratio=False )
-    Parameters = collections.namedtuple('parameters', ['to', 'uo', 'tE', 'rho', 'fs_Test', 'fb_Test'])
+
 
     to = 0.0
     uo = 0.1
