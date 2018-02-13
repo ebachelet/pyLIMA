@@ -334,7 +334,7 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     mcmc_unique = np.array([json.loads(i) for i in mcmc_to_plot])
 
     mcmc_unique = mcmc_unique[mcmc_unique[:, -1].argsort(),]
-    dimensions =len(fit.model.model_dictionnary.keys())
+    dimensions =len(fit.model.parameters_boundaries)
     fig_size = [10, 10]
 
     max_plot_ticks = MAX_PLOT_TICKS
@@ -413,7 +413,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
 
     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(mcmc_best[-1])
-    MCMC_plot_align_data(fit, mcmc_best[0], figure_axes[0])
+    MCMC_plot_align_data(fit, mcmc_best[0,:-1], figure_axes[0])
 
     model_panel_chichi = np.linspace(max(mcmc_best[:, -1]), min(mcmc_best[:, -1]), 35).astype(int)
     color_normalization = matplotlib.colors.Normalize(vmin=np.min(mcmc_best[:, -1]),
@@ -442,7 +442,12 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     for model_chichi in model_panel_chichi[0:]:
         indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
 
-        MCMC_plot_model(fit, reference_telescope, mcmc_best[indice], mcmc_best[indice, -1], figure_axes[0],
+	parameters = mcmc_best[indice,:-1].tolist()
+	pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+	
+    	flux_model = fit.model.compute_the_microlensing_model(fit.event.telescopes[0], pyLIMA_parameters)
+	
+        MCMC_plot_model(fit, reference_telescope, parameters+[flux_model[1]]+[flux_model[2]], mcmc_best[indice, -1], figure_axes[0],
                         scalar_couleur_map)
 
     colorbar = plt.colorbar(scalar_couleur_map, ax=figure_axes[0], orientation="horizontal")
@@ -454,7 +459,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
                         transform=figure_axes[0].transAxes)
 
     figure_axes[0].invert_yaxis()
-    MCMC_plot_residuals(fit, mcmc_best[0], figure_axes[1])
+    MCMC_plot_residuals(fit, mcmc_best[0,:-1], figure_axes[1])
 
     return figure_lightcurves
 
@@ -489,7 +494,27 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
     :param parameters: the parameters [list] of the model you want to plot.
     :param plot_axe: the matplotlib axes where you plot the data
     """
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+    
+    full_parameters = parameters.tolist()	
+    for index, telescope in enumerate(fit.event.telescopes):
+
+
+	    flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+		
+	    full_parameters.append(flux_model[1])
+	    full_parameters.append(flux_model[2])
+
+    	
+
     reference_telescope = fit.event.telescopes[0]
+
+    parameters = full_parameters
+
+
+
+
+
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
 
     for index, telescope in enumerate(fit.event.telescopes):
@@ -506,6 +531,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
 
             model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
             model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+
             lightcurve_magnitude = align_telescope_lightcurve(telescope.lightcurve_flux, model_ghost, model_telescope)
 
         plot_axe.errorbar(lightcurve_magnitude[:, 0], lightcurve_magnitude[:, 1], yerr=lightcurve_magnitude[:, 2],
@@ -984,12 +1010,16 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     :param object fit: a fit object. See the microlfits for more details.
     :param list best_parameters: a list containing the model you want to plot the trajectory
     """
+    plt.rc('font', family='serif')
+    plt.rc('xtick', labelsize='x-small')
+    plt.rc('ytick', labelsize='x-small')
+
 
     # Limits of the plot
 
     figure_trajectory_xlimit = 1.5
     figure_trajectory_ylimit = 1.5
-
+	
     best_parameters = best_chains[0]
     fig_size = [15, 5]
     figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]))
@@ -1063,10 +1093,10 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     figure_axes.axis(
         [- figure_trajectory_xlimit, figure_trajectory_xlimit, - figure_trajectory_ylimit, figure_trajectory_ylimit])
 
-    raw_labels = list(fit.model.model_dictionnary.keys())
+    raw_labels = list(fit.model.model_dictionnary.keys())[:len(fit.model.parameters_boundaries)]
     column_labels = ['Parameters 16%', 'Parameters 50%', 'Parameters 84%']
     table_val = []
-    for i in range(len(fit.model.model_dictionnary.keys())):
+    for i in range(len(fit.model.parameters_boundaries)):
         table_val.append([np.percentile(best_chains[:, i], 16), np.percentile(best_chains[:, i], 50),
                           np.percentile(best_chains[:, i], 84)])
 
@@ -1095,9 +1125,9 @@ def plot_MCMC_ML_geometry(fit, best_chains):
                                  colLabels=column_labels, loc='center left')
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
-    the_table.auto_set_font_size(False)
-    the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
-    the_table.scale(0.75, 0.75)
+    #the_table.auto_set_font_size(False)
+    #the_table.set_fontsize(fig_size[0] * 3 / 6.0)
+    the_table.scale(1.0, 1.0)
     title = fit.model.event.name + ' : ' + fit.model.model_type
     figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
