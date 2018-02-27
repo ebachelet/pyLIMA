@@ -442,11 +442,11 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     for model_chichi in model_panel_chichi[0:]:
         indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
 
-	parameters = mcmc_best[indice,:-1].tolist()
-	pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
-	
-    	flux_model = fit.model.compute_the_microlensing_model(fit.event.telescopes[0], pyLIMA_parameters)
-	
+        parameters = mcmc_best[indice,:-1].tolist()
+        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+
+        flux_model = fit.model.compute_the_microlensing_model(fit.event.telescopes[0], pyLIMA_parameters)
+
         MCMC_plot_model(fit, reference_telescope, parameters+[flux_model[1]]+[flux_model[2]], mcmc_best[indice, -1], figure_axes[0],
                         scalar_couleur_map)
 
