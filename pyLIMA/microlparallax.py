@@ -189,7 +189,7 @@ class MLParallaxes(object):
 
         return JD
 
-    def parallax_combination(self, telescope):
+    def parallax_combination(self, telescope, annual_parallax=True):
         """ Compute, and set, the deltas_positions attributes of the telescope object
        inside the list of telescopes. deltas_positions is the offset between the position of the
        observatory at the time t, and the
@@ -347,11 +347,14 @@ class MLParallaxes(object):
 
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
+        print 'GOT TEL SPACECRAFT POS: ',len(telescope.spacecraft_positions)
         if len(telescope.spacecraft_positions) != 0:
         # allow to pass the user to give his own ephemeris
             satellite_positions = np.array(telescope.spacecraft_positions)
         else:
             #call JPL!
+            print 'CALLING JPL'
+            exit()
             satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
                                                      step_size='60m', verbose=False)[1]
 

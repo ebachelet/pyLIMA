@@ -65,7 +65,8 @@ class ModelException(Exception):
 
 
 def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], xallarap='None',
-                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True,
+                annual_parallax=True):
     """
     Load a model according to the supplied model_type. Models are expected to be named
     Model<model_type> e.g. ModelPSPL
@@ -83,7 +84,8 @@ def create_model(model_type, event, model_arguments=[], parallax=['None', 0.0], 
         raise ModelException('Unknown model "{}"'.format(model_type))
 
     return model(event, model_arguments, parallax, xallarap,
-                 orbital_motion, source_spots, blend_flux_ratio)
+                 orbital_motion, source_spots, blend_flux_ratio,
+                 annual_parallax)
 
 
 class MLModel(object):
@@ -162,12 +164,14 @@ class MLModel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap='None',
-                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
+                 orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True,
+                annual_parallax=True):
         """ Initialization of the attributes described above.
         """
         self.event = event
         self.model_arguments = model_arguments
         self.parallax_model = parallax
+        self.use_annual_parallax = annual_parallax
         self.xallarap_model = xallarap
         self.orbital_motion_model = orbital_motion
         self.source_spots_model = source_spots
@@ -213,7 +217,7 @@ class MLModel(object):
             self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
 
-            self.event.compute_parallax_all_telescopes(self.parallax_model)
+            self.event.compute_parallax_all_telescopes(self.parallax_model,annual_parallax=self.use_annual_parallax)
 
         if self.xallarap_model != 'None':
             self.Jacobian_flag = 'No way'

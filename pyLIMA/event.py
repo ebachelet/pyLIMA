@@ -188,7 +188,7 @@ class Event(object):
         for telescope in self.telescopes:
             telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
 
-    def compute_parallax_all_telescopes(self, parallax_model):
+    def compute_parallax_all_telescopes(self, parallax_model, annual_parallax=True):
         """ Compute the parallax displacement for all the telescopes, if this is desired in
         the second order parameter.
         """
@@ -196,7 +196,7 @@ class Event(object):
         for telescope in self.telescopes:
 
             if len(telescope.deltas_positions) == 0:
-                telescope.compute_parallax(self, parallax_model)
+                telescope.compute_parallax(self, parallax_model, annual_parallax=annual_parallax)
 
     def total_number_of_data_points(self):
         """ Compute the parallax displacement for all the telescopes, if this is desired in
