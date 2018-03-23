@@ -241,9 +241,11 @@ class MLParallaxes(object):
 
         else:
 
-            telescope_positions = self.annual_parallax(time)
-            delta_North = np.append(delta_North, telescope_positions[0])
-            delta_East = np.append(delta_East, telescope_positions[1])
+            if annual_parallax:
+                telescope_positions = self.annual_parallax(time)
+                delta_North = np.append(delta_North, telescope_positions[0])
+                delta_East = np.append(delta_East, telescope_positions[1])
+
             name = telescope.spacecraft_name
 
 
