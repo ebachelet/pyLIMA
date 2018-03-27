@@ -87,7 +87,7 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
     
     if dbg:
 
-        dbglog = start_log( 'simulations', 'dbg_log' )
+        dbglog = start_log( default_params['output_path'], 'dbg_log' )
         
     else:
 
@@ -122,13 +122,13 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
         
     fit_data = np.zeros([len(source_mag_range),len(tE_range),3])
     
-    output_path = os.path.join('simulations','lensing_statistics.txt')
+    output_path = os.path.join(default_params['output_path'],'lensing_statistics.txt')
     
     stats_file = open(output_path,'w')
     stats_file.write('#                           |   No parallax model    |   Parallax model          |\n')
     stats_file.write('# Baseline mag   tE [days]  |   Chi^2  BIC           | piEN    piEE    Chi^2 BIC |  Delta_Chi^2 Delta_BIC\n')
     
-    output_path = os.path.join('simulations','fitted_model_parameters.txt')
+    output_path = os.path.join(default_params['output_path'],'fitted_model_parameters.txt')
     
     model_file = open(output_path,'w')
     model_file.write('# Baseline mag  tE_input   Modeltype  tE[days]   t0[days]  u0   rho  pi_EN   pi_EE   fs   fb   chi^2   BIC\n')
@@ -147,36 +147,36 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
             
             lc_no_parallax = NH_data_simulator.add_event_to_lightcurve(baseline_lc,
                                                                        event_params_no_parallax,
-                                                                       lc_params,dbglog,
+                                                                       lc_params,dbglog,default_params['output_path'],
                                                                        spacecraft_positions=spacecraft_positions,
                                                                        output_lc=True)
             
             lc_parallax = NH_data_simulator.add_event_to_lightcurve(baseline_lc,
                                                                     event_params_parallax,
-                                                                    lc_params,dbglog,
+                                                                    lc_params,dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
                                                                     output_lc=True)
                         
             (fit_no_parallax,e_no_parallax) = fit_microlensing_model(lc_parallax, event_params_no_parallax,
-                                                                    lc_params, dbglog,
+                                                                    lc_params, dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
                                                                     output_lc=True)
             
             (fit_parallax,e_parallax) = fit_microlensing_model(lc_parallax, event_params_parallax,
-                                                                    lc_params, dbglog,
+                                                                    lc_params, dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
                                                                     output_lc=True)
             
             if plots:
                 
-                lc_plot_file = os.path.join('simulations',
+                lc_plot_file = os.path.join(default_params['output_path'],
                                             'fitted_lightcurves_'+str(round(mag,1))+
                                             '_'+str(round(tE,0))+'.png')
             
                 plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
                             lc_plot_file)
             
-                lens_plane_plot_file = os.path.join('simulations',
+                lens_plane_plot_file = os.path.join(default_params['output_path'],
                                                     'lens_plane_'+str(round(mag,1))+
                                                     '_'+str(round(tE,0))+'.png')
             
@@ -270,6 +270,7 @@ def make_param_dicts(default_params,mag,tE,dbglog):
     
     
 def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog, 
+                           output_path,
                            spacecraft_positions=None,
                            produce_plots=False,output_lc=True):
     """Function to simulate microlensing events as seen
@@ -316,7 +317,8 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
             
         model = microlmodels.create_model(event_params['model_type'], e, 
                                           parallax=['Full', event_params['t0']], 
-                                          blend_flux_ratio=False)
+ #                                         blend_flux_ratio=False, 
+                                        annual_parallax=False)
         output += ' with parallax'
         
     else:
@@ -325,7 +327,8 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
             dbglog.info('No parallax in fitting')
             
         model = microlmodels.create_model(event_params['model_type'], e, 
-                                          blend_flux_ratio=False)
+ #                                         blend_flux_ratio=False, 
+                                        annual_parallax=False)
     
     print(output)
         
@@ -360,7 +363,7 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
         (xmin,xmax,ymin,ymax) = plt.axis()
         plt.axis([xmin,xmax,ymax,ymin])
     
-        plt.savefig('simulated_lc.png')
+        plt.savefig(os.path.join(output_path),'simulated_lc.png')
     
         plt.close(5)
     
@@ -370,13 +373,13 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
         
         if 'para' in event_params['model_code']:
             
-            file_path = os.path.join('simulations',
+            file_path = os.path.join(output_path,
                             'sim_lightcurve_'+\
                             str(round(lc_params['baseline_mag'],1))+'_'+\
                             str(round(event_params['tE'],0))+'_parallax_model.txt')
         else:
             
-            file_path = os.path.join('simulations',
+            file_path = os.path.join(output_path,
                             'sim_lightcurve_'+\
                             str(round(lc_params['baseline_mag'],1))+'_'+\
                             str(round(event_params['tE'],0))+'_no_parallax_model.txt')
@@ -451,6 +454,7 @@ def get_fit_params(fitted_event,ndata):
                                                           fit.nparam)
 
     return fit
+
 
 def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
                             file_path):
@@ -744,11 +748,12 @@ if __name__ == '__main__':
                          'rho': 0.001,
                          'pi_EN': 0.1, 'pi_EE': 0.2,
                          'model_type': 'FSPL',
-                         'horizons_file': '/Users/rstreet/NHmicrolensing/NH_horizons_observer_table.txt'
+                         'horizons_file': '/Users/rstreet/NHmicrolensing/NH_horizons_observer_table.txt',
+                         'output_path': '/Users/rstreet/NHmicrolensing/simulations11/'
                          }
     
     source_mag_range = np.arange(15.0,21.0,1.0)
     
-    tE_range = np.arange(1.0, 100.0, 5.0)
+    tE_range = np.arange(90.0, 100.0, 5.0)
     
     simulate_model_grid(default_params,source_mag_range,tE_range,dbg=True,plots=True)

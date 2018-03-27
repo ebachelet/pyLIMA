@@ -76,6 +76,7 @@ def generate_LORRI_lightcurve(params,dbglog):
     return lightcurve
     
 def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
+                            output_path,
                             spacecraft_positions=None,output_lc=False):
     """Function to inject the signal of a microlensing event into an 
     existing LORRI lightcurve, adjusting the photometric uncertainties 
@@ -93,6 +94,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
             :param boolean dbglog: Logger object
     :param dict lc_params: Lightcurve parameters
     :param logger dbglog: Debugging log object
+    :param string output_path: Path for all output files
     :param list spacecraft_positions: [Optional] Spacecraft positions from JPL observer table
     :param Boolean output_lc: [Optional] Switch to turn on lightcurve text file
                                 output
@@ -176,13 +178,13 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
         
         if 'pi_EN' in event_params.keys() and 'pi_EE' in event_params.keys():
             
-            file_path = os.path.join('simulations',
+            file_path = os.path.join(output_path,
                                  'sim_lightcurve_'+\
                                  str(round(lc_params['baseline_mag'],1))+'_'+\
                                  str(round(event_params['tE'],0))+'_parallax.txt')
         else:
             
-                file_path = os.path.join('simulations',
+                file_path = os.path.join(output_path,
                                  'sim_lightcurve_'+\
                                  str(round(lc_params['baseline_mag'],1))+'_'+\
                                  str(round(event_params['tE'],0))+'_no_parallax.txt')
