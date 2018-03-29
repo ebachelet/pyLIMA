@@ -1,17 +1,4 @@
 from setuptools import setup, find_packages, Extension
-#from distutils.core import setup, Extension
-
-
-
-
-VBB = Extension('_VBBinaryLensingLibrary',
-		 sources=['./pyLIMA/subroutines/VBBinaryLensingLibrary/VBBinaryLensingLibrary.cpp',
-			  './pyLIMA/subroutines/VBBinaryLensingLibrary/VBBinaryLensingLibrary.i',
-
-		 ],
-		swig_opts=['-c++','-modern', '-I../include'],
-
-		)
 
 setup(
     name="pyLIMA",
@@ -28,8 +15,6 @@ setup(
     install_requires=['scipy','numpy','matplotlib','astropy','emcee','pyslalib'],
     python_requires='>=2.7,<4',
     test_suite="nose.collector",
-    ext_modules = [VBB],
-    py_modules = ["VBBinaryLensingLibrary"],
     classifiers=[
 		'Development Status :: 5 - Production/Stable',
 		'Intended Audience :: Developers',
@@ -39,8 +24,7 @@ setup(
 		'Programming Language :: Python :: 3',	   
 ],
     package_data={
-    'sample': ['Claret2011.fits','Yoo_B0B1.dat'],
+    '': ['Claret2011.fits','Yoo_B0B1.dat'],
 },
-
-       
+     
 )

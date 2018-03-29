@@ -363,8 +363,8 @@ class MLFits(object):
         limit_parameters = len(self.model.parameters_boundaries)
         best_solution = self.guess[:limit_parameters]
 
-        nwalkers = 100 * len(best_solution)
-        nlinks = 100
+        nwalkers = 8 * len(best_solution)
+        nlinks = 1000
 
         # Initialize the population of MCMC
         population = []
@@ -412,7 +412,7 @@ class MLFits(object):
 
         # First estimation using population as a starting points.
 
-        final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
+        final_positions, final_probabilities, state = sampler.run_mcmc(population, 10*nlinks)
 
         print('MCMC preburn done')
 

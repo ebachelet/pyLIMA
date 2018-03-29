@@ -803,8 +803,6 @@ class ModelUSBL(MLModel):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        magnification = np.zeros(len(source_trajectoire[0]))
-
         if 'dsdt' in pyLIMA_parameters._fields:
 
             separation = 10 ** pyLIMA_parameters.logs + \
@@ -816,40 +814,11 @@ class ModelUSBL(MLModel):
 
             separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectoire[0]))
 
-        if self.USBL_windows:
-
-            index_USBL = np.where((telescope.lightcurve_flux[:, 0] <= self.USBL_windows[1]) & (
-                telescope.lightcurve_flux[:, 0] >= self.USBL_windows[0]))[0]
-
-            Xs = source_trajectoire[0][index_USBL]
-            Ys = source_trajectoire[1][index_USBL]
-
-            magnification_USBL = \
-                microlmagnification.amplification_USBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
-                                                       Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.001)
-
-            magnification[index_USBL] = magnification_USBL
-
-            index_PSBL = np.where((telescope.lightcurve_flux[:, 0] > self.USBL_windows[1]) | (
-                telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
-
-            magnification_PSBL = microlmagnification.amplification_PSBL(separation[index_PSBL],
-                                                                        10 ** pyLIMA_parameters.logq,
-                                                                        source_trajectoire[0][index_PSBL],
-                                                                        source_trajectoire[1][index_PSBL])
-
-            magnification[index_PSBL] = magnification_PSBL
-
-        else:
-
-            Xs, Ys = source_trajectoire
-            magnification = \
+        magnification_USBL = \
                 microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
-                                                       Xs, Ys, pyLIMA_parameters.rho,
-                                                       tolerance=0.001)
-
-        return magnification
+                                                       source_trajectoire[0], source_trajectoire[1],
+                                                       pyLIMA_parameters.rho)
+        return magnification_USBL
 
     def find_caustics(self, separation, mass_ratio):
 
@@ -1081,7 +1050,6 @@ class ModelFSBL(MLModel):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        magnification = np.zeros(len(source_trajectoire[0]))
 
         if 'dsdt' in pyLIMA_parameters._fields:
 
@@ -1094,40 +1062,12 @@ class ModelFSBL(MLModel):
 
             separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectoire[0]))
 
-        if self.USBL_windows:
-
-            index_USBL = np.where((telescope.lightcurve_flux[:, 0] <= self.USBL_windows[1]) & (
-                telescope.lightcurve_flux[:, 0] >= self.USBL_windows[0]))[0]
-
-            Xs = source_trajectoire[0][index_USBL]
-            Ys = source_trajectoire[1][index_USBL]
-
-            magnification_USBL = \
-                microlmagnification.amplification_FSBL(separation[index_USBL], 10 ** pyLIMA_parameters.logq,
-                                                       Xs, Ys, pyLIMA_parameters.rho, linear_limb_darkening,
-                                                       tolerance=0.001)
-
-            magnification[index_USBL] = magnification_USBL
-
-            index_PSBL = np.where((telescope.lightcurve_flux[:, 0] > self.USBL_windows[1]) | (
-                telescope.lightcurve_flux[:, 0] < self.USBL_windows[0]))[0]
-
-            magnification_PSBL = microlmagnification.amplification_PSBL(separation[index_PSBL],
-                                                                        10 ** pyLIMA_parameters.logq,
-                                                                        source_trajectoire[0][index_PSBL],
-                                                                        source_trajectoire[1][index_PSBL])
-
-            magnification[index_PSBL] = magnification_PSBL
-
-        else:
-
-            Xs, Ys = source_trajectoire
-            magnification = \
+        magnification_FSBL = \
                 microlmagnification.amplification_FSBL(separation, 10 ** pyLIMA_parameters.logq,
-                                                       Xs, Ys, pyLIMA_parameters.rho, linear_limb_darkening,
-                                                       tolerance=0.001)
+                                                       source_trajectoire[0], source_trajectoire[1],
+                                                       pyLIMA_parameters.rho, linear_limb_darkening)
 
-        return magnification
+        return magnification_FSBL
 
     def find_caustics(self, separation, mass_ratio):
 
