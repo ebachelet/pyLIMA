@@ -23,6 +23,7 @@ from pyLIMA import microlsimulator
 from pyLIMA import microlmodels
 from pyLIMA import microltoolbox
 from pyLIMA import microlstats
+from pyLIMA import microlcaustics
 import NH_data_simulator
 import jplhorizons_utils
 
@@ -54,6 +55,9 @@ class FitParams():
         self.piENerr = None
         self.piEE= None
         self.piEEerr = None
+        self.s = None
+        self.q = None
+        self.alpha = None
         self.fs = None
         self.fserr = None
         self.fb = None
@@ -89,13 +93,17 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
 
         dbglog = start_log( default_params['output_path'], 'dbg_log' )
         
+        dbglog.info('Simulating for range of parameter grid:')
+        dbglog.info('Source mag range: '+repr(source_mag_range))
+        dbglog.info('Einstein crossing time: '+repr(tE_range))
+        
     else:
 
         dbglog = None
         
     lc_keys = ['JD_start','JD_end']
     event_keys = ['name', 'ra', 'dec', 
-                  't0','u0','rho','pi_EN', 'pi_EE',
+                  't0','u0','rho','pi_EN', 'pi_EE', 's', 'q', 'alpha',
                   'model_code']
     horizons_table = None
     
@@ -125,8 +133,8 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
     output_path = os.path.join(default_params['output_path'],'lensing_statistics.txt')
     
     stats_file = open(output_path,'w')
-    stats_file.write('#                           |   No parallax model    |   Parallax model          |\n')
-    stats_file.write('# Baseline mag   tE [days]  |   Chi^2  BIC           | piEN    piEE    Chi^2 BIC |  Delta_Chi^2 Delta_BIC\n')
+    stats_file.write('#                           |   No parallax model    |   Parallax model          |                        | \n')
+    stats_file.write('# Baseline mag   tE [days]  |   Chi^2  BIC           | piEN    piEE    Chi^2 BIC |  Delta_Chi^2 Delta_BIC | Max_residual[mag] S/N\n')
     
     output_path = os.path.join(default_params['output_path'],'fitted_model_parameters.txt')
     
@@ -140,6 +148,9 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
         for i in range(0,len(tE_range),1):
             
             tE = tE_range[i]
+            
+            if dbglog:
+                dbglog.info('Simulating grid point mag='+str(mag)+'mag and tE='+str(tE)+'days')
             
             (lc_params, event_params_no_parallax, event_params_parallax) = make_param_dicts(default_params,mag,tE,dbglog)
             
@@ -156,7 +167,9 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
                                                                     lc_params,dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
                                                                     output_lc=True)
-                        
+            
+            (max_res, S2N) = calc_lc_signal_to_noise(lc_no_parallax,lc_parallax)
+            
             (fit_no_parallax,e_no_parallax) = fit_microlensing_model(lc_parallax, event_params_no_parallax,
                                                                     lc_params, dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
@@ -169,6 +182,9 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
             
             if plots:
                 
+                if dbglog:
+                    dbglog.info('Outputting lightcurve plots')
+                
                 lc_plot_file = os.path.join(default_params['output_path'],
                                             'fitted_lightcurves_'+str(round(mag,1))+
                                             '_'+str(round(tE,0))+'.png')
@@ -176,6 +192,9 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
                 plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
                             lc_plot_file)
             
+                if dbglog:
+                    dbglog.info('Outputting lens plane plots')
+                
                 lens_plane_plot_file = os.path.join(default_params['output_path'],
                                                     'lens_plane_'+str(round(mag,1))+
                                                     '_'+str(round(tE,0))+'.png')
@@ -197,7 +216,7 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
                         str(fit_parallax.piEN)+' +/- '+str(fit_parallax.piENerr)+'  '+\
                         str(fit_parallax.piEE)+' +/- '+str(fit_parallax.piEEerr)+'  '+\
                         str(fit_parallax.chichi)+'  '+str(fit_parallax.bic)+' | '+\
-                        str(dchichi)+'  '+str(dbic)+'\n')
+                        str(dchichi)+'  '+str(dbic)+' | '+str(max_res)+' '+str(S2N)+'\n')
             stats_file.flush()
             
             model_file.write(str(mag)+' '+str(tE)+'  no_parallax   '+\
@@ -228,6 +247,26 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
     model_file.close()
     
     stop_log(dbglog)
+
+def calc_lc_signal_to_noise(lc_no_parallax,lc_parallax):
+    """Function to calculate the signal-to-noise of the parallax signature
+    in the microlensing lightcurve, by comparing the lightcurves observed
+    with and without parallax included in the model.
+    
+    S/N = var(signal) / var(phot noise) = [amplitude(signal)/amplitude(noise)]^2
+    """
+    
+    lc_residual = lc_no_parallax[:,1] - lc_parallax[:,1]
+    
+    var_residuals = (lc_residual*lc_residual).sum() / float(len(lc_residual))
+    
+    var_phot_noise = (lc_no_parallax[:,2]*lc_no_parallax[:,2]).sum() / float(len(lc_no_parallax))
+    
+    max_res = abs(lc_residual).max()
+    
+    S2N = var_residuals / var_phot_noise
+    
+    return max_res, S2N
     
 def make_param_dicts(default_params,mag,tE,dbglog):
     """Function to repackage and combine the parameter dictionaries required 
@@ -236,7 +275,8 @@ def make_param_dicts(default_params,mag,tE,dbglog):
 
     lc_keys = ['JD_start','JD_end']
     event_keys = ['name', 'ra', 'dec', 
-                  't0','u0','rho','pi_EN', 'pi_EE','model_type']
+                  't0','u0','rho','pi_EN', 'pi_EE','s', 'q', 'alpha',
+                  'model_type']
     
     lc_params = {}
         
@@ -295,7 +335,8 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
                                   spacecraft_name = 'New Horizons',
                                   location='space', 
                                   light_curve_magnitude=lightcurve)
-
+    print 'LIGHTCURVE: ',lightcurve[:,0].min(), lightcurve[:,0].max()
+    
     if spacecraft_positions != None:
         
         nh_tel.spacecraft_positions = spacecraft_positions
@@ -307,6 +348,8 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
     e.check_event()
 
     fit_method = 'LM'
+    if 'BL' in event_params['model_type']:
+        fit_method = 'DE'
         
     output = 'Fitting an '+event_params['model_type']+' model'
     
@@ -314,10 +357,13 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
         
         if dbglog:
             dbglog.info('Fitting model with parallax')
+            dbglog.info('LC time range: '+str(e.telescopes[0].lightcurve_flux[:,0].min())+\
+                        ' '+str(e.telescopes[0].lightcurve_flux[:,0].max()))
+            dbglog.info('With parameters '+repr(event_params))
             
         model = microlmodels.create_model(event_params['model_type'], e, 
                                           parallax=['Full', event_params['t0']], 
- #                                         blend_flux_ratio=False, 
+                                          blend_flux_ratio=False, 
                                         annual_parallax=False)
         output += ' with parallax'
         
@@ -325,15 +371,18 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
         
         if dbglog:
             dbglog.info('No parallax in fitting')
-            
+            dbglog.info('LC time range: '+str(e.telescopes[0].lightcurve_flux[:,0].min())+\
+                        ' '+str(e.telescopes[0].lightcurve_flux[:,0].max()))
+            dbglog.info('With parameters '+repr(event_params))
+        
         model = microlmodels.create_model(event_params['model_type'], e, 
- #                                         blend_flux_ratio=False, 
+                                          blend_flux_ratio=False, 
                                         annual_parallax=False)
     
     print(output)
         
     e.fit(model,fit_method)
-        
+    
     e.fits[-1].produce_outputs()
     plt.close()
 
@@ -448,7 +497,7 @@ def get_fit_params(fitted_event,ndata):
         pass
     
     fit.chichi = fitted_event.fits[-1].outputs.fit_parameters.chichi
-
+    
     fit.bic = microlstats.Bayesian_Information_Criterion(fit.chichi,
                                                           ndata,
                                                           fit.nparam)
@@ -461,39 +510,66 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
     """Function to plot lightcurves and model fits for both with- and without
     parallax models"""
     
+    plot_models = False
+    
     dt = float(int(lc_no_parallax[0,0]))
     
     ts_no_parallax = lc_no_parallax[:,0] - dt
     ts_parallax = lc_parallax[:,0] - dt
     
     fig = plt.figure(6,(10,10))
+    plt.subplot(2,1,1)
 
     plt.errorbar(ts_no_parallax,lc_no_parallax[:,1],
-                 yerr=lc_no_parallax[:,2],alpha=0.4,color='#8c6931')
+                 yerr=lc_no_parallax[:,2],alpha=1.0,color='#8c6931',
+                label='No parallax lightcurve')
                  
     plt.errorbar(ts_parallax,lc_parallax[:,1],
-                 yerr=lc_parallax[:,2],alpha=0.4,color='#2b8c85')
+                 yerr=lc_parallax[:,2],alpha=1.0,color='#2b8c85',
+                label='Parallax lightcurve')
 
-    model_lc_no_parallax = generate_model_lightcurve(e_no_parallax)
-    
-    model_lc_parallax = generate_model_lightcurve(e_parallax)
-    
-    plt.plot(ts_no_parallax,model_lc_no_parallax,linestyle='dashed',
-                 color='#4c1377',label='No parallax model')
-     
-    plt.plot(ts_parallax,model_lc_parallax,linestyle='solid',
-                 color='black',label='Parallax model')
-    
+    if plot_models:
+        model_lc_no_parallax = generate_model_lightcurve(e_no_parallax)
+        
+        model_lc_parallax = generate_model_lightcurve(e_parallax)
+        
+        plt.plot(ts_no_parallax,model_lc_no_parallax,linestyle='dashed',
+                     color='#4c1377',label='No parallax model')
+         
+        plt.plot(ts_parallax,model_lc_parallax,linestyle='solid',
+                     color='black',label='Parallax model')
+        
     plt.xlabel('HJD - '+str(dt), fontsize=18)
 
     plt.ylabel('Magnitude', fontsize=18)
     
-    plt.legend(loc=1, fontsize=18)
+    plt.legend(loc=1, fontsize=16)
     
     plt.grid()
     
     (xmin,xmax,ymin,ymax) = plt.axis()
     plt.axis([xmin,xmax,ymax,ymin])
+
+    plt.tick_params(axis='x', labelsize=18)
+    plt.tick_params(axis='y', labelsize=18)
+    
+    plt.subplot(2,1,2)
+    
+    comb_err = np.sqrt( lc_no_parallax[:,2]*lc_no_parallax[:,2] + lc_parallax[:,2]*lc_parallax[:,2] )
+    
+#    plt.errorbar(ts_no_parallax,(lc_parallax[:,1]-lc_no_parallax[:,1]),
+#                 yerr=comb_err,color='black',alpha=0.4)
+    
+    plt.plot(ts_no_parallax,(lc_parallax[:,1]-lc_no_parallax[:,1]),color='black',markersize=2)
+    
+    plt.xlabel('HJD - '+str(dt), fontsize=18)
+
+    plt.ylabel('Magnitude', fontsize=18)
+        
+    plt.grid()
+    
+    (xmin2,xmax2,ymin2,ymax2) = plt.axis()
+    plt.axis([xmin,xmax,0.1,-0.1])
 
     plt.tick_params(axis='x', labelsize=18)
     plt.tick_params(axis='y', labelsize=18)
@@ -532,9 +608,16 @@ def plot_lens_plane_trajectories(event1,event2,label1,label2,file_path):
     tmin = min([min(i.lightcurve_magnitude[:, 0]) for i in fit1.event.telescopes])
     tmax = max([max(i.lightcurve_magnitude[:, 0]) for i in fit1.event.telescopes])
     times = np.linspace(tmin, tmax + 100, 3000)
-
+    print 'LENS fit 1 times: ',tmin, tmax
+    
     (fig,ax) = plot_rel_trajectory(fit1,times,fig,ax,label1,
                                     trajectory_color='#8c6931')
+                                    
+    tmin = min([min(i.lightcurve_magnitude[:, 0]) for i in fit2.event.telescopes])
+    tmax = max([max(i.lightcurve_magnitude[:, 0]) for i in fit2.event.telescopes])
+    times = np.linspace(tmin, tmax + 100, 3000)
+    print 'LENS fit 2 times: ',tmin, tmax
+                                    
     (fig,ax) = plot_rel_trajectory(fit2,times,fig,ax,label2,
                                     trajectory_color='#2b8c85')
 
@@ -589,13 +672,26 @@ def plot_rel_trajectory(fit,times,fig,ax,label,trajectory_color='r'):
                                      pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                      pyLIMA_parameters.tE, pyLIMA_parameters)
     
-    ax.plot(trajectory_x, trajectory_y, trajectory_color, label=label)
+    ax.plot(trajectory_x, trajectory_y, trajectory_color,label=label)
         
     if 'PS' not in fit.model.model_type:
         index_source  = np.argmin((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5)
         source_disk = plt.Circle((trajectory_x[index_source], trajectory_y[index_source]), 0.02,
                                  color=trajectory_color)
         ax.add_artist(source_disk)
+
+    if 'BL' in fit.model.model_type:
+        (regime, caustics, critical_curves) = microlcaustics.find_2_lenses_caustics_and_critical_curves(10**pyLIMA_parameters.logs,
+                                                                                         10** pyLIMA_parameters.logq,
+                                                                                         resolution=5000)
+        for ic, caustic in enumerate(caustics):
+            
+                    try:
+                        plt.plot(caustic.real, caustic.imag,lw=3,c='r')
+                        plt.plot(critical_curves[ic].real, critical_curves[ic].imag, '--k')
+                        
+                    except AttributeError:
+                        pass
 
     index_trajectory_limits = np.where((np.abs(times - pyLIMA_parameters.to) < 50))[0]
 
@@ -739,6 +835,8 @@ def get_new_fig_num():
 
 if __name__ == '__main__':
 
+    # Model_type options are: PSPL, FSPL, USBL
+
     default_params = { 'name': 'Simulated event',
                          'ra': 268.75, 'dec': -29.0,
                          'JD_start': 2456200.0,
@@ -746,14 +844,17 @@ if __name__ == '__main__':
                          't0': 2457125.0,
                          'u0':0.1,
                          'rho': 0.001,
-                         'pi_EN': 0.1, 'pi_EE': 0.2,
-                         'model_type': 'FSPL',
+                         'pi_EN': 0.1, 'pi_EE': 0.1,
+                         's': 1.2,
+                         'q': 1*10**-3,
+                         'alpha': -1.0,
+                         'model_type': 'PSPL',
                          'horizons_file': '/Users/rstreet/NHmicrolensing/NH_horizons_observer_table.txt',
-                         'output_path': '/Users/rstreet/NHmicrolensing/simulations11/'
+                         'output_path': '/Users/rstreet/NHmicrolensing/simulations12/'
                          }
     
-    source_mag_range = np.arange(15.0,21.0,1.0)
+    source_mag_range = np.arange(13.0, 17.0, 1.0)
     
-    tE_range = np.arange(90.0, 100.0, 5.0)
+    tE_range = np.arange(1.0, 150.0, 5.0)
     
     simulate_model_grid(default_params,source_mag_range,tE_range,dbg=True,plots=True)

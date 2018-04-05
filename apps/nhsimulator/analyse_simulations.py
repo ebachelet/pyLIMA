@@ -18,13 +18,90 @@ def analyze_simulation_results():
     events as observed by New Horizons"""
     
     (sim_data,log_dir) = read_simulation_output()
+
+    fitted_data = read_fitted_model_parameters(log_dir, 'parallax')
     
     plot_dbic_matrix(sim_data,log_dir)
     
     plot_dchi_matrix(sim_data,log_dir)
 
     plot_pi_matrix(sim_data,log_dir)
+
+    plot_tE_matrix(fitted_data,log_dir)
+
+    plot_max_res_matrix(sim_data,log_dir)
     
+def plot_max_res_matrix(sim_data,log_dir):
+    """Function to plot the delta chi squared as a colour-coded grid in (tE,mag) 
+    parameter space."""
+    
+    (mag_range,tE_range,max_res) = load_col_sim_data_as_2d(sim_data,12)
+    
+    max_res = np.flip(max_res,0)
+
+    fig = plt.figure(1)
+    
+    norm = visualization.ImageNormalize(max_res, 
+                                        interval=visualization.MinMaxInterval(),
+                                        stretch=visualization.SqrtStretch())
+    
+    plt.imshow(max_res, origin='lower', cmap=plt.cm.viridis, norm=norm)
+    
+    plt.colorbar(orientation='horizontal')
+    
+    [xmin,xmax,ymin,ymax] = plt.axis()
+    
+    (xticks,xlabels,yticks,ylabels) = calc_axis_ranges(tE_range, mag_range, 
+                                                        xmin,xmax,ymin,ymax)
+    
+    plt.xticks(xticks,xlabels)
+    plt.yticks(yticks,ylabels)
+    
+    plt.xlabel('tE [days]')
+    plt.ylabel('Magnitude')
+    
+    plt.title('Maximum residual')
+    plt.savefig(os.path.join(log_dir,'max_res_matrix.png'))
+    
+    plt.close(1)
+
+def plot_tE_matrix(fitted_data,log_dir):
+    """Function to plot the tE squared as a colour-coded grid in (tE,mag) 
+    parameter space."""
+    
+    (mag_range,tE_range,fitted_tE) = load_col_sim_data_as_2d(fitted_data,2)
+    
+    for row in range(0,len(fitted_tE),1):
+        fitted_tE[row,:] = fitted_tE[row,:] - tE_range
+        
+    fitted_tE = np.flip(fitted_tE,0)
+    
+    fig = plt.figure(1)
+    
+    norm = visualization.ImageNormalize(fitted_tE, 
+                                        interval=visualization.MinMaxInterval(),
+                                        stretch=visualization.SqrtStretch())
+    
+    plt.imshow(fitted_tE, origin='lower', cmap=plt.cm.viridis, norm=norm)
+    
+    plt.colorbar(orientation='horizontal')
+    
+    [xmin,xmax,ymin,ymax] = plt.axis()
+    
+    (xticks,xlabels,yticks,ylabels) = calc_axis_ranges(tE_range, mag_range, 
+                                                        xmin,xmax,ymin,ymax)
+    
+    plt.xticks(xticks,xlabels)
+    plt.yticks(yticks,ylabels)
+    
+    plt.xlabel('tE [days]')
+    plt.ylabel('Magnitude')
+    
+    plt.title('Fitted model $t_{E}$')
+    plt.savefig(os.path.join(log_dir,'tE_matrix.png'))
+    
+    plt.close(1)
+
 def plot_pi_matrix(sim_data,log_dir):
     """Function to plot the parallax as a colour-coded grid in (tE,mag) 
     parameter space."""
@@ -73,7 +150,7 @@ def plot_pi_matrix(sim_data,log_dir):
     plt.xticks(xticks,xlabels)
     plt.yticks(yticks,ylabels)
     
-    plt.title('$log_{10}$ of fractional error in $\pi_{E,N}$')
+    plt.title('$log_{10}$ of fractional error in $\pi_{E,E}$')
     plt.xlabel('tE [days]')
     plt.ylabel('Magnitude')
     
@@ -125,7 +202,7 @@ def plot_dbic_matrix(sim_data,log_dir):
     
     (mag_range,tE_range,dbic) = load_col_sim_data_as_2d(sim_data,11)
     
-    dbic = np.log10(dbic)
+    #dbic = np.log10(dbic)
     dbic = np.flip(dbic,0)
 
     fig = plt.figure(1)
@@ -145,7 +222,8 @@ def plot_dbic_matrix(sim_data,log_dir):
     plt.xlabel('tE [days]')
     plt.ylabel('Magnitude')
     
-    plt.title('$log_{10}(\Delta BIC)$')
+    #plt.title('$log_{10}(\Delta BIC)$')
+    plt.title('\Delta BIC')
     plt.savefig(os.path.join(log_dir,'dbic_matrix.png'))
     
     plt.close(1)
@@ -271,9 +349,52 @@ def read_simulation_output():
             data.append(line_data)
             
     sim_data = np.array(data)
-    
+        
     return sim_data, log_dir
     
+def read_fitted_model_parameters(log_dir, model_type):
+    """Function to read the parameters of the fitted models"
+    
+    Inputs:
+        :param path log_dir: Path to input directory
+        :param string model_type: One of {parallax, no_parallax}
+    """
+    
+    file_path = os.path.join(log_dir,'fitted_model_parameters.txt')
+    
+    if not os.path.isfile(file_path):
+        print('ERROR: Cannot find fitted parameters output file '+file_path)
+        sys.exit()
+        
+    file_lines = open(file_path,'r').readlines()
+    
+    data = []
+    
+    for line in file_lines:
+        
+        if line[0:1] != '#' and model_type == line.split()[2]:
+            
+            entries = line.replace('\n','').replace('|','').split()
+            
+            line_data = []
+            
+            for i in range(0,len(entries),1):
+                
+                if '+/-' not in entries[i] and i != 2 and i != 12 and i != 14:
+                    
+                    if 'None' not in entries[i] and 'parallax' not in entries[i]:
+                        
+                        line_data.append( float(entries[i]) )
+                        
+                    else:
+                        
+                        line_data.append(entries[i])
+                        
+            data.append(line_data)
+            
+    fitted_data = np.array(data)
+    
+    return fitted_data
 
 if __name__ == '__main__':
     

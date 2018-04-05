@@ -35,6 +35,72 @@ class LORRIParams():
         self.gain = 22.0
         self.read_noise = 10.0
         self.max_exp_time = 300.0
+    
+    def mag_to_flux(self, mag):
+        """m2 - m1 = -2.5*log(f2/f1)
+        f2 = 10**[(m2-m1)/-2.5]"""
+        
+        flux = ( 10**( (mag-self.ZP)/-2.5 ) ) * self.gain
+        
+        return flux
+    
+    def calc_flux_uncertainty(self, flux):
+        """Method to calculate the expected photometric uncertainty for a given
+        photometric measurement in flux units.
+        
+        :param float mag: Magnitude of star
+        """
+    
+        aperradius = self.aperture/2.0
+        
+        npix_aper = np.pi*aperradius*aperradius
+        
+        read_noise = np.sqrt(self.read_noise*self.read_noise*npix_aper)
+        
+        possion_noise = np.sqrt(flux)
+        
+        total_noise = np.sqrt(read_noise*read_noise + possion_noise*possion_noise )
+        
+        return total_noise, read_noise, possion_noise
+
+    def flux_to_mag(self, flux, flux_err):
+        """Function to convert the flux of a star from its fitted PSF model 
+        and its uncertainty onto the magnitude scale.
+        
+        :param float flux: Total star flux
+        :param float flux_err: Uncertainty in star flux
+        
+        Returns:
+        
+        :param float mag: Measured star magnitude
+        :param float flux_mag: Uncertainty in measured magnitude
+        """
+        
+        f = flux / self.gain
+        
+        if flux < 0.0 or flux_err < 0.0:
+            
+            mag = 0.0
+            mag_err = 0.0
+    
+        else:        
+    
+            mag = self.ZP - 2.5 * np.log10(f)
+            
+            mag_err = (2.5/np.log(10.0))*flux_err/f
+            
+        return mag, mag_err
+    
+    def convert_lc_flux_to_mag(self, flux_lc, flux_lc_err):
+        
+        mag_lc = np.zeros(len(flux_lc))
+        mag_lc_err = np.zeros(len(flux_lc))
+
+        for i in range(0,len(flux_lc),1):
+
+            (mag_lc[i],mag_lc_err[i]) = self.flux_to_mag(flux_lc[i],flux_lc_err[i])
+        
+        return mag_lc, mag_lc_err
         
 def generate_LORRI_lightcurve(params,dbglog):
     """Function to generate a lightcurve with the noise characteristics of the
@@ -57,12 +123,15 @@ def generate_LORRI_lightcurve(params,dbglog):
     
     ts = np.arange(params['JD_start'], params['JD_end'], ts_incr)
     
-    (sig_mag, read_noise, possion_noise) = calc_phot_uncertainty(lorri,
-                                                        params['baseline_mag'])
+    flux_base = lorri.mag_to_flux(params['baseline_mag'])
     
-    mag = sig_mag * np.random.randn(1,len(ts)) + params['baseline_mag']
+    (sig_flux, read_noise, possion_noise) = calc_flux_uncertainty(lorri,flux_base)
     
-    (mag_err, read_noise, possion_noise) = calc_phot_uncertainty(lorri,mag)
+    flux_lc = sig_flux * np.random.randn(len(ts)) + flux_base
+    
+    (flux_lc_err, read_noise, possion_noise) = calc_flux_uncertainty(lorri,flux_lc)
+
+    (mag, mag_err) = lorri.convert_lc_flux_to_mag(flux_lc, flux_lc_err)
     
     lightcurve = np.zeros([len(ts),3])
 
@@ -91,6 +160,9 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
             :param float tE: Event tE in days
             :param float pi_EN: Event parallax component
             :param float pi_EE: Event parallax component
+            :param float s: Binary event mass separation
+            :param float q: Binary event mass ratio
+            :param float alpha: Binary event angle of trajectory
             :param boolean dbglog: Logger object
     :param dict lc_params: Lightcurve parameters
     :param logger dbglog: Debugging log object
@@ -161,7 +233,12 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
                     event_params['u0'], 
                     event_params['tE'],
                     event_params['rho']]
-                    
+    
+    if 'BL' in event_params['model_type']:
+        model_params.append(np.log10(event_params['s']))
+        model_params.append(np.log10(event_params['q']))
+        model_params.append(event_params['alpha'])
+                            
     model.define_model_parameters()
 
     pylima_params = model.compute_pyLIMA_parameters(model_params)
@@ -218,6 +295,25 @@ def calc_phot_uncertainty(lorri, mag):
     read_noise = np.sqrt(lorri.read_noise*lorri.read_noise*npix_aper)*logfactor
     
     possion_noise = np.sqrt(flux)*logfactor
+    
+    total_noise = np.sqrt(read_noise*read_noise + possion_noise*possion_noise )
+    
+    return total_noise, read_noise, possion_noise
+
+def calc_flux_uncertainty(lorri, flux):
+    """Function to calculate the expected photometric uncertainty for a given
+    photometric measurement in flux units.
+    
+    :param float mag: Magnitude of star
+    """
+
+    aperradius = lorri.aperture/2.0
+    
+    npix_aper = np.pi*aperradius*aperradius
+    
+    read_noise = np.sqrt(lorri.read_noise*lorri.read_noise*npix_aper)
+    
+    possion_noise = np.sqrt(flux)
     
     total_noise = np.sqrt(read_noise*read_noise + possion_noise*possion_noise )
     

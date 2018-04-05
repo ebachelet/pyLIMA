@@ -376,9 +376,15 @@ class MLParallaxes(object):
         interpolated_dec = interpolate.interp1d(dates, dec)
         interpolated_distance = interpolate.interp1d(dates, distances)
 
-        ra_interpolated = interpolated_ra(time_to_treat)
-        dec_interpolated = interpolated_dec(time_to_treat)
-        distance_interpolated = interpolated_distance(time_to_treat)
+        try:
+            ra_interpolated = interpolated_ra(time_to_treat)
+            dec_interpolated = interpolated_dec(time_to_treat)
+            distance_interpolated = interpolated_distance(time_to_treat)
+        except ValueError:
+            print 'Valid time range: ',tstart, tend
+            print 'Horizons table time range: ',dates.min(), dates.max()
+            print 'Calculating for timestamp: ',time_to_treat
+            exit()
 
         delta_satellite = []
         for index_time in range(len(time_to_treat)):
