@@ -679,7 +679,6 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
     tmin = min([min(i.lightcurve_magnitude[:, 0]) for i in fit1.event.telescopes])
     tmax = max([max(i.lightcurve_magnitude[:, 0]) for i in fit1.event.telescopes])
     times = np.linspace(tmin, tmax + 100, 3000)
-    print 'LENS fit 1 times: ',tmin, tmax
     
     (fig,ax) = plot_rel_trajectory(fit1,times,fig,ax,label1,
                                     trajectory_color='#8c6931')
@@ -687,7 +686,6 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
     tmin = min([min(i.lightcurve_magnitude[:, 0]) for i in fit2.event.telescopes])
     tmax = max([max(i.lightcurve_magnitude[:, 0]) for i in fit2.event.telescopes])
     times = np.linspace(tmin, tmax + 100, 3000)
-    print 'LENS fit 2 times: ',tmin, tmax
                                     
     (fig,ax) = plot_rel_trajectory(fit2,times,fig,ax,label2,
                                     trajectory_color='#2b8c85')
@@ -695,8 +693,15 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
     ax.axis( [- figure_trajectory_xlimit, figure_trajectory_xlimit, 
               - figure_trajectory_ylimit, figure_trajectory_ylimit] )
 
-    ax.scatter(0, 0, s=10, c='k')
-    
+    if 'PL' in model_type:
+        ax.scatter(0, 0, s=10, c='k')
+        
+    else:
+        pyLIMA_parameters = event1.fits[-1].model.compute_pyLIMA_parameters(event1.fits[-1].fit_results)
+        s = 10**(pyLIMA_parameters.logs)
+        ax.scatter((s/2.0), 0.0, s=10, c='k')
+        ax.scatter(-(s/2.0), 0.0, s=10, c='k')
+        
     if 'PL' in model_type:
         einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
         ax.add_artist(einstein_ring)
@@ -921,9 +926,9 @@ if __name__ == '__main__':
                          's': 1.2,
                          'q': 1*10**-3,
                          'alpha': -1.0,
-                         'model_type': 'PSBL',
+                         'model_type': 'PSPL',
                          'horizons_file': '/Users/rstreet/software/pyLIMA/apps/nhsimulator/NH_horizons_observer_table.txt',
-                         'output_path': '/Users/rstreet/NHmicrolensing/simulations13/',
+                         'output_path': '/Users/rstreet/NHmicrolensing/simulations12/',
                          'fit_models': False
                          }
     
