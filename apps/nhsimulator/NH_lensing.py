@@ -156,13 +156,13 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
             
             baseline_lc = NH_data_simulator.generate_LORRI_lightcurve(lc_params,dbglog)
             
-            lc_no_parallax = NH_data_simulator.add_event_to_lightcurve(baseline_lc,
+            (lc_no_parallax,sim_e_no_parallax) = NH_data_simulator.add_event_to_lightcurve(baseline_lc,
                                                                        event_params_no_parallax,
                                                                        lc_params,dbglog,default_params['output_path'],
                                                                        spacecraft_positions=spacecraft_positions,
                                                                        output_lc=True)
             
-            lc_parallax = NH_data_simulator.add_event_to_lightcurve(baseline_lc,
+            (lc_parallax,sim_e_parallax) = NH_data_simulator.add_event_to_lightcurve(baseline_lc,
                                                                     event_params_parallax,
                                                                     lc_params,dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
@@ -170,17 +170,28 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
             
             (max_res, S2N) = calc_lc_signal_to_noise(lc_no_parallax,lc_parallax)
             
-            (fit_no_parallax,e_no_parallax) = fit_microlensing_model(lc_parallax, event_params_no_parallax,
+            if dbglog: 
+                dbglog.info('Completed data simulation for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days')
+                
+            if default_params['fit_models']:
+                (fit_no_parallax,e_no_parallax) = fit_microlensing_model(lc_parallax, event_params_no_parallax,
                                                                     lc_params, dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
                                                                     output_lc=True)
             
-            (fit_parallax,e_parallax) = fit_microlensing_model(lc_parallax, event_params_parallax,
+                (fit_parallax,e_parallax) = fit_microlensing_model(lc_parallax, event_params_parallax,
                                                                     lc_params, dbglog,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
                                                                     output_lc=True)
             
-            if plots:
+            else:
+                fit_no_parallax = FitParams()
+                fit_parallax = FitParams()
+                
+            if dbglog: 
+                dbglog.info('Completed model fitting for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days')
+                
+            if plots and default_params['fit_models']:
                 
                 if dbglog:
                     dbglog.info('Outputting lightcurve plots')
@@ -199,14 +210,40 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
                                                     'lens_plane_'+str(round(mag,1))+
                                                     '_'+str(round(tE,0))+'.png')
             
-                plot_lens_plane_trajectories(e_no_parallax,e_parallax,
+                plot_lens_plane_trajectories(default_params['model_type'],e_no_parallax,e_parallax,
                                          'No parallax','Parallax',
                                          lens_plane_plot_file)
             
-            dchichi = fit_no_parallax.chichi - fit_parallax.chichi
+            if plots and not default_params['fit_models']:
+                
+                if dbglog:
+                    dbglog.info('Outputting lightcurve plots')
+                
+                lc_plot_file = os.path.join(default_params['output_path'],
+                                            'sim_lightcurves_'+str(round(mag,1))+
+                                            '_'+str(round(tE,0))+'.png')
             
-            dbic = abs(fit_no_parallax.bic - fit_parallax.bic)
+                plot_fitted_lightcurves(lc_no_parallax,lc_parallax,sim_e_no_parallax,sim_e_parallax,
+                            lc_plot_file)
             
+                if dbglog:
+                    dbglog.info('Outputting lens plane plots')
+                
+                lens_plane_plot_file = os.path.join(default_params['output_path'],
+                                                    'sim_lens_plane_'+str(round(mag,1))+
+                                                    '_'+str(round(tE,0))+'.png')
+            
+                plot_lens_plane_trajectories(default_params['model_type'],sim_e_no_parallax,sim_e_parallax,
+                                         'No parallax','Parallax',
+                                         lens_plane_plot_file)
+             
+            if default_params['fit_models']:
+                dchichi = fit_no_parallax.chichi - fit_parallax.chichi
+                dbic = abs(fit_no_parallax.bic - fit_parallax.bic)
+            else:
+                dchichi = 0.0
+                dbic= 0.0
+                
             fit_data[j,i,0] = mag
             fit_data[j,i,1] = tE
             fit_data[j,i,2] = dbic
@@ -242,6 +279,9 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
                             str(fit_parallax.chichi)+'  '+str(fit_parallax.bic)+'\n')
             model_file.flush()
             
+            if dbglog: 
+                dbglog.info('Completed output of results for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days\n')
+                
     stats_file.close()
     
     model_file.close()
@@ -326,6 +366,8 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
        fit_params FitParams obj  Fitted parameters and statistics
     """
     
+    print '\n *** STARTING MODEL FITTING ROUTINE ***'
+    
     e = event.Event()
     e.name = event_params['name']
     e.ra = event_params['ra']
@@ -351,7 +393,7 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
     if 'BL' in event_params['model_type']:
         fit_method = 'DE'
         
-    output = 'Fitting an '+event_params['model_type']+' model'
+    output = 'Fitting a '+event_params['model_type']+' model'
     
     if 'para' in event_params['model_code']:
         
@@ -382,65 +424,91 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, dbglog,
     print(output)
         
     e.fit(model,fit_method)
+    fit_flag = e.fits[-1].check_fit()
+    print('Fit flag: '+repr(fit_flag))
+    print('Telescopes: '+str(len(e.telescopes)))
+    print('Fit results: '+repr(e.fits[-1].fit_results))
+    print('LIGHTCURVE: '+str(e.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
+                        str(e.telescopes[-1].lightcurve_flux[:,0].max()))
+    print('LIGHTCURVE fit: '+str(e.fits[-1].event.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
+                        str(e.fits[-1].event.telescopes[-1].lightcurve_flux[:,0].max()))
+    print('LIGHTCURVE fit: '+str(e.fits[-1].event.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
+                        str(e.fits[-1].event.telescopes[-1].lightcurve_flux[:,0].max()))
+                        
+    try:
+        e.fits[-1].produce_outputs()
     
-    e.fits[-1].produce_outputs()
-    plt.close()
-
-    plt.close()
+        # Close plot objects opened automatically by pyLIMA to avoid 
+        # later plots overplotting the same axes.  Both close statements are
+        # necessary. 
+        plt.close()
+        plt.close()
     
-    fit_params = get_fit_params(e,len(lightcurve))
+        print('-> Completed model fit, output parameters: ')    
+        
+        fit_params = get_fit_params(e,len(lightcurve))
+        
+        print(fit_params.summary())
+        
+        if dbglog:
+            dbglog.info('Fitted parameters: '+repr(fit_params.summary()))
     
-    print(fit_params.summary())
+        if produce_plots:
+            fig = plt.figure(5)
+        
+            plt.errorbar(lightcurve[:,0],lightcurve[:,1],
+                         yerr=lightcurve[:,2],alpha=0.2,color='b')
+        
+            model_lc = generate_model_lightcurve(e)
+            
+            plt.plot(lightcurve[:,0],model_lc,'k-')
+            
+            plt.xlabel('HJD')
+        
+            plt.ylabel('Magnitude')
+        
+            (xmin,xmax,ymin,ymax) = plt.axis()
+            plt.axis([xmin,xmax,ymax,ymin])
+        
+            plt.savefig(os.path.join(output_path),'simulated_lc.png')
+        
+            plt.close(5)
+        
+        if output_lc:
+            
+            model_lc = generate_model_lightcurve(e)
+            
+            if 'para' in event_params['model_code']:
+                
+                file_path = os.path.join(output_path,
+                                'sim_lightcurve_'+\
+                                str(round(lc_params['baseline_mag'],1))+'_'+\
+                                str(round(event_params['tE'],0))+'_parallax_model.txt')
+            else:
+                
+                file_path = os.path.join(output_path,
+                                'sim_lightcurve_'+\
+                                str(round(lc_params['baseline_mag'],1))+'_'+\
+                                str(round(event_params['tE'],0))+'_no_parallax_model.txt')
     
+            f = open(file_path,'w')
+    
+            for i in range(0,len(lightcurve),1):
+    
+                f.write(str(lightcurve[i,0])+' '+str(model_lc[i])+'\n')
+    
+            f.close()
+    
+    except ValueError:
+        
+        print('ERROR in fitting process, inconsistent timestamps')
+        
+        fit_params = get_fit_params(None, 0)
+        
+    print '\n *** END MODEL FITTING ROUTINE ***\n'
     if dbglog:
-        dbglog.info('Fitted parameters: '+repr(fit_params.summary()))
-
-    if produce_plots:
-        fig = plt.figure(5)
+        dbglog.info('--> End of model fitting routine')
     
-        plt.errorbar(lightcurve[:,0],lightcurve[:,1],
-                     yerr=lightcurve[:,2],alpha=0.2,color='b')
-    
-        model_lc = generate_model_lightcurve(e)
-        
-        plt.plot(lightcurve[:,0],model_lc,'k-')
-        
-        plt.xlabel('HJD')
-    
-        plt.ylabel('Magnitude')
-    
-        (xmin,xmax,ymin,ymax) = plt.axis()
-        plt.axis([xmin,xmax,ymax,ymin])
-    
-        plt.savefig(os.path.join(output_path),'simulated_lc.png')
-    
-        plt.close(5)
-    
-    if output_lc:
-        
-        model_lc = generate_model_lightcurve(e)
-        
-        if 'para' in event_params['model_code']:
-            
-            file_path = os.path.join(output_path,
-                            'sim_lightcurve_'+\
-                            str(round(lc_params['baseline_mag'],1))+'_'+\
-                            str(round(event_params['tE'],0))+'_parallax_model.txt')
-        else:
-            
-            file_path = os.path.join(output_path,
-                            'sim_lightcurve_'+\
-                            str(round(lc_params['baseline_mag'],1))+'_'+\
-                            str(round(event_params['tE'],0))+'_no_parallax_model.txt')
-
-        f = open(file_path,'w')
-
-        for i in range(0,len(lightcurve),1):
-
-            f.write(str(lightcurve[i,0])+' '+str(model_lc[i])+'\n')
-
-        f.close()
-
     return fit_params, e
 
 def get_fit_params(fitted_event,ndata):
@@ -449,59 +517,62 @@ def get_fit_params(fitted_event,ndata):
     """
 
     fit = FitParams()
-    fit.nparam = 0
     
-    fit.tE = fitted_event.fits[-1].outputs.fit_parameters.tE
-    fit.tEerr = fitted_event.fits[-1].outputs.fit_errors.err_tE
-    fit.nparam += 1
-    
-    fit.t0 = fitted_event.fits[-1].outputs.fit_parameters.to
-    fit.t0err = fitted_event.fits[-1].outputs.fit_errors.err_to
-    fit.nparam += 1
-    
-    fit.u0 = fitted_event.fits[-1].outputs.fit_parameters.uo
-    fit.u0err = fitted_event.fits[-1].outputs.fit_errors.err_uo
-    fit.nparam += 1
-    
-    fit.fs = fitted_event.fits[-1].outputs.fit_parameters.fs_NH
-    fit.fserr = fitted_event.fits[-1].outputs.fit_errors.err_fs_NH
-    fit.nparam += 1
-    
-    fit.fb = fitted_event.fits[-1].outputs.fit_parameters.fb_NH
-    fit.fberr = fitted_event.fits[-1].outputs.fit_errors.err_fb_NH
-    fit.nparam += 1
+    if fitted_event != None:
 
-    try:
-        fit.rho = fitted_event.fits[-1].outputs.fit_parameters.rho
-        fit.rhoerr = fitted_event.fits[-1].outputs.fit_errors.err_rho
+        fit.nparam = 0
+        
+        fit.tE = fitted_event.fits[-1].outputs.fit_parameters.tE
+        fit.tEerr = fitted_event.fits[-1].outputs.fit_errors.err_tE
         fit.nparam += 1
-
-    except AttributeError:
-        pass
-    
-
-    try:
-        fit.piEN = fitted_event.fits[-1].outputs.fit_parameters.piEN
-        fit.piENerr = fitted_event.fits[-1].outputs.fit_errors.err_piEN
+        
+        fit.t0 = fitted_event.fits[-1].outputs.fit_parameters.to
+        fit.t0err = fitted_event.fits[-1].outputs.fit_errors.err_to
         fit.nparam += 1
-
-    except AttributeError:
-        pass
-    
-    try:
-        fit.piEE = fitted_event.fits[-1].outputs.fit_parameters.piEE
-        fit.piEEerr = fitted_event.fits[-1].outputs.fit_errors.err_piEE
+        
+        fit.u0 = fitted_event.fits[-1].outputs.fit_parameters.uo
+        fit.u0err = fitted_event.fits[-1].outputs.fit_errors.err_uo
         fit.nparam += 1
-
-    except AttributeError:
-        pass
+        
+        fit.fs = fitted_event.fits[-1].outputs.fit_parameters.fs_NH
+        fit.fserr = fitted_event.fits[-1].outputs.fit_errors.err_fs_NH
+        fit.nparam += 1
+        
+        fit.fb = fitted_event.fits[-1].outputs.fit_parameters.fb_NH
+        fit.fberr = fitted_event.fits[-1].outputs.fit_errors.err_fb_NH
+        fit.nparam += 1
     
-    fit.chichi = fitted_event.fits[-1].outputs.fit_parameters.chichi
+        try:
+            fit.rho = fitted_event.fits[-1].outputs.fit_parameters.rho
+            fit.rhoerr = fitted_event.fits[-1].outputs.fit_errors.err_rho
+            fit.nparam += 1
     
-    fit.bic = microlstats.Bayesian_Information_Criterion(fit.chichi,
-                                                          ndata,
-                                                          fit.nparam)
-
+        except AttributeError:
+            pass
+        
+    
+        try:
+            fit.piEN = fitted_event.fits[-1].outputs.fit_parameters.piEN
+            fit.piENerr = fitted_event.fits[-1].outputs.fit_errors.err_piEN
+            fit.nparam += 1
+    
+        except AttributeError:
+            pass
+        
+        try:
+            fit.piEE = fitted_event.fits[-1].outputs.fit_parameters.piEE
+            fit.piEEerr = fitted_event.fits[-1].outputs.fit_errors.err_piEE
+            fit.nparam += 1
+    
+        except AttributeError:
+            pass
+        
+        fit.chichi = fitted_event.fits[-1].outputs.fit_parameters.chichi
+        
+        fit.bic = microlstats.Bayesian_Information_Criterion(fit.chichi,
+                                                              ndata,
+                                                              fit.nparam)
+    
     return fit
 
 
@@ -578,7 +649,7 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
 
     plt.close(6)
 
-def plot_lens_plane_trajectories(event1,event2,label1,label2,file_path):
+def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_path):
     """
     Function to plot the geometry of the lens plane showing the source 
     relative trajectory for two different fitted models
@@ -625,8 +696,10 @@ def plot_lens_plane_trajectories(event1,event2,label1,label2,file_path):
               - figure_trajectory_ylimit, figure_trajectory_ylimit] )
 
     ax.scatter(0, 0, s=10, c='k')
-    einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
-    ax.add_artist(einstein_ring)
+    
+    if 'PL' in model_type:
+        einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
+        ax.add_artist(einstein_ring)
 
     ax.xaxis.set_major_locator(MaxNLocator(5))
     ax.yaxis.set_major_locator(MaxNLocator(5))
@@ -687,8 +760,8 @@ def plot_rel_trajectory(fit,times,fig,ax,label,trajectory_color='r'):
         for ic, caustic in enumerate(caustics):
             
                     try:
-                        plt.plot(caustic.real, caustic.imag,lw=3,c='r')
-                        plt.plot(critical_curves[ic].real, critical_curves[ic].imag, '--k')
+                        plt.plot(caustic.real, caustic.imag,lw=1, c='r')
+                        plt.plot(critical_curves[ic].real, critical_curves[ic].imag, c=trajectory_color, linestyle='--')
                         
                     except AttributeError:
                         pass
@@ -848,12 +921,13 @@ if __name__ == '__main__':
                          's': 1.2,
                          'q': 1*10**-3,
                          'alpha': -1.0,
-                         'model_type': 'PSPL',
-                         'horizons_file': '/Users/rstreet/NHmicrolensing/NH_horizons_observer_table.txt',
-                         'output_path': '/Users/rstreet/NHmicrolensing/simulations12/'
+                         'model_type': 'PSBL',
+                         'horizons_file': '/Users/rstreet/software/pyLIMA/apps/nhsimulator/NH_horizons_observer_table.txt',
+                         'output_path': '/Users/rstreet/NHmicrolensing/simulations13/',
+                         'fit_models': False
                          }
     
-    source_mag_range = np.arange(13.0, 17.0, 1.0)
+    source_mag_range = np.arange(13.0, 18.0, 1.0)
     
     tE_range = np.arange(1.0, 150.0, 5.0)
     

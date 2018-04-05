@@ -29,13 +29,13 @@ def analyze_simulation_results():
 
     plot_tE_matrix(fitted_data,log_dir)
 
-    plot_max_res_matrix(sim_data,log_dir)
+    plot_sn_matrix(sim_data,log_dir)
     
-def plot_max_res_matrix(sim_data,log_dir):
-    """Function to plot the delta chi squared as a colour-coded grid in (tE,mag) 
+def plot_sn_matrix(sim_data,log_dir):
+    """Function to plot the signal to noise as a colour-coded grid in (tE,mag) 
     parameter space."""
     
-    (mag_range,tE_range,max_res) = load_col_sim_data_as_2d(sim_data,12)
+    (mag_range,tE_range,max_res) = load_col_sim_data_as_2d(sim_data,13)
     
     max_res = np.flip(max_res,0)
 
@@ -60,8 +60,8 @@ def plot_max_res_matrix(sim_data,log_dir):
     plt.xlabel('tE [days]')
     plt.ylabel('Magnitude')
     
-    plt.title('Maximum residual')
-    plt.savefig(os.path.join(log_dir,'max_res_matrix.png'))
+    plt.title('Signal to noise')
+    plt.savefig(os.path.join(log_dir,'sn_matrix.png'))
     
     plt.close(1)
 
@@ -343,13 +343,19 @@ def read_simulation_output():
             for i in range(0,len(entries),1):
                 
                 if '+/-' not in entries[i]:
-
-                    line_data.append( float(entries[i]) )
+                    
+                    if 'None' in entries[i]:
+                        
+                        line_data.append( 0.0 )
+                        
+                    else:
+                        
+                        line_data.append( float(entries[i]) )
                 
             data.append(line_data)
             
     sim_data = np.array(data)
-        
+    
     return sim_data, log_dir
     
 def read_fitted_model_parameters(log_dir, model_type):
@@ -388,8 +394,11 @@ def read_fitted_model_parameters(log_dir, model_type):
                         
                     else:
                         
-                        line_data.append(entries[i])
-                        
+                        if 'None' not in entries[i]:
+                            line_data.append(entries[i])
+                        else:
+                            line_data.append(0.0)
+                            
             data.append(line_data)
             
     fitted_data = np.array(data)

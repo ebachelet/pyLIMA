@@ -212,7 +212,7 @@ class Telescope(object):
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
-        print('In telescopes.compute_parallax: ')        
+        print('In telescopes.compute_parallax: ')
         print self.lightcurve_magnitude[:,0].min(),self.lightcurve_magnitude[:,0].max()
         print self.lightcurve_flux[:,0].min(),self.lightcurve_flux[:,0].max()
         para = microlparallax.MLParallaxes(event, parallax)

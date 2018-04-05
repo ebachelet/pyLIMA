@@ -211,6 +211,9 @@ def LM_outputs(fit):
     matplotlib.rcParams['axes.color_cycle'] = hexcolor
     #hexcolor[0] = '#000000'
 
+    print('MLOUTPUTS: '+repr(len(fit.event.telescopes)))
+    print('MLOUTPUTS: '+str(fit.event.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
+                        str(fit.event.telescopes[-1].lightcurve_flux[:,0].max()) )
 
     results = LM_parameters_result(fit)
     covariance_matrix = fit.fit_covariance
@@ -726,22 +729,40 @@ def LM_plot_model(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
+    print('LMPLOTMODEL: N telescopes = '+str(len(fit.event.telescopes)))
+    print('LMPLOTMODEL: '+str(fit.event.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
+                        str(fit.event.telescopes[-1].lightcurve_flux[:,0].max()))
+    print('LMPLOTMODEL: '+str(fit.event.telescopes[0].lightcurve_flux[:,0].min())+' '+\
+                        str(fit.event.telescopes[0].lightcurve_flux[:,0].max()))
+
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
-
+    print('LMPLOTMODEL: computing for times '+str(min_time)+' - '+str(max_time))
+    
     time = np.linspace(min_time, max_time + 100, 30000)
     extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
                                  pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
-
+    print('LMPLOTMODEL: time ranges '+str(time.min())+' - '+str(time.max()))
+    print('LMPLOTMODEL: extra time ranges '+str(extra_time.min())+' - '+str(extra_time.max()))
+    print('LMPLOTMODEL: params used '+str(pyLIMA_parameters.to)+' - '+str(pyLIMA_parameters.tE))
+    print('LMPLOTMODEL: fit results '+repr(fit.fit_results))
+    
     time = np.sort(np.append(time, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
+    print('LMPLOTMODEL copied lightcurve: '+str(reference_telescope.lightcurve_flux[:,0].min())+' '+\
+                        str(reference_telescope.lightcurve_flux[:,0].max()))
 
     if fit.model.parallax_model[0] != 'None':
+        print('LMPLOTMODEL: N telescopes = '+str(len(fit.event.telescopes)))
+        print('LMPLOTMODEL parallax: '+str(fit.event.telescopes[0].lightcurve_flux[:,0].min())+' '+\
+                        str(fit.event.telescopes[0].lightcurve_flux[:,0].max()))
+        
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        print('GOT HERE')
 
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)

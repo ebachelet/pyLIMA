@@ -15,6 +15,7 @@ from pyLIMA import event
 from pyLIMA import telescopes
 from pyLIMA import microlsimulator
 from pyLIMA import microlmodels
+from pyLIMA import microlfits
 from scipy import interpolate
 import jplhorizons_utils
 
@@ -241,6 +242,11 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
                             
     model.define_model_parameters()
 
+    f = microlfits.MLFits(lens)
+    f.model = model
+    f.fit_results = model_params
+    lens.fits.append(f)
+    
     pylima_params = model.compute_pyLIMA_parameters(model_params)
 
     A = model.model_magnification(tel,pylima_params)
@@ -275,7 +281,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
 
         f.close()
     
-    return lightcurve    
+    return lightcurve,lens
  
 def calc_phot_uncertainty(lorri, mag):
     """Function to calculate the expected photometric uncertainty for a given
