@@ -242,13 +242,17 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
                             
     model.define_model_parameters()
 
+    print 'Check model use of annual parallax: '+repr(model.use_annual_parallax)  
+    if dbglog:
+        dbglog.info('Check model use of annual parallax: '+repr(model.use_annual_parallax))
+    
     f = microlfits.MLFits(lens)
     f.model = model
     f.fit_results = model_params
     lens.fits.append(f)
     
     pylima_params = model.compute_pyLIMA_parameters(model_params)
-
+    
     A = model.model_magnification(tel,pylima_params)
     
     lightcurve = lens.telescopes[0].lightcurve_magnitude

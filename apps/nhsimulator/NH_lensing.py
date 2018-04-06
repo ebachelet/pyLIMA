@@ -631,7 +631,8 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
 #    plt.errorbar(ts_no_parallax,(lc_parallax[:,1]-lc_no_parallax[:,1]),
 #                 yerr=comb_err,color='black',alpha=0.4)
     
-    plt.plot(ts_no_parallax,(lc_parallax[:,1]-lc_no_parallax[:,1]),color='black',markersize=2)
+    dmag = lc_parallax[:,1]-lc_no_parallax[:,1]
+    plt.plot(ts_no_parallax,dmag,color='black',markersize=2)
     
     plt.xlabel('HJD - '+str(dt), fontsize=18)
 
@@ -640,7 +641,10 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
     plt.grid()
     
     (xmin2,xmax2,ymin2,ymax2) = plt.axis()
-    plt.axis([xmin,xmax,0.1,-0.1])
+    ymin2 = dmag.min()*1.05
+    ymax2 = dmag.max()*1.05
+    
+    plt.axis([xmin,xmax,ymax2, ymin2])
 
     plt.tick_params(axis='x', labelsize=18)
     plt.tick_params(axis='y', labelsize=18)
@@ -742,7 +746,8 @@ def plot_rel_trajectory(fit,times,fig,ax,label,trajectory_color='r'):
 
     if fit.model.parallax_model[0] != 'None':
 
-        tel.compute_parallax(fit.event, fit.model.parallax_model)
+        tel.compute_parallax(fit.event, fit.model.parallax_model, 
+                             annual_parallax=fit.model.use_annual_parallax)
         
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
     
@@ -926,9 +931,9 @@ if __name__ == '__main__':
                          's': 1.2,
                          'q': 1*10**-3,
                          'alpha': -1.0,
-                         'model_type': 'PSPL',
+                         'model_type': 'PSBL',
                          'horizons_file': '/Users/rstreet/software/pyLIMA/apps/nhsimulator/NH_horizons_observer_table.txt',
-                         'output_path': '/Users/rstreet/NHmicrolensing/simulations12/',
+                         'output_path': '/Users/rstreet/NHmicrolensing/simulations14/',
                          'fit_models': False
                          }
     

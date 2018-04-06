@@ -207,7 +207,10 @@ class MLParallaxes(object):
         delta_East = np.array([])
 
         if location == 'Earth':
-
+            
+            print('TELESCOPE LOCATION ON EARTH')
+            exit()
+            
             if (self.parallax_model == 'Annual'):
                 telescope_positions = self.annual_parallax(time)
 
@@ -242,6 +245,8 @@ class MLParallaxes(object):
         else:
 
             if annual_parallax:
+                print('USING ANNUAL PARALLAX')
+                exit()
                 telescope_positions = self.annual_parallax(time)
                 delta_North = np.append(delta_North, telescope_positions[0])
                 delta_East = np.append(delta_East, telescope_positions[1])
@@ -254,10 +259,13 @@ class MLParallaxes(object):
             # pdb.set_trace()
             
             if annual_parallax:
+                print('USING ANNUAL PARALLAX')
+                exit()
                 delta_North = delta_North + telescope_positions[0]
                 delta_East = delta_East + telescope_positions[1]
 
             else:
+                print('-> Telescope motion parallax only')
                 delta_North = np.append(delta_North, telescope_positions[0])
                 delta_East = np.append(delta_East, telescope_positions[1])
                 

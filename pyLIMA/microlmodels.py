@@ -217,7 +217,7 @@ class MLModel(object):
             self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
 
-            self.event.compute_parallax_all_telescopes(self.parallax_model,annual_parallax=self.use_annual_parallax)
+            self.event.compute_parallax_all_telescopes(self.parallax_model, annual_parallax=self.use_annual_parallax)
 
         if self.xallarap_model != 'None':
             self.Jacobian_flag = 'No way'
@@ -1221,7 +1221,8 @@ class ModelRRLyraePL(MLModel):
             self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
 
-            self.event.compute_parallax_all_telescopes(self.parallax_model)
+            self.event.compute_parallax_all_telescopes(self.parallax_model, annual_parallax=self.use_annual_parallax)
+            
         for telescope in self.event.telescopes:
             self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
@@ -1401,7 +1402,8 @@ class ModelRRLyraeFS(MLModel):
             self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
 
-            self.event.compute_parallax_all_telescopes(self.parallax_model)
+            self.event.compute_parallax_all_telescopes(self.parallax_model, annual_parallax=self.use_annual_parallax)
+            
         for telescope in self.event.telescopes:
             self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)

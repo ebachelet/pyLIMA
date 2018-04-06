@@ -440,7 +440,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
     if fit.model.parallax_model[0] != 'None':
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model, annual_parallax=fit.model.use_annual_parallax)
 
     for model_chichi in model_panel_chichi[0:]:
         indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
@@ -761,7 +761,7 @@ def LM_plot_model(fit, figure_axe):
         print('LMPLOTMODEL parallax: '+str(fit.event.telescopes[0].lightcurve_flux[:,0].min())+' '+\
                         str(fit.event.telescopes[0].lightcurve_flux[:,0].max()))
         
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model, annual_parallax=fit.model.use_annual_parallax)
         print('GOT HERE')
 
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
@@ -889,7 +889,7 @@ def plot_LM_ML_geometry(fit):
         [time, [0] * len(time), [0] * len(time)]).T
 
     if fit.model.parallax_model[0] != 'None':
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model, annual_parallax=fit.model.use_annual_parallax)
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     if 'BL' in fit.model.model_type:
@@ -1063,7 +1063,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
         [time, [0] * len(time), [0] * len(time)]).T
 
     if fit.model.parallax_model[0] != 'None':
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model, annual_parallax=fit.model.use_annual_parallax)
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
