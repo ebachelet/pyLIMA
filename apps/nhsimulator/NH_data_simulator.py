@@ -103,7 +103,7 @@ class LORRIParams():
         
         return mag_lc, mag_lc_err
         
-def generate_LORRI_lightcurve(params,dbglog):
+def generate_LORRI_lightcurve(params,log):
     """Function to generate a lightcurve with the noise characteristics of the
     LORRI telescope onboard New Horizons
     
@@ -111,7 +111,7 @@ def generate_LORRI_lightcurve(params,dbglog):
             :param float JD_start: JD of the start of the lightcurve    
             :param float JD_end: JD of the end of the lightcurve  
             :param float baseline_mag: Mean magnitude of star at baseline
-    :param logger dbglog: Logging object
+    :param logger log: Logging object
     
     Returned:
     :param array lightcurve: 3-col array containing timestamps, magnitude, 
@@ -140,12 +140,11 @@ def generate_LORRI_lightcurve(params,dbglog):
     lightcurve[:,1] = mag
     lightcurve[:,2] = mag_err
 
-    if dbglog:
-        dbglog.info('Generated lightcurve')
+    log.info('Generated lightcurve')
         
     return lightcurve
     
-def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
+def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
                             output_path,
                             spacecraft_positions=None,output_lc=False):
     """Function to inject the signal of a microlensing event into an 
@@ -164,9 +163,9 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
             :param float s: Binary event mass separation
             :param float q: Binary event mass ratio
             :param float alpha: Binary event angle of trajectory
-            :param boolean dbglog: Logger object
+            :param boolean log: Logger object
     :param dict lc_params: Lightcurve parameters
-    :param logger dbglog: Debugging log object
+    :param logger log: Debugging log object
     :param string output_path: Path for all output files
     :param list spacecraft_positions: [Optional] Spacecraft positions from JPL observer table
     :param Boolean output_lc: [Optional] Switch to turn on lightcurve text file
@@ -177,11 +176,10 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
                                 and magnitude error
     """
 
-    if dbglog:
-        dbglog.info('Adding event model to lightcurve')
+    log.info('Adding event model to lightcurve')
         
-        if spacecraft_positions != None:
-            dbglog.info('Using horizons data provided')
+    if spacecraft_positions != None:
+        log.info('Using horizons data provided')
         
     lorri = LORRIParams()
     
@@ -207,8 +205,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
     
     if 'pi_EN' in event_params.keys() and 'pi_EE' in event_params.keys():
         
-        if dbglog:
-            dbglog.info(' -> Model with parallax parameters: '+\
+        log.info(' -> Model with parallax parameters: '+\
                     str(event_params['pi_EN'])+\
                     ' '+str(event_params['pi_EE']))
                     
@@ -225,8 +222,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
                     
     else:
         
-        if dbglog:
-            dbglog.info(' -> No parallax parameters')
+        log.info(' -> No parallax parameters')
                     
         model = microlmodels.create_model(event_params['model_type'], lens, annual_parallax=False)
         
@@ -242,9 +238,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,dbglog,
                             
     model.define_model_parameters()
 
-    print 'Check model use of annual parallax: '+repr(model.use_annual_parallax)  
-    if dbglog:
-        dbglog.info('Check model use of annual parallax: '+repr(model.use_annual_parallax))
+    log.info('Check model use of annual parallax: '+repr(model.use_annual_parallax))
     
     f = microlfits.MLFits(lens)
     f.model = model
