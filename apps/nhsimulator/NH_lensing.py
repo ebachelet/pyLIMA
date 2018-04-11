@@ -83,7 +83,8 @@ class FitParams():
         return line
 
 
-def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots=False):
+def simulate_model_grid(default_params,source_mag_range,tE_range,
+                        dbg=False,plots=False):
     """Function to simulate a grid of microlensing events with ranges of
     values of source star baseline magnitude, tE, with all other parameters 
     taking the provided defaults.
@@ -93,6 +94,10 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
 
         dbglog = start_log( default_params['output_path'], 'dbg_log' )
         
+        dbglog.info('Parameters input:')
+        for key, value in default_params.items():
+            dbglog.info(key+': '+repr(value))
+            
         dbglog.info('Simulating for range of parameter grid:')
         dbglog.info('Source mag range: '+repr(source_mag_range))
         dbglog.info('Einstein crossing time: '+repr(tE_range))
@@ -187,55 +192,15 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
             else:
                 fit_no_parallax = FitParams()
                 fit_parallax = FitParams()
+                e_no_parallax = None
+                e_parallax = None
                 
             if dbglog: 
                 dbglog.info('Completed model fitting for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days')
                 
-            if plots and default_params['fit_models']:
-                
-                if dbglog:
-                    dbglog.info('Outputting lightcurve plots')
-                
-                lc_plot_file = os.path.join(default_params['output_path'],
-                                            'fitted_lightcurves_'+str(round(mag,1))+
-                                            '_'+str(round(tE,0))+'.png')
-            
-                plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
-                            lc_plot_file)
-            
-                if dbglog:
-                    dbglog.info('Outputting lens plane plots')
-                
-                lens_plane_plot_file = os.path.join(default_params['output_path'],
-                                                    'lens_plane_'+str(round(mag,1))+
-                                                    '_'+str(round(tE,0))+'.png')
-            
-                plot_lens_plane_trajectories(default_params['model_type'],e_no_parallax,e_parallax,
-                                         'No parallax','Parallax',
-                                         lens_plane_plot_file)
-            
-            if plots and not default_params['fit_models']:
-                
-                if dbglog:
-                    dbglog.info('Outputting lightcurve plots')
-                
-                lc_plot_file = os.path.join(default_params['output_path'],
-                                            'sim_lightcurves_'+str(round(mag,1))+
-                                            '_'+str(round(tE,0))+'.png')
-            
-                plot_fitted_lightcurves(lc_no_parallax,lc_parallax,sim_e_no_parallax,sim_e_parallax,
-                            lc_plot_file)
-            
-                if dbglog:
-                    dbglog.info('Outputting lens plane plots')
-                
-                lens_plane_plot_file = os.path.join(default_params['output_path'],
-                                                    'sim_lens_plane_'+str(round(mag,1))+
-                                                    '_'+str(round(tE,0))+'.png')
-            
-                plot_lens_plane_trajectories(default_params['model_type'],sim_e_no_parallax,sim_e_parallax,
-                                         'No parallax','Parallax',
-                                         lens_plane_plot_file)
+            output_plots(default_params,plots,lc_no_parallax,lc_parallax,
+                 e_no_parallax, e_parallax,sim_e_no_parallax, sim_e_no_parallax,
+                 dbglog=dbglog)
              
             if default_params['fit_models']:
                 dchichi = fit_no_parallax.chichi - fit_parallax.chichi
@@ -248,45 +213,115 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,dbg=False,plots
             fit_data[j,i,1] = tE
             fit_data[j,i,2] = dbic
             
-            stats_file.write(str(mag)+'  '+str(tE)+' | '+\
-                        str(fit_no_parallax.chichi)+'  '+str(fit_no_parallax.bic)+' | '+\
-                        str(fit_parallax.piEN)+' +/- '+str(fit_parallax.piENerr)+'  '+\
-                        str(fit_parallax.piEE)+' +/- '+str(fit_parallax.piEEerr)+'  '+\
-                        str(fit_parallax.chichi)+'  '+str(fit_parallax.bic)+' | '+\
-                        str(dchichi)+'  '+str(dbic)+' | '+str(max_res)+' '+str(S2N)+'\n')
-            stats_file.flush()
-            
-            model_file.write(str(mag)+' '+str(tE)+'  no_parallax   '+\
-                            str(fit_no_parallax.tE)+' +/- '+str(fit_no_parallax.tEerr)+'  '+\
-                            str(fit_no_parallax.t0)+' +/- '+str(fit_no_parallax.t0err)+'  '+\
-                            str(fit_no_parallax.u0)+' +/- '+str(fit_no_parallax.u0err)+'  '+\
-                            str(fit_no_parallax.rho)+' +/- '+str(fit_no_parallax.rhoerr)+'  '+\
-                            'None +/- None  '+\
-                            'None +/- None  '+\
-                            str(fit_no_parallax.fs)+' +/- '+str(fit_no_parallax.fserr)+'  '+\
-                            str(fit_no_parallax.fb)+' +/- '+str(fit_no_parallax.fberr)+'  '+\
-                            str(fit_no_parallax.chichi)+'  '+str(fit_no_parallax.bic)+'\n')
-                            
-            model_file.write(str(mag)+' '+str(tE)+'  parallax   '+\
-                            str(fit_parallax.tE)+' +/- '+str(fit_parallax.tEerr)+'  '+\
-                            str(fit_parallax.t0)+' +/- '+str(fit_parallax.t0err)+'  '+\
-                            str(fit_parallax.u0)+' +/- '+str(fit_parallax.u0err)+'  '+\
-                            str(fit_parallax.rho)+' +/- '+str(fit_parallax.rhoerr)+'  '+\
-                            str(fit_parallax.piEN)+' +/- '+str(fit_parallax.piENerr)+'  '+\
-                            str(fit_parallax.piEE)+' +/- '+str(fit_parallax.piEEerr)+'  '+\
-                            str(fit_parallax.fs)+' +/- '+str(fit_parallax.fserr)+'  '+\
-                            str(fit_parallax.fb)+' +/- '+str(fit_parallax.fberr)+'  '+\
-                            str(fit_parallax.chichi)+'  '+str(fit_parallax.bic)+'\n')
-            model_file.flush()
-            
-            if dbglog: 
-                dbglog.info('Completed output of results for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days\n')
-                
+            output_metrics(mag,tE,fit_no_parallax,fit_parallax,
+                           dchichi,dbic,max_res,S2N,
+                           dbglog=dbglog)
+
     stats_file.close()
     
     model_file.close()
     
     stop_log(dbglog)
+
+def output_metrics(mag,tE,fit_no_parallax,fit_parallax,dchichi,dbic,max_res,S2N,
+                   dbglog=None):
+    """Function to output the computed metrics to file"""
+    
+    stats_file.write(str(mag)+'  '+str(tE)+' | '+\
+                        str(fit_no_parallax.chichi)+'  '+str(fit_no_parallax.bic)+' | '+\
+                        str(fit_parallax.piEN)+' +/- '+str(fit_parallax.piENerr)+'  '+\
+                        str(fit_parallax.piEE)+' +/- '+str(fit_parallax.piEEerr)+'  '+\
+                        str(fit_parallax.chichi)+'  '+str(fit_parallax.bic)+' | '+\
+                        str(dchichi)+'  '+str(dbic)+' | '+str(max_res)+' '+str(S2N)+'\n')
+    stats_file.flush()
+            
+    model_file.write(str(mag)+' '+str(tE)+'  no_parallax   '+\
+                    str(fit_no_parallax.tE)+' +/- '+str(fit_no_parallax.tEerr)+'  '+\
+                    str(fit_no_parallax.t0)+' +/- '+str(fit_no_parallax.t0err)+'  '+\
+                    str(fit_no_parallax.u0)+' +/- '+str(fit_no_parallax.u0err)+'  '+\
+                    str(fit_no_parallax.rho)+' +/- '+str(fit_no_parallax.rhoerr)+'  '+\
+                    'None +/- None  '+\
+                    'None +/- None  '+\
+                    str(fit_no_parallax.fs)+' +/- '+str(fit_no_parallax.fserr)+'  '+\
+                    str(fit_no_parallax.fb)+' +/- '+str(fit_no_parallax.fberr)+'  '+\
+                    str(fit_no_parallax.chichi)+'  '+str(fit_no_parallax.bic)+'\n')
+                    
+    model_file.write(str(mag)+' '+str(tE)+'  parallax   '+\
+                    str(fit_parallax.tE)+' +/- '+str(fit_parallax.tEerr)+'  '+\
+                    str(fit_parallax.t0)+' +/- '+str(fit_parallax.t0err)+'  '+\
+                    str(fit_parallax.u0)+' +/- '+str(fit_parallax.u0err)+'  '+\
+                    str(fit_parallax.rho)+' +/- '+str(fit_parallax.rhoerr)+'  '+\
+                    str(fit_parallax.piEN)+' +/- '+str(fit_parallax.piENerr)+'  '+\
+                    str(fit_parallax.piEE)+' +/- '+str(fit_parallax.piEEerr)+'  '+\
+                    str(fit_parallax.fs)+' +/- '+str(fit_parallax.fserr)+'  '+\
+                    str(fit_parallax.fb)+' +/- '+str(fit_parallax.fberr)+'  '+\
+                    str(fit_parallax.chichi)+'  '+str(fit_parallax.bic)+'\n')
+    model_file.flush()
+
+    if dbglog: 
+        dbglog.info('Completed output of results for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days\n')
+
+def output_plots(default_params,plots,lc_no_parallax,lc_parallax,
+                 e_no_parallax, e_parallax,
+                 sim_e_no_parallax, sim_e_no_parallax,
+                 dbglog=None):
+    """Function to output, on user request, plots of the lightcurve models and 
+    lens plane plots.  
+    
+    If the user has requested that models be fitted to the simulated lightcurves, 
+    then the plots represent the results of the models fit.  Otherwise, the plots
+    represent the output from a theoretical event of the same parameters as used
+    to generate the simulated lightcurve.
+    """
+    
+    if plots and default_params['fit_models']:
+        
+        if dbglog:
+            dbglog.info('Outputting lightcurve plots')
+        
+        lc_plot_file = os.path.join(default_params['output_path'],
+                                    'fitted_lightcurves_'+str(round(mag,1))+
+                                    '_'+str(round(tE,0))+'.png')
+    
+        plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
+                    lc_plot_file)
+    
+        if dbglog:
+            dbglog.info('Outputting lens plane plots')
+        
+        lens_plane_plot_file = os.path.join(default_params['output_path'],
+                                            'lens_plane_'+str(round(mag,1))+
+                                            '_'+str(round(tE,0))+'.png')
+    
+        plot_lens_plane_trajectories(default_params['model_type'],e_no_parallax,e_parallax,
+                                 'No parallax','Parallax',
+                                 lens_plane_plot_file)
+    
+    if plots and not default_params['fit_models']:
+        
+        if dbglog:
+            dbglog.info('Outputting simulated lightcurve plots')
+        
+        lc_plot_file = os.path.join(default_params['output_path'],
+                                    'sim_lightcurves_'+str(round(mag,1))+
+                                    '_'+str(round(tE,0))+'.png')
+    
+        plot_fitted_lightcurves(lc_no_parallax,lc_parallax,sim_e_no_parallax,sim_e_parallax,
+                    lc_plot_file)
+    
+        if dbglog:
+            dbglog.info('Outputting simulated lens plane plots')
+        
+        lens_plane_plot_file = os.path.join(default_params['output_path'],
+                                            'sim_lens_plane_'+str(round(mag,1))+
+                                            '_'+str(round(tE,0))+'.png')
+    
+        plot_lens_plane_trajectories(default_params['model_type'],sim_e_no_parallax,sim_e_parallax,
+                                 'No parallax','Parallax',
+                                 lens_plane_plot_file)
+
+    if dbglog: 
+        dbglog.info('Completed plotting output')
 
 def calc_lc_signal_to_noise(lc_no_parallax,lc_parallax):
     """Function to calculate the signal-to-noise of the parallax signature
