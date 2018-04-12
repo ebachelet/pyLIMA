@@ -12,6 +12,7 @@ import matplotlib.dates as mdates
 from matplotlib import cm, rcParams
 from datetime import datetime
 from astropy import visualization
+from NH_lensing import parse_config_file
 
 def analyze_simulation_results():
     """Function to analyze the results of simulating microlensing
@@ -19,6 +20,8 @@ def analyze_simulation_results():
     
     (sim_data,log_dir) = read_simulation_output()
 
+    (default_params, source_mag_range, tE_range) = parse_config_file(os.path.join(log_dir,'sim_config'))
+    
     fitted_data = read_fitted_model_parameters(log_dir, 'parallax')
     
     plot_dbic_matrix(sim_data,log_dir)
@@ -29,9 +32,9 @@ def analyze_simulation_results():
 
     plot_tE_matrix(fitted_data,log_dir)
 
-    plot_sn_matrix(sim_data,log_dir)
+    plot_sn_matrix(sim_data,log_dir,default_params)
     
-def plot_sn_matrix(sim_data,log_dir):
+def plot_sn_matrix(sim_data,log_dir,default_params):
     """Function to plot the signal to noise as a colour-coded grid in (tE,mag) 
     parameter space."""
     
@@ -60,8 +63,14 @@ def plot_sn_matrix(sim_data,log_dir):
     plt.xlabel('tE [days]')
     plt.ylabel('Magnitude')
     
-    plt.title('Signal to noise')
-    plt.savefig(os.path.join(log_dir,'sn_matrix.png'))
+    
+    plt.title('Signal to noise, '+default_params['model_type']+', '+\
+            str(default_params['cadence_days'])+'d cadence')
+    
+    c = str(default_params['cadence_days']).replace('.','_')
+    fname = 'sn_matrix_'+default_params['model_type']+'_'+c+'d.png'
+    
+    plt.savefig(os.path.join(log_dir,fname))
     
     plt.close(1)
 
