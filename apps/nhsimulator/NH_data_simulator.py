@@ -143,7 +143,37 @@ def generate_LORRI_lightcurve(params,log):
     log.info('Generated lightcurve')
         
     return lightcurve
+
+def get_parameter_order(model_type,parallax):
+    """Function to provide a list of the microlensing event parameters, 
+    in the order which they should be appended to the list of model parameters
+    in pyLIMA
     
+    Inputs:
+    :param string model_type: Type of lensing model, one of {PSPL, FSPL, USBL}
+    :param Bool parallax: Switch to include parallax
+    
+    Returns:
+    :param list porder: List of parameter names, in the pyLIMA convention
+    """
+    
+    porder = ['to', 'uo', 'tE']
+    
+    if 'FS' in model_type:
+        porder.append('rho')
+    
+    if 'BL' in model_type:
+        porder.append('logs')
+        porder.append('logq')
+        porder.append('alpha')
+    
+    if parallax:
+        porder.append('piEN')
+        porder.append('piEE')
+        
+    return porder
+    
+
 def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
                             output_path,
                             spacecraft_positions=None,output_lc=False):
@@ -155,13 +185,13 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
             :param str name: Name of event
             :param float ra: RA in decimal degrees
             :param float dec: Dec in decimal degrees
-            :param float t0: Event t0 in JD
-            :param float u0: Event u0
+            :param float to: Event t0 in JD
+            :param float uo: Event u0
             :param float tE: Event tE in days
-            :param float pi_EN: Event parallax component
-            :param float pi_EE: Event parallax component
-            :param float s: Binary event mass separation
-            :param float q: Binary event mass ratio
+            :param float piEN: Event parallax component
+            :param float piEE: Event parallax component
+            :param float logs: Binary event mass separation, log10
+            :param float logq: Binary event mass ratio, log10
             :param float alpha: Binary event angle of trajectory
             :param boolean log: Logger object
     :param dict lc_params: Lightcurve parameters
@@ -203,22 +233,23 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
     
     lens.check_event()
     
-    if 'pi_EN' in event_params.keys() and 'pi_EE' in event_params.keys():
+    porder_parallax = get_parameter_order(event_params['model_type'],True)
+    porder_no_parallax = get_parameter_order(event_params['model_type'],False)
+    
+    if 'piEN' in event_params.keys() and 'piEE' in event_params.keys():
         
         log.info(' -> Model with parallax parameters: '+\
-                    str(event_params['pi_EN'])+\
-                    ' '+str(event_params['pi_EE']))
+                    str(event_params['piEN'])+\
+                    ' '+str(event_params['piEE']))
                     
         model = microlmodels.create_model(event_params['model_type'], lens, 
-                                      parallax=['Full', event_params['t0']], 
+                                      parallax=['Full', event_params['to']], 
                                         annual_parallax=False)
-                                        
-        model_params = [event_params['t0'], 
-                    event_params['u0'], 
-                    event_params['tE'], 
-                    event_params['rho'],
-                    event_params['pi_EN'], 
-                    event_params['pi_EE']]
+        
+        model_params = []
+        
+        for key in porder_parallax:                
+            model_params.append(event_params[key])
                     
     else:
         
@@ -226,24 +257,23 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
                     
         model = microlmodels.create_model(event_params['model_type'], lens, annual_parallax=False)
         
-        model_params = [event_params['t0'], 
-                    event_params['u0'], 
-                    event_params['tE'],
-                    event_params['rho']]
-    
-    if 'BL' in event_params['model_type']:
-        model_params.append(np.log10(event_params['s']))
-        model_params.append(np.log10(event_params['q']))
-        model_params.append(event_params['alpha'])
+        model_params = []
+        
+        for key in porder_no_parallax:                
+            model_params.append(event_params[key])
                             
     model.define_model_parameters()
 
     log.info('Check model use of annual parallax: '+repr(model.use_annual_parallax))
-    
+        
     f = microlfits.MLFits(lens)
     f.model = model
     f.fit_results = model_params
     lens.fits.append(f)
+    
+    pyLIMA_parameters = f.model.compute_pyLIMA_parameters(f.fit_results)
+    
+    param_sequence_check(event_params,model_params,pyLIMA_parameters,log)
     
     pylima_params = model.compute_pyLIMA_parameters(model_params)
     
@@ -257,7 +287,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
     
     if output_lc:
         
-        if 'pi_EN' in event_params.keys() and 'pi_EE' in event_params.keys():
+        if 'piEN' in event_params.keys() and 'piEE' in event_params.keys():
             
             file_path = os.path.join(output_path,
                                  'sim_lightcurve_'+\
@@ -280,7 +310,33 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
         f.close()
     
     return lightcurve,lens
- 
+
+def param_sequence_check(event_params,model_params,pylima_params,log):
+    """Function to sanity check the sequence of event model parameters"""
+    
+    if 'piEN' in event_params.keys():
+        
+        porder = get_parameter_order(event_params['model_type'],True)
+    
+    else:
+    
+        porder = get_parameter_order(event_params['model_type'],False)
+    
+    log.info('Sanity checking event model parameters: '+repr(porder))
+    
+    for i,key in enumerate(porder):
+        
+        if model_params[i] == getattr(pylima_params,key):
+            log.info(porder[i]+': Expected '+str(model_params[i])+', got '+\
+                        str(getattr(pylima_params,key))+' -> OK')
+        
+        else:
+            log.info(porder[i]+': Expected '+str(model_params[i])+', got '+\
+                        str(getattr(pylima_params,key))+' -> ERROR')
+            sys.exit()
+    
+    log.info('Model parameters are correct')
+    
 def calc_phot_uncertainty(lorri, mag):
     """Function to calculate the expected photometric uncertainty for a given
     photometric measurement.
@@ -330,11 +386,11 @@ def plot_LORRI_lightcurve():
     
     event_params = { 'name': 'Simulated event',
                      'ra': 268.75, 'dec': -29.0,
-                     't0': (params['JD_start'] + (params['JD_end']-params['JD_start'])/2.0),
-                     'u0': params['u0'],
+                     'to': (params['JD_start'] + (params['JD_end']-params['JD_start'])/2.0),
+                     'uo': params['uo'],
                      'tE': params['tE'],
                      'rho': 0.001,
-                     'pi_EN': 0.1, 'pi_EE': 0.1,
+                     'piEN': 0.1, 'piEE': 0.1,
                      }
                      
     lightcurve = generate_LORRI_lightcurve(params, event_params=event_params)
@@ -365,7 +421,7 @@ def get_args():
         params['baseline_mag'] = float(argv[1])
         params['JD_start'] = float(argv[2])
         params['JD_end'] = float(argv[3])
-        params['u0'] = float(argv[4])
+        params['uo'] = float(argv[4])
         params['tE'] = float(argv[5])
     
     else:
@@ -373,7 +429,7 @@ def get_args():
         params['baseline_mag'] = float(raw_input('Please enter the baseline magnitude for the star: '))
         params['JD_start'] = float(raw_input('Please enter the JD at the start of the lightcurve: '))
         params['JD_end'] = float(raw_input('Please enter the JD at the start of the lightcurve: '))
-        params['u0'] = float(raw_input('Please enter the u0 of the lensing event: '))
+        params['uo'] = float(raw_input('Please enter the u0 of the lensing event: '))
         params['tE'] = float(raw_input('Please enter the tE of the lensing event: '))
     
     return params

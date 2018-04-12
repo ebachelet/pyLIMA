@@ -43,10 +43,10 @@ class FitParams():
     
     def __init__(self):
         
-        self.t0 = None
-        self.t0err = None
-        self.u0 = None
-        self.u0err = None
+        self.to = None
+        self.toerr = None
+        self.uo = None
+        self.uoerr = None
         self.tE= None
         self.tEerr = None
         self.rho = None
@@ -56,8 +56,15 @@ class FitParams():
         self.piEE= None
         self.piEEerr = None
         self.s = None
+        self.serr = None
         self.q = None
+        self.qerr = None
+        self.logs = None
+        self.logserr = None
+        self.logq = None
+        self.logqerr = None
         self.alpha = None
+        self.alphaerr = None
         self.fs = None
         self.fserr = None
         self.fb = None
@@ -70,11 +77,11 @@ class FitParams():
     def summary(self):
         
         line = 'tE = '+str(self.tE)+'+/-'+str(self.tEerr)+'\n'+\
-                't0 = '+str(self.t0)+'+/-'+str(self.t0err)+'\n'+\
-                'u0 = '+str(self.u0)+'+/-'+str(self.u0err)+'\n'+\
+                'to = '+str(self.to)+'+/-'+str(self.toerr)+'\n'+\
+                'uo = '+str(self.uo)+'+/-'+str(self.uoerr)+'\n'+\
                 'rho = '+str(self.rho)+'+/-'+str(self.rhoerr)+'\n'+\
-                'pi_EN = '+str(self.piEN)+'+/-'+str(self.piENerr)+'\n'+\
-                'pi_EE = '+str(self.piEE)+'+/-'+str(self.piEEerr)+'\n'+\
+                'piEN = '+str(self.piEN)+'+/-'+str(self.piENerr)+'\n'+\
+                'piEE = '+str(self.piEE)+'+/-'+str(self.piEEerr)+'\n'+\
                 'fs = '+str(self.fs)+'+/-'+str(self.fserr)+'\n'+\
                 'fb = '+str(self.fb)+'+/-'+str(self.fberr)+'\n'+\
                 'chi^2 = '+str(self.chichi)+'\n'+\
@@ -105,7 +112,7 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,log):
     
     lc_keys = ['JD_start','JD_end']
     event_keys = ['name', 'ra', 'dec', 
-                  't0','u0','rho','pi_EN', 'pi_EE', 's', 'q', 'alpha',
+                  'to','uo','rho','piEN', 'piEE', 'logs', 'logq', 'alpha',
                   'model_code']
     horizons_table = None
     
@@ -120,13 +127,13 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,log):
                     str(horizons_table['JD'].min())+' - '+
                     str(horizons_table['JD'].max()))
                     
-        log.info('Event t0 requested: '+str(default_params['t0']))
+        log.info('Event t0 requested: '+str(default_params['to']))
 
         log.info('Range of JDs requested for simulated lightcurve: '+
                     str(default_params['JD_start'])+' - '+
                     str(default_params['JD_end']))
                         
-        spacecraft_positions = jplhorizons_utils.calc_norm_spacecraft_positions(horizons_table,default_params['t0'])
+        spacecraft_positions = jplhorizons_utils.calc_norm_spacecraft_positions(horizons_table,default_params['to'])
 
         
     fit_data = np.zeros([len(source_mag_range),len(tE_range),3])
@@ -192,7 +199,7 @@ def simulate_model_grid(default_params,source_mag_range,tE_range,log):
             log.info('Completed model fitting for grid point mag='+str(mag)+'mag and tE='+str(tE)+'days')
                 
             output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
-                 e_no_parallax, e_parallax,sim_e_no_parallax, sim_e_no_parallax,
+                 e_no_parallax, e_parallax,sim_e_no_parallax, sim_e_parallax,
                  log)
              
             if default_params['fit_models']:
@@ -229,8 +236,8 @@ def output_metrics(mag,tE,fit_no_parallax,fit_parallax,dchichi,dbic,max_res,S2N,
             
     model_file.write(str(mag)+' '+str(tE)+'  no_parallax   '+\
                     str(fit_no_parallax.tE)+' +/- '+str(fit_no_parallax.tEerr)+'  '+\
-                    str(fit_no_parallax.t0)+' +/- '+str(fit_no_parallax.t0err)+'  '+\
-                    str(fit_no_parallax.u0)+' +/- '+str(fit_no_parallax.u0err)+'  '+\
+                    str(fit_no_parallax.to)+' +/- '+str(fit_no_parallax.toerr)+'  '+\
+                    str(fit_no_parallax.uo)+' +/- '+str(fit_no_parallax.uoerr)+'  '+\
                     str(fit_no_parallax.rho)+' +/- '+str(fit_no_parallax.rhoerr)+'  '+\
                     'None +/- None  '+\
                     'None +/- None  '+\
@@ -240,8 +247,8 @@ def output_metrics(mag,tE,fit_no_parallax,fit_parallax,dchichi,dbic,max_res,S2N,
                     
     model_file.write(str(mag)+' '+str(tE)+'  parallax   '+\
                     str(fit_parallax.tE)+' +/- '+str(fit_parallax.tEerr)+'  '+\
-                    str(fit_parallax.t0)+' +/- '+str(fit_parallax.t0err)+'  '+\
-                    str(fit_parallax.u0)+' +/- '+str(fit_parallax.u0err)+'  '+\
+                    str(fit_parallax.to)+' +/- '+str(fit_parallax.toerr)+'  '+\
+                    str(fit_parallax.uo)+' +/- '+str(fit_parallax.uoerr)+'  '+\
                     str(fit_parallax.rho)+' +/- '+str(fit_parallax.rhoerr)+'  '+\
                     str(fit_parallax.piEN)+' +/- '+str(fit_parallax.piENerr)+'  '+\
                     str(fit_parallax.piEE)+' +/- '+str(fit_parallax.piEEerr)+'  '+\
@@ -265,7 +272,7 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
     """
     
     if default_params['plots']:
-    
+        
         if default_params['fit_models']:
         
             log.info('Outputting lightcurve plots')
@@ -282,7 +289,10 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
             lens_plane_plot_file = os.path.join(default_params['output_path'],
                                                 'lens_plane_'+str(round(mag,1))+
                                                 '_'+str(round(tE,0))+'.png')
-        
+            lens_plane_txt_file = os.path.join(default_params['output_path'],
+                                                'lens_plane_'+str(round(mag,1))+
+                                                '_'+str(round(tE,0))+'.txt')
+                                                
             plot_lens_plane_trajectories(default_params['model_type'],e_no_parallax,e_parallax,
                                      'No parallax','Parallax',
                                      lens_plane_plot_file)
@@ -303,10 +313,13 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
             lens_plane_plot_file = os.path.join(default_params['output_path'],
                                                 'sim_lens_plane_'+str(round(mag,1))+
                                                 '_'+str(round(tE,0))+'.png')
-        
+            lens_plane_txt_file = os.path.join(default_params['output_path'],
+                                                'sim_lens_plane_'+str(round(mag,1))+
+                                                '_'+str(round(tE,0))+'.txt')
+                                                
             plot_lens_plane_trajectories(default_params['model_type'],sim_e_no_parallax,sim_e_parallax,
                                      'No parallax','Parallax',
-                                     lens_plane_plot_file)
+                                     lens_plane_plot_file,lens_plane_txt_file)
     
         log.info('Completed plotting output')
 
@@ -341,7 +354,7 @@ def make_param_dicts(default_params,mag,tE,log):
 
     lc_keys = ['JD_start','JD_end']
     event_keys = ['name', 'ra', 'dec', 
-                  't0','u0','rho','pi_EN', 'pi_EE','s', 'q', 'alpha',
+                  'to','uo','rho','piEN', 'piEE','logs', 'logq', 'alpha',
                   'model_type']
     
     lc_params = {}
@@ -356,9 +369,9 @@ def make_param_dicts(default_params,mag,tE,log):
     event_params_no_parallax = {}
     
     for key in event_keys:
-        
+
         if 'pi' not in key:
-            
+        
             event_params_no_parallax[key] = default_params[key]
         
         event_params_parallax[key] = default_params[key]
@@ -430,7 +443,7 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, log,
         model = microlmodels.create_model(event_params['model_type'], e, 
                                           parallax=['Full', event_params['t0']], 
                                           blend_flux_ratio=False, 
-                                        annual_parallax=False)
+                                          annual_parallax=False)
         output += ' with parallax'
         
     else:
@@ -442,7 +455,7 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, log,
         
         model = microlmodels.create_model(event_params['model_type'], e, 
                                           blend_flux_ratio=False, 
-                                        annual_parallax=False)
+                                          annual_parallax=False)
     
     log.info(output)
         
@@ -587,6 +600,17 @@ def get_fit_params(fitted_event,ndata):
         except AttributeError:
             pass
         
+        try:
+            fit.logs = fitted_event.fits[-1].outputs.fit_parameters.logs
+            fit.logq = fitted_event.fits[-1].outputs.fit_parameters.logq
+            fit.alpha = fitted_event.fits[-1].outputs.fit_parameters.alpha
+            fit.logserr = fitted_event.fits[-1].outputs.fit_errors.err_logs
+            fit.logqerr = fitted_event.fits[-1].outputs.fit_errors.err_logq
+            fit.alphaerr = fitted_event.fits[-1].outputs.fit_errors.err_alpha
+
+        except AttributeError:
+            pass
+        
         fit.chichi = fitted_event.fits[-1].outputs.fit_parameters.chichi
         
         fit.bic = microlstats.Bayesian_Information_Criterion(fit.chichi,
@@ -673,7 +697,9 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
 
     plt.close(6)
 
-def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_path):
+def plot_lens_plane_trajectories(model_type,event_no_parallax,event_parallax,
+                                 label1,label2,
+                                 plot_file_path,txt_file_path):
     """
     Function to plot the geometry of the lens plane showing the source 
     relative trajectory for two different fitted models
@@ -682,13 +708,17 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
     by E. Bachelet.
     
     Inputs:
-    :param Event event1: First pyLIMA event object with fitted model
-    :param Event event2: Second pyLIMA event object with fitted model
+    :param Event event_parallax: First pyLIMA event object with fitted model
+    :param Event event_no_parallax: Second pyLIMA event object with fitted model
     :param string label1: Label for event 1
     :param string label2: Label for event 2
-    :param string file_path: Path to output plot file
+    :param string plot_file_path: Path to output plot file
+    :param string txt_file_path: Path to output text file for trajectories
     """
-
+    
+    txt_file_no_para = txt_file_path.split('.txt')[0]+'_no_parallax.txt'
+    txt_file_para = txt_file_path.split('.txt')[0]+'_parallax.txt'
+    
     figure_trajectory_xlimit = 1.5
     figure_trajectory_ylimit = 1.5
 
@@ -697,21 +727,21 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
                 wspace=None, hspace=None)
     ax = fig.add_subplot(111, aspect=1)
     
-    fit1 = event1.fits[-1]
-    fit2 = event2.fits[-1]
+    fit1 = event_no_parallax.fits[-1]
+    fit2 = event_parallax.fits[-1]
     
     tmin = min([min(i.lightcurve_magnitude[:, 0]) for i in fit1.event.telescopes])
     tmax = max([max(i.lightcurve_magnitude[:, 0]) for i in fit1.event.telescopes])
     times = np.linspace(tmin, tmax + 100, 3000)
     
-    (fig,ax) = plot_rel_trajectory(fit1,times,fig,ax,label1,
+    (fig,ax) = plot_rel_trajectory(fit1,times,fig,ax,label1,txt_file_no_para,
                                     trajectory_color='#8c6931')
                                     
     tmin = min([min(i.lightcurve_magnitude[:, 0]) for i in fit2.event.telescopes])
     tmax = max([max(i.lightcurve_magnitude[:, 0]) for i in fit2.event.telescopes])
     times = np.linspace(tmin, tmax + 100, 3000)
                                     
-    (fig,ax) = plot_rel_trajectory(fit2,times,fig,ax,label2,
+    (fig,ax) = plot_rel_trajectory(fit2,times,fig,ax,label2,txt_file_para,
                                     trajectory_color='#2b8c85')
 
     ax.axis( [- figure_trajectory_xlimit, figure_trajectory_xlimit, 
@@ -721,7 +751,7 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
         ax.scatter(0, 0, s=10, c='k')
         
     else:
-        pyLIMA_parameters = event1.fits[-1].model.compute_pyLIMA_parameters(event1.fits[-1].fit_results)
+        pyLIMA_parameters = event_parallax.fits[-1].model.compute_pyLIMA_parameters(event_parallax.fits[-1].fit_results)
         s = 10**(pyLIMA_parameters.logs)
         ax.scatter((s/2.0), 0.0, s=10, c='k')
         ax.scatter(-(s/2.0), 0.0, s=10, c='k')
@@ -744,11 +774,11 @@ def plot_lens_plane_trajectories(model_type,event1,event2,label1,label2,file_pat
 
     plt.legend(fontsize=18)
     
-    plt.savefig(file_path)
+    plt.savefig(plot_file_path)
 
     plt.close(7)
-
-def plot_rel_trajectory(fit,times,fig,ax,label,trajectory_color='r'):
+    
+def plot_rel_trajectory(fit,times,fig,ax,label,txt_file_path,trajectory_color='r'):
     """Function to calculate the source's trajectory relative to a lens in 
     the lens plane from a pyLIMA Event with a fitted model.
     
@@ -808,7 +838,24 @@ def plot_rel_trajectory(fit,times,fig,ax,label,trajectory_color='r'):
                           trajectory_y[index_trajectory_limits[index_t0 + 1]] - trajectory_y[index_trajectory_limits[index_t0]],
                           head_width=0.04, head_length=0.04, 
                           color=trajectory_color)
+    
+    
+    f = open(txt_file_path,'w')
+    
+    for key in NH_data_simulator.get_parameter_order(fit.model.model_type,True):
+        try:
+            f.write('# '+key+' :: '+str(getattr(pyLIMA_parameters,key))+'\n')
+        except AttributeError:
+            pass
+        
+    f.write('# Time lens_plane_x, lens_plane_y\n')
 
+    for i in range(0,len(tel.lightcurve_flux[:,0]),1):
+
+        f.write(str(tel.lightcurve_flux[i,0])+' '+str(trajectory_x[i])+' '+str(trajectory_y[i])+'\n')
+
+    f.close()
+    
     return fig,ax
     
 
@@ -983,6 +1030,14 @@ def parse_config_file(config_file):
                 
             default_params[key] = value
 
+    if 's' in default_params.keys():
+        
+        default_params['logs'] = np.log10(default_params['s'])
+
+    if 'q' in default_params.keys():
+        
+        default_params['logq'] = np.log10(default_params['q'])
+  
     source_mag_range = np.arange(default_params['source_mag_bright'], 
                                  default_params['source_mag_faint'],
                                  default_params['source_mag_incr'])
