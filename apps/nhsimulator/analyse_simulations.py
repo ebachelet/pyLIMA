@@ -39,22 +39,22 @@ def plot_sn_matrix(sim_data,log_dir):
     
     max_res = np.flip(max_res,0)
 
-    fig = plt.figure(1)
-    
+    fig = plt.figure(1,(8,3))
+    plt.subplots_adjust(top=0.95,left=0.1,right=0.95)
+                
     norm = visualization.ImageNormalize(max_res, 
                                         interval=visualization.MinMaxInterval(),
                                         stretch=visualization.SqrtStretch())
     
     plt.imshow(max_res, origin='lower', cmap=plt.cm.viridis, norm=norm)
     
-    plt.colorbar(orientation='horizontal')
+    plt.colorbar(orientation='horizontal',pad=0.35)
     
     [xmin,xmax,ymin,ymax] = plt.axis()
     
     (xticks,xlabels,yticks,ylabels) = calc_axis_ranges(tE_range, mag_range, 
                                                         xmin,xmax,ymin,ymax)
-    
-    plt.xticks(xticks,xlabels)
+    plt.xticks(xticks,xlabels, rotation=45.0)
     plt.yticks(yticks,ylabels)
     
     plt.xlabel('tE [days]')
