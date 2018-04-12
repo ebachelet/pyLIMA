@@ -352,7 +352,7 @@ def make_param_dicts(default_params,mag,tE,log):
     for the simulation functions.
     """
 
-    lc_keys = ['JD_start','JD_end']
+    lc_keys = ['JD_start','JD_end','cadence_days']
     event_keys = ['name', 'ra', 'dec', 
                   'to','uo','rho','piEN', 'piEE','logs', 'logq', 'alpha',
                   'model_type']

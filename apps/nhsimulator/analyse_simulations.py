@@ -40,7 +40,7 @@ def plot_sn_matrix(sim_data,log_dir):
     max_res = np.flip(max_res,0)
 
     fig = plt.figure(1,(8,3))
-    plt.subplots_adjust(top=0.95,left=0.1,right=0.98)
+    plt.subplots_adjust(top=0.90,left=0.1,right=0.98)
                 
     norm = visualization.ImageNormalize(max_res, 
                                         interval=visualization.MinMaxInterval(),

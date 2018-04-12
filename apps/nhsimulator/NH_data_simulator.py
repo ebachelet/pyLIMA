@@ -118,7 +118,7 @@ def generate_LORRI_lightcurve(params,log):
                                 and magnitude error
     """
     lorri = LORRIParams()
-    cadence = 24.0 * 60.0 * 60.0
+    cadence = params['cadence_days'] * 24.0 * 60.0 * 60.0
     
     ts_incr = (lorri.max_exp_time + lorri.read_time + cadence) / ( 60.0 * 60.0 * 24.0 )
     
