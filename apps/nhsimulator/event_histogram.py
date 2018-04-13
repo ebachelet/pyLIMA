@@ -32,7 +32,10 @@ def plot_event_histogram():
     hmin = 10.0
     
     fig = plt.figure(1)
-    plt.subplots_adjust(left=0.15, bottom=0.1, right=0.95, top=0.95,
+    
+    rcParams.update({'font.size': 14})
+    
+    plt.subplots_adjust(left=0.15, bottom=0.15, right=0.95, top=0.95,
                 wspace=None, hspace=None)
     
     plt.hist(data,int(nbins),range=(hmin,hmax), normed=True)
@@ -43,19 +46,20 @@ def plot_event_histogram():
 
     plt.xlabel('Baseline I [mag]')
 
-    plt.ylabel('Cumulative percentage frequency')
+    plt.ylabel('Percentage frequency')
 
     ([xmin,xmax,ymin,ymax]) = plt.axis()
     plt.axis([25.0,10.0,ymin,ymax])
     
+    
+    mlimit = 16.5
     y = np.linspace(ymin,ymax,10)
     x = np.zeros(len(y))
-    x.fill(17.0)
+    x.fill(mlimit)
     plt.plot(x,y,'k--')
     
     plt.savefig('hist_events_baseline_brightness.png')
 
-    mlimit = 17.0
     n = len(np.where(data <= mlimit)[0])
     print str(n)+' events brigher than '+str(mlimit)+'mag detected'
     print str(round( ((float(n)/float(len(data)))*100.0), 1 ))+'% of total'

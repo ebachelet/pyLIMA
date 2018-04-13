@@ -43,7 +43,10 @@ def plot_sn_matrix(sim_data,log_dir,default_params):
     max_res = np.flip(max_res,0)
 
     fig = plt.figure(1,(8,3))
-    plt.subplots_adjust(top=0.90,left=0.1,right=0.98)
+    
+    rcParams.update({'font.size': 14})
+
+    plt.subplots_adjust(top=0.90,left=0.02,right=0.98)
     
     norm = visualization.ImageNormalize(max_res, 
                                         interval=visualization.MinMaxInterval(),
@@ -51,7 +54,7 @@ def plot_sn_matrix(sim_data,log_dir,default_params):
     
     plt.imshow(max_res, origin='lower', cmap=plt.cm.viridis, norm=norm)
     
-    plt.colorbar(orientation='horizontal',pad=0.35)
+    plt.colorbar(orientation='horizontal',fraction=0.125,pad=0.45)
     
     [xmin,xmax,ymin,ymax] = plt.axis()
     
