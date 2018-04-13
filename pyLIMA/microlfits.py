@@ -536,11 +536,6 @@ class MLFits(object):
         """
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-        try:
-            self.model.x_center = None
-            self.model.y_center = None
-        except:
-            pass
         chichi = 0.0
 
         for telescope in self.event.telescopes:
@@ -652,11 +647,7 @@ class MLFits(object):
         """
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
-        try:
-            self.model.x_center = None
-            self.model.y_center = None
-        except:
-            pass
+
         residuals = np.array([])
 
         for telescope in self.event.telescopes:

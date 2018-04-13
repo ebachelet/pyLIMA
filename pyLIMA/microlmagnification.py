@@ -12,7 +12,9 @@ import numpy as np
 import VBBinaryLensing
 
 VBB = VBBinaryLensing.VBBinaryLensing()
+VBB.Tol = 0.001
 VBB.RelTol = 0.001
+
 
 def impact_parameter(tau, uo):
     """
@@ -242,7 +244,7 @@ def amplification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_dar
     for xs, ys, s in zip(x_source, y_source, separation):
         # print index,len(Xs)
         # print s,q,xs,ys,rho,tolerance
-        magnification_VBB = VBB.BinaryMag2.BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient)
+        magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient)
 
         amplification_fsbl.append(magnification_VBB)
 

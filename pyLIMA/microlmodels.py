@@ -357,6 +357,8 @@ class MLModel(object):
         # start_time = python_time.time()
 
 
+
+
         for key_parameter in self.model_dictionnary.keys():
 
             try:
@@ -371,6 +373,13 @@ class MLModel(object):
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(self.model_parameters)
 
         # print 'conversion', python_time.time() - start_time
+
+        if self.binary_origin:
+
+            self.x_center = None
+            self.y_center = None
+
+            self.find_origin(pyLIMA_parameters)
         return pyLIMA_parameters
 
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
@@ -798,7 +807,7 @@ class ModelUSBL(MLModel):
         :rtype: array_like
         """
 
-        self.find_origin(pyLIMA_parameters)
+
         to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
@@ -867,7 +876,6 @@ class ModelUSBL(MLModel):
 
         uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
                                      new_origin_y * np.cos(pyLIMA_parameters.alpha))
-
         return to, uo
 
     def uc_tc_from_uo_to(self, pyLIMA_parameters, to, uo):
@@ -920,7 +928,6 @@ class ModelPSBL(MLModel):
         :rtype: array_like,array_like
         """
 
-        self.find_origin(pyLIMA_parameters)
         to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
 
         source_trajectoire = self.source_trajectory(telescope, to, uo,
@@ -991,6 +998,7 @@ class ModelPSBL(MLModel):
         uo = pyLIMA_parameters.uo - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
                                      new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
+
         return to, uo
 
     def uc_tc_from_uo_to(self, pyLIMA_parameters, to, uo):
@@ -1045,7 +1053,6 @@ class ModelFSBL(MLModel):
 
         linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
 
-        self.find_origin(pyLIMA_parameters)
         to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
