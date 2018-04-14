@@ -279,7 +279,7 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
             
             lc_plot_file = os.path.join(default_params['output_path'],
                                         'fitted_lightcurves_'+str(round(mag,1))+
-                                        '_'+str(round(tE,0))+'.png')
+                                        '_'+str(round(tE,0))+'.eps')
         
             plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
                         lc_plot_file)
@@ -288,7 +288,7 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
             
             lens_plane_plot_file = os.path.join(default_params['output_path'],
                                                 'lens_plane_'+str(round(mag,1))+
-                                                '_'+str(round(tE,0))+'.png')
+                                                '_'+str(round(tE,0))+'.eps')
             lens_plane_txt_file = os.path.join(default_params['output_path'],
                                                 'lens_plane_'+str(round(mag,1))+
                                                 '_'+str(round(tE,0))+'.txt')
@@ -303,7 +303,7 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
             
             lc_plot_file = os.path.join(default_params['output_path'],
                                         'sim_lightcurves_'+str(round(mag,1))+
-                                        '_'+str(round(tE,0))+'.png')
+                                        '_'+str(round(tE,0))+'.eps')
         
             plot_fitted_lightcurves(lc_no_parallax,lc_parallax,sim_e_no_parallax,sim_e_parallax,
                         lc_plot_file)
@@ -312,7 +312,7 @@ def output_plots(default_params,mag,tE,lc_no_parallax,lc_parallax,
             
             lens_plane_plot_file = os.path.join(default_params['output_path'],
                                                 'sim_lens_plane_'+str(round(mag,1))+
-                                                '_'+str(round(tE,0))+'.png')
+                                                '_'+str(round(tE,0))+'.eps')
             lens_plane_txt_file = os.path.join(default_params['output_path'],
                                                 'sim_lens_plane_'+str(round(mag,1))+
                                                 '_'+str(round(tE,0))+'.txt')

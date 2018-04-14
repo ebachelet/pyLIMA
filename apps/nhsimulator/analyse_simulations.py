@@ -71,7 +71,7 @@ def plot_sn_matrix(sim_data,log_dir,default_params):
             str(default_params['cadence_days'])+'d cadence')
     
     c = str(default_params['cadence_days']).replace('.','_')
-    fname = 'sn_matrix_'+default_params['model_type']+'_'+c+'d.png'
+    fname = 'sn_matrix_'+default_params['model_type']+'_'+c+'d.eps'
     
     plt.savefig(os.path.join(log_dir,fname))
     

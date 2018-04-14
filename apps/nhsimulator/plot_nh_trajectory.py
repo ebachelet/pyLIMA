@@ -134,7 +134,7 @@ def plot_trajectory_through_solar_system(spacecraft_data,
     ax.legend(frameon=False)
     
     #plt.show()
-    plt.savefig('NH_orbital_trajectory.png',bbox_inches='tight')
+    plt.savefig('NH_orbital_trajectory.eps',bbox_inches='tight')
     plt.close(2)
     
 

@@ -58,7 +58,7 @@ def plot_event_histogram():
     x.fill(mlimit)
     plt.plot(x,y,'k--')
     
-    plt.savefig('hist_events_baseline_brightness.png')
+    plt.savefig('hist_events_baseline_brightness.eps')
 
     n = len(np.where(data <= mlimit)[0])
     print str(n)+' events brigher than '+str(mlimit)+'mag detected'

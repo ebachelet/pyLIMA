@@ -30,7 +30,7 @@ def plot_nh_sky_position():
     
     fig = plt.figure(3,(10,10))
     
-    rcParams.update({'font.size': 14})
+    rcParams.update({'font.size': 18})
     
     plt.plot(nh_positions['RA']/15.0,nh_positions['Dec'],'b-',label='New Horizons')
 
@@ -55,7 +55,7 @@ def plot_nh_sky_position():
 
     plt.legend(loc='upper right')
     
-    plt.savefig('NH_sky_position.png',bbox_inches='tight')
+    plt.savefig('NH_sky_position.eps',bbox_inches='tight')
 
     plt.close(3)
     
