@@ -10,6 +10,7 @@ from collections import OrderedDict
 import collections
 import copy
 import json
+import cycler
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -208,7 +209,7 @@ def LM_outputs(fit):
     hexcolor = ['#'+format(int(i[0]*255),'x').zfill(2)+format(int(i[1]*255),'x').zfill(2)+
                 format(int(i[2]*255),'x').zfill(2) for i in color]
 
-    matplotlib.rcParams['axes.color_cycle'] = hexcolor
+    matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
     #hexcolor[0] = '#000000'
 
 
@@ -261,7 +262,7 @@ def MCMC_outputs(fit):
     #              tuple(color[:, 0:-1]))
     hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255), 'x').zfill(2) +
                 format(int(i[2] * 255), 'x').zfill(2) for i in color]
-    matplotlib.rcParams['axes.color_cycle'] = hexcolor
+    matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
     hexcolor[0] = '#000000'
     raw_chains = fit.MCMC_chains
 
@@ -938,7 +939,7 @@ def plot_LM_ML_geometry(fit):
                 pass
 
 
-    if ('PS' not in fit.model.model_type) & ('DS' not in fit.model.model_type) & ('RRLyrae' not in fit.model.model_type):
+    if 'rho' in pyLIMA_parameters._fields:
         #index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
         #   0]
         index_source  = np.argmin((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5)

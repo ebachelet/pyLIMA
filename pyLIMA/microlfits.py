@@ -488,7 +488,7 @@ class MLFits(object):
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
             mutation=(0.5, 1.5), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
-            atol=0.001, strategy='best1bin',
+            atol=0.1, strategy='best1bin',
             recombination=0.5, polish=True, init='latinhypercube',
             disp=True
         )
