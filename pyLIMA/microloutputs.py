@@ -540,7 +540,7 @@ def MCMC_plot_align_data(fit, parameters, plot_axe):
 
     plot_axe.plot(fit.event.telescopes[0].lightcurve_magnitude[0, 0],
                   fit.event.telescopes[0].lightcurve_magnitude[0, 1],
-                  '--k', label=fit.model.model_type, lw=1)
+                  'b', label=fit.model.model_type, lw=1)
     plot_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.)
 
 
@@ -743,11 +743,30 @@ def LM_plot_model(fit, figure_axe):
 
     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
-
+        
+        for telescope in fit.event.telescopes:
+        
+            if 'Space' in telescope.location:
+            
+                time_space = np.linspace(telescope.lightcurve_flux[0,0]-10,telescope.lightcurve_flux[-1,0]+10, 500)
+               
+                reference_telescope_space = copy.copy(fit.event.telescopes[0])
+                reference_telescope_space.location = telescope.location
+                reference_telescope_space.spacecraft_name = telescope.spacecraft_name
+                reference_telescope_space.lightcurve_magnitude = np.array(
+        		[time_space, [0] * len(time_space), [0] * len(time_space)]).T
+        		
+                reference_telescope_space.lightcurve_flux = reference_telescope_space.lightcurve_in_flux()
+                reference_telescope_space.compute_parallax(fit.event, fit.model.parallax_model)
+                
+                flux_model = fit.model.compute_the_microlensing_model(reference_telescope_space, pyLIMA_parameters)[0]
+                magnitude = microltoolbox.flux_to_magnitude(flux_model)
+                figure_axe.plot(time_space, magnitude, '--b', lw=2)
+                    
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, '--k', label=fit.model.model_type, lw=2)
+    figure_axe.plot(time, magnitude, 'b', label=fit.model.model_type, lw=2)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.set_xlim(
@@ -867,11 +886,29 @@ def plot_LM_ML_geometry(fit):
 
     reference_telescope.lightcurve_flux = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
-
+        
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
+    
     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+        
+        for telescope in fit.event.telescopes:
 
-    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
+            if 'Space' in telescope.location:
+                if 'BL' in fit.model.model_type:
+                    
+                    fit.model.find_origin(pyLIMA_parameters)
+                    to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
+                    trajectory_x,trajectory_y = fit.model.source_trajectory(telescope, to, uo,
+                                                                            pyLIMA_parameters.tE, pyLIMA_parameters)
+                else:
+                
+                    trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope,pyLIMA_parameters.to,
+		                                                             pyLIMA_parameters.uo,pyLIMA_parameters.tE, 
+		                                                             pyLIMA_parameters)
+                figure_axes.plot(trajectory_x, trajectory_y, '--b')		                            
+  
+
     if 'BL' in fit.model.model_type:
         fit.model.find_origin(pyLIMA_parameters)
         to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
@@ -883,8 +920,10 @@ def plot_LM_ML_geometry(fit):
 
         trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
-
     figure_axes.plot(trajectory_x, trajectory_y, 'b')
+
+
+    
 
     # index_trajectory_limits = \
     #    np.where((np.abs(trajectory_x) < figure_trajectory_xlimit) & (np.abs(trajectory_y) < figure_trajectory_ylimit))[

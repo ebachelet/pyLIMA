@@ -301,28 +301,9 @@ class MLFits(object):
 
         guess_paczynski_parameters += telescopes_fluxes
 
-        guess_parameters_pyLIMA_standards = collections.namedtuple('parameters',
-                                                                   self.model.pyLIMA_standards_dictionnary.keys())
-
-        for key_parameter in self.model.pyLIMA_standards_dictionnary.keys():
-
-            try:
-                setattr(guess_parameters_pyLIMA_standards, key_parameter,
-                        guess_paczynski_parameters[self.model.pyLIMA_standards_dictionnary[key_parameter]])
-
-            except:
-
-                pass
-
-        fancy_parameters_guess = self.model.pyLIMA_standard_parameters_to_fancy_parameters(
-            guess_parameters_pyLIMA_standards)
-
-        model_guess_parameters = []
-        for key_parameter in list(self.model.model_dictionnary.keys()):
-            model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
-
+        
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
-        return model_guess_parameters
+        return guess_paczynski_parameters
 
     def MCMC(self):
         """ The MCMC method. Construct starting points of the chains around
@@ -487,9 +468,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5, 1.5), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
-            atol=0.1, strategy='best1bin',
-            recombination=0.5, polish=True, init='latinhypercube',
+            mutation=(0.5, 1.0), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
+            atol=0.1, strategy='rand1bin',
+            recombination=0.7, polish=True, init='latinhypercube',
             disp=True
         )
 
@@ -877,9 +858,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_grids,
             bounds=self.new_parameters_boundaries, args=tuple(grid_pixel_parameters.tolist()),
-            mutation=(0.5, 1.5), popsize=10, maxiter=1000,
-            tol=0.0, atol=0.001, strategy='best1bin',
-            recombination=0.5, polish=True,
+            mutation=(0.5, 1.0), popsize=10, maxiter=1000,
+            tol=0.0, atol=0.1, strategy='rand1bin',
+            recombination=0.7, polish=True,
             disp=True
         )
 
