@@ -393,7 +393,7 @@ class MLFits(object):
 
         # First estimation using population as a starting points.
 
-        final_positions, final_probabilities, state = sampler.run_mcmc(population, 10*nlinks)
+        final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
 
         print('MCMC preburn done')
 
@@ -402,7 +402,7 @@ class MLFits(object):
 
 
         # Final estimation using the previous output.
-        for positions, probabilities, states in sampler.sample(final_positions, iterations= 5 * nlinks,
+        for positions, probabilities, states in sampler.sample(final_positions, iterations=  nlinks,
                                                                storechain=True):
             chains = np.c_[positions, probabilities]
             if MCMC_chains is not None:
@@ -517,6 +517,7 @@ class MLFits(object):
         """
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
+       
         chichi = 0.0
 
         for telescope in self.event.telescopes:
@@ -629,6 +630,7 @@ class MLFits(object):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
+       
         residuals = np.array([])
 
         for telescope in self.event.telescopes:
@@ -636,6 +638,9 @@ class MLFits(object):
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             residuals = np.append(residuals, residus)
+            
+            
+           
         # print python_time.time()-start
 
         return residuals

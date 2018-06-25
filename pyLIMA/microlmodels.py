@@ -842,32 +842,29 @@ class ModelUSBL(MLModel):
 
     def find_origin(self, pyLIMA_parameters):
 
-        if self.x_center:
-            pass
+        new_origin_x = 0
+        new_origin_y = 0
 
-        else:
-            new_origin_x = 0
-            new_origin_y = 0
-
-            if self.binary_origin:
-
-                if self.binary_origin == 'central_caustic':
-                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+        if self.binary_origin == 'central_caustic':
+        
+           new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
                         10 ** pyLIMA_parameters.logs,
                         10 ** pyLIMA_parameters.logq)
 
-                if self.binary_origin == 'planetary_caustic':
-                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+        if self.binary_origin == 'planetary_caustic':
+         
+           new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
                         10 ** pyLIMA_parameters.logs,
                         10 ** pyLIMA_parameters.logq)
 
-            self.x_center = new_origin_x
-            self.y_center = new_origin_y
+        self.x_center = new_origin_x
+        self.y_center = new_origin_y
 
     def uo_to_from_uc_tc(self, pyLIMA_parameters):
 
         new_origin_x = self.x_center
         new_origin_y = self.y_center
+
 
         if new_origin_x:
 
@@ -976,28 +973,24 @@ class ModelPSBL(MLModel):
         self.area_of_interest = area_of_interest
 
     def find_origin(self, pyLIMA_parameters):
+    
+        new_origin_x = 0
+        new_origin_y = 0
 
-        if self.x_center:
-            pass
-
-        else:
-            new_origin_x = 0
-            new_origin_y = 0
-
-            if self.binary_origin:
-
-                if self.binary_origin == 'central_caustic':
-                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+        if self.binary_origin == 'central_caustic':
+        
+           new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
                         10 ** pyLIMA_parameters.logs,
                         10 ** pyLIMA_parameters.logq)
 
-                if self.binary_origin == 'planetary_caustic':
-                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+        if self.binary_origin == 'planetary_caustic':
+         
+           new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
                         10 ** pyLIMA_parameters.logs,
                         10 ** pyLIMA_parameters.logq)
 
-            self.x_center = new_origin_x
-            self.y_center = new_origin_y
+        self.x_center = new_origin_x
+        self.y_center = new_origin_y
 
     def uo_to_from_uc_tc(self, pyLIMA_parameters):
 
@@ -1114,27 +1107,24 @@ class ModelFSBL(MLModel):
 
     def find_origin(self, pyLIMA_parameters):
 
-        if self.x_center:
-            pass
+        new_origin_x = 0
+        new_origin_y = 0
 
-        else:
-            new_origin_x = 0
-            new_origin_y = 0
-
-            if self.binary_origin:
-
-                if self.binary_origin == 'central_caustic':
-                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
+        if self.binary_origin == 'central_caustic':
+        
+           new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_central_caustics_center(
                         10 ** pyLIMA_parameters.logs,
                         10 ** pyLIMA_parameters.logq)
 
-                if self.binary_origin == 'planetary_caustic':
-                    new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
+        if self.binary_origin == 'planetary_caustic':
+         
+           new_origin_x, new_origin_y = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(
                         10 ** pyLIMA_parameters.logs,
                         10 ** pyLIMA_parameters.logq)
 
-            self.x_center = new_origin_x
-            self.y_center = new_origin_y
+        self.x_center = new_origin_x
+        self.y_center = new_origin_y
+
 
     def uo_to_from_uc_tc(self, pyLIMA_parameters):
 
