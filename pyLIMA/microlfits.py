@@ -301,28 +301,9 @@ class MLFits(object):
 
         guess_paczynski_parameters += telescopes_fluxes
 
-        guess_parameters_pyLIMA_standards = collections.namedtuple('parameters',
-                                                                   self.model.pyLIMA_standards_dictionnary.keys())
-
-        for key_parameter in self.model.pyLIMA_standards_dictionnary.keys():
-
-            try:
-                setattr(guess_parameters_pyLIMA_standards, key_parameter,
-                        guess_paczynski_parameters[self.model.pyLIMA_standards_dictionnary[key_parameter]])
-
-            except:
-
-                pass
-
-        fancy_parameters_guess = self.model.pyLIMA_standard_parameters_to_fancy_parameters(
-            guess_parameters_pyLIMA_standards)
-
-        model_guess_parameters = []
-        for key_parameter in list(self.model.model_dictionnary.keys()):
-            model_guess_parameters.append(getattr(fancy_parameters_guess, key_parameter))
-
+        
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
-        return model_guess_parameters
+        return guess_paczynski_parameters
 
     def MCMC(self):
         """ The MCMC method. Construct starting points of the chains around
@@ -363,8 +344,8 @@ class MLFits(object):
         limit_parameters = len(self.model.parameters_boundaries)
         best_solution = self.guess[:limit_parameters]
 
-        nwalkers = 100 * len(best_solution)
-        nlinks = 100
+        nwalkers = 8 * len(best_solution)
+        nlinks = 1000
 
         # Initialize the population of MCMC
         population = []
@@ -421,7 +402,7 @@ class MLFits(object):
 
 
         # Final estimation using the previous output.
-        for positions, probabilities, states in sampler.sample(final_positions, iterations= 5 * nlinks,
+        for positions, probabilities, states in sampler.sample(final_positions, iterations=  nlinks,
                                                                storechain=True):
             chains = np.c_[positions, probabilities]
             if MCMC_chains is not None:
@@ -487,9 +468,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.5, 1.5), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
-            atol=0.001, strategy='best1bin',
-            recombination=0.5, polish=True, init='latinhypercube',
+            mutation=(0.5, 1.0), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
+            atol=0.1, strategy='rand1bin',
+            recombination=0.7, polish=True, init='latinhypercube',
             disp=True
         )
 
@@ -536,11 +517,7 @@ class MLFits(object):
         """
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-        try:
-            self.model.x_center = None
-            self.model.y_center = None
-        except:
-            pass
+       
         chichi = 0.0
 
         for telescope in self.event.telescopes:
@@ -652,11 +629,8 @@ class MLFits(object):
         """
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
-        try:
-            self.model.x_center = None
-            self.model.y_center = None
-        except:
-            pass
+
+       
         residuals = np.array([])
 
         for telescope in self.event.telescopes:
@@ -664,6 +638,9 @@ class MLFits(object):
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             residuals = np.append(residuals, residus)
+            
+            
+           
         # print python_time.time()-start
 
         return residuals
@@ -886,9 +863,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_grids,
             bounds=self.new_parameters_boundaries, args=tuple(grid_pixel_parameters.tolist()),
-            mutation=(0.5, 1.5), popsize=10, maxiter=1000,
-            tol=0.0, atol=0.001, strategy='best1bin',
-            recombination=0.5, polish=True,
+            mutation=(0.5, 1.0), popsize=10, maxiter=1000,
+            tol=0.0, atol=0.1, strategy='rand1bin',
+            recombination=0.7, polish=True,
             disp=True
         )
 

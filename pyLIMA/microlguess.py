@@ -279,7 +279,7 @@ def differential_evolution_parameters_boundaries(model):
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     delta_to_boundaries = (-150, 150)
     delta_uo_boundaries = (-1.0, 1.0)
-    uo_boundaries = (-0.0, 1.0)
+    uo_boundaries = (-1.0, 1.0)
     tE_boundaries = (1.0, 500)
     rho_boundaries = (5 * 10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
@@ -309,9 +309,10 @@ def differential_evolution_parameters_boundaries(model):
 
     # model_source_spots_boundaries = {'None': []}
 
-    Period = (0.0, 2.0)
-    phis = (-np.pi, np.pi)
-    amplitude = (0.0, 1.0)
+    period_variable = (0.001,1000)
+    phase_variable = (-np.pi, np.pi)
+    amplitude_variable = (0.0, 3.0)
+    octave_variable = (10**-10,1)
     q_boundaries = (-2, 2)
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
@@ -363,6 +364,18 @@ def differential_evolution_parameters_boundaries(model):
             for j in unique_filters:
                 parameters_boundaries += [amplitude]
                 parameters_boundaries += [phis]
+
+    if model.model_type == 'VariablePL':
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries,rho_boundaries, period_variable]
+
+        filters = [telescope.filter for telescope in model.event.telescopes]
+
+        unique_filters = np.unique(filters)
+        for i in range(model.number_of_harmonics):
+            for j in unique_filters:
+                parameters_boundaries += [amplitude_variable]
+                parameters_boundaries += [phase_variable]
+                parameters_boundaries += [octave_variable]
 
     # Second order boundaries
     if model.parallax_model[0] != 'None':
