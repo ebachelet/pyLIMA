@@ -279,7 +279,7 @@ def differential_evolution_parameters_boundaries(model):
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     delta_to_boundaries = (-150, 150)
     delta_uo_boundaries = (-1.0, 1.0)
-    uo_boundaries = (-1.0, 1.0)
+    uo_boundaries = (0.0, 1.0)
     tE_boundaries = (1.0, 500)
     rho_boundaries = (5 * 10 ** -5, 0.05)
     q_flux_boundaries = (0.001, 1.0)
@@ -343,28 +343,7 @@ def differential_evolution_parameters_boundaries(model):
         #for ind,telo in enumerate(model.event.telescopes):
              #parameters_boundaries+=[fluxes[ind], blend[ind]]
 
-    if model.model_type == 'RRLyraePL':
-        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, Period]
-
-        filters = [telescope.filter for telescope in model.event.telescopes]
-
-        unique_filters = np.unique(filters)
-        for i in range(model.number_of_harmonics):
-            for j in unique_filters:
-                parameters_boundaries += [amplitude]
-                parameters_boundaries += [phis]
-
-    if model.model_type == 'RRLyraeFS':
-        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, Period]
-
-        filters = [telescope.filter for telescope in model.event.telescopes]
-
-        unique_filters = np.unique(filters)
-        for i in range(model.number_of_harmonics):
-            for j in unique_filters:
-                parameters_boundaries += [amplitude]
-                parameters_boundaries += [phis]
-
+   
     if model.model_type == 'VariablePL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries,rho_boundaries, period_variable]
 
@@ -382,7 +361,7 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries.append(piEN_boundaries)
         parameters_boundaries.append(piEE_boundaries)
 
-    if model.xallarap_model != 'None':
+    if model.xallarap_model[0] != 'None':
         parameters_boundaries.append(XiEN_boundaries)
         parameters_boundaries.append(XiEE_boundaries)
         parameters_boundaries.append(ra_xal_boundaries)

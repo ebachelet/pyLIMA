@@ -79,12 +79,13 @@ def test_amplification_USBL():
     xs = np.array([0.5])
     ys = np.array([0.5])
     rho = 0.0033
+    
     tol = 0.001
+    reltol = 0.001
 
+    magnification = microlmagnification.amplification_USBL(s,q,xs,ys,rho)[0]
 
-    magnification = microlmagnification.amplification_USBL(s,q,xs,ys,rho,tol)
-
-    assert np.allclose(magnification, np.array([1.6311724868]))
+    assert np.abs(magnification- 1.6311724868)<tol
 
 
 def test_amplification_PSBL():

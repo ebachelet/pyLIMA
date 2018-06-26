@@ -269,26 +269,25 @@ class MLFits(object):
             if self.model.model_type == 'DSPL':
                 guess_paczynski_parameters, f_source = microlguess.initial_guess_DSPL(self.event)
 
-            # Estimate  the telescopes fluxes (flux_source + g_blending) parameters, with a PSPL model
+            # Estimate  the telescopes fluxes (flux_source + g_blending) parameters
 
-            fake_model = microlmodels.create_model('PSPL', self.event)
-            fake_model.define_model_parameters()
-            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, fake_model)
+            
+            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
 
             # The survey fluxes are already known from microlguess
             telescopes_fluxes[0] = f_source
             telescopes_fluxes[1] = 0.0
 
-            if self.model.parallax_model[0] != 'None':
+            if  'PiEN' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
-            if self.model.xallarap_model[0] != 'None':
+            if  'XiEN' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
-            if self.model.orbital_motion_model[0] != 'None':
+            if 'dsdt' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
-            if self.model.source_spots_model != 'None':
+            if 'spot_size' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
 
@@ -384,10 +383,7 @@ class MLFits(object):
 
         number_of_parameters = len(individual)
 
-        # pool = MPIPool()
-        # if not pool.is_master():
-        # pool.wait()
-        # sys.exit(0)
+      
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
                                         a=2.0, pool=self.pool)
 
@@ -430,6 +426,11 @@ class MLFits(object):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
+        for index,parameter in enumerate(pyLIMA_parameters):
+            if np.abs(parameter)>10**100:
+                    import pdb; pdb.set_trace()
+                    return -np.inf
+                        
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
             residus = self.model_residuals(telescope, pyLIMA_parameters)
