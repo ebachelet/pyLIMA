@@ -737,6 +737,12 @@ def LM_plot_model(fit, figure_axe):
 
     time = np.sort(np.append(time, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
+    if reference_telescope.location == 'Space':
+    
+        min_time = np.min(reference_telescope.lightcurve_flux[:,0])
+        max_time = np.max(reference_telescope.lightcurve_flux[:,0])
+        time = np.linspace(min_time, max_time, 3000)
+        
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
@@ -746,7 +752,7 @@ def LM_plot_model(fit, figure_axe):
         
         for telescope in fit.event.telescopes:
         
-            if 'Space' in telescope.location:
+            if ('Space' in telescope.location) and (telescope.name != reference_telescope.name) :
             
                 time_space = np.linspace(telescope.lightcurve_flux[0,0]-10,telescope.lightcurve_flux[-1,0]+10, 500)
                
@@ -879,22 +885,29 @@ def plot_LM_ML_geometry(fit):
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
     time = np.linspace(min_time, max_time + 100, 3000)
-
+                
     reference_telescope = copy.copy(fit.event.telescopes[0])
+    if reference_telescope.location == 'Space':
+    
+        min_time = np.min(reference_telescope.lightcurve_flux[:,0])
+        max_time = np.max(reference_telescope.lightcurve_flux[:,0])
+        time = np.linspace(min_time, max_time, 3000)
+        
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
+    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
-    reference_telescope.lightcurve_flux = np.array(
-        [time, [0] * len(time), [0] * len(time)]).T
-        
+   
+            
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     
-    if fit.model.parallax_model[0] != 'None':
+     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
         
         for telescope in fit.event.telescopes:
+        
+            if ('Space' in telescope.location) and (telescope.name != reference_telescope.name) :
 
-            if 'Space' in telescope.location:
                 if 'BL' in fit.model.model_type:
                     
                     fit.model.find_origin(pyLIMA_parameters)

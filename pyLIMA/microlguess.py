@@ -368,7 +368,7 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries.append(dec_xal_boundaries)
         parameters_boundaries.append(period_xal_boundaries)
 
-        if model.xallarap_model != 'circular':
+        if model.xallarap_model[0] != 'Circular':
             parameters_boundaries.append(ecc_xal_boundaries)
             parameters_boundaries.append(t_peri_xal_boundaries)
 
