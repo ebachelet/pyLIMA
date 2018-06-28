@@ -901,7 +901,7 @@ def plot_LM_ML_geometry(fit):
             
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     
-     if fit.model.parallax_model[0] != 'None':
+    if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
         
         for telescope in fit.event.telescopes:
