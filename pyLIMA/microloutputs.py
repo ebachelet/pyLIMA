@@ -754,7 +754,7 @@ def LM_plot_model(fit, figure_axe):
         
             if ('Space' in telescope.location) and (telescope.name != reference_telescope.name) :
             
-                time_space = np.linspace(telescope.lightcurve_flux[0,0]-10,telescope.lightcurve_flux[-1,0]+10, 500)
+                time_space = np.linspace(telescope.lightcurve_flux[0,0],telescope.lightcurve_flux[-1,0], 500)
                
                 reference_telescope_space = copy.copy(fit.event.telescopes[0])
                 reference_telescope_space.location = telescope.location

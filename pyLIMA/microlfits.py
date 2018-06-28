@@ -278,7 +278,7 @@ class MLFits(object):
             telescopes_fluxes[0] = f_source
             telescopes_fluxes[1] = 0.0
 
-            if  'PiEN' in self.model.model_dictionnary.keys():
+            if  'piEN' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
             if  'XiEN' in self.model.model_dictionnary.keys():
