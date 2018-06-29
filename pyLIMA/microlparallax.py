@@ -241,20 +241,20 @@ class MLParallaxes(object):
 
         else:
 
-            #telescope_positions = self.annual_parallax(time)
-            #delta_North = np.append(delta_North, telescope_positions[0])
-            #delta_East = np.append(delta_East, telescope_positions[1])
+            telescope_positions = self.annual_parallax(time)
+            delta_North = np.append(delta_North, telescope_positions[0])
+            delta_East = np.append(delta_East, telescope_positions[1])
             name = telescope.spacecraft_name
 
 
             telescope_positions = -self.space_parallax(time, name, telescope)
             # import pdb;
             # pdb.set_trace()
-            delta_North = np.append(delta_North, telescope_positions[0])
-            delta_East = np.append(delta_East, telescope_positions[1])
+            #delta_North = np.append(delta_North, telescope_positions[0])
+            #delta_East = np.append(delta_East, telescope_positions[1])
 
-            #delta_North += telescope_positions[0]
-            #delta_East += telescope_positions[1]
+            delta_North += telescope_positions[0]
+            delta_East += telescope_positions[1]
         deltas_position = np.array([delta_North, delta_East])
 
         # set the attributes deltas_positions for the telescope object
