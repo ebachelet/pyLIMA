@@ -189,7 +189,7 @@ class MLParallaxes(object):
 
         return JD
 
-    def parallax_combination(self, telescope, annual_parallax=True):
+    def parallax_combination(self, telescope):
         """ Compute, and set, the deltas_positions attributes of the telescope object
        inside the list of telescopes. deltas_positions is the offset between the position of the
        observatory at the time t, and the
@@ -207,10 +207,7 @@ class MLParallaxes(object):
         delta_East = np.array([])
 
         if location == 'Earth':
-            
-            print('TELESCOPE LOCATION ON EARTH')
-            exit()
-            
+
             if (self.parallax_model == 'Annual'):
                 telescope_positions = self.annual_parallax(time)
 
@@ -244,31 +241,20 @@ class MLParallaxes(object):
 
         else:
 
-            if annual_parallax:
-                print('USING ANNUAL PARALLAX')
-                exit()
-                telescope_positions = self.annual_parallax(time)
-                delta_North = np.append(delta_North, telescope_positions[0])
-                delta_East = np.append(delta_East, telescope_positions[1])
-
+            telescope_positions = self.annual_parallax(time)
+            delta_North = np.append(delta_North, telescope_positions[0])
+            delta_East = np.append(delta_East, telescope_positions[1])
             name = telescope.spacecraft_name
 
 
             telescope_positions = -self.space_parallax(time, name, telescope)
             # import pdb;
             # pdb.set_trace()
-            
-            if annual_parallax:
-                print('USING ANNUAL PARALLAX')
-                exit()
-                delta_North = delta_North + telescope_positions[0]
-                delta_East = delta_East + telescope_positions[1]
+            #delta_North = np.append(delta_North, telescope_positions[0])
+            #delta_East = np.append(delta_East, telescope_positions[1])
 
-            else:
-                print('-> Telescope motion parallax only')
-                delta_North = np.append(delta_North, telescope_positions[0])
-                delta_East = np.append(delta_East, telescope_positions[1])
-                
+            delta_North += telescope_positions[0]
+            delta_East += telescope_positions[1]
         deltas_position = np.array([delta_North, delta_East])
 
         # set the attributes deltas_positions for the telescope object
@@ -363,14 +349,11 @@ class MLParallaxes(object):
 
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
-        print 'GOT TEL SPACECRAFT POS: ',len(telescope.spacecraft_positions)
         if len(telescope.spacecraft_positions) != 0:
         # allow to pass the user to give his own ephemeris
             satellite_positions = np.array(telescope.spacecraft_positions)
         else:
             #call JPL!
-            print 'CALLING JPL'
-            exit()
             satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
                                                      step_size='60m', verbose=False)[1]
 
@@ -384,9 +367,6 @@ class MLParallaxes(object):
         interpolated_dec = interpolate.interp1d(dates, dec)
         interpolated_distance = interpolate.interp1d(dates, distances)
 
-        print 'Valid time range: ',tstart, tend
-        print 'Horizons table time range: ',dates.min(), dates.max()
-        print 'Calculating for timestamp: ',time_to_treat
         ra_interpolated = interpolated_ra(time_to_treat)
         dec_interpolated = interpolated_dec(time_to_treat)
         distance_interpolated = interpolated_distance(time_to_treat)

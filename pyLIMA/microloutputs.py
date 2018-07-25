@@ -212,9 +212,6 @@ def LM_outputs(fit):
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
     #hexcolor[0] = '#000000'
 
-    print('MLOUTPUTS: '+repr(len(fit.event.telescopes)))
-    print('MLOUTPUTS: '+str(fit.event.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
-                        str(fit.event.telescopes[-1].lightcurve_flux[:,0].max()) )
 
     results = LM_parameters_result(fit)
     covariance_matrix = fit.fit_covariance
@@ -441,7 +438,7 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
     if fit.model.parallax_model[0] != 'None':
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model, annual_parallax=fit.model.use_annual_parallax)
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     for model_chichi in model_panel_chichi[0:]:
         indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
@@ -730,41 +727,34 @@ def LM_plot_model(fit, figure_axe):
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
-    print('LMPLOTMODEL: N telescopes = '+str(len(fit.event.telescopes)))
-    print('LMPLOTMODEL: '+str(fit.event.telescopes[-1].lightcurve_flux[:,0].min())+' '+\
-                        str(fit.event.telescopes[-1].lightcurve_flux[:,0].max()))
-    print('LMPLOTMODEL: '+str(fit.event.telescopes[0].lightcurve_flux[:,0].min())+' '+\
-                        str(fit.event.telescopes[0].lightcurve_flux[:,0].max()))
-
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
-    print('LMPLOTMODEL: computing for times '+str(min_time)+' - '+str(max_time))
-    
+
     time = np.linspace(min_time, max_time + 100, 30000)
     extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
                                  pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
-    print('LMPLOTMODEL: time ranges '+str(time.min())+' - '+str(time.max()))
-    print('LMPLOTMODEL: extra time ranges '+str(extra_time.min())+' - '+str(extra_time.max()))
-    print('LMPLOTMODEL: params used '+str(pyLIMA_parameters.to)+' - '+str(pyLIMA_parameters.tE))
-    print('LMPLOTMODEL: fit results '+repr(fit.fit_results))
-    
+
     time = np.sort(np.append(time, extra_time))
     reference_telescope = copy.copy(fit.event.telescopes[0])
+    if reference_telescope.location == 'Space':
+    
+        min_time = np.min(reference_telescope.lightcurve_flux[:,0])
+        max_time = np.max(reference_telescope.lightcurve_flux[:,0])
+        time = np.linspace(min_time, max_time, 3000)
+        
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
-    print('LMPLOTMODEL copied lightcurve: '+str(reference_telescope.lightcurve_flux[:,0].min())+' '+\
-                        str(reference_telescope.lightcurve_flux[:,0].max()))
 
     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
         
         for telescope in fit.event.telescopes:
         
-            if 'Space' in telescope.location:
+            if ('Space' in telescope.location) and (telescope.name != reference_telescope.name) :
             
-                time_space = np.linspace(telescope.lightcurve_flux[0,0]-10,telescope.lightcurve_flux[-1,0]+10, 500)
+                time_space = np.linspace(telescope.lightcurve_flux[0,0],telescope.lightcurve_flux[-1,0], 500)
                
                 reference_telescope_space = copy.copy(fit.event.telescopes[0])
                 reference_telescope_space.location = telescope.location
@@ -895,22 +885,29 @@ def plot_LM_ML_geometry(fit):
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
     time = np.linspace(min_time, max_time + 100, 3000)
-
+                
     reference_telescope = copy.copy(fit.event.telescopes[0])
+    if reference_telescope.location == 'Space':
+    
+        min_time = np.min(reference_telescope.lightcurve_flux[:,0])
+        max_time = np.max(reference_telescope.lightcurve_flux[:,0])
+        time = np.linspace(min_time, max_time, 3000)
+        
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
+    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
-    reference_telescope.lightcurve_flux = np.array(
-        [time, [0] * len(time), [0] * len(time)]).T
-        
+   
+            
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     
     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
         
         for telescope in fit.event.telescopes:
+        
+            if ('Space' in telescope.location) and (telescope.name != reference_telescope.name) :
 
-            if 'Space' in telescope.location:
                 if 'BL' in fit.model.model_type:
                     
                     fit.model.find_origin(pyLIMA_parameters)
@@ -1098,7 +1095,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
         [time, [0] * len(time), [0] * len(time)]).T
 
     if fit.model.parallax_model[0] != 'None':
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model, annual_parallax=fit.model.use_annual_parallax)
+        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
     trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,

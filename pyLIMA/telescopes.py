@@ -206,17 +206,14 @@ class Telescope(object):
 
         self.gamma = star.find_gamma(self.filter)
 
-    def compute_parallax(self, event, parallax, annual_parallax=True):
+    def compute_parallax(self, event, parallax):
         """ Compute and set the deltas_positions attribute due to the parallax.
 
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
-        print('In telescopes.compute_parallax: ')
-        print self.lightcurve_magnitude[:,0].min(),self.lightcurve_magnitude[:,0].max()
-        print self.lightcurve_flux[:,0].min(),self.lightcurve_flux[:,0].max()
         para = microlparallax.MLParallaxes(event, parallax)
-        para.parallax_combination(self, annual_parallax=annual_parallax)
+        para.parallax_combination(self)
         print('Parallax(' + parallax[0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
     def clean_data_magnitude(self):
