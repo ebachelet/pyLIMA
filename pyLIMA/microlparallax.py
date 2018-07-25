@@ -83,7 +83,7 @@ def compute_parallax_curvature(piE, delta_positions):
     delta_tau = np.dot(piE, delta_positions)
     delta_beta = np.cross(piE, delta_positions.T)
 
-    return -delta_tau, -delta_beta
+    return delta_tau, delta_beta
 
 
 class MLParallaxes(object):
@@ -222,7 +222,7 @@ class MLParallaxes(object):
                 longitude = telescope.longitude
                 latitude = telescope.latitude
 
-                telescope_positions = self.terrestrial_parallax(time, altitude, longitude, latitude)
+                telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
 
                 delta_North = np.append(delta_North, telescope_positions[0])
                 delta_East = np.append(delta_East, telescope_positions[1])
@@ -237,7 +237,7 @@ class MLParallaxes(object):
                 longitude = telescope.longitude
                 latitude = telescope.latitude
 
-                telescope_positions = self.terrestrial_parallax(time, altitude, longitude, latitude)
+                telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
 
                 delta_North += telescope_positions[0]
                 delta_East += telescope_positions[1]
@@ -254,7 +254,7 @@ class MLParallaxes(object):
             name = telescope.spacecraft_name
 
 
-            telescope_positions = self.space_parallax(time, name, telescope)
+            telescope_positions = -self.space_parallax(time, name, telescope)
             # import pdb;
             # pdb.set_trace()
             

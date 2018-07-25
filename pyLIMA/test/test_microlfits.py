@@ -19,7 +19,7 @@ def _create_event():
     event.telescopes[0].lightcurve_flux = np.random.random((100, 3))
 
     event.telescopes[0].lightcurve_magnitude = np.random.random((100, 3))
-
+    event.telescopes[0].filter = 'I'
     event.telescopes[0].gamma = 0.5
     event.total_number_of_data_points.return_value = sum([len(i.lightcurve_flux) for i in event.telescopes])
     return event
@@ -44,7 +44,7 @@ def _create_model(kind):
     model.model_Jacobian.return_value = np.random.random((100,6)).T
     model.derive_telescope_flux.return_value = 42, 69
     model.compute_pyLIMA_parameters.return_value = np.random.uniform(0,2,len(model.model_dictionnary.keys()))
-
+    
     return model
 
 
@@ -75,6 +75,7 @@ def test_mlfit_FSPL_LM_without_guess():
 
 def test_mlfit_DSPL_LM_without_guess():
     current_event = _create_event()
+    
     model = _create_model('DSPL')
     model.model_dictionnary = {'to1': 0, 'uo1': 1, 'delta_to': 2, 'uo2': 3, 'tE': 4, 'q_F_I': 5, 'fs_Test': 6,
                                'g_Test': 7}
@@ -116,16 +117,15 @@ def test_mlfit_FSPL_LM_with_guess():
     assert fit.fit_covariance.shape == (4 + 2 * len(current_event.telescopes), 4 + 2 * len(current_event.telescopes))
     assert len(fit.fit_results) == 4 + 2 * len(current_event.telescopes) + 1
 
-def test_mlfit_PSPL_MCMC_with_guess():
-    current_event = _create_event()
-    model = _create_model('PSPL')
-    model.parameters_guess = [10, 0.1, 20]
+#def test_mlfit_PSPL_MCMC_with_guess():
+#    current_event = _create_event()
+#    model = _create_model('PSPL')
+   
+#    fit = microlfits.MLFits(current_event)
+#    fit.mlfit(model, 'MCMC',flux_estimation_MCMC='polyfit')
 
-    fit = microlfits.MLFits(current_event)
-    fit.mlfit(model, 'MCMC')
 
-
-    assert fit.MCMC_chains.shape == (150000, 6)
+#    assert fit.MCMC_chains.shape == (240000, 6)
 
 
 def test_check_fit_bad_covariance():

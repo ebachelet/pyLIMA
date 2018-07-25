@@ -9,7 +9,11 @@ from __future__ import division
 import numpy as np
 
 
-from pyLIMA.subroutines.VBBinaryLensingLibrary import VBBinaryLensingLibrary as VBBinary
+import VBBinaryLensing
+
+VBB = VBBinaryLensing.VBBinaryLensing()
+VBB.Tol = 0.001
+VBB.RelTol = 0.001
 
 
 def impact_parameter(tau, uo):
@@ -183,7 +187,7 @@ def Jacobian_amplification_FSPL(tau, uo, rho, gamma, yoo_table):
     return amplification_fspl, impact_param
 
 
-def amplification_USBL(separation, mass_ratio, x_source, y_source, rho, tolerance=0.001):
+def amplification_USBL(separation, mass_ratio, x_source, y_source, rho):
     """
     The Uniform Source Binary Lens amplification, based on the work of Valerio Bozza, thanks :)
     "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
@@ -202,26 +206,20 @@ def amplification_USBL(separation, mass_ratio, x_source, y_source, rho, toleranc
     """
 
     amplification_usbl = []
-    # print ''
-    # print separation[0],q,rho
-    # start = time.time()
+
 
     for xs, ys, s in zip(x_source, y_source, separation):
-        # print index,len(Xs)
-        # print s,q,xs,ys,rho,tolerance
-        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag(s, mass_ratio, xs, ys, rho, tolerance)
+
+        magnification_VBB = VBB.BinaryMag2(s, mass_ratio, xs, ys, rho)
 
         amplification_usbl.append(magnification_VBB)
 
 
-        # print time.time()-start
-    # import pdb;
-    # pdb.set_trace()
-    # print amplification_usbl
+
     return np.array(amplification_usbl)
 
 
-def amplification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_darkening_coefficient, tolerance=0.001):
+def amplification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_darkening_coefficient):
     """
     The Uniform Source Binary Lens amplification, based on the work of Valerio Bozza, thanks :)
     "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
@@ -242,23 +240,16 @@ def amplification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_dar
     """
 
     amplification_fsbl = []
-    # print ''
-    # print separation[0],q,rho
-    # start = time.time()
 
     for xs, ys, s in zip(x_source, y_source, separation):
         # print index,len(Xs)
         # print s,q,xs,ys,rho,tolerance
-        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient,
-                                                                     tolerance)
+        magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient)
 
         amplification_fsbl.append(magnification_VBB)
 
 
-        # print time.time()-start
-    # import pdb;
-    # pdb.set_trace()
-    # print amplification_usbl
+
     return np.array(amplification_fsbl)
 
 
@@ -279,24 +270,16 @@ def amplification_PSBL(separation, mass_ratio, x_source, y_source):
     """
 
     amplification_psbl = []
-    # print ''
-    # print separation[0],q,rho
-    # start = time.time()
+
 
     for xs, ys, s in zip(x_source, y_source, separation):
-        # print index,len(Xs)
-        # print s,q,xs,ys,rho,tolerance
-        magnification_VBB = VBBinary.VBBinaryLensing().BinaryMag0(s, mass_ratio, xs, ys)
+
+        magnification_VBB =VBB.BinaryMag0(s, mass_ratio, xs, ys)
 
         amplification_psbl.append(magnification_VBB)
 
     return np.array(amplification_psbl)
 
-
-def USBL_queue_process(queue, args):
-    """ON CONSTRUCTION """
-    queue.put(VBBinary.VBBinaryLensing().BinaryMag(args[0], args[1], args[2],
-                                                   args[3], args[4], args[5]))
 
 
 def amplification_FSPL_for_Lyrae(tau, uo, rho, gamma, yoo_table):

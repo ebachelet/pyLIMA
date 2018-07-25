@@ -55,17 +55,12 @@ def test_create_PSBL_model():
 
     assert isinstance(psbl_model, microlmodels.ModelPSBL)
 
-def test_create_RRLyraePL_model():
+def test_create_VariablePL_model():
     event = _create_event()
-    rrpl_model = microlmodels.create_model('RRLyraePL', event,model_arguments=[1])
+    varpl_model = microlmodels.create_model('VariablePL', event,model_arguments=[1])
 
-    assert isinstance(rrpl_model, microlmodels.ModelRRLyraePL)
+    assert isinstance(varpl_model, microlmodels.ModelVariablePL)
 
-def test_create_RRLyraeFS_model():
-    event = _create_event()
-    rrfs_model = microlmodels.create_model('RRLyraeFS', event,model_arguments=[1])
-
-    assert isinstance(rrfs_model, microlmodels.ModelRRLyraeFS)
 
 def test_create_bad_model():
     # Both tests are equivalent
@@ -113,12 +108,14 @@ def test_magnification_USBL_computation():
     q = np.log10(0.02)
     alpha = -np.pi/4
     parameters = Parameters(tc, uc, tE, rho, s, q,alpha)
-
+    tol = 0.001
+    reltol = 0.001
     magnification = Model.model_magnification(event.telescopes[0], parameters)
-    assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
+  
+    assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]),rtol=reltol,atol=tol)
 
-    Model.USBL_windows = [min(event.telescopes[0].lightcurve_flux[:,0]), max(event.telescopes[0].lightcurve_flux[:,0])]
-    assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]))
+  
+    assert np.allclose(magnification, np.array([1.6311724868,  1.00005927]),rtol=reltol,atol=tol)
 
 
 def test_magnification_PSBL_computation():
@@ -336,9 +333,9 @@ def test_compute_parallax_curvature():
 
     assert len(delta_tau) == 2
     assert len(delta_beta) == 2
-    assert np.allclose(delta_tau, -(
+    assert np.allclose(delta_tau, (
     piE[0] * delta_positions[0] + piE[1] * delta_positions[1]))  # scalar product, geocentric point of view (-)
-    assert np.allclose(delta_beta, -(
+    assert np.allclose(delta_beta, (
     piE[0] * delta_positions[1] - piE[1] * delta_positions[0]))  # vectorial product, geocentric point of view (-)
 
 
