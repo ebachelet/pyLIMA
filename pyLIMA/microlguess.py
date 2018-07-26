@@ -295,7 +295,8 @@ def differential_evolution_parameters_boundaries(model):
 
     dsdt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
     dalphadt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
-
+    v_boundaries = (-1000,1000)
+    
     ra_xal_boundaries = [0,360]
     dec_xal_boundaries = [-90,90]
     period_xal_boundaries = [0.001,1000]
@@ -314,6 +315,7 @@ def differential_evolution_parameters_boundaries(model):
     amplitude_variable = (0.0, 3.0)
     octave_variable = (10**-10,1)
     q_boundaries = (-2, 2)
+
     # Paczynski models boundaries
     if model.model_type == 'PSPL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries]
@@ -330,6 +332,14 @@ def differential_evolution_parameters_boundaries(model):
 
         parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
 
+    if model.model_type == 'DFSPL':
+        parameters_boundaries = [to_boundaries, uo_boundaries, delta_to_boundaries,
+                                 delta_uo_boundaries, tE_boundaries,rho_boundaries,rho_boundaries]
+        filters = [telescope.filter for telescope in model.event.telescopes]
+
+        unique_filters = np.unique(filters)
+
+        parameters_boundaries += [q_flux_boundaries] * len(unique_filters)
     if model.model_type == 'PSBL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, logs_boundaries,
                                  logq_boundaries, alpha_boundaries]
@@ -372,9 +382,15 @@ def differential_evolution_parameters_boundaries(model):
             parameters_boundaries.append(ecc_xal_boundaries)
             parameters_boundaries.append(t_peri_xal_boundaries)
 
-    if model.orbital_motion_model[0] != 'None':
+    if model.orbital_motion_model[0] == '2D':
         parameters_boundaries.append(dsdt_boundaries)
         parameters_boundaries.append(dalphadt_boundaries)
+        
+    if model.orbital_motion_model[0] == 'Circular':
+        parameters_boundaries.append(dsdt_boundaries)
+        parameters_boundaries.append(dsdt_boundaries)
+        parameters_boundaries.append(dsdt_boundaries)
+        
     # if source_spots
 
     return parameters_boundaries

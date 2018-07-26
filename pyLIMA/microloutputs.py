@@ -763,6 +763,8 @@ def LM_plot_model(fit, figure_axe):
         		[time_space, [0] * len(time_space), [0] * len(time_space)]).T
         		
                 reference_telescope_space.lightcurve_flux = reference_telescope_space.lightcurve_in_flux()
+                reference_telescope_space.spacecraft_positions = telescope.spacecraft_positions
+
                 reference_telescope_space.compute_parallax(fit.event, fit.model.parallax_model)
                 
                 flux_model = fit.model.compute_the_microlensing_model(reference_telescope_space, pyLIMA_parameters)[0]
@@ -912,11 +914,11 @@ def plot_LM_ML_geometry(fit):
                     
                     fit.model.find_origin(pyLIMA_parameters)
                     to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
-                    trajectory_x,trajectory_y = fit.model.source_trajectory(telescope, to, uo,
+                    trajectory_x,trajectory_y,separation = fit.model.source_trajectory(telescope, to, uo,
                                                                             pyLIMA_parameters.tE, pyLIMA_parameters)
                 else:
                 
-                    trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope,pyLIMA_parameters.to,
+                    trajectory_x, trajectory_y = fit.model.source_trajectory(telescope,pyLIMA_parameters.to,
 		                                                             pyLIMA_parameters.uo,pyLIMA_parameters.tE, 
 		                                                             pyLIMA_parameters)
                 figure_axes.plot(trajectory_x, trajectory_y, '--b')		                            
@@ -927,7 +929,7 @@ def plot_LM_ML_geometry(fit):
         to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
 
 
-        trajectory_x,trajectory_y = fit.model.source_trajectory(reference_telescope, to, uo,
+        trajectory_x,trajectory_y, separation = fit.model.source_trajectory(reference_telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
     else:
 

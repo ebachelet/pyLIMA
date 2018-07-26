@@ -227,11 +227,19 @@ class MLModel(object):
                 self.pyLIMA_standards_dictionnary['eccentricity_xallarap'] = len(self.pyLIMA_standards_dictionnary)
                 self.pyLIMA_standards_dictionnary['t_periastron_xallarap'] = len(self.pyLIMA_standards_dictionnary)
 
-        if self.orbital_motion_model[0] != 'None':
+        if self.orbital_motion_model[0] == '2D':
             self.Jacobian_flag = 'No way'
             self.pyLIMA_standards_dictionnary['dsdt'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['dalphadt'] = len(self.pyLIMA_standards_dictionnary)
+            
+        if self.orbital_motion_model[0] == 'Circular':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
 
+            
+            
         if self.source_spots_model != 'None':
             self.Jacobian_flag = 'No way'
             self.pyLIMA_standards_dictionnary['spot'] = len(self.pyLIMA_standards_dictionnary)
@@ -466,24 +474,40 @@ class MLModel(object):
 
             tau += xallarap_delta_tau
             beta += xallarap_delta_beta
-        # Orbital motion?
+       
         if 'alpha' in pyLIMA_parameters._fields:
 
             alpha = pyLIMA_parameters.alpha
-            if 'dalphadt' in pyLIMA_parameters._fields:
-                alpha += microlorbitalmotion.orbital_motion_2D_trajectory_shift(self.orbital_motion_model[1],
-                                                                                telescope.lightcurve_flux[:, 0],
-                                                                                pyLIMA_parameters.dalphadt)
-            source_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
-            source_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
-
+            
         else:
+        
+            alpha = 0
+        
+        # Orbital motion?    
+        
+        
+        if self.orbital_motion_model[0] != 'None':
+        
+                dseparation, dalpha = microlorbitalmotion.orbital_motion_shifts(self.orbital_motion_model,
+                                                                                telescope.lightcurve_flux[:, 0],
+                                                                                pyLIMA_parameters)
+                alpha += dalpha
+             
+        else :
+            dseparation = 0
+                
+        source_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
+        source_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
 
-            source_trajectory_x = tau
-            source_trajectory_y = beta
-
-        return source_trajectory_x, source_trajectory_y
-
+        if 'PL' not in self.model_type:
+    
+            separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectory_x))+dseparation
+                
+            return source_trajectory_x, source_trajectory_y, separation
+        
+        else:
+    
+            return source_trajectory_x, source_trajectory_y
 
 class ModelPSPL(MLModel):
     @property
@@ -765,7 +789,6 @@ class ModelDSPL(MLModel):
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
         source1_magnification = microlmagnification.amplification_PSPL(*source1_trajectory)
-
         source2_magnification = microlmagnification.amplification_PSPL(*source2_trajectory)
 
         blend_magnification_factor = getattr(pyLIMA_parameters, 'q_flux_' + telescope.filter)
@@ -774,6 +797,69 @@ class ModelDSPL(MLModel):
             1 + blend_magnification_factor)
 
         return effective_magnification
+
+class ModelDFSPL(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: DFSPL
+        :rtype: string
+        """
+        return 'DFSPL'
+
+    def paczynski_model_parameters(self):
+        """ Define the DFSPL standard parameters, [to1,uo1,to2,uo2,tE,rho_1,rho_2,q_F_filters]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'delta_to': 2, 'delta_uo': 3, 'tE': 4, 'rho_1':5,'rho_2':6}
+        filters = [telescope.filter for telescope in self.event.telescopes]
+
+        unique_filters = np.unique(filters)
+
+        for filter in unique_filters:
+            model_dictionary['q_flux_' + filter] = len(model_dictionary)
+
+        self.Jacobian_flag = 'No way'
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a DFSPL model.
+        From Hwang et al 2013 : http://iopscience.iop.org/article/10.1088/0004-637X/778/1/55/pdf
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source1_trajectory_x, source1_trajectory_y  = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        to2 = pyLIMA_parameters.to + pyLIMA_parameters.delta_to
+        uo2 = pyLIMA_parameters.delta_uo + pyLIMA_parameters.uo
+        source2_trajectory_x, source2_trajectory_y = self.source_trajectory(telescope, to2, uo2,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        rho1 = pyLIMA_parameters.rho_1
+        gamma1 = telescope.gamma
+        source1_magnification = microlmagnification.amplification_FSPL(source1_trajectory_x, source1_trajectory_y, rho1,
+                                                                       gamma1, self.yoo_table)
+
+        rho2 = pyLIMA_parameters.rho_2
+        gamma2 = telescope.gamma1
+        source2_magnification = microlmagnification.amplification_FSPL(source2_trajectory_x, source2_trajectory_y, rho2,
+                                                                       gamma2, self.yoo_table)
+
+        blend_magnification_factor = getattr(pyLIMA_parameters, 'q_flux_' + telescope.filter)
+
+        effective_magnification = (source1_magnification + source2_magnification * blend_magnification_factor) / (
+            1 + blend_magnification_factor)
+
+        return effective_magnification
+
 
 
 class ModelUSBL(MLModel):
@@ -810,17 +896,8 @@ class ModelUSBL(MLModel):
         to, uo = self.uo_to_from_uc_tc(pyLIMA_parameters)
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
-
-        if 'dsdt' in pyLIMA_parameters._fields:
-
-            separation = 10 ** pyLIMA_parameters.logs + \
-                         microlorbitalmotion.orbital_motion_2D_separation_shift(self.orbital_motion_model[1],
-                                                                                telescope.lightcurve_flux[:, 0],
-                                                                                pyLIMA_parameters.dsdt)
-
-        else:
-
-            separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectoire[0]))
+        
+        separation = source_trajectoire[2]
 
         magnification_USBL = \
             microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
@@ -943,20 +1020,10 @@ class ModelPSBL(MLModel):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        if 'dsdt' in pyLIMA_parameters._fields:
+        separation = source_trajectoire[2]
 
-            separation = 10 ** pyLIMA_parameters.logs + \
-                         microlorbitalmotion.orbital_motion_2D_separation_shift(self.orbital_motion_model[1],
-                                                                                telescope.lightcurve_flux[:, 0],
-                                                                                pyLIMA_parameters.dsdt)
-
-        else:
-
-            separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectoire[0]))
-
-        Xs, Ys = source_trajectoire
         magnification = \
-            microlmagnification.amplification_PSBL(separation, 10 ** pyLIMA_parameters.logq, Xs, Ys)
+            microlmagnification.amplification_PSBL(separation, 10 ** pyLIMA_parameters.logq, source_trajectoire[0], source_trajectoire[1])
 
         return magnification
 
@@ -1075,16 +1142,10 @@ class ModelFSBL(MLModel):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        if 'dsdt' in pyLIMA_parameters._fields:
+        source_trajectoire = self.source_trajectory(telescope, to, uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
 
-            separation = 10 ** pyLIMA_parameters.logs + \
-                         microlorbitalmotion.orbital_motion_2D_separation_shift(self.orbital_motion_model[1],
-                                                                                telescope.lightcurve_flux[:, 0],
-                                                                                pyLIMA_parameters.dsdt)
-
-        else:
-
-            separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectoire[0]))
+        separation = source_trajectoire[2]
 
         magnification_FSBL = \
             microlmagnification.amplification_FSBL(separation, 10 ** pyLIMA_parameters.logq,
@@ -1182,26 +1243,7 @@ class ModelVariablePL(MLModel):
         """
         return 'VariablePL'
 
-    def define_pyLIMA_standard_parameters(self):
-        """ Define the standard pyLIMA parameters dictionnary."""
-        self.number_of_harmonics = self.model_arguments[0]
-
-        self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
-        if self.parallax_model[0] != 'None':
-            self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
-
-            self.event.compute_parallax_all_telescopes(self.parallax_model)
-        for telescope in self.event.telescopes:
-            self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
-
-        self.pyLIMA_standards_dictionnary = OrderedDict(
-            sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
-
-        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
-
+    
     def paczynski_model_parameters(self):
         """ Define the PSPL standard parameters, [to,uo,tE]
 
@@ -1211,7 +1253,9 @@ class ModelVariablePL(MLModel):
         # model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'period': 3, 'A1': 4, 'A2': 5, 'A3': 6, 'A4': 7, 'A5': 8,
         # 'A6': 9,
         # 'phi_21': 10, 'phi_31': 11, 'phi_41': 12, 'phi_51': 13, 'phi_61': 14}
-
+        
+        self.number_of_harmonics = self.model_arguments[0]
+        self.blend_flux_ratio = None
         model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'period': 4}
 
         filters = [telescope.filter for telescope in self.event.telescopes]
@@ -1247,7 +1291,6 @@ class ModelVariablePL(MLModel):
         return microlmagnification.amplification_FSPL(source_trajectory_x, source_trajectory_y,
                                                                 pyLIMA_parameters.rho,
                                                                 telescope.gamma, self.yoo_table)
-
 
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
