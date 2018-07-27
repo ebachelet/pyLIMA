@@ -44,13 +44,9 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>The first installation step is to install pyLIMA in the repository of your choice (could be inside a <a class="reference external" href="VirtualEnv.html">VirtualEnv.html</a>):</p>
 <p><strong>&gt; git clone https://github.com/ebachelet/pyLIMA.git</strong></p>
-<p>Then we need to build the VBBinaryLensingLibrary:</p>
-<p><strong>&gt; python setup.py build_ext &#8211;build-lib=./pyLIMA/subroutines/VBBinaryLensingLibrary</strong></p>
-<p>[!!!!! WARNING !!!!! : SPHYNX is bugged for double hyphen. There is a double hyphen before build-lib, not a single one!
-If you have doubts, the command on the gitHUB page is correct]</p>
-<p>Optional :</p>
-<p><strong>&gt; python setup.py clean &#8211;all</strong></p>
-<p>Then you can install the required libraries:</p>
+<p>Then you can install pyLIMA:</p>
+<p><strong>&gt; python setup.py install</strong></p>
+<p>And finally you can install the required libraries:</p>
 <p><strong>&gt; pip install -r requirements.txt</strong></p>
 </div>
 

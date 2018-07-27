@@ -47,7 +47,7 @@
 <dl class="class">
 <dt id="pyLIMA.telescopes.Telescope">
 <em class="property">class </em><code class="descclassname">pyLIMA.telescopes.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>name='NDG'</em>, <em>camera_filter='I'</em>, <em>light_curve_magnitude=None</em>, <em>light_curve_magnitude_dictionnary=None</em>, <em>light_curve_flux=None</em>, <em>light_curve_flux_dictionnary=None</em>, <em>reference_flux=0.0</em>, <em>clean_the_lightcurve='Yes'</em>, <em>location='Earth'</em>, <em>spacecraft_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/telescopes.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.telescopes.Telescope" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>######## Telescope module ########</p>
 <p>This class create a telescope object.</p>
 <p>Attributes :</p>
@@ -80,8 +80,8 @@ Default is 0.0 (i.e uniform source brightness)</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; name of the telescope. Default is &#8216;NDG&#8217;</li>
-<li><strong>camera_filter</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; telescope filter used. Should be a string which follows the convention of :
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; name of the telescope. Default is &#8216;NDG&#8217;</li>
+<li><strong>camera_filter</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; telescope filter used. Should be a string which follows the convention of :
 &#8221; Gravity and limb-darkening coefficients for the Kepler, CoRoT, Spitzer, uvby,
 UBVRIJHK,
 and Sloan photometric systems&#8221;
@@ -90,14 +90,14 @@ Johnson_Cousins I filter
 and &#8216;i&#8217;&#8217; is the SDSS-i&#8217; Sloan filter.</li>
 <li><strong>light_curve_magnitude</strong> (<em>array_like</em>) &#8211; a numpy array with time, magnitude and error in magnitude.
 Default is an None.</li>
-<li><strong>light_curve_magnitude_dictionnary</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a python dictionnary that informs your columns convention. Used to
+<li><strong>light_curve_magnitude_dictionnary</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) &#8211; a python dictionnary that informs your columns convention. Used to
 translate to pyLIMA convention [time,mag,err_mag].
 Default is {&#8216;time&#8217;: 0, &#8216;mag&#8217; : 1, &#8216;err_mag&#8217; : 2 }</li>
 <li><strong>light_curve_flux</strong> (<em>array-like</em>) &#8211; a numpy array with time, flux and error in flux. Default is an None.</li>
-<li><strong>light_curve_flux_dictionnary</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a python dictionnary that informs your columns convention. Used to
+<li><strong>light_curve_flux_dictionnary</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) &#8211; a python dictionnary that informs your columns convention. Used to
 translate to pyLIMA convention [time,flux,err_flux].
 Default is {&#8216;time&#8217;: 0, &#8216;flux&#8217; : 1, &#8216;err_flux&#8217; : 2 }</li>
-<li><strong>reference_flux</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; a float used for the transformation of difference fluxes to real fluxes.
+<li><strong>reference_flux</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; a float used for the transformation of difference fluxes to real fluxes.
 Default is 0.0 .</li>
 </ul>
 </td>
@@ -116,7 +116,7 @@ Default is 0.0 .</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; &#8216;magnitude&#8217; or &#8216;flux&#8217;. A string which indicated on which lightcurves apply
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; &#8216;magnitude&#8217; or &#8216;flux&#8217;. A string which indicated on which lightcurves apply
 the sorting.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the lightcurve sorted in pyLIMA convention</td>
@@ -174,8 +174,8 @@ than a 1 mag.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a event object. More details in the event module.</li>
-<li><strong>parallax</strong> (<em>list</em>) &#8211; a list containing the parallax model and to_par. More details in microlparallax module.</li>
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; a event object. More details in the event module.</li>
+<li><strong>parallax</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; a list containing the parallax model and to_par. More details in microlparallax module.</li>
 </ul>
 </td>
 </tr>
@@ -191,7 +191,7 @@ than a 1 mag.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>star</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a stars object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>star</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; a stars object.</td>
 </tr>
 </tbody>
 </table>
@@ -244,11 +244,11 @@ accordingly. More details in microltoolbox module.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; &#8216;magnitude&#8217; (default) or &#8216;flux&#8217; The unit you want to check data for.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>choice</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; &#8216;magnitude&#8217; (default) or &#8216;flux&#8217; The unit you want to check data for.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the size of the corresponding lightcurve</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.7)">int</a></td>
 </tr>
 </tbody>
 </table>

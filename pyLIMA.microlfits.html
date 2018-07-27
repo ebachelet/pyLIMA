@@ -47,7 +47,7 @@
 <dl class="class">
 <dt id="pyLIMA.microlfits.MLFits">
 <em class="property">class </em><code class="descclassname">pyLIMA.microlfits.</code><code class="descname">MLFits</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlfits.html#MLFits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlfits.MLFits" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>######## Fitter module ########</p>
 <p>This class contains the method to fit the event with the selected attributes.</p>
 <p><strong>WARNING</strong>: All fits (and so results) are made using data in flux.</p>
@@ -73,7 +73,7 @@ More details on the microlmodels module.</dd>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the event object on which you perform the fit on. More details on the
 event module.</td>
 </tr>
 </tbody>
@@ -87,7 +87,7 @@ Available only for PSPL and FSPL without second_order.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<em>list</em>) &#8211; the model parameters ingested by the correpsonding
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding
 fitting routine.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a numpy array which represents the jacobian matrix</td>
@@ -114,7 +114,7 @@ Have a look here : <a class="reference external" href="http://dan.iel.fm/emcee/c
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple containing (MCMC_chains, MCMC_probabilities)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.7)">tuple</a></td>
 </tr>
 </tbody>
 </table>
@@ -134,7 +134,7 @@ nlinks is set to 300
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; object containing the model parameters, see microlmodels for more details</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; object containing the model parameters, see microlmodels for more details</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the residuals in flux,</td>
 </tr>
@@ -158,7 +158,7 @@ reliable.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a flag indicated good or bad fit (&#8216;Good Fit&#8217; or &#8216;Bad Fit&#8217;)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)">string</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)">string</a></td>
 </tr>
 </tbody>
 </table>
@@ -172,12 +172,12 @@ reliable.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<em>list</em>) &#8211; the model parameters ingested by the correpsonding
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding
 fitting routine.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">here, the return is -chi^2/2 (likelihood)</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)">float</a></td>
 </tr>
 </tbody>
 </table>
@@ -191,7 +191,7 @@ fitting routine.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<em>list</em>) &#8211; the model parameters ingested by the correpsonding</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding</td>
 </tr>
 </tbody>
 </table>
@@ -202,7 +202,7 @@ fitting routine.</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the chi^2</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)">float</a></td>
 </tr>
 </tbody>
 </table>
@@ -222,12 +222,12 @@ fitting routine.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<em>list</em>) &#8211; the model parameters ingested by the correpsonding
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding
 fitting routine.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the chi^2 for each telescopes</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -284,16 +284,16 @@ method.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fit_process_parameters</strong> (<em>list</em>) &#8211; the model parameters ingested by the correpsonding fitting
+<li><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding fitting
 routine.</li>
-<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a microlmodels which you want to compute the fs,g parameters.</li>
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; a microlmodels which you want to compute the fs,g parameters.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a list of tuple with the (fs,g) telescopes flux parameters.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -318,7 +318,7 @@ models. More details on microlguess module.</p>
 <tr class="field-odd field"><th class="field-name" colspan="2">Return guess_parameters:</th></tr>
 <tr class="field-odd field"><td>&nbsp;</td><td class="field-body">a list containing parameters guess related to the model.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -345,7 +345,7 @@ the Jacobian is given by <a class="reference internal" href="#pyLIMA.microlfits.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple containing (fit_results, covariance_matrix, computation_time)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.7)">tuple</a></td>
 </tr>
 </tbody>
 </table>
@@ -367,8 +367,8 @@ attributes.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the model object requested. More details on the microlmodels module.</li>
-<li><strong>method</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; <p>The fitting method you want to use. Has to be a string  in :</p>
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the model object requested. More details on the microlmodels module.</li>
+<li><strong>method</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; <p>The fitting method you want to use. Has to be a string  in :</p>
 <p>&#8216;LM&#8217; &#8211;&gt; Levenberg-Marquardt algorithm. Based on the
 scipy.optimize.leastsq routine.</p>
 <blockquote>
@@ -399,8 +399,8 @@ The inital population is computed around the best
 solution returned by
 the &#8216;DE&#8217; method.</div></blockquote>
 </li>
-<li><strong>DE_population_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The population factor desired for the DE method. Default is 10.</li>
-<li><strong>flux_estimation_MCMC</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The desired method to estimate the fluxes (f_source and g) of the
+<li><strong>DE_population_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; The population factor desired for the DE method. Default is 10.</li>
+<li><strong>flux_estimation_MCMC</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.7)"><em>string</em></a>) &#8211; The desired method to estimate the fluxes (f_source and g) of the
 telescopes. &#8216;MCMC&#8217; will do this through an MCMC method (default) when
 everything else will do this thanks to a 1D polyfit through np.polyfit.</li>
 </ul>
@@ -421,8 +421,8 @@ function.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescopes module.</li>
-<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; object containing the model parameters, see microlmodels for more details</li>
+<li><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; a telescope object. More details in telescopes module.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; object containing the model parameters, see microlmodels for more details</li>
 </ul>
 </td>
 </tr>
@@ -481,7 +481,7 @@ More details in microloutputs module.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<em>list</em>) &#8211; the model parameters ingested by the correpsonding
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_process_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; the model parameters ingested by the correpsonding
 fitting routine.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a numpy array which represents the residuals_i for each telescope,

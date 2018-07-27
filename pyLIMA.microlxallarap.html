@@ -56,7 +56,7 @@ of sight (i.e the line define by ra,dec of the center of mass of the source bina
 
 <dl class="function">
 <dt id="pyLIMA.microlxallarap.compute_xallarap_curvature">
-<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">compute_xallarap_curvature</code><span class="sig-paren">(</span><em>XiE</em>, <em>delta_positions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#compute_xallarap_curvature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.compute_xallarap_curvature" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">compute_xallarap_curvature</code><span class="sig-paren">(</span><em>XiE</em>, <em>orbital_elements</em>, <em>mode='circular'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#compute_xallarap_curvature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.compute_xallarap_curvature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the curvature induce by the xallarap
 deltas_positions of a telescope.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -64,7 +64,7 @@ deltas_positions of a telescope.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>piE</strong> (<em>array_like</em>) &#8211; the microlensing parallax vector. Have a look :
+<li><strong>XiE</strong> (<em>array_like</em>) &#8211; the microlensing xallarap vector. Have a look :
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2004ApJ...606..319G">http://adsabs.harvard.edu/abs/2004ApJ...606..319G</a></li>
 <li><strong>delta_positions</strong> (<em>array_like</em>) &#8211; the delta_positions of the telescope. More details in microlparallax module.</li>
 </ul>
@@ -93,6 +93,31 @@ deltas_positions of a telescope.</p>
 <dl class="function">
 <dt id="pyLIMA.microlxallarap.xallarap">
 <code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">xallarap</code><span class="sig-paren">(</span><em>time_to_treat</em>, <em>ra_xallarap</em>, <em>dec_xallarap</em>, <em>orbital_period</em>, <em>eccentricity</em>, <em>time_periastron</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#xallarap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.xallarap" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Compute the delta positions induced by the source xallarap. See Miyake et al 2012 :</dt>
+<dd><a class="reference external" href="http://iopscience.iop.org/article/10.1088/0004-637X/752/2/82/pdf">http://iopscience.iop.org/article/10.1088/0004-637X/752/2/82/pdf</a> for more details.</dd>
+</dl>
+<p>:param array_like time_to_treat : the time you looking at.
+:param float ra_xallarap : the right acsension of the source binary center of mass in degree.
+:param float dec_xallarap : the declinaision of the source binary center of mass in degree.
+:param float oribtal_period : the orbital period of your orbit in days.
+:param float eccentricity: the eccentricity of your ellipse.
+:param float time_periastron: the time passage at periastron.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">deltas_positions, the shift in North and East cooridnates due to the mouvement of the source.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyLIMA.microlxallarap.xallarap_circular">
+<code class="descclassname">pyLIMA.microlxallarap.</code><code class="descname">xallarap_circular</code><span class="sig-paren">(</span><em>time_to_treat</em>, <em>ra_xallarap</em>, <em>dec_xallarap</em>, <em>orbital_period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlxallarap.html#xallarap_circular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlxallarap.xallarap_circular" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute the delta positions induced by the source xallarap. See Miyake et al 2012 :</dt>
 <dd><a class="reference external" href="http://iopscience.iop.org/article/10.1088/0004-637X/752/2/82/pdf">http://iopscience.iop.org/article/10.1088/0004-637X/752/2/82/pdf</a> for more details.</dd>

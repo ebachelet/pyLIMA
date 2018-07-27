@@ -135,16 +135,16 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of the event. Default is &#8216;Microlensing pyLIMA simulation&#8217;</li>
-<li><strong>ra</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the right ascension in degrees of your simulation. Default is 270.</li>
-<li><strong>dec</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the declination in degrees of your simulation. Default is -30.</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the name of the event. Default is &#8216;Microlensing pyLIMA simulation&#8217;</li>
+<li><strong>ra</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the right ascension in degrees of your simulation. Default is 270.</li>
+<li><strong>dec</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the declination in degrees of your simulation. Default is -30.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a event object</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)">object</a></p>
 </td>
 </tr>
 </tbody>
@@ -153,20 +153,20 @@
 
 <dl class="function">
 <dt id="pyLIMA.microlsimulator.simulate_a_microlensing_model">
-<code class="descclassname">pyLIMA.microlsimulator.</code><code class="descname">simulate_a_microlensing_model</code><span class="sig-paren">(</span><em>event, model='PSPL', args=(), parallax=['None', 0.0], xallarap=['None', 0.0], orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlsimulator.html#simulate_a_microlensing_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlsimulator.simulate_a_microlensing_model" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microlsimulator.</code><code class="descname">simulate_a_microlensing_model</code><span class="sig-paren">(</span><em>event, model='PSPL', args=(), parallax=['None', 0.0], xallarap='None', orbital_motion=['None', 0.0], source_spots='None'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlsimulator.html#simulate_a_microlensing_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlsimulator.simulate_a_microlensing_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate a a microlensing model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the microlensing event you look at. More details in event module</li>
-<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the microlensing model you want. Default is &#8216;PSPL&#8217;. More details in microlmodels module</li>
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the microlensing event you look at. More details in event module</li>
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the microlensing model you want. Default is &#8216;PSPL&#8217;. More details in microlmodels module</li>
 <li><strong>parallax</strong> (<em>array_like</em>) &#8211; the parallax effect you want to add. Default is no parallax.
 More details in microlmodels module</li>
 <li><strong>xallarap</strong> (<em>array_like</em>) &#8211; the xallarap effect you want to add. Default is no parallax.
 More details in microlmodels module</li>
-<li><strong>source_spots</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; If you want to add source spots. Default is no source_spots.
+<li><strong>source_spots</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; If you want to add source spots. Default is no source_spots.
 More details in microlmodels module</li>
 </ul>
 </td>
@@ -174,7 +174,7 @@ More details in microlmodels module</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a microlmodel object</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)">object</a></p>
 </td>
 </tr>
 </tbody>
@@ -202,29 +202,29 @@ More details in microlmodels module</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of the telescope.</li>
-<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the microlensing event you look at</li>
-<li><strong>time_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the start of observations in JD</li>
-<li><strong>time_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the end of observations in JD</li>
-<li><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the hour sampling.</li>
-<li><strong>location</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the location of the telescope.</li>
-<li><strong>filter</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the filter used for observations</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the name of the telescope.</li>
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the microlensing event you look at</li>
+<li><strong>time_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the start of observations in JD</li>
+<li><strong>time_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the end of observations in JD</li>
+<li><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the hour sampling.</li>
+<li><strong>location</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the location of the telescope.</li>
+<li><strong>filter</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the filter used for observations</li>
 <li><strong>uniform_sampling</strong> (<em>boolean</em>) &#8211; set it to True if you want no bad weather, no moon avoidance etc....</li>
-<li><strong>altitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the altitude in meters if the telescope</li>
-<li><strong>longitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the longitude in degree of the telescope location</li>
-<li><strong>latitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the latitude in degree of the telescope location</li>
-<li><strong>spacecraft_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the name of your satellite according to JPL horizons</li>
-<li><strong>bad_weather_percentage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the percentage of bad nights</li>
-<li><strong>minimum_alt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the minimum altitude ini degrees that your telescope can go to.</li>
-<li><strong>moon_windows_avoidance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the minimum distance in degrees accepted between the target and the Moon</li>
-<li><strong>maximum_moon_illumination</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the maximum Moon brightness you allow in percentage</li>
+<li><strong>altitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the altitude in meters if the telescope</li>
+<li><strong>longitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the longitude in degree of the telescope location</li>
+<li><strong>latitude</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the latitude in degree of the telescope location</li>
+<li><strong>spacecraft_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the name of your satellite according to JPL horizons</li>
+<li><strong>bad_weather_percentage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the percentage of bad nights</li>
+<li><strong>minimum_alt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the minimum altitude ini degrees that your telescope can go to.</li>
+<li><strong>moon_windows_avoidance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the minimum distance in degrees accepted between the target and the Moon</li>
+<li><strong>maximum_moon_illumination</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the maximum Moon brightness you allow in percentage</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a telescope object</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)">object</a></p>
 </td>
 </tr>
 </tbody>
@@ -239,11 +239,11 @@ More details in microlmodels module</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list_of_telescopes</strong> (<em>list</em>) &#8211; a list of telescopes object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list_of_telescopes</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; a list of telescopes object</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">fake_fluxes parameters, a set of fluxes parameters</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -259,9 +259,9 @@ It updates straight the telescopes object inside the given model.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the microlensing model you desire. More detail in microlmodels.</li>
-<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the parameters used to simulate the flux.</li>
-<li><strong>red_noise_apply</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; to include or not red_noise</li>
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the microlensing model you desire. More detail in microlmodels.</li>
+<li><strong>pyLIMA_parameters</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the parameters used to simulate the flux.</li>
+<li><strong>red_noise_apply</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; to include or not red_noise</li>
 </ul>
 </td>
 </tr>
@@ -279,11 +279,11 @@ to enter inside telescopes observations.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; the microlensing event you look at. More details in event module</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; the microlensing event you look at. More details in event module</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">fake_parameters, a set of parameters</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -298,10 +298,10 @@ to enter inside telescopes observations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>time_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the start of observations in JD</li>
-<li><strong>time_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the end of observations in JD</li>
-<li><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the number of points observed per hour.</li>
-<li><strong>bad_weather_percentage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the percentage of bad nights</li>
+<li><strong>time_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the start of observations in JD</li>
+<li><strong>time_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the end of observations in JD</li>
+<li><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the number of points observed per hour.</li>
+<li><strong>bad_weather_percentage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the percentage of bad nights</li>
 </ul>
 </td>
 </tr>

@@ -60,8 +60,8 @@ The Yoo et al. Finite Source Point Lens magnification and the impact parameter U
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2015ApJ...804...20C">http://adsabs.harvard.edu/abs/2015ApJ...804...20C</a></li>
 <li><strong>uo</strong> (<em>array_like</em>) &#8211; the uo define for example in
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2015ApJ...804...20C">http://adsabs.harvard.edu/abs/2015ApJ...804...20C</a></li>
-<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the normalised angular source star radius</li>
-<li><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the microlensing limb darkening coefficient.</li>
+<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the normalised angular source star radius</li>
+<li><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the microlensing limb darkening coefficient.</li>
 <li><strong>yoo_table</strong> (<em>array_like</em>) &#8211; the Yoo et al. 2004 table approximation. See microlmodels for more details.</li>
 </ul>
 </td>
@@ -106,14 +106,8 @@ The Paczynski Point Source Point Lens magnification and the impact parameter U(t
 </dd></dl>
 
 <dl class="function">
-<dt id="pyLIMA.microlmagnification.USBL_queue_process">
-<code class="descclassname">pyLIMA.microlmagnification.</code><code class="descname">USBL_queue_process</code><span class="sig-paren">(</span><em>queue</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmagnification.html#USBL_queue_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmagnification.USBL_queue_process" title="Permalink to this definition">¶</a></dt>
-<dd><p>ON CONSTRUCTION</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="pyLIMA.microlmagnification.amplification_FSBL">
-<code class="descclassname">pyLIMA.microlmagnification.</code><code class="descname">amplification_FSBL</code><span class="sig-paren">(</span><em>separation</em>, <em>mass_ratio</em>, <em>x_source</em>, <em>y_source</em>, <em>rho</em>, <em>limb_darkening_coefficient</em>, <em>tolerance=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmagnification.html#amplification_FSBL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmagnification.amplification_FSBL" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microlmagnification.</code><code class="descname">amplification_FSBL</code><span class="sig-paren">(</span><em>separation</em>, <em>mass_ratio</em>, <em>x_source</em>, <em>y_source</em>, <em>rho</em>, <em>limb_darkening_coefficient</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmagnification.html#amplification_FSBL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmagnification.amplification_FSBL" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Uniform Source Binary Lens amplification, based on the work of Valerio Bozza, thanks :)
 &#8220;Microlensing with an advanced contour integration algorithm: Green&#8217;s theorem to third order, error control,
 optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the paper if you used this.
@@ -124,12 +118,12 @@ optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>separation</strong> (<em>array_like</em>) &#8211; the projected normalised angular distance between the two bodies</li>
-<li><strong>mass_ratio</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the mass ratio of the two bodies</li>
+<li><strong>mass_ratio</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the mass ratio of the two bodies</li>
 <li><strong>x_source</strong> (<em>array_like</em>) &#8211; the horizontal positions of the source center in the source plane</li>
 <li><strong>y_source</strong> (<em>array_like</em>) &#8211; the vertical positions of the source center in the source plane</li>
-<li><strong>limb_darkening_coefficient</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the linear limb-darkening coefficient</li>
-<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the normalised (to :math:<a href="#id1"><span class="problematic" id="id2">`</span></a>theta_E&#8217;) angular source star radius</li>
-<li><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the relative precision desired in the magnification</li>
+<li><strong>limb_darkening_coefficient</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the linear limb-darkening coefficient</li>
+<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the normalised (to :math:<a href="#id1"><span class="problematic" id="id2">`</span></a>theta_E&#8217;) angular source star radius</li>
+<li><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the relative precision desired in the magnification</li>
 </ul>
 </td>
 </tr>
@@ -158,8 +152,8 @@ optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2015ApJ...804...20C">http://adsabs.harvard.edu/abs/2015ApJ...804...20C</a></li>
 <li><strong>uo</strong> (<em>array_like</em>) &#8211; the uo define for example in
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2015ApJ...804...20C">http://adsabs.harvard.edu/abs/2015ApJ...804...20C</a></li>
-<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the normalised angular source star radius</li>
-<li><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the microlensing limb darkening coefficient.</li>
+<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the normalised angular source star radius</li>
+<li><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the microlensing limb darkening coefficient.</li>
 <li><strong>yoo_table</strong> (<em>array_like</em>) &#8211; the Yoo et al. 2004 table approximation. See microlmodels for more details.</li>
 </ul>
 </td>
@@ -189,8 +183,8 @@ optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2015ApJ...804...20C">http://adsabs.harvard.edu/abs/2015ApJ...804...20C</a></li>
 <li><strong>uo</strong> (<em>array_like</em>) &#8211; the uo define for example in
 <a class="reference external" href="http://adsabs.harvard.edu/abs/2015ApJ...804...20C">http://adsabs.harvard.edu/abs/2015ApJ...804...20C</a></li>
-<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the normalised angular source star radius</li>
-<li><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the microlensing limb darkening coefficient.</li>
+<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the normalised angular source star radius</li>
+<li><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the microlensing limb darkening coefficient.</li>
 <li><strong>yoo_table</strong> (<em>array_like</em>) &#8211; the Yoo et al. 2004 table approximation. See microlmodels for more details.</li>
 </ul>
 </td>
@@ -218,7 +212,7 @@ optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>separation</strong> (<em>array_like</em>) &#8211; the projected normalised angular distance between the two bodies</li>
-<li><strong>mass_ratio</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the mass ratio of the two bodies</li>
+<li><strong>mass_ratio</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the mass ratio of the two bodies</li>
 <li><strong>x_source</strong> (<em>array_like</em>) &#8211; the horizontal positions of the source center in the source plane</li>
 <li><strong>y_source</strong> (<em>array_like</em>) &#8211; the vertical positions of the source center in the source plane</li>
 </ul>
@@ -264,7 +258,7 @@ optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the
 
 <dl class="function">
 <dt id="pyLIMA.microlmagnification.amplification_USBL">
-<code class="descclassname">pyLIMA.microlmagnification.</code><code class="descname">amplification_USBL</code><span class="sig-paren">(</span><em>separation</em>, <em>mass_ratio</em>, <em>x_source</em>, <em>y_source</em>, <em>rho</em>, <em>tolerance=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmagnification.html#amplification_USBL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmagnification.amplification_USBL" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyLIMA.microlmagnification.</code><code class="descname">amplification_USBL</code><span class="sig-paren">(</span><em>separation</em>, <em>mass_ratio</em>, <em>x_source</em>, <em>y_source</em>, <em>rho</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlmagnification.html#amplification_USBL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlmagnification.amplification_USBL" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Uniform Source Binary Lens amplification, based on the work of Valerio Bozza, thanks :)
 &#8220;Microlensing with an advanced contour integration algorithm: Green&#8217;s theorem to third order, error control,
 optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the paper if you used this.
@@ -275,11 +269,11 @@ optimal sampling and limb darkening &#8221;,Bozza, Valerio 2010. Please cite the
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>separation</strong> (<em>array_like</em>) &#8211; the projected normalised angular distance between the two bodies</li>
-<li><strong>mass_ratio</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the mass ratio of the two bodies</li>
+<li><strong>mass_ratio</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the mass ratio of the two bodies</li>
 <li><strong>x_source</strong> (<em>array_like</em>) &#8211; the horizontal positions of the source center in the source plane</li>
 <li><strong>y_source</strong> (<em>array_like</em>) &#8211; the vertical positions of the source center in the source plane</li>
-<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the normalised (to :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>theta_E&#8217;) angular source star radius</li>
-<li><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; the relative precision desired in the magnification</li>
+<li><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the normalised (to :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>theta_E&#8217;) angular source star radius</li>
+<li><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) &#8211; the relative precision desired in the magnification</li>
 </ul>
 </td>
 </tr>

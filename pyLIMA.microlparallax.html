@@ -47,7 +47,7 @@
 <dl class="class">
 <dt id="pyLIMA.microlparallax.MLParallaxes">
 <em class="property">class </em><code class="descclassname">pyLIMA.microlparallax.</code><code class="descname">MLParallaxes</code><span class="sig-paren">(</span><em>event</em>, <em>parallax_model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <blockquote>
 <div><p>######## Parallax module ########</p>
 <p>This module compute the parallax shifts due to different parallax effects.</p>
@@ -126,6 +126,11 @@ Gould, Andrew 2004. <a class="reference external" href="http://adsabs.harvard.ed
 </dd></dl>
 
 <dl class="method">
+<dt id="pyLIMA.microlparallax.MLParallaxes.lonely_satellite">
+<code class="descname">lonely_satellite</code><span class="sig-paren">(</span><em>time_to_treat</em>, <em>telescope</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.lonely_satellite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.lonely_satellite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pyLIMA.microlparallax.MLParallaxes.parallax_combination">
 <code class="descname">parallax_combination</code><span class="sig-paren">(</span><em>telescope</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLIMA/microlparallax.html#MLParallaxes.parallax_combination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLIMA.microlparallax.MLParallaxes.parallax_combination" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute, and set, the deltas_positions attributes of the telescope object
@@ -136,7 +141,7 @@ center of the Earth at the date to_par. More details on each parallax functions.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; a telescope object on which you want to set the deltas_positions</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>telescope</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.7)"><em>object</em></a>) &#8211; a telescope object on which you want to set the deltas_positions</td>
 </tr>
 </tbody>
 </table>
@@ -228,12 +233,12 @@ Write by Tim Lister, thanks :)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>observatory</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the satellite name you would like to obtain ephemeris. As to be in the dictionnary
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>observatory</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; the satellite name you would like to obtain ephemeris. As to be in the dictionnary
 JPL_HORIZONS_ID (exact name matching!).</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the JPL ID of your satellite.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.7)">int</a></td>
 </tr>
 </tbody>
 </table>
