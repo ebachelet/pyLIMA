@@ -36,7 +36,7 @@ pyLIMA should now run both on python2 and python3 !
 
 Clone the repository or download as a ZIP file. Then
 
->>> python setup.py install (--user if needed)
+python setup.py install (--user if needed)
 
 pip install -r requirements.txt
 
@@ -45,7 +45,7 @@ Successfully test on various UNIX, MAC and Windows! If you encounter any problem
 please contact etibachelet@gmail.com.
 
 You should be able to load pyLIMA as general module :
-
+```python
 from pyLIMA import microlmagnification
 
 ### Examples
