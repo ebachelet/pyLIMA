@@ -17,6 +17,3 @@ a fortran compiler and a C/C++ compiler, such as gfortran and gcc/g++. For examp
 We gonna need a package manager, such as `pip <https://pip.pypa.io/en/stable/installing/https://pip.pypa.io/en/stable/installing/>`_ or `anaconda <https://www.continuum.io/downloads>`_ (not fully tested). 
 
 
-We also need `SWIG <http://www.swig.org/download.html>`_, the python wrapper.
-
-

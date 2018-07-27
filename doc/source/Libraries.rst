@@ -21,6 +21,8 @@ In more details, here are the main python modules that pyLIMA required:
 
 `emcee <http://dan.iel.fm/emcee/current/>`_, the mcmc hammer
 
+`VBBinaryLensing <https://github.com/valboz/VBBinaryLensing>`_, Valerio Bozza magnificaiton routine
+
 You should be able to install all of this using: 
 
 **> pip install the_module**
