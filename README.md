@@ -47,7 +47,7 @@ please contact etibachelet@gmail.com.
 You should be able to load pyLIMA as general module :
 ```python
 from pyLIMA import microlmagnification
-
+```
 ### Examples
 Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
 There is two version for each examples, one using [Jupyter notebook](https://jupyter.org/) (*.ipynb) or 
