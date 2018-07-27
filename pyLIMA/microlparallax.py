@@ -205,7 +205,12 @@ class MLParallaxes(object):
         time = telescope.lightcurve_flux[:, 0]
         delta_North = np.array([])
         delta_East = np.array([])
-
+        
+        if location =='NewHorizon':
+        
+            delta_North, delta_East = self.lonely_satellite(time,telescope)
+        
+            
         if location == 'Earth':
 
             if (self.parallax_model == 'Annual'):
@@ -239,7 +244,7 @@ class MLParallaxes(object):
                 delta_North += telescope_positions[0]
                 delta_East += telescope_positions[1]
 
-        else:
+        if location == 'Space':
 
             telescope_positions = self.annual_parallax(time)
             delta_North = np.append(delta_North, telescope_positions[0])
@@ -255,6 +260,7 @@ class MLParallaxes(object):
 
             delta_North += telescope_positions[0]
             delta_East += telescope_positions[1]
+            
         deltas_position = np.array([delta_North, delta_East])
 
         # set the attributes deltas_positions for the telescope object
@@ -295,6 +301,8 @@ class MLParallaxes(object):
             [np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
 
         return delta_Sun_projected
+        
+   
 
     def terrestrial_parallax(self, time_to_treat, altitude, longitude, latitude):
         """ Compute the position shift due to the distance of the obervatories from the Earth
@@ -356,7 +364,7 @@ class MLParallaxes(object):
             #call JPL!
             satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
                                                      step_size='60m', verbose=False)[1]
-
+            telescope.spacecraft_positions = satellite_positions 				
         satellite_positions = np.array(satellite_positions)
         dates = satellite_positions[:, 0].astype(float)
         ra = satellite_positions[:, 1].astype(float)
@@ -382,6 +390,44 @@ class MLParallaxes(object):
             [np.dot(delta_satellite, self.North), np.dot(delta_satellite, self.East)])
 
         return delta_satellite_projected
+
+    def lonely_satellite(self, time_to_treat,telescope):
+        """
+        """
+
+        satellite_positions = np.array(telescope.spacecraft_positions)
+        
+       
+        dates = satellite_positions[:, 0].astype(float)
+        X = satellite_positions[:, 1].astype(float)
+        Y = satellite_positions[:, 2].astype(float)
+        Z = satellite_positions[:, 3].astype(float)
+
+        interpolated_X = interpolate.interp1d(dates, X)
+        interpolated_Y = interpolate.interp1d(dates, Y)
+        interpolated_Z = interpolate.interp1d(dates, Z)
+
+       
+        spacecraft_position_time_reference = np.array([interpolated_X(self.to_par),interpolated_Y(self.to_par),interpolated_Z(self.to_par)])
+        spacecraft_position_time_reference1 = np.array([interpolated_X(self.to_par-1),interpolated_Y(self.to_par-1),interpolated_Z(self.to_par-1)])
+        spacecraft_position_time_reference2 = np.array([interpolated_X(self.to_par+1),interpolated_Y(self.to_par+1),interpolated_Z(self.to_par+1)])
+        spacecraft_speed_time_reference = (spacecraft_position_time_reference2-spacecraft_position_time_reference1)/2
+        delta_spacecraft = []
+
+        for time in time_to_treat:
+
+            sat_position = np.array([interpolated_X(time),interpolated_Y(time),interpolated_Z(time)])
+            
+            delta_satellite = sat_position - (time- self.to_par) * spacecraft_speed_time_reference -  spacecraft_position_time_reference
+
+            delta_spacecraft.append(delta_satellite.tolist())
+
+        delta_Sat = np.array(delta_spacecraft)
+
+        delta_spacecraft_projected = np.array(
+            [np.dot(delta_Sat, self.North), np.dot(delta_Sat, self.East)])
+
+        return delta_spacecraft_projected
 
 
 def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_size='60m',
