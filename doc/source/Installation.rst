@@ -1,19 +1,20 @@
 Installation
 ============
 
-pyLIMA is a python based software which require some libraries :
-
-`numpy <http://www.numpy.org/>`_
-
-`scipy <http://www.scipy.org/install.html>`_
-
-`matplotlib <http://matplotlib.org/>`_
-
-`Astropy <http://www.astropy.org/>`_
-
-`pyslalib <https://github.com/scottransom/pyslalib>`_, the slalib python wraper
-
-`emcee <http://dan.iel.fm/emcee/current/>`_, the mcmc hammer
+The first installation step is to install pyLIMA in the repository of your choice (could be inside a `<VirtualEnv.html>`_):
 
 
-That's it, let's go!
+**> git clone https://github.com/ebachelet/pyLIMA.git**
+
+Then you can install pyLIMA:
+
+**> python setup.py install**
+
+And finally you can install the required libraries:
+
+**> pip install -r requirements.txt**
+
+
+
+
+

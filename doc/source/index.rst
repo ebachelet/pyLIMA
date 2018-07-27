@@ -14,7 +14,8 @@ Welcome to pyLIMA's documentation!
 .. toctree::
    :maxdepth: 2
 
-   Installation
+
+   Install
    Conventions
    Example
    pyLIMA

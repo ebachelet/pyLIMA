@@ -1,29 +1,34 @@
 pyLIMA package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-
-    pyLIMA.test
 
 Submodules
 ----------
 
 .. toctree::
-  
-    pyLIMA.event    
-    pyLIMA.telescopes
-    pyLIMA.microlfits
-    pyLIMA.microlguess
-    pyLIMA.microllimb_darkening
-    pyLIMA.microlmagnification
-    pyLIMA.microlmodels
-    pyLIMA.microloutputs
-    pyLIMA.microlparallax
-    pyLIMA.microlsimulator
-    pyLIMA.microltoolbox
 
+   pyLIMA.event
+   pyLIMA.microlfits
+   pyLIMA.microlguess
+   pyLIMA.microllimb_darkening
+   pyLIMA.microlmagnification
+   pyLIMA.microlmodels
+   pyLIMA.microlorbitalmotion
+   pyLIMA.microloutputs
+   pyLIMA.microlparallax
+   pyLIMA.microlpriors
+   pyLIMA.microlsimulator
+   pyLIMA.microlstats
+   pyLIMA.microltoolbox
+   pyLIMA.microlxallarap
+   pyLIMA.stars
+   pyLIMA.telescopes
 
+Subpackages
+-----------
+
+.. toctree::
+
+    pyLIMA.subroutines
+    pyLIMA.test
 
