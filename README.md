@@ -25,8 +25,6 @@ You can also practice by simulating events.
 ### Required materials 
 Regular C/C++ and fortran compilers are required for packages installation
 
-You also need [SWIG](http://www.swig.org/download.html)
-
 You need [pip](https://pip.pypa.io/en/stable/installing/) or you can install manually
 the required libraries [Documentation](https://ebachelet.github.io/pyLIMA/)
 
@@ -38,11 +36,7 @@ pyLIMA should now run both on python2 and python3 !
 
 Clone the repository or download as a ZIP file. Then
 
-
-python setup.py build_ext --build-lib=./pyLIMA/subroutines/VBBinaryLensingLibrary
-(and, not mandatory, python setup.py clean --all)
-
-The install the required libraries with
+>>> python setup.py install (--user if needed)
 
 pip install -r requirements.txt
 
@@ -50,15 +44,9 @@ This new procedure which should avoid the previous installations headaches!
 Successfully test on various UNIX, MAC and Windows! If you encounter any problems,
 please contact etibachelet@gmail.com.
 
+You should be able to load pyLIMA as general module :
 
-
-Please use pyLIMA as a external module, by doing a global import :
-
-import sys
-
-sys.path.append(your-path-to-pyLIMA-directory)
-
-from pyLIMA import whatyouneed
+from pyLIMA import microlmagnification
 
 ### Examples
 Examples can be found in your pyLIMA directory. Look on the documentation to learn how to run it.
@@ -84,7 +72,7 @@ Example_5 : [HOW TO FIT PARALLAX?](https://github.com/ebachelet/pyLIMA/tree/mast
 | Point-Source Point Lens (PSPL)   | ![Alt text](./doc/HGF.png?raw=true)     | Yes | Levenberg-Marquardt (LM)     |
 | Finite-Source Point Lens (FSPL)   |  ![Alt text](./doc/HGF.png?raw=true)      | Yes | Levenberg-Marquardt (LM) or Differential Evolution (DE)    |
 | Double-Source Point Lens (DSPL)   | ![Alt text](./doc/HGF.png?raw=true)     |  Yes | Differential Evolution (DE)    |
-| Uniform-Source Binary Lens (USBL)   | ![Alt text](./doc/WIP.png?raw=true)  | No |      |
+| Uniform-Source Binary Lens (USBL)   | ![Alt text](./doc/HGF.png?raw=true)  | No |      |
 
 #### pyLIMA can also treat Second Order effects :
 
@@ -93,7 +81,7 @@ Example_5 : [HOW TO FIT PARALLAX?](https://github.com/ebachelet/pyLIMA/tree/mast
 | Annual parallax   |  ![Alt text](./doc/HGF.png?raw=true)      | No | Levenberg-Marquardt (LM)     |
 | Terrestrial parallax   |  ![Alt text](./doc/HGF.png?raw=true)     | No | Levenberg-Marquardt (LM) |
 | Space parallax   |  ![Alt text](./doc/HGF.png?raw=true)      |  No| Levenberg-Marquardt (LM)    |
-| Orbital Motion   | ![Alt text](./doc/WIP.png?raw=true)     | No |       |
+| Orbital Motion   | ![Alt text](./doc/HGF.png?raw=true)     | No |       |
 | Xallarap   | ![Alt text](./doc/WIP.png?raw=true)    | No |       |
 
 
