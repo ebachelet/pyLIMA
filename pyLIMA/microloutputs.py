@@ -11,7 +11,6 @@ import collections
 import copy
 import json
 import cycler
-
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, MultipleLocator
@@ -343,14 +342,15 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     figure_distributions, axes2 = plt.subplots(dimensions, dimensions, sharex='col', figsize=(fig_size[0], fig_size[1]))
     plt.subplots_adjust(top=0.9, bottom=0.15, left=0.10, right=0.9, wspace=0.3, hspace=0.3)
     count_i = 0
+    params_keys = list(fit.model.model_dictionnary.keys())[:dimensions]
 
-    for key_i in fit.model.model_dictionnary.keys()[: dimensions]:
+    for index,key_i in enumerate(params_keys):
 
         axes2[count_i, 0].set_ylabel(key_i, fontsize=5 * fig_size[0] * 3 / 2.0 / dimensions)
         axes2[-1, count_i].set_xlabel(key_i, fontsize=5 * fig_size[0] * 3 / 2.0 / dimensions)
 
         count_j = 0
-        for key_j in fit.model.model_dictionnary.keys()[: dimensions]:
+        for index,key_j in enumerate(params_keys):
 
             axes2[count_i, count_j].ticklabel_format(useOffset=False, style='plain')
             axes2[count_i, count_j].ticklabel_format(useOffset=False, style='plain')

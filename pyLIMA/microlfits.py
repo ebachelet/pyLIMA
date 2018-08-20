@@ -341,7 +341,8 @@ class MLFits(object):
         # Best solution
 
         limit_parameters = len(self.model.parameters_boundaries)
-        best_solution = self.guess[:limit_parameters]
+        if self.fluxes_MCMC_method != 'MCMC':
+            best_solution = self.guess[:limit_parameters]
 
         nwalkers = 8 * len(best_solution)
         nlinks = 1000
@@ -426,11 +427,7 @@ class MLFits(object):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-        for index,parameter in enumerate(pyLIMA_parameters):
-            if np.abs(parameter)>10**100:
-                    import pdb; pdb.set_trace()
-                    return -np.inf
-                        
+
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
             residus = self.model_residuals(telescope, pyLIMA_parameters)
