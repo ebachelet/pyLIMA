@@ -330,17 +330,20 @@ class MLFits(object):
         if len(self.model.parameters_guess) == 0:
 
             differential_evolution_estimation = self.differential_evolution()[0]
-            self.DE_population_size = 10
             self.guess = differential_evolution_estimation
 
         else:
 
             self.guess = list(self.model.parameters_guess)
-            self.guess += self.find_fluxes(self.guess, self.model)
+
+        self.guess += self.find_fluxes(self.guess, self.model)
 
         # Best solution
 
         limit_parameters = len(self.model.parameters_boundaries)
+
+        best_solution = self.guess
+
         if self.fluxes_MCMC_method != 'MCMC':
             best_solution = self.guess[:limit_parameters]
 

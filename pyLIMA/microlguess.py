@@ -353,7 +353,10 @@ def differential_evolution_parameters_boundaries(model):
         #for ind,telo in enumerate(model.event.telescopes):
              #parameters_boundaries+=[fluxes[ind], blend[ind]]
 
-   
+    if model.model_type == 'PSTL':
+        parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, logs_boundaries,
+                                 logq_boundaries,logs_boundaries,
+                                 logq_boundaries, alpha_boundaries, alpha_boundaries]
     if model.model_type == 'VariablePL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries,rho_boundaries, period_variable]
 

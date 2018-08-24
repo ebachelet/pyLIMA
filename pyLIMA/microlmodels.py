@@ -499,7 +499,7 @@ class MLModel(object):
         source_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
         source_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
 
-        if 'PL' not in self.model_type:
+        if ('PL' not in self.model_type) and ('TL' not in self.model_type):
     
             separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectory_x))+dseparation
                 
@@ -1364,5 +1364,50 @@ class ModelVariablePL(MLModel):
         pulsations = 10 ** (pulsations / 2.5)
 
         return pulsations
+
+class ModelPSTL(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns:PSTL
+        :rtype: string
+        """
+        return 'PSTL'
+
+    def paczynski_model_parameters(self):
+        """ Define the PSTL standard parameters, [to,uo,tE, s1,q1,s2,q2,psi,alpha]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'logs1': 3, 'logq1': 4, 'logs2': 5, 'logq2': 6,'psi':7,'alpha': 8}
+
+        self.Jacobian_flag = 'No way'
+
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a PSTL model.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        to, uo = pyLIMA_parameters.to, pyLIMA_parameters.uo
+
+        source_trajectoire = self.source_trajectory(telescope, to, uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+
+        separation1 = [10**pyLIMA_parameters.logs1]*len(source_trajectoire[0])
+        separation2 = [10**pyLIMA_parameters.logs2]*len(source_trajectoire[0])
+        magnification = \
+            microlmagnification.amplification_PSTL(separation1,separation2, 10 ** pyLIMA_parameters.logq1, 10 ** pyLIMA_parameters.logq2, [pyLIMA_parameters.psi]*len(source_trajectoire[0]),*source_trajectoire)
+
+        return magnification
+
+   
 
 
