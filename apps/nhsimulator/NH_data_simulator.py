@@ -141,7 +141,7 @@ def generate_LORRI_lightcurve(params,log):
     lightcurve[:,2] = mag_err
 
     log.info('Generated lightcurve')
-        
+    
     return lightcurve
 
 def get_parameter_order(model_type,parallax):
@@ -243,19 +243,18 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
                     ' '+str(event_params['piEE']))
                     
         model = microlmodels.create_model(event_params['model_type'], lens, 
-                                      parallax=['Full', event_params['to']], 
-                                        annual_parallax=False)
+                                      parallax=['Full', event_params['to']])
         
         model_params = []
         
         for key in porder_parallax:                
             model_params.append(event_params[key])
-                    
+        
     else:
         
         log.info(' -> No parallax parameters')
                     
-        model = microlmodels.create_model(event_params['model_type'], lens, annual_parallax=False)
+        model = microlmodels.create_model(event_params['model_type'], lens)
         
         model_params = []
         
@@ -263,8 +262,6 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
             model_params.append(event_params[key])
                             
     model.define_model_parameters()
-
-    log.info('Check model use of annual parallax: '+repr(model.use_annual_parallax))
         
     f = microlfits.MLFits(lens)
     f.model = model

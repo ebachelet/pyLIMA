@@ -46,7 +46,7 @@ def parse_JPL_Horizons_table(horizons_file_path = None, table_type = None):
     
     else:
         
-        file_lines = open(horizons_file_path,'r').readlines()[0].split('\r')
+        file_lines = open(horizons_file_path,'r').readlines()
         
         horizons_data = parse_observer_table_data(file_lines)
         
@@ -200,9 +200,9 @@ def parse_observer_table_data(file_lines):
     data = []
     
     iend = -1
-    
-    for i,line in enumerate(file_lines):
         
+    for i,line in enumerate(file_lines):
+                
         if '$$SOE' in line:
             
             istart = i + 1
@@ -210,11 +210,12 @@ def parse_observer_table_data(file_lines):
         elif '$$EOE' in line:
             
             iend = i - 1
-    
+        
     if iend == -1:
         
         iend = len(file_lines) - 1
-        
+    
+    
     for i in range(istart,iend,1):
         
         line = ' '.join(file_lines[i:i+4])
@@ -234,9 +235,8 @@ def parse_observer_table_data(file_lines):
                 dec_deg = entries[5]
                 dec_min = entries[6]
                 dec_sec = entries[7]
-                delta = float(entries[10])
-                deldot = float(entries[11])
-                
+                delta = float(entries[8])
+                deldot = float(entries[9])
                 ra = float(ra_hr) + (float(ra_min)/60.0) + (float(ra_sec)/3600.0)
                 ra = ra*15.0
                 sign = 1.0
@@ -284,11 +284,28 @@ def calc_norm_spacecraft_positions(horizons_data,t0):
 
     interpolated_delta = interpolate.interp1d(np.array(dates), 
                                                  np.array(deltas))
-        
+    
     delta_t0 = interpolated_delta(t0)
     
     deltas = deltas - delta_t0
     
+    positions = []
+    
+    for i in range(0,len(dates),1):
+        
+        positions.append( [dates[i], ras[1], decs[i], deltas[i]] )
+                    
+    return positions
+    
+def extract_spacecraft_positions(horizons_data,t0):
+    """Function to calculate the position of the spacecraft as a function of
+    time, normalized to the position at t0"""
+    
+    dates = horizons_data['JD'].tolist()
+    ras = horizons_data['RA'].tolist()
+    decs = horizons_data['Dec'].tolist()
+    deltas = horizons_data['Delta'].tolist()
+
     positions = []
     
     for i in range(0,len(dates),1):
@@ -303,4 +320,4 @@ if __name__ == '__main__':
     tE = 2457125.0
     index = np.argmin(abs(horizons_data['JD']-tE))
     print horizons_data['JD'][index]
-    
+    print horizons_data

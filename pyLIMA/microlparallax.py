@@ -245,16 +245,37 @@ class MLParallaxes(object):
             delta_North = np.append(delta_North, telescope_positions[0])
             delta_East = np.append(delta_East, telescope_positions[1])
             name = telescope.spacecraft_name
-
-
+            
+            f = open('/Users/rstreet/NHmicrolensing/simulations24/tel_positions.txt','w')
+            f.write('# Annual parallax positions\n')
+            
+            for t in range(0,len(time),1):
+                f.write(str(time[t])+' '+str(delta_North[t])+' '+str(delta_East[t])+'\n')
+            f.write('\n\n')
+            
             telescope_positions = -self.space_parallax(time, name, telescope)
             # import pdb;
             # pdb.set_trace()
             #delta_North = np.append(delta_North, telescope_positions[0])
             #delta_East = np.append(delta_East, telescope_positions[1])
-
+            
+            f.write('# Spacecraft positions\n')
+            for t in range(0,len(time),1):
+                f.write(str(time[t])+' '+str(telescope_positions[0,t])+' '+str(telescope_positions[1,t])+'\n')
+            f.write('\n\n')
+            
+            
             delta_North += telescope_positions[0]
             delta_East += telescope_positions[1]
+            
+            f.write('# Final positions\n')
+            for t in range(0,len(time),1):
+                f.write(str(time[t])+' '+str(delta_North[t])+' '+str(delta_East[t])+'\n')
+            f.write('\n\n')
+            
+            f.close()
+            exit()
+            
         deltas_position = np.array([delta_North, delta_East])
 
         # set the attributes deltas_positions for the telescope object

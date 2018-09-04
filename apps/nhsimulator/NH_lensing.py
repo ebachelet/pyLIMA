@@ -442,8 +442,7 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, log,
             
         model = microlmodels.create_model(event_params['model_type'], e, 
                                           parallax=['Full', event_params['t0']], 
-                                          blend_flux_ratio=False, 
-                                          annual_parallax=False)
+                                          blend_flux_ratio=False)
         output += ' with parallax'
         
     else:
@@ -454,8 +453,7 @@ def fit_microlensing_model(lightcurve, event_params, lc_params, log,
         log.info('With parameters '+repr(event_params))
         
         model = microlmodels.create_model(event_params['model_type'], e, 
-                                          blend_flux_ratio=False, 
-                                          annual_parallax=False)
+                                          blend_flux_ratio=False)
     
     log.info(output)
         
@@ -796,8 +794,7 @@ def plot_rel_trajectory(fit,times,fig,ax,label,txt_file_path,trajectory_color='r
 
     if fit.model.parallax_model[0] != 'None':
 
-        tel.compute_parallax(fit.event, fit.model.parallax_model, 
-                             annual_parallax=fit.model.use_annual_parallax)
+        tel.compute_parallax(fit.event, fit.model.parallax_model)
         
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
     
