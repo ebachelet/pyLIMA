@@ -343,8 +343,9 @@ class MLFits(object):
         limit_parameters = len(self.model.parameters_boundaries)
         if self.fluxes_MCMC_method != 'MCMC':
             best_solution = self.guess[:limit_parameters]
-
-        nwalkers = 8 * len(best_solution)
+        else:
+            best_solution = self.guess
+        nwalkers = 16 * len(best_solution)
         nlinks = 1000
 
         # Initialize the population of MCMC
