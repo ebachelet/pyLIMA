@@ -96,9 +96,9 @@ def orbital_motion_circular(to_om, v_para, v_perp, v_radial, separation_0, time)
 
         else:
 
-            omega = w1
-            inclination = 0
-            phi0 = np.pi / 2  # omega_N + phi_0 !!!
+            omega = w2
+            inclination = np.pi/2
+            phi0 = 0  # omega_N + phi_0 !!!
 
     else:
 
