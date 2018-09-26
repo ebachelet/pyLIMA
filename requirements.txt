@@ -10,3 +10,4 @@ astropy
 emcee
 pyslalib
 VBBinaryLensing
+dill

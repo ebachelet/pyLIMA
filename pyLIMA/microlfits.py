@@ -147,8 +147,7 @@ class MLFits(object):
             from mpi4py import MPI
             import dill
 
-            MPI.pickle.dumps = dill.dumps
-            MPI.pickle.loads = dill.loads
+            MPI.pickle.__init__(dill.dumps, dill.loads)
             self.pool = computational_pool
         self.binary_regime = binary_regime
 
@@ -318,8 +317,8 @@ class MLFits(object):
             :rtype: tuple
 
             **WARNING** :
-                   nwalkers is set to 100
-                   nlinks is set to 300
+                   nwalkers is set to 16 times the len of pazynski_parameters
+                   nlinks is set to 1000
                    5*nwalkers*nlinks MCMC steps in total
         """
 
