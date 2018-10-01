@@ -277,6 +277,13 @@ class MLModel(object):
 
         self.model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
 
+    def print_model_parameters(self):
+        """ Define the model parameters dictionnary and print for the users.
+        """
+        self.define_model_parameters()
+
+        print(self.model_dictionnary)
+
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
         """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
         if not the default microlensing model is returned.
