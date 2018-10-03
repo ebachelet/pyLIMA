@@ -959,7 +959,12 @@ class MLFits(object):
 
         self.stats_outputs = stats_outputs
 
-    def produce_pdf(self, output_directory):
+    def produce_pdf(self, output_directory='./'):
         """ ON CONSTRUCTION
         """
         microloutputs.pdf_output(self, output_directory)
+
+    def produce_latex_table_results(self, output_directory='./'):
+        """ ON CONSTRUCTION
+        """
+        microloutputs.latex_output(self, output_directory)
