@@ -50,7 +50,7 @@ def latex_output(fit, output_directory):
     t.write('\\begin{tabular}{ll}\n')
     t.write('\\hline\n')
     t.write('\\hline\n')
-    
+
     if fit_type == 'MCMC':
 
         mcmc_chains = fit.MCMC_chains
@@ -58,7 +58,7 @@ def latex_output(fit, output_directory):
 
         for index, key in enumerate(fit.model.model_dictionnary):
             best_param = mcmc_chains[best_model_index, index]
-            percent_34 = np.percentile(mcmc_chains[:, index], 34)
+            percent_34 = np.percentile(mcmc_chains[:, index], 16)
             percent_50 = np.percentile(mcmc_chains[:, index], 50)
             percent_84 = np.percentile(mcmc_chains[:, index], 84)
 
