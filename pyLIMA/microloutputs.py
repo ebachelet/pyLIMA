@@ -47,11 +47,13 @@ def latex_output(fit, output_directory):
     t.write('\\centering\n')
     t.write(
         '\\caption{Best model parameters} \label{tab:fitparams}\n')
-    t.write('\\begin{tabular}{ll}\n')
+    t.write('\\begin{tabular}{lll}\n')
     t.write('\\hline\n')
     t.write('\\hline\n')
 
     if fit_type == 'MCMC':
+        t.write('Parameters&Value(best model)&Errors([16,50,84] range)')
+        t.write('\\hline\n')
 
         mcmc_chains = fit.MCMC_chains
         best_model_index = np.argmax(mcmc_chains[:, -1])
@@ -69,6 +71,8 @@ def latex_output(fit, output_directory):
         t.write('Chi2&' + str(-2*mcmc_chains[best_model_index, -1]) + '&0\\\\\n')
 
     else:
+        t.write('Parameters&Value&Errors')
+        t.write('\\hline\n')
 
         for index, key in enumerate(fit.model.model_dictionnary):
             t.write(key + '&' + str(fit.fit_results[index]) + '&' + str(
