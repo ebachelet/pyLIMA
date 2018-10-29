@@ -478,6 +478,8 @@ class MLFits(object):
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
         print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
 
+        self.DE_population = np.array(self.DE_population)
+
         # Construct the guess for the LM method. In principle, guess and outputs of the LM
         # method should be very close.
 

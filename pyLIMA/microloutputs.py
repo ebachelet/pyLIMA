@@ -58,6 +58,7 @@ def latex_output(fit, output_directory):
         mcmc_chains = fit.MCMC_chains
         best_model_index = np.argmax(mcmc_chains[:, -1])
 
+
         for index, key in enumerate(fit.model.model_dictionnary):
             best_param = mcmc_chains[best_model_index, index]
             percent_34 = np.percentile(mcmc_chains[:, index], 16)
@@ -779,11 +780,12 @@ def LM_plot_model(fit, figure_axe):
                              pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
 
     time = np.sort(np.append(time, extra_time))
+
+
     reference_telescope = copy.copy(fit.event.telescopes[0])
     if reference_telescope.location == 'Space':
-        min_time = np.min(reference_telescope.lightcurve_flux[:, 0])
-        max_time = np.max(reference_telescope.lightcurve_flux[:, 0])
-        time = np.linspace(min_time, max_time, 3000)
+
+        time = reference_telescope.lightcurve_flux[:, 0]
 
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
