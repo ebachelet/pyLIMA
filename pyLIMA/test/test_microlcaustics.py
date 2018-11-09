@@ -263,8 +263,9 @@ def test_change_source_trajectory_center_to_planetary_caustics_center():
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
                                                                                                      mass_ratio)
 
-    assert x_center ==-1.4997160687085691
-    assert y_center == 0.035497175763441399
+    assert x_center == -1.4997160687085691
+    assert y_center == 0.035497175763441455
+
 
     separation = 0.8
     mass_ratio = 0.85
@@ -284,12 +285,13 @@ def test_change_source_trajectory_center_to_planetary_caustics_center():
     assert x_center == 3.597042535016731
     assert y_center == 0
 
+
 def test_change_source_trajectory_center_to_central_caustics_center():
     separation = 0.5
     mass_ratio = 10 ** -1
 
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
-                                                                                                     mass_ratio)
+                                                                                                   mass_ratio)
 
     assert x_center == -0.010300719769916603
     assert y_center == 0
@@ -298,7 +300,7 @@ def test_change_source_trajectory_center_to_central_caustics_center():
     mass_ratio = 0.85
 
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
-                                                                                                     mass_ratio)
+                                                                                                   mass_ratio)
 
     assert x_center == 0
     assert y_center == 0
@@ -307,7 +309,7 @@ def test_change_source_trajectory_center_to_central_caustics_center():
     mass_ratio = 0.85
 
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
-                                                                                                     mass_ratio)
+                                                                                                   mass_ratio)
 
     assert x_center == -3.0576148720596557
     assert y_center == 0

@@ -177,27 +177,27 @@ class MLFits(object):
             self.fix_parameters_dictionnary = OrderedDict(
                 sorted(fix_parameters_dictionnary.items(), key=lambda x: x[1]))
             self.grid_resolution = grid_resolution
-            self.grids()
+            self.grid_parameters = self.grids()
 
         fit_quality_flag = 'Good Fit'
 
-        if self.method != 'MCMC':
-            fit_quality_flag = self.check_fit()
+        #if self.method != 'MCMC':
+        #    fit_quality_flag = self.check_fit()
 
-        if fit_quality_flag == 'Bad Fit':
+        #if fit_quality_flag == 'Bad Fit':
 
-            if self.method == 'LM':
+        #    if self.method == 'LM':
 
-                print('We have to change method, this fit was unsuccessfull. We decided to switch ' \
-                      '' \
-                      'method to "DE"')
+        #        print('We have to change method, this fit was unsuccessfull. We decided to switch ' \
+        #             '' \
+         #             'method to "DE"')
 
                 # self.method = 'DE'
                 # self.mlfit(self.model, self.method, self.fluxes_MCMC_method)
 
-            else:
+         #   else:
 
-                print('Unfortunately, this is too hard for pyLIMA :(')
+         #      print('Unfortunately, this is too hard for pyLIMA :(')
 
     def check_fit(self):
         """Check if the fit results and covariance make sens.
