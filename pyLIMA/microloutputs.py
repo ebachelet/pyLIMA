@@ -697,8 +697,9 @@ def LM_plot_lightcurves(fit):
     """
 
     figure, figure_axes = initialize_plot_lightcurve(fit)
-    LM_plot_model(fit, figure_axes[0])
+
     LM_plot_align_data(fit, figure_axes[0])
+    LM_plot_model(fit, figure_axes[0])
     LM_plot_residuals(fit, figure_axes[1])
 
     return figure
@@ -784,8 +785,10 @@ def LM_plot_model(fit, figure_axe):
 
     reference_telescope = copy.copy(fit.event.telescopes[0])
     if reference_telescope.location == 'Space':
+        min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
+        max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
-        time = reference_telescope.lightcurve_flux[:, 0]
+        time = np.linspace(min_time, max_time + 100, 30000)
 
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
@@ -812,12 +815,12 @@ def LM_plot_model(fit, figure_axe):
 
                 flux_model = fit.model.compute_the_microlensing_model(reference_telescope_space, pyLIMA_parameters)[0]
                 magnitude = microltoolbox.flux_to_magnitude(flux_model)
-                figure_axe.plot(time_space, magnitude, '--b', lw=2)
+                figure_axe.plot(time_space, magnitude, '--r', lw=3)
 
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, 'b', label=fit.model.model_type, lw=2)
+    figure_axe.plot(time, magnitude, 'r', label=fit.model.model_type, lw=3)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.set_xlim(
