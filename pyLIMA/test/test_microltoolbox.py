@@ -1,7 +1,7 @@
 import os.path
 
 import numpy as np
-import mock
+import unittest.mock as mock
 
 from pyLIMA import microltoolbox
 

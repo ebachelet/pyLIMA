@@ -15,7 +15,7 @@ import emcee
 import sys
 import copy
 from collections import OrderedDict
-
+import multiprocessing as mp
 
 from pyLIMA import microlmodels
 from pyLIMA import microloutputs
@@ -79,13 +79,14 @@ class MLFits(object):
         self.fit_covariance = []
         self.fit_time = []
         self.DE_population = []
+        self.DE_workers = None
         self.binary_regime = None
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
         self.pool = None
 
-    def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+    def mlfit(self, model, method, DE_population_size=10, DE_workers = 1, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
@@ -142,13 +143,21 @@ class MLFits(object):
         self.method = method
         self.fluxes_MCMC_method = flux_estimation_MCMC
         self.DE_population_size = DE_population_size
+        self.DE_workers = DE_workers
+
         self.model.define_model_parameters()
         if computational_pool:
             from mpi4py import MPI
             import dill
 
             MPI.pickle.__init__(dill.dumps, dill.loads)
+
             self.pool = computational_pool
+        if self.DE_workers>0:
+            manager = mp.Manager()
+            self.DE_population = manager.list()
+        #import pdb;
+        #pdb.set_trace()
         self.binary_regime = binary_regime
 
         if self.method == 'LM':
@@ -394,20 +403,23 @@ class MLFits(object):
 
         print('MCMC preburn done')
 
+       # import pdb;
+       # pdb.set_trace()
         sampler.reset()
-        MCMC_chains = None
 
+        sampler.run_mcmc(final_positions, nlinks)
+        MCMC_chains = np.c_[sampler.get_chain().reshape(nlinks*nwalkers,number_of_parameters),sampler.get_log_prob().reshape(nlinks*nwalkers)]
 
         # Final estimation using the previous output.
-        for positions, probabilities, states in sampler.sample(final_positions, iterations=  nlinks,
-                                                               storechain=True):
-            chains = np.c_[positions, probabilities]
-            if MCMC_chains is not None:
+        #for positions, probabilities, states in sampler.sample(final_positions, iterations=  nlinks,
+        #                                                       storechain=True):
+        #    chains = np.c_[positions, probabilities]
+        #    if MCMC_chains is not None:
 
-                MCMC_chains = np.r_[MCMC_chains, chains]
-            else:
+        #        MCMC_chains = np.r_[MCMC_chains, chains]
+        #    else:
 
-                MCMC_chains = chains
+        #        MCMC_chains = chains
 
         print(sys._getframe().f_code.co_name, ' : MCMC fit SUCCESS')
         return MCMC_chains
@@ -427,6 +439,15 @@ class MLFits(object):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
+        prior = microlpriors.priors_on_models(pyLIMA_parameters, self.model, binary_regime = self.binary_regime)
+
+        if prior != np.inf:
+
+            chichi -= prior
+
+        else:
+
+            return -np.inf
 
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
@@ -469,8 +490,9 @@ class MLFits(object):
             mutation=(0.5, 1.0), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
             atol=0.1, strategy='rand1bin',
             recombination=0.7, polish=True, init='latinhypercube',
-            disp=True
+            disp=True,workers = self.DE_workers,
         )
+
 
         # paczynski_parameters are all parameters to compute the model, excepted the telescopes fluxes.
         paczynski_parameters = differential_evolution_estimation['x'].tolist()
@@ -517,14 +539,23 @@ class MLFits(object):
         """
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-       
         chichi = 0.0
 
-        for telescope in self.event.telescopes:
-            # Find the residuals of telescope observation regarding the parameters and model
-            residus = self.model_residuals(telescope, pyLIMA_parameters)
+        prior = microlpriors.priors_on_models(pyLIMA_parameters, self.model, binary_regime=self.binary_regime)
 
-            chichi += (residus ** 2).sum()
+        if prior != np.inf:
+            chichi += prior
+            for telescope in self.event.telescopes:
+                # Find the residuals of telescope observation regarding the parameters and model
+                residus = self.model_residuals(telescope, pyLIMA_parameters)
+
+                chichi += (residus ** 2).sum()
+            # print(chichi)
+
+        else:
+
+            chichi = np.inf
+
 
         self.DE_population.append(fit_process_parameters.tolist() + [chichi])
 
@@ -638,9 +669,17 @@ class MLFits(object):
             residus = self.model_residuals(telescope, pyLIMA_parameters)
 
             residuals = np.append(residuals, residus)
-            
-            
-           
+
+        prior = microlpriors.priors_on_models(pyLIMA_parameters,self.model, binary_regime=self.binary_regime)
+
+        if prior != np.inf:
+
+           residuals += prior/len(residuals)
+
+        else:
+
+           residuals *= prior
+
         # print python_time.time()-start
 
         return residuals
@@ -770,12 +809,15 @@ class MLFits(object):
         :return: the residuals in flux, the priors
         :rtype: array_like, float
         """
+
+
+
         lightcurve = telescope.lightcurve_flux
 
         flux = lightcurve[:, 1]
         errflux = lightcurve[:, 2]
 
-        microlensing_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+        microlensing_model = self.model.compute_the_microlensing_model(telescope,pyLIMA_parameters)
 
         residuals = (flux - microlensing_model[0]) / errflux
 

@@ -363,7 +363,7 @@ class MLParallaxes(object):
         else:
             #call JPL!
             satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
-                                                     step_size='60m', verbose=False)[1]
+                                                     step_size='1440m', verbose=False)[1]
             telescope.spacecraft_positions = satellite_positions 				
         satellite_positions = np.array(satellite_positions)
         dates = satellite_positions[:, 0].astype(float)

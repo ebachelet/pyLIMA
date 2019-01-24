@@ -4,12 +4,13 @@ Created on Mon Dec  7 15:46:17 2015
 
 @author: ebachelet
 """
-import mock
+import unittest.mock as mock
 import numpy as np
 import collections
 from collections import OrderedDict
 
 from pyLIMA import microlfits
+from pyLIMA import microlmodels
 
 
 def _create_event():
@@ -50,7 +51,7 @@ def _create_model(kind):
 
 def test_mlfit_PSPL_LM_without_guess():
     current_event = _create_event()
-    model = _create_model('PSPL')
+    model = model = microlmodels.create_model('PSPL',current_event)
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
 
@@ -60,12 +61,8 @@ def test_mlfit_PSPL_LM_without_guess():
 
 def test_mlfit_FSPL_LM_without_guess():
     current_event = _create_event()
-    model = _create_model('FSPL')
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
-    fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
-    model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 0.05, 10, 5)
-    model.model_parameters = collections.namedtuple('parameters',model.model_dictionnary)
-    model.parameters_boundaries = [[0, 100], [0, 1], [0, 300], [0, 1]]
+    model = model = microlmodels.create_model('FSPL',current_event)
+
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
 
@@ -76,13 +73,8 @@ def test_mlfit_FSPL_LM_without_guess():
 def test_mlfit_DSPL_LM_without_guess():
     current_event = _create_event()
     
-    model = _create_model('DSPL')
-    model.model_dictionnary = {'to1': 0, 'uo1': 1, 'delta_to': 2, 'uo2': 3, 'tE': 4, 'q_F_I': 5, 'fs_Test': 6,
-                               'g_Test': 7}
-    fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
-    model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 0.05, 20, 0.1,
-                                                                                         10, 5)
-    model.parameters_boundaries = [[0, 100], [0, 1], [0, 100], [0, 1], [0, 300], [0, 1]]
+    model = model = microlmodels.create_model('DSPL',current_event)
+
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
 
@@ -92,7 +84,8 @@ def test_mlfit_DSPL_LM_without_guess():
 
 def test_mlfit_PSPL_LM_with_guess():
     current_event = _create_event()
-    model = _create_model('PSPL')
+    model = microlmodels.create_model('PSPL',current_event)
+
     model.parameters_guess = [10, 0.1, 20]
 
     fit = microlfits.MLFits(current_event)
@@ -103,13 +96,8 @@ def test_mlfit_PSPL_LM_with_guess():
 
 def test_mlfit_FSPL_LM_with_guess():
     current_event = _create_event()
-    model = _create_model('FSPL')
+    model = microlmodels.create_model('FSPL',current_event)
 
-    model.parameters_guess = [10, 0.1, 20, 0.02]
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
-    fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
-    model.pyLIMA_standard_parameters_to_fancy_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 0.05, 10, 5)
-    model.model_parameters = collections.namedtuple('parameters', model.model_dictionnary)
     model.parameters_boundaries = [[0, 100], [0, 1], [0, 300], [0, 1]]
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
@@ -141,8 +129,8 @@ def test_check_fit_bad_covariance():
 
 def test_check_fit_bad_rho():
     current_event = _create_event()
-    model = _create_model('FSPL')
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    model = microlmodels.create_model('FSPL',current_event)
+    model.define_model_parameters()
     fit = microlfits.MLFits(current_event)
     fit.model = model
     fit.fit_results = [0.0, 0.0, 0.0, -1.0, 1.0, 0.0]
@@ -166,8 +154,9 @@ def test_check_fit_bad_rho():
 
 def test_check_fit_source_flux():
     current_event = _create_event()
-    model = _create_model('FSPL')
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    model = microlmodels.create_model('FSPL',current_event)
+    model.define_model_parameters()
+
     fit = microlfits.MLFits(current_event)
     fit.model = model
     fit.fit_results = [0.0, 0.0, 0.0, 0.0, 1.0, 0.0]
@@ -185,8 +174,9 @@ def test_check_fit_source_flux():
 
 def test_LM_Jacobian():
     current_event = _create_event()
-    model = _create_model('FSPL')
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    model = microlmodels.create_model('FSPL',current_event)
+    model.define_model_parameters()
+
     fit = microlfits.MLFits(current_event)
     fit.model = model
 
@@ -207,8 +197,9 @@ def test_LM_Jacobian():
 def test_chichi_telescopes():
 
     current_event = _create_event()
-    model = _create_model('FSPL')
-    model.model_dictionnary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3, 'fs_Test': 4, 'g_Test': 5}
+    model = microlmodels.create_model('FSPL',current_event)
+    model.define_model_parameters()
+
     fit = microlfits.MLFits(current_event)
     fit.model = model
 

@@ -1,5 +1,5 @@
 import numpy as np
-import mock
+import unittest.mock
 import pytest
 
 from pyLIMA import microlcaustics
@@ -264,7 +264,7 @@ def test_change_source_trajectory_center_to_planetary_caustics_center():
                                                                                                      mass_ratio)
 
     assert x_center == -1.4997160687085691
-    assert y_center == 0.035497175763441455
+    assert np.allclose(y_center ,0.035497175763441455)
 
 
     separation = 0.8

@@ -161,7 +161,7 @@ class MLModel(object):
        """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap='None',
+    def __init__(self, event, model_arguments=[], parallax=['None', 0.0], xallarap=['None'],
                  orbital_motion=['None', 0.0], source_spots='None', blend_flux_ratio=True):
         """ Initialization of the attributes described above.
         """
@@ -275,7 +275,6 @@ class MLModel(object):
             self.model_dictionnary = OrderedDict(
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
-        self.model_parameters = collections.namedtuple('parameters', self.model_dictionnary)
 
     def print_model_parameters(self):
         """ Define the model parameters dictionnary and print for the users.
@@ -371,21 +370,22 @@ class MLModel(object):
         """
         # start_time = python_time.time()
 
-
-
+        model_parameters = collections.namedtuple('parameters', self.model_dictionnary.keys())
 
         for key_parameter in self.model_dictionnary.keys():
 
             try:
 
-                setattr(self.model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
+                setattr(model_parameters, key_parameter, fancy_parameters[self.model_dictionnary[key_parameter]])
 
             except:
-                setattr(self.model_parameters, key_parameter, None)
+                setattr(model_parameters, key_parameter, None)
+
+
 
         # print 'arange', python_time.time() - start_time
 
-        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(self.model_parameters)
+        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
 
         # print 'conversion', python_time.time() - start_time
 
@@ -407,7 +407,8 @@ class MLModel(object):
         """
         # start_time = python_time.time()
         if len(self.fancy_to_pyLIMA) != 0:
-
+            #import pdb;
+            #pdb.set_trace()
             for key_parameter in self.fancy_to_pyLIMA.keys():
                 setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
 

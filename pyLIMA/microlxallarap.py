@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def compute_xallarap_curvature(XiE, orbital_elements,mode ='circular'):
+def compute_xallarap_curvature(XiE, orbital_elements,mode ='Circular'):
     """ Compute the curvature induce by the xallarap
     deltas_positions of a telescope.
 
@@ -11,7 +11,7 @@ def compute_xallarap_curvature(XiE, orbital_elements,mode ='circular'):
     :return: delta_tau and delta_u, the shift introduce by parallax
     :rtype: array_like,array_like
     """
-    if mode != 'circular':
+    if mode != 'Circular':
 
         time_to_treat, ra_xallarap, dec_xallarap, orbital_period, eccentricity, time_periastron = orbital_elements
         delta_positions = xallarap(time_to_treat, ra_xallarap, dec_xallarap, orbital_period, eccentricity, time_periastron)

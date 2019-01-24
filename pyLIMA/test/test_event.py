@@ -5,7 +5,7 @@ Created on Wed May 18 15:19:27 2016
 @author: ebachelet
 """
 import numpy as np
-import mock
+import unittest.mock as mock
 import pytest
 
 

@@ -5,7 +5,29 @@ Created on Tue Jun 14 15:49:26 2016
 @author: ebachelet
 """
 import numpy as np
+from pyLIMA import microlcaustics
 
+
+def priors_on_models(pyLIMA_parameters, model, binary_regime = None):
+
+    keys = pyLIMA_parameters._fields
+    for index,bounds in enumerate(model.parameters_boundaries):
+
+        parameter = getattr(pyLIMA_parameters, keys[index])
+
+        if (parameter < bounds[0]) or (parameter>bounds[1]):
+
+            return np.inf
+
+    if binary_regime:
+
+        regime = microlcaustics.find_2_lenses_caustic_regime(10**pyLIMA_parameters.logs, 10**pyLIMA_parameters.logq)
+
+        if regime != binary_regime:
+
+            return np.inf
+
+    return 0
 
 def microlensing_flux_priors(size_dataset, f_source, g_blending):
     # Little prior here, need to be chaneged

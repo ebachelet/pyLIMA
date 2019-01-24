@@ -6,7 +6,7 @@ Created on Mon Dec  7 13:46:13 2015
 """
 
 import numpy as np
-import mock
+import unittest.mock as mock
 from pyslalib import slalib
 
 from pyLIMA import microlparallax

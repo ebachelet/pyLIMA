@@ -820,7 +820,7 @@ def LM_plot_model(fit, figure_axe):
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, 'r', label=fit.model.model_type, lw=3)
+    figure_axe.plot(time, magnitude, 'b', label=fit.model.model_type, lw=3)
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.set_xlim(

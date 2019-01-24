@@ -6,7 +6,7 @@ Created on Thu May 19 15:08:11 2016
 """
 import collections
 
-import mock
+import unittest.mock as mock
 import numpy as np
 import pytest
 

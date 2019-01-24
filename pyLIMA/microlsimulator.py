@@ -230,7 +230,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
     return telescope
 
 
-def simulate_a_microlensing_model(event, model='PSPL', args=(), parallax=['None', 0.0], xallarap='None',
+def simulate_a_microlensing_model(event, model='PSPL', args=(), parallax=['None', 0.0], xallarap=['None'],
                                   orbital_motion=['None', 0.0], source_spots='None'):
     """ Simulate a a microlensing model.
 
