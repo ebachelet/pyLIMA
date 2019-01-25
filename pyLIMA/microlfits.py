@@ -79,14 +79,16 @@ class MLFits(object):
         self.fit_covariance = []
         self.fit_time = []
         self.DE_population = []
-        self.DE_workers = None
         self.binary_regime = None
         self.MCMC_chains = []
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
         self.pool = None
 
-    def mlfit(self, model, method, DE_population_size=10, DE_workers = 1, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+
+
+
+    def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
@@ -143,17 +145,20 @@ class MLFits(object):
         self.method = method
         self.fluxes_MCMC_method = flux_estimation_MCMC
         self.DE_population_size = DE_population_size
-        self.DE_workers = DE_workers
 
         self.model.define_model_parameters()
         if computational_pool:
-            from mpi4py import MPI
-            import dill
+            #from mpi4py import MPI
+            #import dill
 
-            MPI.pickle.__init__(dill.dumps, dill.loads)
+            #MPI.pickle.__init__(dill.dumps, dill.loads)
 
-            self.pool = computational_pool
-        if self.DE_workers>0:
+            pool = computational_pool
+
+        else:
+            pool = None
+
+        if pool:
             manager = mp.Manager()
             self.DE_population = manager.list()
         #import pdb;
@@ -177,10 +182,10 @@ class MLFits(object):
         if self.method == 'TRF':
             self.fit_results, self.fit_covariance, self.fit_time = self.trust_region_reflective()
         if self.method == 'DE':
-            self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution()
+            self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution(pool)
 
         if self.method == 'MCMC':
-            self.MCMC_chains = self.MCMC()
+            self.MCMC_chains = self.MCMC(pool)
 
         if self.method == 'GRIDS':
             self.fix_parameters_dictionnary = OrderedDict(
@@ -312,7 +317,7 @@ class MLFits(object):
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
         return guess_paczynski_parameters
 
-    def MCMC(self):
+    def MCMC(self,pool):
         """ The MCMC method. Construct starting points of the chains around
             the best solution found by the 'DE' method.
             The objective function is :func:`chichi_MCMC`. Telescope flux (fs and g), can be optimized thanks to MCMC if
@@ -337,7 +342,7 @@ class MLFits(object):
 
         if len(self.model.parameters_guess) == 0:
 
-            differential_evolution_estimation = self.differential_evolution()[0]
+            differential_evolution_estimation = self.differential_evolution(pool)[0]
             self.DE_population_size = 10
             self.guess = differential_evolution_estimation
 
@@ -393,13 +398,12 @@ class MLFits(object):
 
         number_of_parameters = len(individual)
 
-      
-        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
-                                        a=2.0, pool=self.pool)
 
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
+                                        a=2.0, pool=pool)
         # First estimation using population as a starting points.
 
-        final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks)
+        final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks, progress=True)
 
         print('MCMC preburn done')
 
@@ -407,7 +411,7 @@ class MLFits(object):
        # pdb.set_trace()
         sampler.reset()
 
-        sampler.run_mcmc(final_positions, nlinks)
+        sampler.run_mcmc(final_positions, nlinks, progress=True)
         MCMC_chains = np.c_[sampler.get_chain().reshape(nlinks*nwalkers,number_of_parameters),sampler.get_log_prob().reshape(nlinks*nwalkers)]
 
         # Final estimation using the previous output.
@@ -457,7 +461,7 @@ class MLFits(object):
 
         return -chichi / 2
 
-    def differential_evolution(self):
+    def differential_evolution(self,pool):
         """  The DE method. Differential evolution algorithm. The objective function is
         :func:`chichi_differential_evolution`. The flux parameters are estimated through np.polyfit.
          Based on the scipy.optimize.differential_evolution.
@@ -482,7 +486,6 @@ class MLFits(object):
                    These parameters can avoid the fit to properly converge (expected to be rare :)).
                    Just relaunch should be fine.
         """
-
         starting_time = python_time.time()
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
@@ -490,7 +493,7 @@ class MLFits(object):
             mutation=(0.5, 1.0), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
             atol=0.1, strategy='rand1bin',
             recombination=0.7, polish=True, init='latinhypercube',
-            disp=True,workers = self.DE_workers,
+            disp=True,workers = pool.map,
         )
 
 
@@ -621,6 +624,7 @@ class MLFits(object):
             lmarquardt_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, method='lm', x_scale='jac', ftol=10 ** -10,
                                                           xtol=10 ** -10, gtol=10 ** -10,
                                                          )
+
             fit_result = lmarquardt_fit['x'].tolist()
             fit_result.append(microltoolbox.chichi(self.residuals_LM, lmarquardt_fit['x']))
 

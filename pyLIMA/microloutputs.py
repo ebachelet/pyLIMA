@@ -815,7 +815,7 @@ def LM_plot_model(fit, figure_axe):
 
                 flux_model = fit.model.compute_the_microlensing_model(reference_telescope_space, pyLIMA_parameters)[0]
                 magnitude = microltoolbox.flux_to_magnitude(flux_model)
-                figure_axe.plot(time_space, magnitude, '--r', lw=3)
+                figure_axe.plot(time_space, magnitude, '--b', lw=3)
 
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
@@ -830,7 +830,8 @@ def LM_plot_model(fit, figure_axe):
     figure_axe.invert_yaxis()
     figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                     transform=figure_axe.transAxes)
-
+    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.,
+                      fancybox=True, framealpha=0.5)
 
 def LM_plot_residuals(fit, figure_axe):
     """Plot the residuals from the fit.
@@ -877,8 +878,7 @@ def LM_plot_align_data(fit, figure_axe):
                             marker=str(MARKER_SYMBOLS[0][index]), markersize=7.5, capsize=0.0,
                             label=telescope.name)
         count += 1
-    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.,
-                      fancybox=True, framealpha=0.5)
+
 
 
 def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_telescope):
@@ -1057,6 +1057,7 @@ def plot_LM_ML_geometry(fit):
     column_labels = ['Parameters', 'Errors']
 
     table_val = [fit.fit_results, (fit.fit_covariance.diagonal() ** 0.5).tolist() + [0.0]]
+
     table_val = np.round(table_val, 5).tolist()
     table_val = np.array(table_val).T.tolist()
 
@@ -1136,7 +1137,8 @@ def plot_MCMC_ML_geometry(fit, best_chains):
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
-    trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
+
+    trajectory_x, trajectory_y,_ = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
                                                              pyLIMA_parameters.uo, pyLIMA_parameters.tE,
                                                              pyLIMA_parameters)
 
