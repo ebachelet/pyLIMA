@@ -63,8 +63,8 @@ def noisy_observations(flux, error_flux):
 
     """
     try:
-
-        flux_observed = np.random.normal(flux, error_flux)
+       
+        flux_observed = np.random.poisson(flux)
 
     except:
 
