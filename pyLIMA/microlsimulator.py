@@ -185,6 +185,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
     :return: a telescope object
     :rtype: object
     """
+    #import pdb; pdb.set_trace()
 
     # fake lightcurve
     if (uniform_sampling == False) & (location != 'Space'):

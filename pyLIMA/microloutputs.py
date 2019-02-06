@@ -1138,9 +1138,17 @@ def plot_MCMC_ML_geometry(fit, best_chains):
 
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(best_parameters)
 
-    trajectory_x, trajectory_y,_ = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
-                                                             pyLIMA_parameters.uo, pyLIMA_parameters.tE,
-                                                             pyLIMA_parameters)
+    if 'BL' in fit.model.model_type:
+        fit.model.find_origin(pyLIMA_parameters)
+        to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
+
+        trajectory_x, trajectory_y, separation = fit.model.source_trajectory(reference_telescope, to, uo,
+                                                                             pyLIMA_parameters.tE, pyLIMA_parameters)
+    else:
+
+        trajectory_x, trajectory_y = fit.model.source_trajectory(reference_telescope, pyLIMA_parameters.to,
+                                                                 pyLIMA_parameters.uo,
+                                                                 pyLIMA_parameters.tE, pyLIMA_parameters)
 
     figure_axes.plot(trajectory_x, trajectory_y, 'b')
 

@@ -8,8 +8,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
-lib_path = os.path.abspath(os.path.join('../'))
-sys.path.append(lib_path)
 
 from pyLIMA import event
 from pyLIMA import telescopes
@@ -79,7 +77,7 @@ your_guess=[79.963, -0.01, 9.6, 0.00027]
 model_1.define_model_parameters()
 result = so.minimize(objective_function, your_guess,args=(your_event,model_1))
 
-print result
+print (result)
 
 
 
