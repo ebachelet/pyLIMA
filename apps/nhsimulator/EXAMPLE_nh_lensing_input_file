@@ -1,0 +1,25 @@
+name :: Simulated event
+ra :: 268.75
+dec :: -29.0
+source_mag_bright :: 13.0
+source_mag_faint :: 18.0
+source_mag_incr :: 1.0
+tE_min_days :: 1.0
+tE_max_days :: 150.0
+tE_incr_days :: 5.0
+JD_start :: 2456200.0
+JD_end :: 2458000.0
+cadence_days :: 1.0
+model_type :: PSPL
+to :: 2457125.0
+uo :: 0.1
+rho :: 0.001
+q :: 0.0
+s :: 0.0
+alpha :: 0.0
+piEN :: 0.1
+piEE :: 0.1
+fit_models :: 0
+plots :: 1
+horizons_file :: /Users/rstreet/software/pyLIMA/apps/nhsimulator/New_Horizons_trajectory.txt
+output_path :: /Users/rstreet/NHmicrolensing/simulations25/
