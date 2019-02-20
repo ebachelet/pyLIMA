@@ -14,8 +14,6 @@ from datetime import datetime
 import copy
 
 import os, sys
-lib_path = os.path.abspath(os.path.join('/Users/rstreet/software/pyLIMA/'))
-sys.path.append(lib_path)
 
 from pyLIMA import event
 from pyLIMA import telescopes

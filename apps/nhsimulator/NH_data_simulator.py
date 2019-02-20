@@ -9,8 +9,6 @@ import numpy as np
 from sys import argv
 import matplotlib.pyplot as plt
 import os, sys
-lib_path = os.path.abspath(os.path.join('../'))
-sys.path.append(lib_path)
 from pyLIMA import event
 from pyLIMA import telescopes
 from pyLIMA import microlsimulator
