@@ -41,7 +41,7 @@ def parse_JPL_Horizons_table(horizons_file_path = None, table_type = None):
     
     if table_type == 'VECTOR':
         
-        file_lines = open(horizons_file_path,'r').readlines()[0].split('\r')
+        file_lines = open(horizons_file_path,'r').readlines()
         
         horizons_data = parse_vector_table_data(file_lines)
     
@@ -153,26 +153,37 @@ def parse_vector_table_data(file_lines):
             i = len(file_lines) + 1
         
         else:
-        
-            entries = line.replace('\n','').split('=')
-            jd = parse_entry(entries[0])
-            ts = parse_entry(entries[1], entry_type='timestamp')
-            x = parse_entry(entries[2])
-            y = parse_entry(entries[3])
-            z = parse_entry(entries[4])
-            vx = parse_entry(entries[5])
-            vy = parse_entry(entries[6])
-            vz = parse_entry(entries[7])
-            lt = parse_entry(entries[8])
-            rg = parse_entry(entries[9])
-            rr = parse_entry(entries[10])
             
-            data.append( (jd, x, y, z, vx, vy, vz, lt, rg, rr, ts) )
-            
-            i += 4
+            if len(line.replace('\n','')) > 0:
+                
+                entries = line.replace('\n','').split('=')
     
+                if len(entries) > 0:
+                    jd = parse_entry(entries[0])
+                    ts = parse_entry(entries[1], entry_type='timestamp')
+                    x = parse_entry(entries[2])
+                    y = parse_entry(entries[3])
+                    z = parse_entry(entries[4])
+                    vx = parse_entry(entries[5])
+                    vy = parse_entry(entries[6])
+                    vz = parse_entry(entries[7])
+                    lt = parse_entry(entries[8])
+                    rg = parse_entry(entries[9])
+                    rr = parse_entry(entries[10])
+                    
+                    data.append( (jd, x, y, z, vx, vy, vz, lt, rg, rr, ts) )
+                    
+                    i += 4
+                    
+                else:
+                    
+                    i += 1
+            else:
+                
+                i += 1
+                
     col_dtypes = ('float', 'float', 'float','float', 'float', 'float', 
-                  'float', 'float', 'float','float', 'string')
+                  'float', 'float', 'float','float', 'S')
     
     horizons_data = Table(rows=data, names=tuple(col_names), dtype=col_dtypes)
     
@@ -345,4 +356,4 @@ if __name__ == '__main__':
     
     horizons_data = parse_JPL_Horizons_table()
     
-    print horizons_data
+    print(horizons_data)
