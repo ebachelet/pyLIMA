@@ -682,7 +682,7 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
     
     plt.xlabel('HJD - '+str(dt), fontsize=18)
 
-    plt.ylabel('Magnitude', fontsize=18)
+    plt.ylabel('Magnitude $\\times10^{-5}$', fontsize=18)
         
     plt.grid()
     
@@ -691,11 +691,19 @@ def plot_fitted_lightcurves(lc_no_parallax,lc_parallax,e_no_parallax,e_parallax,
     ymax2 = dmag.max()*1.05
     
     plt.axis([xmin,xmax,ymax2, ymin2])
-
+    
+    yincr = (ymin2-ymax2)/5.0
+    yticks = np.arange(ymax2,ymin2,yincr)
+    ylab = []
+    for y in yticks:
+        ylab.append(str(round(y*1e5,1)))
+    
+    plt.yticks(yticks, ylab)
+    
     plt.tick_params(axis='x', labelsize=18)
     plt.tick_params(axis='y', labelsize=18)
     
-    plt.savefig(file_path)
+    plt.savefig(file_path, bbox_inches='tight')
 
     plt.close(6)
 
@@ -802,10 +810,15 @@ def plot_rel_trajectory(fit,times,fig,ax,label,txt_file_path,trajectory_color='r
         
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
     
-    (trajectory_x, trajectory_y) = fit.model.source_trajectory(tel, 
+    try:
+        (trajectory_x, trajectory_y) = fit.model.source_trajectory(tel, 
                                      pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                      pyLIMA_parameters.tE, pyLIMA_parameters)
-    
+    except ValueError:
+        (trajectory_x, trajectory_y,separation) = fit.model.source_trajectory(tel, 
+                                     pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                     pyLIMA_parameters.tE, pyLIMA_parameters)
+                                     
     ax.plot(trajectory_x, trajectory_y, trajectory_color,label=label)
         
     if 'PS' not in fit.model.model_type:

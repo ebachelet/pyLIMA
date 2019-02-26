@@ -223,7 +223,7 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
                                
     log.info('Created telescope object with lightcurve of length = '+\
     str(len(lightcurve)))
-        
+    
     if spacecraft_positions != None and \
         'piEN' in event_params.keys() and 'piEE' in event_params.keys():
         
