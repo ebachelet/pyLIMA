@@ -100,6 +100,97 @@ class LORRIParams():
             (mag_lc[i],mag_lc_err[i]) = self.flux_to_mag(flux_lc[i],flux_lc_err[i])
         
         return mag_lc, mag_lc_err
+
+class TelescopeParams():
+    """Class describing the essential parameters of a generic telescope.   
+    All time stamps are in seconds, gain and readnoise are in e-/DN and e-
+    respectively, aperture is in m.
+    """
+    
+    def __init__(self):
+        
+        self.aperture = 1.0
+        self.read_time = 10.0
+        self.ZP = 21.0
+        self.gain = 1.5
+        self.read_noise = 10.0
+        self.max_exp_time = 300.0
+        self.skybkgd = 200.0
+        self.airmass = 1.0
+        self.telheight = 2000.0
+        
+    def mag_to_flux(self, mag):
+        """m2 - m1 = -2.5*log(f2/f1)
+        f2 = 10**[(m2-m1)/-2.5]"""
+        
+        flux = ( 10**( (mag-self.ZP)/-2.5 ) ) * self.gain
+        
+        return flux
+    
+    def calc_flux_uncertainty(self, flux):
+        """Method to calculate the expected photometric uncertainty for a given
+        photometric measurement in flux units.
+        
+        :param float mag: Magnitude of star
+        """
+    
+        aperradius = self.aperture/2.0
+        
+        npix_aper = np.pi*aperradius*aperradius
+        
+        read_noise = np.sqrt(self.read_noise*self.read_noise*npix_aper)
+        
+        sky_noise = np.sqrt(self.skybkgd * npix_aper)
+       
+        height_o = 8000.0
+        scint_noise = 0.09*((self.aperture*100.0)**-0.67)*(self.airmass**1.5)*np.exp(-self.telheight/height_o)*((2.0*self.max_exp_time)**-0.5)
+        
+        possion_noise = np.sqrt(flux)
+        
+        total_noise = np.sqrt(read_noise*read_noise + possion_noise*possion_noise + 
+                                sky_noise*sky_noise + scint_noise*scint_noise)
+        
+        return total_noise, read_noise, possion_noise, sky_noise, scint_noise
+
+    def flux_to_mag(self, flux, flux_err):
+        """Function to convert the flux of a star from its fitted PSF model 
+        and its uncertainty onto the magnitude scale.
+        
+        :param float flux: Total star flux
+        :param float flux_err: Uncertainty in star flux
+        
+        Returns:
+        
+        :param float mag: Measured star magnitude
+        :param float flux_mag: Uncertainty in measured magnitude
+        """
+        
+        f = flux / self.gain
+        
+        if flux < 0.0 or flux_err < 0.0:
+            
+            mag = 0.0
+            mag_err = 0.0
+    
+        else:        
+    
+            mag = self.ZP - 2.5 * np.log10(f)
+            
+            mag_err = (2.5/np.log(10.0))*flux_err/f
+            
+        return mag, mag_err
+    
+    def convert_lc_flux_to_mag(self, flux_lc, flux_lc_err):
+        
+        mag_lc = np.zeros(len(flux_lc))
+        mag_lc_err = np.zeros(len(flux_lc))
+
+        for i in range(0,len(flux_lc),1):
+
+            (mag_lc[i],mag_lc_err[i]) = self.flux_to_mag(flux_lc[i],flux_lc_err[i])
+        
+        return mag_lc, mag_lc_err
+
         
 def generate_LORRI_lightcurve(params,log):
     """Function to generate a lightcurve with the noise characteristics of the
@@ -142,6 +233,48 @@ def generate_LORRI_lightcurve(params,log):
     
     return lightcurve
 
+
+def generate_generic_lightcurve(params,log):
+    """Function to generate a lightcurve with the noise characteristics of a
+    generic Earth-based telescope
+    
+    :param dict params: Parameter dictionary containing:
+            :param float JD_start: JD of the start of the lightcurve    
+            :param float JD_end: JD of the end of the lightcurve  
+            :param float baseline_mag: Mean magnitude of star at baseline
+    :param logger log: Logging object
+    
+    Returned:
+    :param array lightcurve: 3-col array containing timestamps, magnitude, 
+                                and magnitude error
+    """
+    tel = TelescopeParams()
+    cadence = params['cadence_days'] * 24.0 * 60.0 * 60.0
+    
+    ts_incr = (tel.max_exp_time + tel.read_time + cadence) / ( 60.0 * 60.0 * 24.0 )
+    
+    ts = np.arange(params['JD_start'], params['JD_end'], ts_incr)
+    
+    flux_base = tel.mag_to_flux(params['baseline_mag'])
+    
+    (sig_flux, read_noise, possion_noise) = calc_flux_uncertainty(tel,flux_base)
+    
+    flux_lc = sig_flux * np.random.randn(len(ts)) + flux_base
+    
+    (flux_lc_err, read_noise, possion_noise, sky_noise, scint_noise) = tel.calc_flux_uncertainty(flux_lc)
+
+    (mag, mag_err) = tel.convert_lc_flux_to_mag(flux_lc, flux_lc_err)
+    
+    lightcurve = np.zeros([len(ts),3])
+
+    lightcurve[:,0] = ts
+    lightcurve[:,1] = mag
+    lightcurve[:,2] = mag_err
+
+    log.info('Generated lightcurve')
+    
+    return lightcurve
+    
 def get_parameter_order(model_type,parallax):
     """Function to provide a list of the microlensing event parameters, 
     in the order which they should be appended to the list of model parameters

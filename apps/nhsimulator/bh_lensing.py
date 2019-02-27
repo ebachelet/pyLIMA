@@ -97,16 +97,17 @@ def simulate_lensing(default_params,source_mag_range,tE_range,log):
             
             (lc_params, event_params_no_parallax, event_params_parallax) = NH_lensing.make_param_dicts(default_params,mag,tE,log)
             
-            baseline_lc = NH_data_simulator.generate_LORRI_lightcurve(lc_params,log)
+            earth_lc_base = NH_data_simulator.generate_generic_lightcurve(lc_params,log)
+            space_lc_base = NH_data_simulator.generate_LORRI_lightcurve(lc_params,log)
             
             # Using the parallax parameters here so that pyLIMA calculates
             # the position of the Earth
-            (lc_earth,sim_e_earth) = NH_data_simulator.add_event_to_lightcurve_geocentric('Earth','Earth',baseline_lc,
+            (lc_earth,sim_e_earth) = NH_data_simulator.add_event_to_lightcurve_geocentric('Earth','Earth',earth_lc_base,
                                                                        event_params_parallax,
                                                                        lc_params,log,default_params['output_path'],
                                                                        output_lc=True)
                                                                        
-            (lc_space,sim_e_space) = NH_data_simulator.add_event_to_lightcurve_geocentric('NH_LORRI','Space',baseline_lc,
+            (lc_space,sim_e_space) = NH_data_simulator.add_event_to_lightcurve_geocentric('NH_LORRI','Space',space_lc_base,
                                                                     event_params_parallax,
                                                                     lc_params,log,default_params['output_path'],
                                                                     spacecraft_positions=spacecraft_positions,
