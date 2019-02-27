@@ -242,7 +242,7 @@ def parse_observer_table_data(file_lines):
             i = len(file_lines) + 1
         
         else:
-            
+
             if len(line.replace('\n','')) > 0:
                 entries = line.replace('\L','').split()
                 (ts,jd) = parse_timestamp(entries[0],entries[1])
@@ -252,8 +252,8 @@ def parse_observer_table_data(file_lines):
                 dec_deg = entries[5]
                 dec_min = entries[6]
                 dec_sec = entries[7]
-                delta = float(entries[10])
-                deldot = float(entries[11])
+                delta = float(entries[8])  # Can be 10
+                deldot = float(entries[9]) # Can be 11
                 ra = float(ra_hr) + (float(ra_min)/60.0) + (float(ra_sec)/3600.0)
                 ra = ra*15.0
                 sign = 1.0

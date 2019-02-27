@@ -319,6 +319,154 @@ def add_event_to_lightcurve(lightcurve,event_params,lc_params,log,
     
     return lightcurve,lens
 
+def add_event_to_lightcurve_geocentric(tel_name,location,lightcurve,
+                                       event_params,lc_params,log,
+                                       output_path,
+                                       spacecraft_positions=None,
+                                       output_lc=False):
+    """Function to inject the signal of a microlensing event into an 
+    existing LORRI lightcurve, adjusting the photometric uncertainties 
+    appropriately.
+    
+    :param dict event_params: [Optional] Microlensing model parameters containing:
+            :param str name: Name of event
+            :param float ra: RA in decimal degrees
+            :param float dec: Dec in decimal degrees
+            :param float to: Event t0 in JD
+            :param float uo: Event u0
+            :param float tE: Event tE in days
+            :param float piEN: Event parallax component
+            :param float piEE: Event parallax component
+            :param float logs: Binary event mass separation, log10
+            :param float logq: Binary event mass ratio, log10
+            :param float alpha: Binary event angle of trajectory
+            :param boolean log: Logger object
+    :param dict lc_params: Lightcurve parameters
+    :param logger log: Debugging log object
+    :param string output_path: Path for all output files
+    :param list spacecraft_positions: [Optional] Spacecraft positions from JPL observer table
+    :param Boolean output_lc: [Optional] Switch to turn on lightcurve text file
+                                output
+    
+    Returned:
+    :param array lightcurve: 3-col array containing timestamps, magnitude, 
+                                and magnitude error
+    """
+
+    log.info('Adding event model to lightcurve')
+        
+    if spacecraft_positions != None:
+        log.info('Using horizons data provided')
+        
+    lorri = LORRIParams()
+    
+    lens = event.Event()
+    lens.name = event_params['name']
+    lens.ra = event_params['ra']
+    lens.dec = event_params['dec']                    
+    
+    tel = telescopes.Telescope(name=tel_name, camera_filter='I',
+                               location=location,
+                               light_curve_magnitude=lightcurve)
+                               
+    log.info('Created telescope object with lightcurve of length = '+\
+    str(len(lightcurve)))
+    
+    if spacecraft_positions != None and \
+        'piEN' in event_params.keys() and 'piEE' in event_params.keys():
+        
+        log.info('Assigning spacecraft position data')
+        tel.spacecraft_positions = spacecraft_positions
+        
+    lens.telescopes.append(tel)
+    
+    lens.find_survey(tel_name)
+    
+    lens.check_event()
+    
+    porder_parallax = get_parameter_order(event_params['model_type'],True)
+    porder_no_parallax = get_parameter_order(event_params['model_type'],False)
+    
+    if 'piEN' in event_params.keys() and 'piEE' in event_params.keys():
+        
+        log.info(' -> Model with parallax parameters: '+\
+                    str(event_params['piEN'])+\
+                    ' '+str(event_params['piEE']))
+        
+        model = microlmodels.create_model(event_params['model_type'], lens, 
+                                      parallax=['Full', event_params['to']])
+        
+        model_params = []
+        
+        for key in porder_parallax:                
+            model_params.append(event_params[key])
+         
+    else:
+        
+        log.info(' -> No parallax parameters')
+                    
+        model = microlmodels.create_model(event_params['model_type'], lens, 
+                                      parallax=['None', event_params['to']])
+        
+        model_params = []
+        
+        for key in porder_no_parallax:                
+            model_params.append(event_params[key])
+            
+    model.define_model_parameters()
+        
+    if 'piEN' in event_params.keys() and 'piEE' in event_params.keys():
+        log.info('Computing parallax for all telescopes, parllax_model = '+\
+                    repr(model.parallax_model))
+        model.event.compute_parallax_all_telescopes(model.parallax_model)
+    
+    tel = model.event.telescopes[0]
+    
+    f = microlfits.MLFits(lens)
+    f.model = model
+    f.fit_results = model_params
+    lens.fits.append(f)
+    
+    pyLIMA_parameters = f.model.compute_pyLIMA_parameters(f.fit_results)
+    
+    param_sequence_check(event_params,model_params,pyLIMA_parameters,log)
+    
+    pylima_params = model.compute_pyLIMA_parameters(model_params)
+    
+    A = model.model_magnification(tel,pylima_params)
+    
+    lightcurve = lens.telescopes[0].lightcurve_magnitude
+    
+    lightcurve[:,1] = lightcurve[:,1] + -2.5*np.log10(A)
+    (lightcurve[:,2],read_noise,poisson_noise) = calc_phot_uncertainty(lorri,
+                                                            lightcurve[:,1])
+    
+    if output_lc:
+        
+        if 'piEN' in event_params.keys() and 'piEE' in event_params.keys():
+            
+            file_path = os.path.join(output_path,
+                                 'sim_lightcurve_'+\
+                                 str(round(lc_params['baseline_mag'],1))+'_'+\
+                                 str(round(event_params['tE'],0))+'_parallax.txt')
+        else:
+            
+                file_path = os.path.join(output_path,
+                                 'sim_lightcurve_'+\
+                                 str(round(lc_params['baseline_mag'],1))+'_'+\
+                                 str(round(event_params['tE'],0))+'_no_parallax.txt')
+                
+        f = open(file_path,'w')
+
+        for i in range(0,len(lightcurve),1):
+
+            f.write(str(lightcurve[i,0])+' '+str(lightcurve[i,1])+' '+\
+                    str(lightcurve[i,2])+'\n')
+
+        f.close()
+    
+    return lightcurve,lens
+
 def param_sequence_check(event_params,model_params,pylima_params,log):
     """Function to sanity check the sequence of event model parameters"""
     
