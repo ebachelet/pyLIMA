@@ -50,7 +50,7 @@ def compare_sim_measured_lc():
     plt.tick_params(axis='x', labelsize=18)
     plt.tick_params(axis='y', labelsize=18)
     
-    plt.savefig(os.path.join(params['output'],'measured_sim_lc.png'),
+    plt.savefig(os.path.join(params['output'],'measured_sim_lc.eps'),
                 bbox_inches='tight')
 
     plt.close(1)
