@@ -18,9 +18,6 @@ import matplotlib.pyplot as plt
 import os, sys
 
 
-lib_path = os.path.abspath(os.path.join('../'))
-sys.path.append(lib_path)
-
 from pyLIMA import microlsimulator
 
 
@@ -130,12 +127,10 @@ parameter_commentary = ['time of minimum impact parameter for source 1',
                         'source flux of source 1 for telescope SAAO_V',
                         'blending ratio of source 1 for telescope SAAO_V',
                         ]
-
 for key in my_own_model.model_dictionnary.keys():
-    
     indice = my_own_model.model_dictionnary[key]
     
-    print key, ' = ', my_own_parameters[indice], ' : ', parameter_commentary[indice] 
+    print (key, ' = ', my_own_parameters[indice], ' : ', parameter_commentary[indice] )
 
 plt.gca().invert_yaxis()
 plt.legend(numpoints=1)
@@ -157,8 +152,8 @@ my_own_creation.fit(model_2,'DE')
 my_own_creation.fits[0].produce_outputs()
 my_own_creation.fits[1].produce_outputs()
 
-print my_own_creation.fits[0].model.model_type,'Chi2_LM :',my_own_creation.fits[0].outputs.fit_parameters.chichi
-print my_own_creation.fits[1].model.model_type,'Chi2_LM :',my_own_creation.fits[1].outputs.fit_parameters.chichi
+print(my_own_creation.fits[0].model.model_type,'Chi2_LM :',my_own_creation.fits[0].outputs.fit_parameters.chichi)
+print(my_own_creation.fits[1].model.model_type,'Chi2_LM :',my_own_creation.fits[1].outputs.fit_parameters.chichi)
 
 plt.show()
 

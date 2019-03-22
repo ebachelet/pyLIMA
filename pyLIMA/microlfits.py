@@ -487,13 +487,17 @@ class MLFits(object):
                    Just relaunch should be fine.
         """
         starting_time = python_time.time()
+        if pool:
+             worker = pool.map
+        else:
+             worker = 1
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
             mutation=(0.5, 1.0), popsize=int(self.DE_population_size), maxiter=5000, tol=0.0,
             atol=0.1, strategy='rand1bin',
             recombination=0.7, polish=True, init='latinhypercube',
-            disp=True,workers = pool.map,
+            disp=True,workers = worker,
         )
 
 

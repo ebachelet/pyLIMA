@@ -63,8 +63,8 @@ def noisy_observations(flux, error_flux):
 
     """
     try:
-
-        flux_observed = np.random.normal(flux, error_flux)
+       
+        flux_observed = np.random.poisson(flux)
 
     except:
 
@@ -185,6 +185,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
     :return: a telescope object
     :rtype: object
     """
+    #import pdb; pdb.set_trace()
 
     # fake lightcurve
     if (uniform_sampling == False) & (location != 'Space'):
