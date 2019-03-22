@@ -3,11 +3,11 @@ mock
 nose
 pytest
 
-scipy
-numpy
-matplotlib
-astropy
-emcee
+scipy>=1.2.0
+numpy==1.15.0
+matplotlib>=3.0.2
+astropy>=2.0.0
+#emcee>=3.0
 pyslalib
 VBBinaryLensing
 dill
