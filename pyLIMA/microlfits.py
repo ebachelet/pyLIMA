@@ -26,6 +26,8 @@ from pyLIMA import microlcaustics
 
 warnings.filterwarnings("ignore")
 
+class FitException(Exception):
+    pass
 
 class MLFits(object):
     """
@@ -147,22 +149,21 @@ class MLFits(object):
         self.DE_population_size = DE_population_size
 
         self.model.define_model_parameters()
-        if computational_pool:
-            #from mpi4py import MPI
-            #import dill
 
-            #MPI.pickle.__init__(dill.dumps, dill.loads)
+        if method != 'DE':
+
+            self.check_parameters_boundaries()
+
+        if computational_pool:
 
             pool = computational_pool
-
         else:
             pool = None
 
         if pool:
             manager = mp.Manager()
             self.DE_population = manager.list()
-        #import pdb;
-        #pdb.set_trace()
+
         self.binary_regime = binary_regime
 
         if self.method == 'LM':
@@ -212,6 +213,20 @@ class MLFits(object):
          #   else:
 
          #      print('Unfortunately, this is too hard for pyLIMA :(')
+
+    def check_parameters_boundaries(self):
+        """Check if the the parameters guess are inside the parameters boundaries.
+
+                 return: raise an Error
+        """
+        if self.model.parameters_guess != []:
+
+            for index,parameter in enumerate(self.model.parameters_guess):
+
+                 if (parameter<self.model.parameters_boundaries[index][0]) | (parameter>self.model.parameters_boundaries[index][1]):
+
+                     print('ERROR :Guess parameters provided are outside the specified boundaries')
+                     raise FitException('Parameters guess are outside the parameters boundaries')
 
     def check_fit(self):
         """Check if the fit results and covariance make sens.
@@ -398,17 +413,26 @@ class MLFits(object):
 
         number_of_parameters = len(individual)
 
+        try:
+            # create a new MPI pool
+            from schwimmbad import MPIPool
+            pool = MPIPool()
+            if not pool.is_master():
+                pool.wait()
+                sys.exit(0)
+        except:
+            
+            pass
 
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
-                                        a=2.0, pool=pool)
+                                        a=2.0, pool= pool)
         # First estimation using population as a starting points.
 
         final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks, progress=True)
 
         print('MCMC preburn done')
 
-       # import pdb;
-       # pdb.set_trace()
+
         sampler.reset()
 
         sampler.run_mcmc(final_positions, nlinks, progress=True)
