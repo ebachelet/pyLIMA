@@ -421,7 +421,7 @@ class MLFits(object):
                 pool.wait()
                 sys.exit(0)
         except:
-            
+
             pass
 
         sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.chichi_MCMC,
