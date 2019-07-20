@@ -88,16 +88,19 @@ def error_flux_to_error_magnitude(error_flux, flux):
     return error_magnitude
 
 
-def align_the_data_to_the_reference_telescope(fit):
-    """Align data to the survey telescope (i.e telescope 0). Used to plot fit results. Ugly microlensing alignement....
+def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, parameters = None) :
+    """Align data to the telescope_index. Used to plot fit results. Ugly microlensing alignement....
 
     :param object fit: a microlfits object
+    :param int telescope_index: the reference telescope
+
+
 
     :return: the aligned to survey lightcurve in magnitude
     :rtype: array_like
     """
 
-    reference_telescope = fit.event.telescopes[0]
+    reference_telescope = fit.event.telescopes[telescope_index]
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
 
     normalised_lightcurve = []

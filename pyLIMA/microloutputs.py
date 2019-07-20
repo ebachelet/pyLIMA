@@ -14,6 +14,8 @@ import cycler
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, MultipleLocator
+from matplotlib.ticker import FormatStrFormatter
+from matplotlib.colors import LogNorm
 
 import numpy as np
 from astropy.time import Time
@@ -25,7 +27,7 @@ from pyLIMA import microlstats
 from pyLIMA import microlcaustics
 
 plot_lightcurve_windows = 0.2
-plot_residuals_windows = 0.2
+plot_residuals_windows = 0.21
 MAX_PLOT_TICKS = 2
 MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10])
 
@@ -272,10 +274,17 @@ def LM_outputs(fit):
     correlation_matrix = cov2corr(covariance_matrix)
     figure_lightcurve = LM_plot_lightcurves(fit)
     figure_trajectory = plot_LM_ML_geometry(fit)
+
+
     key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve', 'figure_geometry']
+
+    if fit.method == 'DE':
+        figure_distributions = plot_distributions(fit, fit.DE_population)
+        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve', 'figure_geometry','figure_distributions']
+
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
 
-    values_outputs = [results, errors, correlation_matrix, figure_lightcurve, figure_trajectory]
+    values_outputs = [results, errors, correlation_matrix, figure_lightcurve, figure_trajectory,figure_distributions]
 
     count = 0
     for key in key_outputs:
@@ -324,7 +333,10 @@ def MCMC_outputs(fit):
     best_probability = np.argmax(mcmc_chains[:, -1])
 
     # cut to 6 sigma for plots
-    index = np.where(mcmc_chains[:, -1] > mcmc_chains[best_probability, -1] - 36)[0]
+    #index = np.where(mcmc_chains[:, -1] > mcmc_chains[best_probability, -1] - 36)[0]
+    index = np.random.choice(range(len(mcmc_chains)), 49)
+    index = np.r_[index,np.argmax(mcmc_chains[:,-1])]
+
     best_chains = mcmc_chains[index]
     best_chains = best_chains[best_chains[:, -1].argsort(),]
 
@@ -336,9 +348,10 @@ def MCMC_outputs(fit):
     correlation_matrix = cov2corr(covariance_matrix)
 
     figure_lightcurve = MCMC_plot_lightcurves(fit, best_chains)
-    figure_distributions = MCMC_plot_parameters_distribution(fit, best_parameters)
+    figure_distributions  = plot_distributions(fit, mcmc_chains)
+    #figure_distributions = MCMC_plot_parameters_distribution(fit, best_parameters)
 
-    figure_geometry = plot_MCMC_ML_geometry(fit, best_chains)
+    figure_geometry = plot_MCMC_ML_geometry(fit, mcmc_chains)
     key_outputs = ['MCMC_chains', 'MCMC_correlations', 'figure_lightcurve', 'figure_distributions']
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
 
@@ -452,6 +465,82 @@ def MCMC_plot_parameters_distribution(fit, mcmc_best):
     return figure_distributions
 
 
+def plot_distributions(fit, chains):
+    """ Plot the fit parameters distributions.
+        Only plot the best mcmc_chains are plotted.
+        :param fit: a fit object. See the microlfits for more details.
+        :param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
+        :return: a multiple matplotlib subplot representing the parameters distributions (2D slice +
+        histogram)
+        :rtype: matplotlib_figure
+    """
+
+    fig_size = [10, 10]
+
+    max_plot_ticks = MAX_PLOT_TICKS
+    dimensions = len(chains[0])-1
+
+    figure_distributions, axes = plt.subplots(dimensions, dimensions, sharex=True, figsize=(fig_size[0], fig_size[1]))
+    keys = list(fit.model.model_dictionnary)
+
+
+    for i in range(len(chains[0]) - 1):
+
+        chain_i = chains[:, i]
+        if i == 0:
+            #chain_i -= 2450000
+            pass
+        for j in range(len(chains[0]) - 1):
+
+            chain_j = chains[:, j]
+
+            if j == 0:
+                #chain_j -= 2450000
+                pass
+            if j == i:
+
+                axes[j, i].hist(chain_i, 50, histtype='step')
+
+            else:
+
+                axes[j, i].hist2d(chain_i, chain_j, 50, norm=LogNorm())
+
+            #axes[j, i].set_xticks([np.percentile(chain_i, 1), np.percentile(chain_i, 99)])
+            #axes[j, i].set_yticks([np.percentile(chain_j, 1), np.percentile(chain_j, 99)])
+            axes[j, i].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+            axes[j, i].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+            axes[j,i].xaxis.set_major_locator(MaxNLocator(2))
+            axes[j,i].yaxis.set_major_locator(MaxNLocator(2))
+
+            if j > i:
+                figure_distributions.delaxes(axes[i, j])
+
+            if (i == 0):
+
+                if j != len(chains[0]) - 2:
+                    axes[j, i].set_xticks([])
+
+                axes[j, i].set_ylabel(keys[j])
+
+            if j == len(chains[0]) - 2:
+
+                if i != 0:
+                    axes[j, i].set_yticks([])
+                axes[j, i].set_xlabel(keys[i])
+            if (i != 0) and (j != len(chains[0]) - 2):
+                axes[j, i].set_xticks([])
+                axes[j, i].set_yticks([])
+
+            if (i == 0) and (j == 0):
+                axes[j, i].set_xticks([])
+                axes[j, i].set_yticks([])
+                axes[j, i].set_ylabel(None)
+
+    figure_distributions.subplots_adjust(hspace=0.1, wspace=0.1)
+
+    return figure_distributions
+
+
 def MCMC_plot_lightcurves(fit, mcmc_best):
     """Plot 35 models from the mcmc_best sample. This is made to have  35 models equally spaced
     in term of objective funtion (~chichi)
@@ -464,55 +553,31 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     """
 
     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)
-    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(mcmc_best[-1])
-    MCMC_plot_align_data(fit, mcmc_best[0, :-1], figure_axes[0])
 
-    model_panel_chichi = np.linspace(max(mcmc_best[:, -1]), min(mcmc_best[:, -1]), 35).astype(int)
-    color_normalization = matplotlib.colors.Normalize(vmin=np.min(mcmc_best[:, -1]),
-                                                      vmax=np.max(mcmc_best[:, -1]))
-    color_map = matplotlib.cm.jet
+    telescope_index = 0
 
-    scalar_couleur_map = matplotlib.cm.ScalarMappable(cmap=color_map, norm=color_normalization)
-    scalar_couleur_map.set_array([])
 
-    min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
-    max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
+    telescope_time = fit.event.telescopes[telescope_index].lightcurve_magnitude[:, 0]
+    time = np.arange(np.min(telescope_time), np.max(telescope_time) + 150, 0.01)
 
-    time_of_model = np.linspace(min_time, max_time + 100, 30000)
-    extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
-                             pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
+    for idx,parameters in enumerate(mcmc_best):
 
-    time_of_model = np.sort(np.append(time_of_model, extra_time))
-    reference_telescope = copy.copy(fit.event.telescopes[0])
-    reference_telescope.lightcurve_magnitude = np.array(
-        [time_of_model, [0] * len(time_of_model), [0] * len(time_of_model)]).T
-    reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
+        if idx == len(mcmc_best)-1:
 
-    if fit.model.parallax_model[0] != 'None':
-        reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+            plot_model(figure_axes[0], fit,
+                       parameters=parameters[:-1], time=time, telescope_index=telescope_index)
 
-    for model_chichi in model_panel_chichi[0:]:
-        indice = np.searchsorted(mcmc_best[:, -1], model_chichi) - 1
+            plot_align_data(figure_axes[0], fit, telescope_index=telescope_index, parameters=parameters[:-1])
 
-        parameters = mcmc_best[indice, :-1].tolist()
-        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+            plot_residuals(figure_axes[1], fit, parameters=parameters[:-1])
 
-        flux_model = fit.model.compute_the_microlensing_model(fit.event.telescopes[0], pyLIMA_parameters)
 
-        MCMC_plot_model(fit, reference_telescope, parameters + [flux_model[1]] + [flux_model[2]], mcmc_best[indice, -1],
-                        figure_axes[0],
-                        scalar_couleur_map)
+        else:
 
-    colorbar = plt.colorbar(scalar_couleur_map, ax=figure_axes[0], orientation="horizontal")
-    colorbar.locator = MaxNLocator(5)
-    colorbar.formatter.set_useOffset(False)
-    colorbar.update_ticks()
 
-    figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
-                        transform=figure_axes[0].transAxes)
-
-    figure_axes[0].invert_yaxis()
-    MCMC_plot_residuals(fit, mcmc_best[0, :-1], figure_axes[1])
+            plot_model(figure_axes[0], fit,
+                   parameters=parameters[:-1], time=time, telescope_index=telescope_index, model_color='grey',
+                       model_alpha=0.1, label=False)
 
     return figure_lightcurves
 
@@ -687,6 +752,7 @@ def cov2corr(covariance_matrix):
 
 
 def LM_plot_lightcurves(fit):
+
     """Plot the aligned datasets and the best fit on the first subplot figure_axes[0] and residuals
     on the second subplot figure_axes[1].
 
@@ -698,19 +764,23 @@ def LM_plot_lightcurves(fit):
 
     figure, figure_axes = initialize_plot_lightcurve(fit)
 
-    LM_plot_align_data(fit, figure_axes[0])
-    LM_plot_model(fit, figure_axes[0])
-    LM_plot_residuals(fit, figure_axes[1])
+    parameters = fit.fit_results[:-1]
+    telescope_index = 0
+
+    plot_align_data(figure_axes[0], fit, telescope_index=telescope_index, parameters = parameters)
+
+    telescope_time = fit.event.telescopes[telescope_index].lightcurve_magnitude[:,0]
+    time = np.arange(np.min(telescope_time), np.max(telescope_time)+150,0.01)
+
+
+    plot_model(figure_axes[0],fit,
+               parameters =parameters, time=time, telescope_index = telescope_index)
+
+
+    plot_residuals(figure_axes[1], fit, parameters=parameters)
 
     return figure
 
-
-def LM_plot_parameters(fit):
-    """ NOT USED
-    """
-    figure, axes = initialize_plot_parameters()
-
-    return figure
 
 
 def initialize_plot_lightcurve(fit):
@@ -735,13 +805,16 @@ def initialize_plot_lightcurve(fit):
     figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
     figure_axes[0].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
+    figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
+                    transform=figure_axes[0].transAxes)
+
     figure_axes[1].set_xlabel('HJD', fontsize=5 * fig_size[0] * 3 / 4.0)
-    figure_axes[1].xaxis.set_major_locator(MaxNLocator(6))
-    figure_axes[1].yaxis.set_major_locator(MaxNLocator(4))
-    figure_axes[1].xaxis.get_major_ticks()[0].draw = lambda *args: None
+    figure_axes[1].xaxis.set_major_locator(MaxNLocator(3))
+    figure_axes[1].yaxis.set_major_locator(MaxNLocator(4, min_n_ticks=3))
+
 
     figure_axes[1].ticklabel_format(useOffset=False, style='plain')
-    figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 3 / 4.0)
+    figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 2 / 4.0)
     figure_axes[1].tick_params(axis='x', labelsize=3.5 * fig_size[0] * 3 / 4.0)
     figure_axes[1].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
@@ -766,79 +839,106 @@ def initialize_plot_parameters(fit):
     return figure, figure_axes
 
 
-def LM_plot_model(fit, figure_axe):
-    """Plot the microlensing model from the fit.
+def model_magnitude(fit, parameters = None, time=None, telescope_index = 0):
+    """Compute the model in magnitude for arbitrary time stamps.
 
-    :param object fit: a fit object. See the microlfits for more details.
-    :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
+       :param object fit: a fit object. See the microlfits for more details.
+       :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
+       :param list parameters : a list of model parameters.
+       :param np.array time : the time stamps for the model.
+       :param int telescope_index : which telescope you want a model (depends on filter, location etc...)
+
+
     """
-    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
-    min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
-    max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
-
-    time = np.linspace(min_time, max_time + 100, 30000)
-    extra_time = np.linspace(pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
-                             pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE), 30000)
-
-    time = np.sort(np.append(time, extra_time))
 
 
-    reference_telescope = copy.copy(fit.event.telescopes[0])
-    if reference_telescope.location == 'Space':
-        min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
-        max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
 
-        time = np.linspace(min_time, max_time + 100, 30000)
+    if time is not None:
+
+        reference_telescope = copy.copy(fit.event.telescopes[telescope_index])
+
+    else:
+
+        reference_telescope =  copy.copy(fit.event.telescopes[telescope_index])
 
     reference_telescope.lightcurve_magnitude = np.array(
         [time, [0] * len(time), [0] * len(time)]).T
+
     reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
     if fit.model.parallax_model[0] != 'None':
         reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
-        for telescope in fit.event.telescopes:
-
-            if ('Space' in telescope.location) and (telescope.name != reference_telescope.name):
-                time_space = np.linspace(telescope.lightcurve_flux[0, 0], telescope.lightcurve_flux[-1, 0], 500)
-
-                reference_telescope_space = copy.copy(fit.event.telescopes[0])
-                reference_telescope_space.location = telescope.location
-                reference_telescope_space.spacecraft_name = telescope.spacecraft_name
-                reference_telescope_space.lightcurve_magnitude = np.array(
-                    [time_space, [0] * len(time_space), [0] * len(time_space)]).T
-
-                reference_telescope_space.lightcurve_flux = reference_telescope_space.lightcurve_in_flux()
-                reference_telescope_space.spacecraft_positions = telescope.spacecraft_positions
-
-                reference_telescope_space.compute_parallax(fit.event, fit.model.parallax_model)
-
-                flux_model = fit.model.compute_the_microlensing_model(reference_telescope_space, pyLIMA_parameters)[0]
-                magnitude = microltoolbox.flux_to_magnitude(flux_model)
-                figure_axe.plot(time_space, magnitude, '--b', lw=3)
-
     flux_model = fit.model.compute_the_microlensing_model(reference_telescope, pyLIMA_parameters)[0]
     magnitude = microltoolbox.flux_to_magnitude(flux_model)
 
-    figure_axe.plot(time, magnitude, 'b', label=fit.model.model_type, lw=3)
+    return magnitude
+
+def plot_model(figure_axe, fit, parameters = None, time=None, telescope_index = 0, model_color = 'b',model_alpha = 1.0, label=True):
+    """Plot the microlensing model corresponding to parameters, time and with the same properties as  telescope,  the best fit and first telescope.
+
+    :param object fit: a fit object. See the microlfits for more details.
+    :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
+    :param list parameters : a list of model parameters.
+    :param np.array time : the time stamps for the model.
+    :param int telescope_index : which telescope you want a model (depends on filter, location etc...)
+    :param str model_color : the model color
+    :param float model_alpha : the intensity of the model line
+
+    """
+    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+
+    if time is not None:
+
+        location = fit.event.telescopes[telescope_index].location
+
+    else:
+
+        location = fit.event.telescopes[0].location
+
+
+    magnitude =  model_magnitude(fit, parameters = parameters, time=time, telescope_index = telescope_index)
+
+
+    if location == 'Space':
+
+        figure_axe.plot(time, magnitude, c=model_color, linestyle='--', lw=3, alpha=model_alpha)
+
+    else:
+
+        if label == True:
+
+            figure_axe.plot(time, magnitude, c=model_color, label=fit.model.model_type, lw=3,alpha=model_alpha)
+            figure_axe.legend(numpoints=1, loc='best',
+                              fancybox=True, framealpha=0.5)
+
+        else:
+            figure_axe.plot(time, magnitude, c=model_color, lw=3,alpha=model_alpha)
+
     figure_axe.set_ylim(
         [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
     figure_axe.set_xlim(
-        [pyLIMA_parameters.to - 3 * np.abs(pyLIMA_parameters.tE),
-         pyLIMA_parameters.to + 3 * np.abs(pyLIMA_parameters.tE) + 100])
+        [pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
+         pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE) ])
 
     figure_axe.invert_yaxis()
-    figure_axe.text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
-                    transform=figure_axe.transAxes)
-    figure_axe.legend(numpoints=1, bbox_to_anchor=(0.01, 0.90), loc=2, borderaxespad=0.,
-                      fancybox=True, framealpha=0.5)
 
-def LM_plot_residuals(fit, figure_axe):
+
+
+def plot_residuals(figure_axe, fit, parameters =None ):
     """Plot the residuals from the fit.
 
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     """
+
+    if parameters is not None:
+
+        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+
+    else:
+        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
 
     for index, telescope in enumerate(fit.event.telescopes):
         time = telescope.lightcurve_flux[:, 0]
@@ -846,7 +946,6 @@ def LM_plot_residuals(fit, figure_axe):
         error_flux = telescope.lightcurve_flux[:, 2]
         err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
 
-        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
         residuals = 2.5 * np.log10(flux_model / flux)
@@ -857,18 +956,20 @@ def LM_plot_residuals(fit, figure_axe):
     figure_axe.invert_yaxis()
     figure_axe.yaxis.get_major_ticks()[-1].draw = lambda *args: None
 
-    # xticks_labels = figure_axe.get_xticks()
-    # figure_axe.set_xticklabels(xticks_labels, rotation=45)
 
 
-def LM_plot_align_data(fit, figure_axe):
+
+
+def plot_align_data(figure_axe, fit, telescope_index = 0, parameters = None):
     """Plot the aligned data.
 
-    :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
+    :param object fit: a fit object. See the microlfits for more details.
+    :param int telescope_index : the telescope to align data to.
+
     """
 
-    normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit)
+    normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit, telescope_index, parameters)
 
     count = 0
     for index, telescope in enumerate(fit.event.telescopes):
@@ -878,6 +979,7 @@ def LM_plot_align_data(fit, figure_axe):
                             marker=str(MARKER_SYMBOLS[0][index]), markersize=7.5, capsize=0.0,
                             label=telescope.name)
         count += 1
+
 
 
 
@@ -1112,7 +1214,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     figure_trajectory_xlimit = 1.5
     figure_trajectory_ylimit = 1.5
 
-    best_parameters = best_chains[0]
+    best_parameters = best_chains[np.argmax(best_chains[:,-1])]
     fig_size = [15, 5]
     figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]))
 
@@ -1124,7 +1226,7 @@ def plot_MCMC_ML_geometry(fit, best_chains):
     min_time = min([min(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
     max_time = max([max(i.lightcurve_magnitude[:, 0]) for i in fit.event.telescopes])
 
-    time = np.linspace(min_time, max_time + 100, 30000)
+    time = np.linspace(min_time, max_time + 100, 3000)
 
     reference_telescope = copy.copy(fit.event.telescopes[0])
     reference_telescope.lightcurve_magnitude = np.array(
@@ -1184,6 +1286,8 @@ def plot_MCMC_ML_geometry(fit, best_chains):
 
     if 'BL' not in fit.model.model_type:
         figure_axes.scatter(0, 0, s=10, c='k')
+    import pdb;
+    pdb.set_trace()
     if 'PS' not in fit.model.model_type:
         index_source = np.where((trajectory_x ** 2 + trajectory_y ** 2) ** 0.5 < max(1, pyLIMA_parameters.uo + 0.1))[0][
             0]
