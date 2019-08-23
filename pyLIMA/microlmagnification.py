@@ -10,6 +10,7 @@ import numpy as np
 from scipy import integrate
 
 import VBBinaryLensing
+import time
 
 VBB = VBBinaryLensing.VBBinaryLensing()
 VBB.Tol = 0.001
@@ -109,7 +110,6 @@ def amplification_FSPLee(tau, uo, rho, gamma):
     :rtype: array_like
     """
 
-
     impact_param = impact_parameter(tau, uo)  # u(t)
     impact_param_square = impact_param ** 2  # u(t)^2
 
@@ -124,33 +124,30 @@ def amplification_FSPLee(tau, uo, rho, gamma):
 
     amplification_fspl[indexes_PSPL] = amplification_pspl[indexes_PSPL]
 
-    # Close to the lens (z>2), USPL
-    indexes_US = np.where( (z_yoo >2) & (z_yoo <10))[0]
+    # Close to the lens (z>3), USPL
+    indexes_US = np.where( (z_yoo >3) & (z_yoo <10))[0]
   
 
     ampli_US = []
 
     for idx,u in enumerate(impact_param[indexes_US]):
-        
-        ampli_US.append(1/(np.pi*rho**2)*integrate.quad(Lee_US,0.0,np.pi,args=(u,rho,gamma),epsabs=0, epsrel=0.001)[0])
-
+        ampli_US.append(1/(np.pi*rho**2)*integrate.quad(Lee_US,0.0,np.pi,args=(u,rho,gamma),limit=100,
+                                                         epsabs=0.001, epsrel=0.001)[0])
     amplification_fspl[indexes_US] = ampli_US
     
-    # Very Close to the lens (z<=2), FSPL
-    indexes_FS = np.where((z_yoo <=2))[0]
+    # Very Close to the lens (z<=3), FSPL
+    indexes_FS = np.where((z_yoo <=3))[0]
   
 
     ampli_FS = []
 
     for idx,u in enumerate(impact_param[indexes_FS]):
-        
         ampli_FS.append(2/(np.pi*rho**2)*integrate.nquad(Lee_FS,[Lee_limits,[0.0,np.pi]],args=(u,rho,gamma),
-                                                         opts=[{'limit':100,'epsabs' :0.0,'epsrel':0.1},
-                                                               {'limit':100,'epsabs' : 0.0,'epsrel':0.1}])[0])
+                                                         opts=[{'limit':100,'epsabs' :0.001,'epsrel':0.001},
+                                                               {'limit':100,'epsabs' : 0.001,'epsrel':0.001}])[0])
 
     amplification_fspl[indexes_FS] = ampli_FS
 
-   
     return amplification_fspl
 
 

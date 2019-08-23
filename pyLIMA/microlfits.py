@@ -581,7 +581,6 @@ class MLFits(object):
                 residus = self.model_residuals(telescope, pyLIMA_parameters)
 
                 chichi += (residus ** 2).sum()
-            # print(chichi)
 
         else:
 
@@ -1016,13 +1015,7 @@ class MLFits(object):
         More details in microloutputs module.
         """
 
-        if self.method != 'MCMC':
-
-            outputs = microloutputs.LM_outputs(self)
-
-        else:
-
-            outputs = microloutputs.MCMC_outputs(self)
+        outputs = microloutputs.fit_outputs(self)
 
         self.outputs = outputs
 
