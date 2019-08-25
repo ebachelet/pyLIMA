@@ -19,7 +19,7 @@ def test_check_event_bad_name():
 
     with pytest.raises(event.EventException) as event_exception:
         current_event.check_event()
-    assert 'The event name (49.49) is not correct, it has to be a string' in str(event_exception)
+    assert 'The event name (49.49) is not correct, it has to be a string' in str(event_exception.value)
 
 
 def test_check_event_bad_ra():
@@ -98,7 +98,7 @@ def test_fit_bad_event_type():
 
     with pytest.raises(event.EventException) as event_exception:
         current_event.fit('PSPL', 'LM')
-    assert 'Can not fit this event kind' in str(event_exception)
+    assert 'Can not fit this event kind' in str(event_exception.value)
 
 
 def test_fit_bad_method():
@@ -106,11 +106,11 @@ def test_fit_bad_method():
 
     with pytest.raises(event.EventException) as event_exception:
         current_event.fit('PSPL', 'I am not a fitter :)')
-    assert 'Wrong fit method request' in str(event_exception)
+    assert 'Wrong fit method request' in str(event_exception.value)
 
     with pytest.raises(event.EventException) as event_exception:
         current_event.fit('PSPL', 51)
-    assert 'Wrong fit method request' in str(event_exception)
+    assert 'Wrong fit method request' in str(event_exception.value)
 
 
 def test_find_survey():

@@ -117,11 +117,12 @@ def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, paramete
     :return: the aligned to survey lightcurve in magnitude
     :rtype: array_like
     """
-    if parameters:
+    if parameters is not None:
 
         pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
     else:
         pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+
 
     reference_telescope = fit.event.telescopes[telescope_index]
     fs_ref = getattr(pyLIMA_parameters, 'fs_' + reference_telescope.name)
@@ -139,6 +140,12 @@ def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, paramete
     normalised_lightcurve = []
     for telescope in fit.event.telescopes:
 
+        flux = telescope.lightcurve_flux[:, 1]
+
+        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+
+        residuals = 2.5 * np.log10(flux_model / flux)
+
         if telescope.name == reference_telescope.name:
 
             lightcurve = telescope.lightcurve_magnitude
@@ -151,18 +158,19 @@ def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, paramete
 
                 g = getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
-                amp = telescope.lightcurve_flux[:,1]/fs - g
+                amp = fit.model.model_magnification(telescope, pyLIMA_parameters)
+
 
                 flux_normalised = fs_ref*(amp+g_ref)
-                magnitude_normalised = flux_to_magnitude(flux_normalised)
 
             else:
 
                 fb = getattr(pyLIMA_parameters, 'fb_' + telescope.name)
-                amp = (telescope.lightcurve_flux[:,1]-fb) / fs
+                amp = fit.model.model_magnification(telescope, pyLIMA_parameters)
 
                 flux_normalised = fs_ref * amp + fb_ref
-                magnitude_normalised = flux_to_magnitude(flux_normalised)
+
+            magnitude_normalised = flux_to_magnitude(flux_normalised)+residuals
 
             time = telescope.lightcurve_magnitude[:,0]
             err_mag = telescope.lightcurve_magnitude[:,2]

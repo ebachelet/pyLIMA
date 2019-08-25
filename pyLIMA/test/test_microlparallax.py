@@ -4,10 +4,11 @@ Created on Mon Dec  7 13:46:13 2015
 
 @author: ebachelet
 """
-
+from astropy.time import Time
 import numpy as np
 import unittest.mock as mock
-from pyslalib import slalib
+from astropy.coordinates import solar_system_ephemeris, EarthLocation
+from astropy.coordinates import get_body_barycentric, get_body, get_moon
 
 from pyLIMA import microlparallax
 
@@ -47,17 +48,19 @@ def test_HJD_to_JD():
     parallax = microlparallax.MLParallaxes(event, parallax_model)
 
     JD = 2455000
-    MJD = JD- 2400000.5
 
-    Sun_angles = slalib.sla_rdplan(MJD,99,0,0)
+    time = Time(JD, format='jd')
+    loc = EarthLocation.of_site('greenwich')
+    angles = get_body('sun', time, loc)
+    Sun_angles = [angles.ra.value*np.pi/180,angles.dec.value*np.pi/180]
 
     HJD = JD - parallax.AU/parallax.speed_of_light*(np.sin(Sun_angles[1])*np.sin(event.dec*np.pi/180)+
                                                     np.cos(Sun_angles[1])*np.cos(event.dec*np.pi/180)*
-                                                    np.cos(event.ra*np.pi/180-Sun_angles[0]))
+                                                    np.cos(event.ra*np.pi/180-Sun_angles[0]))/(24*3600)
 
     jd  = parallax.HJD_to_JD([HJD])
 
-    np.allclose(jd,JD)
+    assert np.allclose(jd,JD)
 
 def test_annual_parallax():
 

@@ -3,8 +3,8 @@ import os.path
 import numpy as np
 import unittest.mock as mock
 
-from pyLIMA import microltoolbox
-
+from pyLIMA import microltoolbox, microlmodels
+from pyLIMA import event
 
 def test_chichi():
     magic_residuals = mock.MagicMock()
@@ -59,31 +59,28 @@ def test_error_flux_to_error_magnitude():
 
 def test_align_the_data_to_the_reference_telescope():
     fit = mock.MagicMock()
-    event = mock.MagicMock()
-    model = mock.MagicMock()
-    model.compute_the_microlensing_model.return_value = [1, 0, 0]
-    event.telescopes = []
+    even = event.Event()
+
 
     telescope_0 = mock.MagicMock()
     telescope_0.name = 'Survey'
     telescope_0.lightcurve_flux = np.random.random((100, 3))
     telescope_0.lightcurve_magnitude = np.random.random((100, 3))
-    event.telescopes.append(telescope_0)
+    even.telescopes.append(telescope_0)
 
     telescope_1 = mock.MagicMock()
     telescope_1.name = 'Followup'
     telescope_1.lightcurve_flux = np.random.random((100, 3)) * 2
     telescope_1.lightcurve_magnitude = np.random.random((100, 3)) * 2
-    event.telescopes.append(telescope_1)
+    even.telescopes.append(telescope_1)
 
-    fit.event = event
+    model = microlmodels.create_model('PSPL', even, blend_flux_ratio=True)
+    model.define_model_parameters()
+
+    fit.event = even
     fit.model = model
-    expected_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit)
 
-    residuals = 2.5 * np.log10(1 / telescope_1.lightcurve_flux[:, 1])
-    lightcurve = np.c_[telescope_1.lightcurve_flux[:, 0], 27.4 + residuals, np.abs(2.5 / np.log(10) *
-                                                                                   telescope_1.lightcurve_flux[:, 2] /
-                                                                                   telescope_1.lightcurve_flux[:, 1])]
+    expected_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit,0,[10,0.1,30,10,15,1.,25])
 
-    assert np.allclose(expected_lightcurves[0], event.telescopes[0].lightcurve_magnitude)
-    assert np.allclose(expected_lightcurves[1], lightcurve)
+
+    assert np.allclose(expected_lightcurves[0], even.telescopes[0].lightcurve_magnitude)

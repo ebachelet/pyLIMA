@@ -12,9 +12,8 @@ from astropy import constants as astronomical_constants
 from scipy import interpolate
 import struct
 
-from pyslalib import slalib
 from astropy.time import Time
-from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian
+from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian, cartesian_to_spherical
 from astropy.coordinates import get_body_barycentric, get_body, get_moon, get_body_barycentric_posvel
 
 TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
@@ -164,18 +163,18 @@ class MLParallaxes(object):
         for time in time_to_transform:
 
             count = 0
-            jd = np.copy(time)
+            jd = Time(time,format='jd')
 
             while count < 3:
-                Earth_position = get_body_barycentric_posvel('Earth', jd)
-                Sun_position = -Earth_position[0]
 
-                Sun_angles = slalib.sla_dcc2s(Sun_position)
+
+                loc = EarthLocation.of_site('greenwich')
+                angles = get_body('sun', jd, loc)
+                Sun_angles = [angles.ra.value * np.pi / 180, angles.dec.value * np.pi / 180]
+
                 target_angles_in_the_sky = self.target_angles_in_the_sky
 
-                Time_correction = np.sqrt(
-                    Sun_position[0] ** 2 + Sun_position[1] ** 2 + Sun_position[
-                        2] ** 2) * AU / light_speed * (
+                Time_correction = angles.distance.value * AU / light_speed * (
                                           np.sin(Sun_angles[1]) * np.sin(
                                       target_angles_in_the_sky[1]) + np.cos(
                                       Sun_angles[1]) * np.cos(
