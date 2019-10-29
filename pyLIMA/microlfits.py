@@ -374,7 +374,7 @@ class MLFits(object):
         else:
             best_solution = self.guess
         nwalkers = 16 * len(best_solution)
-        nlinks = 10
+        nlinks = 1000
 
         # Initialize the population of MCMC
         population = []
