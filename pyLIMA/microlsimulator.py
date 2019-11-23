@@ -13,7 +13,7 @@ from pyLIMA import event
 RED_NOISE = 'Yes'
 SOURCE_MAGNITUDE = [14, 22]
 BLEND_LIMITS = [0, 1]
-
+EXPOSURE_TIME = 50 #seconds
 
 def moon_illumination(sun, moon):
     """The moon illumination expressed as a percentage.
@@ -341,7 +341,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
             import pdb;
             pdb.set_trace()
         flux_error = poisson_noise(theoritical_flux)
-        observed_flux = noisy_observations(theoritical_flux, flux_error)
+        observed_flux = noisy_observations(theoritical_flux*EXPOSURE_TIME, flux_error)
 
         if red_noise_apply == 'Yes':
             red = red_noise(telescope.lightcurve_flux[:, 0])
@@ -354,6 +354,8 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
             redded_flux = observed_flux
             error_on_redded_flux = poisson_noise(redded_flux)
 
+        redded_flux = redded_flux/EXPOSURE_TIME
+        error_on_redded_flux = error_on_redded_flux/EXPOSURE_TIME
         telescope.lightcurve_flux[:, 1] = redded_flux
         telescope.lightcurve_flux[:, 2] = error_on_redded_flux
 

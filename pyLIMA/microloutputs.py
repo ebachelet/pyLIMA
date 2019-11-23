@@ -1227,7 +1227,7 @@ def plot_geometry(fit):
 
         bokeh_geometry.circle(trajectory_x, trajectory_y, radius=rho,
                               color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
-                              )
+                              radius_dimension = 'max',fill_alpha=0.5)
 
     legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
     for handle in legend.legendHandles:

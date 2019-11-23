@@ -238,8 +238,26 @@ class MLModel(object):
             self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
 
-            
-            
+        if self.orbital_motion_model[0] == 'Keplerian':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['logs_z'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['mass_lens'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
+
+        if self.orbital_motion_model[0] == 'Keplerian_direct':
+
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['a_true'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['period'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['inclination'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['omega_node'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['omega_periastron'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['t_periastron'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
+
         if self.source_spots_model != 'None':
             self.Jacobian_flag = 'No way'
             self.pyLIMA_standards_dictionnary['spot'] = len(self.pyLIMA_standards_dictionnary)

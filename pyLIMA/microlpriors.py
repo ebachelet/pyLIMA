@@ -27,6 +27,11 @@ def priors_on_models(pyLIMA_parameters, model, binary_regime = None):
 
             return np.inf
 
+    if model.orbital_motion_model[0] == 'Keplerian':
+        prior = kinematic_energy_prior(pyLIMA_parameters)
+
+        if prior !=0 :
+            return prior
     return 0
 
 def microlensing_flux_priors(size_dataset, f_source, g_blending):
@@ -58,3 +63,31 @@ def microlensing_parameters_limits_priors(parameters, limits):
 
             pass
     return 42.0
+
+
+def kinematic_energy_prior(pyLIMA_parameters):
+
+    v_para = pyLIMA_parameters.v_para
+    v_perp = pyLIMA_parameters.v_perp
+    v_radial = pyLIMA_parameters.v_radial
+    separation_0 = 10 ** pyLIMA_parameters.logs
+    separation_z = 10 ** pyLIMA_parameters.logs_z
+    mass_lens = pyLIMA_parameters.mass_lens
+    rE = pyLIMA_parameters.rE
+
+
+
+
+
+    r_0 = np.array([separation_0, 0, separation_z]) * rE
+    v_0 = r_0[0] *np.array([v_para, v_perp, v_radial])
+
+
+    eps = np.sum(( v_0) ** 2) / 2 - 4 * np.pi ** 2 * mass_lens / np.sum(r_0 ** 2) ** 0.5
+
+    if eps>0:
+
+        prior = np.inf
+    else:
+        prior = 0
+    return prior
