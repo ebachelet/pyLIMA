@@ -295,10 +295,11 @@ def differential_evolution_parameters_boundaries(model):
 
     dsdt_boundaries = (-10,10)
     dalphadt_boundaries = (-10,10)
+    v_boundaries = (-2,2)
     mass_boundaries = [10**-1,10]
-    rE_boundaries = [10**-1,10]
+    rE_boundaries = [10**-1,100]
 
-    v_boundaries = (-1000,1000)
+    v_boundaries = (-2,2)
     
     ra_xal_boundaries = [0,360]
     dec_xal_boundaries = [-90,90]
@@ -395,9 +396,9 @@ def differential_evolution_parameters_boundaries(model):
 
     if model.orbital_motion_model[0] == 'Keplerian':
         parameters_boundaries.append(logs_boundaries)
-        parameters_boundaries.append(dsdt_boundaries)
-        parameters_boundaries.append(dsdt_boundaries)
-        parameters_boundaries.append(dsdt_boundaries)
+        parameters_boundaries.append(v_boundaries)
+        parameters_boundaries.append(v_boundaries)
+        parameters_boundaries.append(v_boundaries)
         parameters_boundaries.append(mass_boundaries)
         parameters_boundaries.append(rE_boundaries)
 

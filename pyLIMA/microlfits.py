@@ -518,9 +518,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_differential_evolution,
             bounds=self.model.parameters_boundaries,
-            mutation=(0.8, 1.2), popsize=int(self.DE_population_size), maxiter=50000, tol=0.0,
-            atol=1, strategy='best1bin',
-            recombination=0.6, polish=True, init='latinhypercube',
+            mutation=(0.5, 1.5), popsize=int(self.DE_population_size), maxiter=100000, tol=0.0,
+            atol=1, strategy='rand1bin',
+            recombination=0.7, polish=True, init='latinhypercube',
             disp=True,workers = worker,
         )
 
@@ -936,9 +936,9 @@ class MLFits(object):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.chichi_grids,
             bounds=self.new_parameters_boundaries, args=tuple(grid_pixel_parameters.tolist()),
-            mutation=(0.5, 1.0), popsize=10, maxiter=1000,
-            tol=0.0, atol=0.1, strategy='rand1bin',
-            recombination=0.7, polish=True,
+            mutation=(0.8, 1.2), popsize=10, maxiter=1000,
+            tol=0.0, atol=0.1, strategy='best1bin',
+            recombination=0.2, polish=True,
             disp=True
         )
 

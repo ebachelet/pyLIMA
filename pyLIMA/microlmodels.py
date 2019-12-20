@@ -247,6 +247,15 @@ class MLModel(object):
             self.pyLIMA_standards_dictionnary['mass_lens'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
 
+        if self.orbital_motion_model[0] == '3D':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['logs_z'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['mass_lens'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
+
         if self.orbital_motion_model[0] == 'Keplerian_direct':
 
             self.Jacobian_flag = 'No way'

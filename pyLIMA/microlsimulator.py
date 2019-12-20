@@ -9,6 +9,7 @@ from pyLIMA import microlmodels
 from pyLIMA import microltoolbox
 from pyLIMA import telescopes
 from pyLIMA import event
+from pyLIMA import microlmagnification
 
 RED_NOISE = 'Yes'
 SOURCE_MAGNITUDE = [14, 22]
@@ -338,8 +339,12 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
         if np.min(theoritical_flux > 0):
             pass
         else:
-            import pdb;
-            pdb.set_trace()
+            microlmagnification.VBB.Tol = 0.0005
+            microlmagnification.VBB.RelTol = 0.0005
+            theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+
+            microlmagnification.VBB.Tol = 0.001
+            microlmagnification.VBB.RelTol = 0.001
         flux_error = poisson_noise(theoritical_flux)
         observed_flux = noisy_observations(theoritical_flux*EXPOSURE_TIME, flux_error)
 

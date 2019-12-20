@@ -170,7 +170,7 @@ def orbital_motion_keplerian(to_om, v_para, v_perp, v_radial, separation_0, sepa
 
     eps = np.sum(( v_0) ** 2) / 2 - 4 * np.pi ** 2 * mass / np.sum(r_0 ** 2) ** 0.5
     a_true = -(4 * np.pi ** 2 * mass) / (2 * eps)
-    period = (a_true ** 3 / (mass)) ** 0.5
+    period = (a_true ** 3 / mass) ** 0.5
 
     N = 2 * np.pi / period * 1 / 365.25
     h_0 = np.cross(r_0, v_0)
@@ -244,8 +244,6 @@ def orbital_motion_keplerian(to_om, v_para, v_perp, v_radial, separation_0, sepa
     angle_0 = np.arctan2(r_microlens_0[1], r_microlens_0[0])
 
 
-
-
     return separation - separation0, (angle-angle_0)
 
 
@@ -301,7 +299,8 @@ def orbital_motion_keplerian_direct(to_om, a_true,period,eccentricity,inclinatio
     angle = np.arctan2(r_microlens[1], r_microlens[0])
     angle_0 =  np.arctan2(r_microlens_to_om[1], r_microlens_om[0])
 
-
+    import pdb;
+    pdb.set_trace()
     return separation - separation_0, (angle-angle_0)
 
 import scipy.optimize as so
