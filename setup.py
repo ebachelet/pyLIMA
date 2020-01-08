@@ -2,7 +2,7 @@ from setuptools import setup, find_packages, Extension
 
 setup(
     name="pyLIMA",
-    version="0.1.5",
+    version="0.9",
     description="Microlsening analysis package.",
     keywords='Microlsening analysis package.',
     author="Etienne Bachelet",
@@ -12,15 +12,14 @@ setup(
     download_url = 'https://github.com/ebachelet/pyLIMA/archive/0.1.tar.gz',
     packages=find_packages('.'),
     include_package_data=True,
-    install_requires=['scipy','numpy','matplotlib','astropy','emcee','pyslalib'],
-    python_requires='>=2.7,<4',
+    install_requires=['scipy','numpy','matplotlib','astropy','emcee','numba'],
+    python_requires='>=3.6,<4',
     test_suite="nose.collector",
     classifiers=[
 		'Development Status :: 5 - Production/Stable',
 		'Intended Audience :: Developers',
 		'Topic :: Software Development :: Build Tools',
                 'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-		'Programming Language :: Python :: 2.7',
 		'Programming Language :: Python :: 3',	   
 ],
     package_data={
