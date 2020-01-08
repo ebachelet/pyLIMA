@@ -7,7 +7,6 @@ Created on Mon Dec  7 13:46:13 2015
 
 import numpy as np
 import unittest.mock as mock
-from pyslalib import slalib
 import collections
 from pyLIMA import microlorbitalmotion
 
