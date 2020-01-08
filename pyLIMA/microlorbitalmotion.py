@@ -1,5 +1,5 @@
 import numpy as np
-
+from PyAstronomy import pyasl
 
 def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
     """ Compute the trajectory curvature depending on the model.
@@ -303,8 +303,8 @@ def orbital_motion_keplerian_direct(to_om, a_true,period,eccentricity,inclinatio
     pdb.set_trace()
     return separation - separation_0, (angle-angle_0)
 
-import scipy.optimize as so
-from PyAstronomy import pyasl
+
+
 
 def eccentric_anomaly_function(time, ellipticity, t_periastron, speed):
     ks = pyasl.MarkleyKESolver()
