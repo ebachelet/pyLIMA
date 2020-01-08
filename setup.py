@@ -12,7 +12,7 @@ setup(
     download_url = 'https://github.com/ebachelet/pyLIMA/archive/0.1.tar.gz',
     packages=find_packages('.'),
     include_package_data=True,
-    install_requires=['scipy','numpy','matplotlib','astropy','emcee','numba'],
+    install_requires=['scipy','numpy','matplotlib','astropy','emcee','numba','bokeh'],
     python_requires='>=3.6,<4',
     test_suite="nose.collector",
     classifiers=[
