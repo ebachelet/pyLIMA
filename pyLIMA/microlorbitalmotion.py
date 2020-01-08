@@ -40,7 +40,7 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
         dseparation, dalpha = orbital_motion_keplerian(orbital_motion_model[1], v_para, v_perp, v_radial, separation_0,
                                                        separation_z, mass_lens, rE, time)
 
-
+        dalpha = -dalpha
         #mass_ratio =  10 ** pyLIMA_parameters.logq
 
 
@@ -54,7 +54,7 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
         #dalpha = np.arctan2(y,x)
 
 
-    return dseparation, -dalpha
+    return dseparation, dalpha
 
 
 def orbital_motion_2D_trajectory_shift(to_om, time, dalpha_dt):
