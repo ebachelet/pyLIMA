@@ -10,3 +10,4 @@ astropy>=2.0.0
 emcee>=3.0
 numba
 bokeh
+PyAstronomy
