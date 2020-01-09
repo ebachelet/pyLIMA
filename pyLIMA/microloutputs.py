@@ -384,8 +384,10 @@ def create_the_fake_telescopes(fit, parameters):
         telescopes_index = [telescopes_ground[0, 0]]
     except:
         telescopes_index = []
+   
     telescopes_space = [i for i in range(len(fit.event.telescopes)) if fit.event.telescopes[i].location == 'Space']
 
+	
     telescopes_index += telescopes_space
 
     if 0 not in telescopes_index:
@@ -396,12 +398,11 @@ def create_the_fake_telescopes(fit, parameters):
     for telescope_index in telescopes_index:
 
         reference_telescope = copy.copy(fit.event.telescopes[telescope_index])
-        telescope_time = fit.event.telescopes[telescope_index].lightcurve_magnitude[:, 0]
+        telescope_time = fit.event.telescopes[telescope_index].lightcurve_flux[:, 0]
 
         if fit.event.telescopes[telescope_index].location == 'Space':
 
-            time = np.linspace(np.max([np.min(telescope_time), pyLIMA_parameters.to - 3 * pyLIMA_parameters.tE]),
-                             np.min([np.max(telescope_time), pyLIMA_parameters.to + 3 * pyLIMA_parameters.tE]), 5000)
+            time = np.linspace(np.min(telescope_time),np.max(telescope_time), 5000)
         else:
             time = np.linspace(np.min([np.min(telescope_time), pyLIMA_parameters.to - 3 * pyLIMA_parameters.tE]),
                              np.max([np.max(telescope_time), pyLIMA_parameters.to + 3 * pyLIMA_parameters.tE]), 5000)
@@ -410,6 +411,7 @@ def create_the_fake_telescopes(fit, parameters):
         reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
         if fit.model.parallax_model[0] != 'None':
+
             reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
 
         fit.event.fake_telescopes.append(reference_telescope)
