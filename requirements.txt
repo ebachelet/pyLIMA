@@ -4,9 +4,10 @@ nose
 pytest
 
 scipy>=1.2.0
-numpy==1.15.0
+numpy>=1.17.0
 matplotlib>=3.0.2
 astropy>=2.0.0
 emcee>=3.0
-pyslalib
-dill
+numba
+bokeh
+PyAstronomy

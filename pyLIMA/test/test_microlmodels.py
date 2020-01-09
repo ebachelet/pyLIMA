@@ -66,9 +66,10 @@ def test_create_bad_model():
     # Both tests are equivalent
     event = _create_event()
     # Using a context manager
+
     with pytest.raises(microlmodels.ModelException) as model_exception:
         microlmodels.create_model('BAD', event)
-    assert 'Unknown model "BAD"' in str(model_exception)
+    assert 'Unknown model "BAD"' in str(model_exception.value)
 
     # Manually checking for an exception and error message
     try:
@@ -357,7 +358,7 @@ def test_source_trajectory_with_parallax():
     Model = microlmodels.create_model('PSPL', event,parallax=['Annual',0])
 
 
-    source_X, source_Y = Model.source_trajectory(telescope, to, uo, tE, parameters)
+    source_X, source_Y,dseparation = Model.source_trajectory(telescope, to, uo, tE, parameters)
 
     assert len(source_X) == len(source_Y) == 2
 
@@ -386,7 +387,7 @@ def test_source_trajectory_with_alpha_non_negative():
     event = _create_event()
     event.telescopes[0] = telescope
     Model = microlmodels.create_model('PSPL', event, parallax=['Annual', 0])
-    source_X, source_Y = Model.source_trajectory(telescope, to, uo, tE, parameters)
+    source_X, source_Y,dseparation = Model.source_trajectory(telescope, to, uo, tE, parameters)
 
     assert len(source_X) == len(source_Y) == 2
 

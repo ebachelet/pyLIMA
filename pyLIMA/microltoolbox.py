@@ -88,20 +88,63 @@ def error_flux_to_error_magnitude(error_flux, flux):
     return error_magnitude
 
 
-def align_the_data_to_the_reference_telescope(fit):
-    """Align data to the survey telescope (i.e telescope 0). Used to plot fit results. Ugly microlensing alignement....
+def MCMC_compute_fs_g(fit, mcmc_chains):
+    """ Compute the corresponding source flux fs and blending factor g corresponding to each mcmc
+    chain.
+
+    :param fit: a fit object. See the microlfits for more details.
+    :param mcmc_chains: a numpy array representing the mcmc chains.
+    :return: a numpy array containing the corresponding fluxes parameters
+    :rtype: array_type
+
+    """
+    fluxes_chains = np.zeros((len(mcmc_chains), 2 * len(fit.event.telescopes)))
+    for i in range(len(mcmc_chains)):
+        fluxes = fit.find_fluxes(mcmc_chains[i], fit.model)
+        fluxes_chains[i] = fluxes
+
+    return fluxes_chains
+
+
+def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, parameters = None) :
+    """Align data to the telescope_index. Used to plot fit results. Ugly microlensing alignement....
 
     :param object fit: a microlfits object
+    :param int telescope_index: the reference telescope
+
+
 
     :return: the aligned to survey lightcurve in magnitude
     :rtype: array_like
     """
+    if parameters is not None:
 
-    reference_telescope = fit.event.telescopes[0]
-    pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
+    else:
+        pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
+
+
+    reference_telescope = fit.event.telescopes[telescope_index]
+    fs_ref = getattr(pyLIMA_parameters, 'fs_' + reference_telescope.name)
+
+    if fit.model.blend_flux_ratio == True:
+
+        g_ref = getattr(pyLIMA_parameters, 'g_' + reference_telescope.name)
+
+    else:
+
+        fb_ref = getattr(pyLIMA_parameters, 'fb_' + reference_telescope.name)
+
+
 
     normalised_lightcurve = []
     for telescope in fit.event.telescopes:
+
+        flux = telescope.lightcurve_flux[:, 1]
+
+        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+
+        residuals = 2.5 * np.log10(flux_model / flux)
 
         if telescope.name == reference_telescope.name:
 
@@ -109,29 +152,38 @@ def align_the_data_to_the_reference_telescope(fit):
 
         else:
 
-            telescope_ghost = copy.copy(telescope)
-            telescope_ghost.name = reference_telescope.name
-            telescope_ghost.filter = reference_telescope.filter
-            # import pdb;
-            # pdb.set_trace()
-            model_ghost = fit.model.compute_the_microlensing_model(telescope_ghost, pyLIMA_parameters)[0]
-            model_telescope = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+            fs = getattr(pyLIMA_parameters, 'fs_' + telescope.name)
 
-            time = telescope.lightcurve_flux[:, 0]
-            flux = telescope.lightcurve_flux[:, 1]
-            error_flux = telescope.lightcurve_flux[:, 2]
-            err_mag = error_flux_to_error_magnitude(error_flux, flux)
+            if fit.model.blend_flux_ratio == True:
 
-            residuals = 2.5 * np.log10(model_telescope / flux)
+                g = getattr(pyLIMA_parameters, 'g_' + telescope.name)
 
-            magnitude_normalised = flux_to_magnitude(model_ghost) + residuals
+                amp = fit.model.model_magnification(telescope, pyLIMA_parameters)
+
+
+                flux_normalised = fs_ref*(amp+g_ref)
+
+            else:
+
+                fb = getattr(pyLIMA_parameters, 'fb_' + telescope.name)
+                amp = fit.model.model_magnification(telescope, pyLIMA_parameters)
+
+                flux_normalised = fs_ref * amp + fb_ref
+
+            magnitude_normalised = flux_to_magnitude(flux_normalised)+residuals
+
+            time = telescope.lightcurve_magnitude[:,0]
+            err_mag = telescope.lightcurve_magnitude[:,2]
 
             lightcurve_normalised = [time, magnitude_normalised, err_mag]
 
-            lightcurve_mag_normalised = np.array(lightcurve_normalised).T
+            lightcurve = np.array(lightcurve_normalised).T
 
-            lightcurve = lightcurve_mag_normalised
+
 
         normalised_lightcurve.append(lightcurve)
 
+
     return normalised_lightcurve
+
+

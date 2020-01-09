@@ -234,7 +234,7 @@ class Telescope(object):
 
         lightcurve = self.lightcurve_magnitude[index]
 
-        index = np.where((np.isnan(self.lightcurve_magnitude).any(axis=1)) &
+        index = np.where((np.isnan(self.lightcurve_magnitude).any(axis=1)) |
                          (np.abs(self.lightcurve_magnitude[:, 2]) > maximum_accepted_precision))[0]
         if len(index) != 0:
             self.bad_points_magnitude = index
@@ -258,13 +258,13 @@ class Telescope(object):
         flux = self.lightcurve_flux[:, 1]
         error_flux = self.lightcurve_flux[:, 2]
         index = np.where(
-            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) <= maximum_accepted_precision))[
+            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) <= maximum_accepted_precision) & (flux>0))[
             0]
 
         lightcurve = self.lightcurve_flux[index]
 
         index = np.where(
-            (np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) > maximum_accepted_precision))[0]
+            (np.isnan(self.lightcurve_flux).any(axis=1)) | (np.abs(error_flux / flux) > maximum_accepted_precision) | (flux<=0))[0]
         if len(index) != 0:
             self.bad_points_flux = index
             print('pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \

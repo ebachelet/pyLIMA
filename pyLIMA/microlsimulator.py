@@ -9,11 +9,12 @@ from pyLIMA import microlmodels
 from pyLIMA import microltoolbox
 from pyLIMA import telescopes
 from pyLIMA import event
+from pyLIMA import microlmagnification
 
 RED_NOISE = 'Yes'
 SOURCE_MAGNITUDE = [14, 22]
 BLEND_LIMITS = [0, 1]
-
+EXPOSURE_TIME = 50 #seconds
 
 def moon_illumination(sun, moon):
     """The moon illumination expressed as a percentage.
@@ -89,8 +90,8 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
     total_number_of_days = int(time_end - time_start)
     time_step_observations = sampling / 24.0
-    number_of_day_exposure = np.floor(
-        1.0 / time_step_observations)  # less than expected total, more likely in a telescope :)
+    number_of_day_exposure = int(np.floor(
+        1.0 / time_step_observations))  # less than expected total, more likely in a telescope :)
     night_begin = time_start
 
     time_observed = []
@@ -100,7 +101,7 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
         if good_weather > bad_weather_percentage:
             random_begin_of_the_night = 0
-            night_end = night_begin + 1.0
+            night_end = night_begin + 1
             time_observed += np.linspace(night_begin + time_step_observations + random_begin_of_the_night, night_end,
                                          number_of_day_exposure).tolist()
 
@@ -338,10 +339,14 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
         if np.min(theoritical_flux > 0):
             pass
         else:
-            import pdb;
-            pdb.set_trace()
+            microlmagnification.VBB.Tol = 0.0005
+            microlmagnification.VBB.RelTol = 0.0005
+            theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+
+            microlmagnification.VBB.Tol = 0.001
+            microlmagnification.VBB.RelTol = 0.001
         flux_error = poisson_noise(theoritical_flux)
-        observed_flux = noisy_observations(theoritical_flux, flux_error)
+        observed_flux = noisy_observations(theoritical_flux*EXPOSURE_TIME, flux_error)
 
         if red_noise_apply == 'Yes':
             red = red_noise(telescope.lightcurve_flux[:, 0])
@@ -354,6 +359,8 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, red_noise_apply='Yes'):
             redded_flux = observed_flux
             error_on_redded_flux = poisson_noise(redded_flux)
 
+        redded_flux = redded_flux/EXPOSURE_TIME
+        error_on_redded_flux = error_on_redded_flux/EXPOSURE_TIME
         telescope.lightcurve_flux[:, 1] = redded_flux
         telescope.lightcurve_flux[:, 2] = error_on_redded_flux
 

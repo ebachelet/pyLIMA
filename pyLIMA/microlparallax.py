@@ -12,7 +12,9 @@ from astropy import constants as astronomical_constants
 from scipy import interpolate
 import struct
 
-from pyslalib import slalib
+from astropy.time import Time
+from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian, cartesian_to_spherical
+from astropy.coordinates import get_body_barycentric, get_body, get_moon, get_body_barycentric_posvel
 
 TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
 JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
@@ -158,28 +160,27 @@ class MLParallaxes(object):
         time_correction = []
         # DTT=[]
 
-
         for time in time_to_transform:
 
             count = 0
-            jd = np.copy(time)
+            jd = Time(time,format='jd')
 
             while count < 3:
-                Earth_position = slalib.sla_epv(jd)
-                Sun_position = -Earth_position[0]
 
-                Sun_angles = slalib.sla_dcc2s(Sun_position)
+
+                loc = EarthLocation.of_site('greenwich')
+                angles = get_body('sun', jd, loc)
+                Sun_angles = [angles.ra.value * np.pi / 180, angles.dec.value * np.pi / 180]
+
                 target_angles_in_the_sky = self.target_angles_in_the_sky
 
-                Time_correction = np.sqrt(
-                    Sun_position[0] ** 2 + Sun_position[1] ** 2 + Sun_position[
-                        2] ** 2) * AU / light_speed * (
-                                      np.sin(Sun_angles[1]) * np.sin(
-                                          target_angles_in_the_sky[1]) + np.cos(
-                                          Sun_angles[1]) * np.cos(
-                                          target_angles_in_the_sky[1]) * np.cos(
-                                          target_angles_in_the_sky[0] - Sun_angles[0])) / (
-                                      3600 * 24.0)
+                Time_correction = angles.distance.value * AU / light_speed * (
+                                          np.sin(Sun_angles[1]) * np.sin(
+                                      target_angles_in_the_sky[1]) + np.cos(
+                                      Sun_angles[1]) * np.cos(
+                                      target_angles_in_the_sky[1]) * np.cos(
+                                      target_angles_in_the_sky[0] - Sun_angles[0])) / (
+                                          3600 * 24.0)
                 count = count + 1
 
         # DTT.append(slalib.sla_dtt(jd)/(3600*24))
@@ -205,12 +206,10 @@ class MLParallaxes(object):
         time = telescope.lightcurve_flux[:, 0]
         delta_North = np.array([])
         delta_East = np.array([])
-        
-        if location =='NewHorizon':
-        
-            delta_North, delta_East = self.lonely_satellite(time,telescope)
-        
-            
+
+        if location == 'NewHorizon':
+            delta_North, delta_East = self.lonely_satellite(time, telescope)
+
         if location == 'Earth':
 
             if (self.parallax_model == 'Annual'):
@@ -245,22 +244,20 @@ class MLParallaxes(object):
                 delta_East += telescope_positions[1]
 
         if location == 'Space':
-
             telescope_positions = self.annual_parallax(time)
             delta_North = np.append(delta_North, telescope_positions[0])
             delta_East = np.append(delta_East, telescope_positions[1])
             name = telescope.spacecraft_name
 
-
             telescope_positions = -self.space_parallax(time, name, telescope)
             # import pdb;
             # pdb.set_trace()
-            #delta_North = np.append(delta_North, telescope_positions[0])
-            #delta_East = np.append(delta_East, telescope_positions[1])
+            # delta_North = np.append(delta_North, telescope_positions[0])
+            # delta_East = np.append(delta_East, telescope_positions[1])
 
             delta_North += telescope_positions[0]
             delta_East += telescope_positions[1]
-            
+
         deltas_position = np.array([delta_North, delta_East])
 
         # set the attributes deltas_positions for the telescope object
@@ -280,29 +277,24 @@ class MLParallaxes(object):
                       slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
-        to_par_mjd = self.to_par - 2400000.5
-        Earth_position_time_reference = slalib.sla_epv(to_par_mjd)
-        Sun_position_time_reference = -Earth_position_time_reference[0]
-        Sun_speed_time_reference = -Earth_position_time_reference[1]
-        delta_Sun = []
+        with solar_system_ephemeris.set('builtin'):
+            time_jd_reference = Time(self.to_par, format='jd')
+            Earth_position_time_reference = get_body_barycentric_posvel('Earth', time_jd_reference)
+            Sun_position_time_reference = -Earth_position_time_reference[0]
+            Sun_speed_time_reference = -Earth_position_time_reference[1]
 
-        for time in time_to_treat:
-            time_mjd = time - 2400000.5
-
-            Earth_position = slalib.sla_epv(time_mjd)
+            time_jd = Time(time_to_treat, format='jd')
+            Earth_position = get_body_barycentric_posvel('Earth', time_jd)
             Sun_position = -Earth_position[0]
-            delta_sun = Sun_position - (time_mjd - to_par_mjd) * Sun_speed_time_reference - Sun_position_time_reference
 
-            delta_Sun.append(delta_sun.tolist())
+            delta_Sun = Sun_position.xyz.value.T - np.c_[
+                time_to_treat - self.to_par] * Sun_speed_time_reference.xyz.value \
+                        - Sun_position_time_reference.xyz.value
 
-        delta_Sun = np.array(delta_Sun)
+            delta_Sun_projected = np.array(
+                [np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
 
-        delta_Sun_projected = np.array(
-            [np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
-
-        return delta_Sun_projected
-        
-   
+            return delta_Sun_projected
 
     def terrestrial_parallax(self, time_to_treat, altitude, longitude, latitude):
         """ Compute the position shift due to the distance of the obervatories from the Earth
@@ -326,16 +318,22 @@ class MLParallaxes(object):
         Longitude = longitude * np.pi / 180.0
         Latitude = latitude * np.pi / 180.0
 
-        delta_telescope = []
-        for time in time_to_treat:
-            time_mjd = time - 2400000.5
-            sideral_time = slalib.sla_gmst(time_mjd)
-            telescope_longitude = - Longitude - self.target_angles_in_the_sky[
-                0] + sideral_time
+        #delta_telescope = []
+        #for time in time_to_treat:
+        #    time_mjd = time - 2400000.5
+        #    sideral_time = slalib.sla_gmst(time_mjd)
+        #    telescope_longitude = - Longitude - self.target_angles_in_the_sky[
+        #        0] + sideral_time
 
-            delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
+        #    delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
+        #    import pdb;
+        #    pdb.set_trace()
+        times = Time(time_to_treat, format='jd')
+        sideral_times = times.sidereal_time('apparent','greenwich').value/24*2*np.pi
+        telescope_longitudes = - Longitude - self.target_angles_in_the_sky[0] + sideral_times
 
-        delta_telescope = np.array(delta_telescope)
+        x,y,z = spherical_to_cartesian(radius, Latitude, telescope_longitudes)
+        delta_telescope = np.c_[x.value,y.value,z.value]
         delta_telescope_projected = np.array(
             [np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])
         return delta_telescope_projected
@@ -358,13 +356,13 @@ class MLParallaxes(object):
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
         if len(telescope.spacecraft_positions) != 0:
-        # allow to pass the user to give his own ephemeris
+            # allow to pass the user to give his own ephemeris
             satellite_positions = np.array(telescope.spacecraft_positions)
         else:
-            #call JPL!
+            # call JPL!
             satellite_positions = produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
-                                                     step_size='1440m', verbose=False)[1]
-            telescope.spacecraft_positions = satellite_positions 				
+                                                         step_size='1440m', verbose=False)[1]
+            telescope.spacecraft_positions = satellite_positions
         satellite_positions = np.array(satellite_positions)
         dates = satellite_positions[:, 0].astype(float)
         ra = satellite_positions[:, 1].astype(float)
@@ -379,25 +377,27 @@ class MLParallaxes(object):
         dec_interpolated = interpolated_dec(time_to_treat)
         distance_interpolated = interpolated_distance(time_to_treat)
 
-        delta_satellite = []
-        for index_time in range(len(time_to_treat)):
-            delta_satellite.append(distance_interpolated[index_time] * slalib.sla_dcs2c(
-                ra_interpolated[index_time] * np.pi / 180,
-                dec_interpolated[index_time] * np.pi / 180))
+        #delta_satellite = []
+        #for index_time in range(len(time_to_treat)):
+        #    delta_satellite.append(distance_interpolated[index_time] * slalib.sla_dcs2c(
+        #        ra_interpolated[index_time] * np.pi / 180,
+        #        dec_interpolated[index_time] * np.pi / 180))
 
-        delta_satellite = np.array(delta_satellite)
+        x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
+                                         ra_interpolated * np.pi / 180)
+        delta_satellite = np.c_[x.value, y.value, z.value]
+        #delta_satellite = np.array(delta_satellite)
         delta_satellite_projected = np.array(
             [np.dot(delta_satellite, self.North), np.dot(delta_satellite, self.East)])
 
         return delta_satellite_projected
 
-    def lonely_satellite(self, time_to_treat,telescope):
+    def lonely_satellite(self, time_to_treat, telescope):
         """
         """
 
         satellite_positions = np.array(telescope.spacecraft_positions)
-        
-       
+
         dates = satellite_positions[:, 0].astype(float)
         X = satellite_positions[:, 1].astype(float)
         Y = satellite_positions[:, 2].astype(float)
@@ -407,18 +407,21 @@ class MLParallaxes(object):
         interpolated_Y = interpolate.interp1d(dates, Y)
         interpolated_Z = interpolate.interp1d(dates, Z)
 
-       
-        spacecraft_position_time_reference = np.array([interpolated_X(self.to_par),interpolated_Y(self.to_par),interpolated_Z(self.to_par)])
-        spacecraft_position_time_reference1 = np.array([interpolated_X(self.to_par-1),interpolated_Y(self.to_par-1),interpolated_Z(self.to_par-1)])
-        spacecraft_position_time_reference2 = np.array([interpolated_X(self.to_par+1),interpolated_Y(self.to_par+1),interpolated_Z(self.to_par+1)])
-        spacecraft_speed_time_reference = (spacecraft_position_time_reference2-spacecraft_position_time_reference1)/2
+        spacecraft_position_time_reference = np.array(
+            [interpolated_X(self.to_par), interpolated_Y(self.to_par), interpolated_Z(self.to_par)])
+        spacecraft_position_time_reference1 = np.array(
+            [interpolated_X(self.to_par - 1), interpolated_Y(self.to_par - 1), interpolated_Z(self.to_par - 1)])
+        spacecraft_position_time_reference2 = np.array(
+            [interpolated_X(self.to_par + 1), interpolated_Y(self.to_par + 1), interpolated_Z(self.to_par + 1)])
+        spacecraft_speed_time_reference = (
+                                                      spacecraft_position_time_reference2 - spacecraft_position_time_reference1) / 2
         delta_spacecraft = []
 
         for time in time_to_treat:
+            sat_position = np.array([interpolated_X(time), interpolated_Y(time), interpolated_Z(time)])
 
-            sat_position = np.array([interpolated_X(time),interpolated_Y(time),interpolated_Z(time)])
-            
-            delta_satellite = sat_position - (time- self.to_par) * spacecraft_speed_time_reference -  spacecraft_position_time_reference
+            delta_satellite = sat_position - (
+                        time - self.to_par) * spacecraft_speed_time_reference - spacecraft_position_time_reference
 
             delta_spacecraft.append(delta_satellite.tolist())
 
@@ -637,7 +640,6 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
             print(len(hor_line.split()))
         data_line = True
         # print hor_line
-
 
         if (len(hor_line.split()) == 4):
 

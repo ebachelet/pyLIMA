@@ -238,8 +238,35 @@ class MLModel(object):
             self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
             self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
 
-            
-            
+        if self.orbital_motion_model[0] == 'Keplerian':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['logs_z'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['mass_lens'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
+
+        if self.orbital_motion_model[0] == '3D':
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['logs_z'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['mass_lens'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
+
+        if self.orbital_motion_model[0] == 'Keplerian_direct':
+
+            self.Jacobian_flag = 'No way'
+            self.pyLIMA_standards_dictionnary['a_true'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['period'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['inclination'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['omega_node'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['omega_periastron'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['t_periastron'] = len(self.pyLIMA_standards_dictionnary)
+            self.pyLIMA_standards_dictionnary['rE'] = len(self.pyLIMA_standards_dictionnary)
+
         if self.source_spots_model != 'None':
             self.Jacobian_flag = 'No way'
             self.pyLIMA_standards_dictionnary['spot'] = len(self.pyLIMA_standards_dictionnary)
@@ -396,6 +423,19 @@ class MLModel(object):
             self.find_origin(pyLIMA_parameters)
         return pyLIMA_parameters
 
+    def find_origin(self, pyLIMA_parameters):
+
+        self.x_center = 0
+        self.y_center = 0
+
+    def uo_to_from_uc_tc(self, pyLIMA_parameters):
+
+        return pyLIMA_parameters.to, pyLIMA_parameters.uo
+
+    def uc_tc_from_uo_to(selfself,pyLIMA_parameters):
+
+        return pyLIMA_parameters.to, pyLIMA_parameters.uo
+
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
         """ Transform the fancy parameters to the pyLIMA standards. The output got all
         the necessary standard attributes, example to, uo, tE...
@@ -500,22 +540,20 @@ class MLModel(object):
                                                                                 telescope.lightcurve_flux[:, 0],
                                                                                 pyLIMA_parameters)
                 alpha += dalpha
-             
+
         else :
-            dseparation = 0
+
+           dseparation = np.array([0]*len(tau))
                 
         source_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
         source_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
 
-        if 'PL' not in self.model_type:
+
     
-            separation = np.array([10 ** pyLIMA_parameters.logs] * len(source_trajectory_x))+dseparation
+
                 
-            return source_trajectory_x, source_trajectory_y, separation
+        return source_trajectory_x, source_trajectory_y, dseparation
         
-        else:
-    
-            return source_trajectory_x, source_trajectory_y
 
 class ModelPSPL(MLModel):
     @property
@@ -546,10 +584,10 @@ class ModelPSPL(MLModel):
         :rtype: array_like
         """
 
-        source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        return microlmagnification.amplification_PSPL(*source_trajectoire)
+        return microlmagnification.amplification_PSPL(source_trajectory_x, source_trajectory_y)
 
     def Jacobian_model_magnification(self, telescope, pyLIMA_parameters):
         """ The magnification associated to a PSPL model. More details in microlmagnification module.
@@ -560,10 +598,10 @@ class ModelPSPL(MLModel):
         :rtype: array_like,array_like
         """
 
-        source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        return microlmagnification.Jacobian_amplification_PSPL(*source_trajectoire)
+        return microlmagnification.Jacobian_amplification_PSPL(source_trajectory_x, source_trajectory_y)
 
     def model_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model
@@ -641,7 +679,7 @@ class ModelFSPL(MLModel):
         :rtype: array_like,array_like
         """
 
-        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to,
+        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to,
                                                                           pyLIMA_parameters.uo,
                                                                           pyLIMA_parameters.tE,
                                                                           pyLIMA_parameters)
@@ -660,7 +698,7 @@ class ModelFSPL(MLModel):
         :rtype: array_like,array_like
         """
 
-        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to,
+        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to,
                                                                           pyLIMA_parameters.uo,
                                                                           pyLIMA_parameters.tE,
                                                                           pyLIMA_parameters)
@@ -750,6 +788,47 @@ class ModelFSPL(MLModel):
 
         return jacobi
 
+class ModelFSPLee(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: FSPL-Lee method
+        :rtype: string
+        """
+
+        return 'FSPL'
+
+    def paczynski_model_parameters(self):
+        """ Define the FSPL standard parameters, [to,uo,tE,rho]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3}
+        self.Jacobian_flag = 'No way'
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a FSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectory_x, source_trajectory_y,_ = self.source_trajectory(telescope, pyLIMA_parameters.to,
+                                                                          pyLIMA_parameters.uo,
+                                                                          pyLIMA_parameters.tE,
+                                                                          pyLIMA_parameters)
+        rho = pyLIMA_parameters.rho
+        gamma = telescope.gamma
+
+        return microlmagnification.amplification_FSPLee(source_trajectory_x, source_trajectory_y, rho,
+                                                      gamma)
+
+
 
 class ModelDSPL(MLModel):
     @property
@@ -788,16 +867,17 @@ class ModelDSPL(MLModel):
         :rtype: array_like,array_like
         """
 
-        source1_trajectory = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+        source1_trajectory_x, source1_trajectory_y,_  = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
         to2 = pyLIMA_parameters.to + pyLIMA_parameters.delta_to
         uo2 = pyLIMA_parameters.delta_uo + pyLIMA_parameters.uo
-        source2_trajectory = self.source_trajectory(telescope, to2, uo2,
+
+        source2_trajectory_x, source2_trajectory_y,_ = self.source_trajectory(telescope, to2, uo2,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        source1_magnification = microlmagnification.amplification_PSPL(*source1_trajectory)
-        source2_magnification = microlmagnification.amplification_PSPL(*source2_trajectory)
+        source1_magnification = microlmagnification.amplification_PSPL(source1_trajectory_x, source1_trajectory_y)
+        source2_magnification = microlmagnification.amplification_PSPL(source2_trajectory_x, source2_trajectory_y)
 
         blend_magnification_factor = getattr(pyLIMA_parameters, 'q_flux_' + telescope.filter)
 
@@ -843,12 +923,12 @@ class ModelDFSPL(MLModel):
         :rtype: array_like,array_like
         """
 
-        source1_trajectory_x, source1_trajectory_y  = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+        source1_trajectory_x, source1_trajectory_y,_  = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
         to2 = pyLIMA_parameters.to + pyLIMA_parameters.delta_to
         uo2 = pyLIMA_parameters.delta_uo + pyLIMA_parameters.uo
-        source2_trajectory_x, source2_trajectory_y = self.source_trajectory(telescope, to2, uo2,
+        source2_trajectory_x, source2_trajectory_y,_ = self.source_trajectory(telescope, to2, uo2,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
         rho1 = pyLIMA_parameters.rho_1
@@ -910,7 +990,7 @@ class ModelFSBL(MLModel):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        separation = source_trajectoire[2]
+        separation = source_trajectoire[2]+10**pyLIMA_parameters.logs
 
         magnification_FSBL = \
             microlmagnification.amplification_FSBL(separation, 10 ** pyLIMA_parameters.logq,
@@ -1048,7 +1128,7 @@ class ModelUSBL(ModelFSBL):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        separation = source_trajectoire[2]
+        separation =  source_trajectoire[2]+10**pyLIMA_parameters.logs
 
         magnification_USBL = \
             microlmagnification.amplification_USBL(separation, 10 ** pyLIMA_parameters.logq,
@@ -1092,7 +1172,7 @@ class ModelPSBL(ModelFSBL):
         source_trajectoire = self.source_trajectory(telescope, to, uo,
                                                     pyLIMA_parameters.tE, pyLIMA_parameters)
 
-        separation = source_trajectoire[2]
+        separation =  source_trajectoire[2]+10**pyLIMA_parameters.logs
 
         magnification = \
             microlmagnification.amplification_PSBL(separation, 10 ** pyLIMA_parameters.logq, source_trajectoire[0], source_trajectoire[1])
@@ -1151,7 +1231,7 @@ class ModelVariablePL(MLModel):
         :rtype: array_like
         """
 
-        source_trajectory_x, source_trajectory_y = self.source_trajectory(telescope, pyLIMA_parameters.to,
+        source_trajectory_x, source_trajectory_y,_ = self.source_trajectory(telescope, pyLIMA_parameters.to,
                                                                           pyLIMA_parameters.uo,
                                                                           pyLIMA_parameters.tE, pyLIMA_parameters)
 

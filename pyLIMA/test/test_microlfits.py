@@ -85,9 +85,9 @@ def test_mlfit_DSPL_LM_without_guess():
 def test_mlfit_PSPL_LM_with_guess():
     current_event = _create_event()
     model = microlmodels.create_model('PSPL',current_event)
+    model.parameters_boundaries = [[0, 100], [0, 1], [0, 300]]
 
     model.parameters_guess = [10, 0.1, 20]
-
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
 

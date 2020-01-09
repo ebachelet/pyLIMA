@@ -293,16 +293,19 @@ def differential_evolution_parameters_boundaries(model):
     XiEN_boundaries = (-2.0, 2.0)
     XiEE_boundaries = (-2.0, 2.0)
 
-    dsdt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
-    dalphadt_boundaries = (-1 * 10 ** -2, 1 * 10 ** -2)
-    v_boundaries = (-1000,1000)
+    dsdt_boundaries = (-10,10)
+    dalphadt_boundaries = (-10,10)
+    v_boundaries = (-2,2)
+    mass_boundaries = [10**-1,10]
+    rE_boundaries = [10**-1,100]
+
+    v_boundaries = (-2,2)
     
     ra_xal_boundaries = [0,360]
     dec_xal_boundaries = [-90,90]
     period_xal_boundaries = [0.001,1000]
     ecc_xal_boundaries = [0,1]
     t_peri_xal_boundaries = to_boundaries
-
 
     # model_xallarap_boundaries = {'None': [], 'True': [(-2.0, 2.0), (-2.0, 2.0)]}
 
@@ -390,7 +393,16 @@ def differential_evolution_parameters_boundaries(model):
         parameters_boundaries.append(dsdt_boundaries)
         parameters_boundaries.append(dsdt_boundaries)
         parameters_boundaries.append(dsdt_boundaries)
-        
+
+    if model.orbital_motion_model[0] == 'Keplerian':
+        parameters_boundaries.append(logs_boundaries)
+        parameters_boundaries.append(v_boundaries)
+        parameters_boundaries.append(v_boundaries)
+        parameters_boundaries.append(v_boundaries)
+        parameters_boundaries.append(mass_boundaries)
+        parameters_boundaries.append(rE_boundaries)
+
+
     # if source_spots
 
     return parameters_boundaries
@@ -407,13 +419,13 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :rtype: list of float
      """
     if ('to' in parameter_key) :
-        epsilon = np.random.uniform(-0.001, 0.001)
+        epsilon = np.random.uniform(-0.01, 0.01)
         to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
         return [to_parameters_trial]
 
     if 'fs' in parameter_key:
-        epsilon = np.random.uniform(0.999, 1.001)
+        epsilon = np.random.uniform(0.99, 1.00)
 
         fs_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
@@ -433,21 +445,21 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
     #    return [pi_trial]
 
     if 'rho' in parameter_key:
-        epsilon = np.random.uniform(0.999, 1.001)
+        epsilon = np.random.uniform(0.99, 1.01)
         rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
         return [rho_parameters_trial]
 
     if 'logs' in parameter_key:
-        epsilon = np.random.uniform(-0.005, 0.005)
+        epsilon = np.random.uniform(-0.05, 0.05)
 
         logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logs_parameters_trial]
     if 'logq' in parameter_key:
-        epsilon = np.random.uniform(-0.005, 0.005)
+        epsilon = np.random.uniform(-0.05, 0.05)
 
         logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
         return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.999, 1.001)
+    epsilon = np.random.uniform(0.99, 1.01)
     all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
 
     return [all_other_parameter_trial]
