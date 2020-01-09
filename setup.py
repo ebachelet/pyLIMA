@@ -13,7 +13,7 @@ setup(
     packages=find_packages('.'),
     include_package_data=True,
     install_requires=['scipy','numpy','matplotlib','astropy','emcee','numba','bokeh','PyAstronomy'],
-dependency_links=['http://github.com/user/repo/tarball/master#egg=package-1.0'],
+dependency_links=['https://github.com/valboz/VBBinaryLensing/tarball/master'],
     python_requires='>=3.6,<4',
     test_suite="nose.collector",
     classifiers=[
