@@ -13,7 +13,11 @@ matrix:
           osx_image: xcode9.4  # Python 3.6.5 running on macOS 10.13
           language: shell      
           before_install:
-          - pip install -r requirements.txt
+          - python3 --version
+          - pip3 install -U pip
+          - pip3 install -U pytest
+          - pip3 install codecov
+          - pip3 install -r requirements.txt
           script: coverage run --source=. setup.py test
           after_success: coveralls
     
@@ -22,7 +26,11 @@ matrix:
           osx_image: xcode10.2  # Python 3.7.3 running on macOS 10.14.3
           language: shell       
           before_install:
-          - pip install -r requirements.txt
+          - python3 --version
+          - pip3 install -U pip
+          - pip3 install -U pytest
+          - pip3 install codecov
+          - pip3 install -r requirements.txt
           script: coverage run --source=. setup.py test
           after_success: coveralls
 
@@ -37,7 +45,7 @@ matrix:
            - pip3 install codecov
            - pip3 install -r requirements.txt
           env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
-
+          after_success: python 3 -m codecov
 before_install:
    - pip install -r requirements.txt
 
