@@ -829,6 +829,48 @@ class ModelFSPLee(MLModel):
                                                       gamma)
 
 
+class ModelFSPLarge(MLModel):
+    @property
+    def model_type(self):
+        """ Return the kind of microlensing model.
+
+        :returns: FSPL-VBB method
+        :rtype: string
+        """
+
+        return 'FSPL'
+
+    def paczynski_model_parameters(self):
+        """ Define the FSPL standard parameters, [to,uo,tE,rho]
+
+        :returns: a dictionnary containing the pyLIMA standards
+        :rtype: dict
+        """
+        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2, 'rho': 3}
+        self.Jacobian_flag = 'No way'
+        return model_dictionary
+
+    def model_magnification(self, telescope, pyLIMA_parameters):
+        """ The magnification associated to a FSPL model. More details in microlmagnification module.
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: magnification, impact_parameter
+        :rtype: array_like,array_like
+        """
+
+        source_trajectory_x, source_trajectory_y,_ = self.source_trajectory(telescope, pyLIMA_parameters.to,
+                                                                          pyLIMA_parameters.uo,
+                                                                          pyLIMA_parameters.tE,
+                                                                          pyLIMA_parameters)
+        rho = pyLIMA_parameters.rho
+        linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
+        #linear_limb_darkening = telescope.gamma
+        #import pdb;
+        #pdb.set_trace()
+        return microlmagnification.amplification_FSPLarge(source_trajectory_x, source_trajectory_y, rho,
+                                                      linear_limb_darkening)
+
 
 class ModelDSPL(MLModel):
     @property

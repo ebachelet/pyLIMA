@@ -5,9 +5,10 @@ pytest
 
 scipy>=1.2.0
 numpy>=1.17.0
-matplotlib>=3.0.2
+matplotlib>=3.0
 astropy>=2.0.0
 emcee>=3.0
-numba
+numba==0.10.0
 bokeh
 PyAstronomy
+Cython

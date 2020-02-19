@@ -8,6 +8,7 @@ Created on Tue Dec  8 14:37:33 2015
 from __future__ import division
 import numpy as np
 from scipy import integrate
+import os
 
 import VBBinaryLensing
 import time
@@ -86,6 +87,42 @@ def Jacobian_amplification_PSPL(tau, uo):
 
     # return both magnification and U, required by some methods
     return amplification_pspl, impact_param
+
+def amplification_FSPLarge(tau, uo, rho, limb_darkening_coefficient):
+    """
+    The VBB FSPL for large source. Faster than the numba implementations...
+
+    Much slower than Yoo et al. but valid for all rho, all u_o
+
+    :param array_like tau: the tau define for example in
+                               http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+
+    :param array_like uo: the uo define for example in
+                             http://adsabs.harvard.edu/abs/2015ApJ...804...20C
+
+    :param float rho: the normalised angular source star radius
+
+    :param float limb_darkening_coefficient: the linear limb-darkening coefficient
+
+
+
+    :return: the FSPL magnification A_FSPL(t) for large sources
+    :rtype: array_like
+    """
+    VBB.LoadESPLTable(os.path.dirname(VBBinaryLensing.__file__)+'/data/ESPL.tbl')
+   
+    amplification_fspl = []
+
+    impact_param = (tau**2+uo**2)**0.5
+
+    for ind,u in enumerate(impact_param):
+
+        magnification_VBB = VBB.ESPLMag2(u,rho,)#limb_darkening_coefficient)
+
+        amplification_fspl.append(magnification_VBB)
+
+    return np.array(amplification_fspl)
+
 
 def amplification_FSPLee(tau, uo, rho, gamma):
     """

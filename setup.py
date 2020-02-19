@@ -2,7 +2,7 @@ from setuptools import setup, find_packages, Extension
 
 setup(
     name="pyLIMA",
-    version="0.8",
+    version="0.8.2",
     description="Microlsening analysis package.",
     keywords='Microlsening analysis package.',
     author="Etienne Bachelet",
@@ -12,8 +12,7 @@ setup(
     download_url = 'https://github.com/ebachelet/pyLIMA/archive/0.1.tar.gz',
     packages=find_packages('.'),
     include_package_data=True,
-    install_requires=['scipy','numpy','matplotlib','astropy','emcee','numba','bokeh','PyAstronomy','VBBinaryLensing'],
-dependency_links=['https://github.com/valboz/VBBinaryLensing/tarball/master#egg=VBBinaryLensing'],
+    install_requires=['scipy','numpy','matplotlib','astropy','emcee','numba','bokeh','PyAstronomy','VBBinaryLensing','Cython'],
     python_requires='>=3.6,<4',
     test_suite="nose.collector",
     classifiers=[

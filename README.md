@@ -23,22 +23,18 @@ You can also practice by simulating events.
 [Documentation](https://ebachelet.github.io/pyLIMA/)
 
 ### Required materials 
-Regular C/C++ and fortran compilers are required for packages installation
 
 You need [pip](https://pip.pypa.io/en/stable/installing/) or you can install manually
 the required libraries [Documentation](https://ebachelet.github.io/pyLIMA/)
 
-pyLIMA should now run both on python2 and python3 !
+pyLIMA should now run both on python3 (python2 is not supported anymore, time for update!).
 ### Installation and use
 
+Lot of efforts have been made to have pyLIMA (and VBBinaryLensing) install through pip:
 
-
-
-Clone the repository or download as a ZIP file. Then
-
-python setup.py install (--user if needed)
-
-pip install -r requirements.txt
+```
+>>> pip install pyLIMA
+```
 
 This new procedure which should avoid the previous installations headaches!
 Successfully test on various UNIX, MAC and Windows! If you encounter any problems,
