@@ -12,3 +12,4 @@ numba
 bokeh
 PyAstronomy
 Cython
+VBBinaryLensing

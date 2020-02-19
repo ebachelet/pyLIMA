@@ -8,7 +8,6 @@ before_install:
   - sudo apt-get install gfortran
   - sudo apt-get install libblas-dev liblapack-dev
   - pip install -r requirements.txt
-  - pip install git+https://github.com/valboz/VBBinaryLensing.git 
 
 script:
     coverage run --source=. setup.py test
