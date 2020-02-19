@@ -263,7 +263,7 @@ def test_change_source_trajectory_center_to_planetary_caustics_center():
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
                                                                                                      mass_ratio)
 
-    assert x_center == -1.4997160687085691
+    assert np.allclose(x_center,-1.4997160687085691)
     assert np.allclose(y_center ,0.035497175763441455)
 
 
@@ -282,7 +282,7 @@ def test_change_source_trajectory_center_to_planetary_caustics_center():
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_planetary_caustics_center(separation,
                                                                                                      mass_ratio)
 
-    assert x_center == 3.597042535016731
+    assert np.allclose(x_center,3.597042535016731)
     assert y_center == 0
 
 
@@ -293,7 +293,7 @@ def test_change_source_trajectory_center_to_central_caustics_center():
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
                                                                                                    mass_ratio)
 
-    assert x_center == -0.010300719769916603
+    assert np.allclose(x_center,-0.010300719769916603)
     assert y_center == 0
 
     separation = 0.8
@@ -311,5 +311,5 @@ def test_change_source_trajectory_center_to_central_caustics_center():
     x_center, y_center = microlcaustics.change_source_trajectory_center_to_central_caustics_center(separation,
                                                                                                    mass_ratio)
 
-    assert x_center == -3.0576148720596557
+    assert np.allclose(x_center,-3.0576148720596557)
     assert y_center == 0
