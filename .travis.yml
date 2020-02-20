@@ -8,29 +8,17 @@ python:
 
 matrix:
     include:
-        - name: "Python 3.6.5 on macOS 10.13"
+       
+        - name: "Python 3.7.3 on macOS 10.15"
           os: osx
-          osx_image: xcode9.4  # Python 3.6.5 running on macOS 10.13
-          language: shell      
-          before_install:
-          - python3 --version
-          - pip3 install -U pip
-          - pip3 install -U pytest
-          - pip3 install codecov
-          - pip install -r requirements.txt
-          script: coverage run --source=. setup.py test
-          after_success: coveralls
-    
-        - name: "Python 3.7.3 on macOS 10.14"
-          os: osx
-          osx_image: xcode10.2  # Python 3.7.3 running on macOS 10.14.3
+          osx_image: xcode10.15  # Python 3.7.3 running on macOS 10.14.3
           language: shell       
           before_install:
           - python3 --version
           - pip3 install -U pip
           - pip3 install -U pytest
           - pip3 install codecov
-          - pip install -r requirements.txt
+          - pip3 install -r requirements.txt
           script: coverage run --source=. setup.py test
           after_success: coveralls
 
