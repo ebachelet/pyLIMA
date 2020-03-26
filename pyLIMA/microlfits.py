@@ -551,7 +551,7 @@ class MLFits(object):
 
             self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
 
-            fit_results, fit_covariance, fit_time = self.lmarquardt()
+            fit_results, fit_covariance, fit_time = self.trust_region_reflective()
 
         computation_time = python_time.time() - starting_time
 
