@@ -397,8 +397,9 @@ class MLFits(object):
                         individual.append(parameter)
 
             if self.fluxes_MCMC_method == 'MCMC':
+
                 fluxes = self.find_fluxes(individual, self.model)
-                individual += fluxes
+                individual += (fluxes*np.random.uniform(0.99,1.01,len(fluxes))).tolist()
 
             chichi = self.chichi_MCMC(individual)
 
@@ -659,7 +660,7 @@ class MLFits(object):
                 # Try to extract the covariance matrix from the lmarquard_fit output
                 jacobian = lmarquardt_fit['jac']
 
-                covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
+                covariance_matrix = np.linalg.pinv(np.dot(jacobian.T, jacobian))
 
 
 
@@ -797,8 +798,14 @@ class MLFits(object):
         except:
 
             jacobian = self.LM_Jacobian(fit_result)
+        try:
 
-        covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
+            covariance_matrix = np.linalg.pinv(np.dot(jacobian.T, jacobian))
+    
+        except:
+  
+            covariance_matrix = np.zeros((len(self.model.model_dictionnary),
+                                              len(self.model.model_dictionnary)))
         n_data = 0
         for telescope in self.event.telescopes:
             n_data = n_data + telescope.n_data('flux')

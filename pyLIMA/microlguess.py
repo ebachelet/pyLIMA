@@ -428,8 +428,8 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         epsilon = np.random.uniform(0.99, 1.00)
 
         fs_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
-        g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
-
+        #g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
+        g_trial = parameters[parameters_dictionnary[parameter_key] + 1] * epsilon 
         return [fs_trial, g_trial]
         # return
     if ('g_' in parameter_key) or ('fb_' in parameter_key):

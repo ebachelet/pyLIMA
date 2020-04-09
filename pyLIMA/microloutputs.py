@@ -387,7 +387,7 @@ def create_the_fake_telescopes(fit, parameters):
    
     telescopes_space = [i for i in range(len(fit.event.telescopes)) if fit.event.telescopes[i].location == 'Space']
 
-	
+
     telescopes_index += telescopes_space
 
     if 0 not in telescopes_index:
@@ -401,8 +401,19 @@ def create_the_fake_telescopes(fit, parameters):
         telescope_time = fit.event.telescopes[telescope_index].lightcurve_flux[:, 0]
 
         if fit.event.telescopes[telescope_index].location == 'Space':
+		
+            if np.min(telescope_time)>np.min(reference_telescope.spacecraft_positions[:,0]):
+               time_minimum = np.min(reference_telescope.spacecraft_positions[:,0])
+            else:
+               time_minimum = np.min(telescope_time)
 
-            time = np.linspace(np.min(telescope_time),np.max(telescope_time), 5000)
+            if np.max(telescope_time)<np.max(reference_telescope.spacecraft_positions[:,0]):
+               time_maximum = np.max(reference_telescope.spacecraft_positions[:,0])
+            else:
+               time_maximum = np.max(telescope_time)
+
+
+            time = np.linspace( time_minimum, time_maximum, 5000)
         else:
             time = np.linspace(np.min([np.min(telescope_time), pyLIMA_parameters.to - 3 * pyLIMA_parameters.tE]),
                              np.max([np.max(telescope_time), pyLIMA_parameters.to + 3 * pyLIMA_parameters.tE]), 5000)
