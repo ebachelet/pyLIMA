@@ -506,7 +506,7 @@ def plot_distributions(fit, mcmc_chains):
                 hex = figure(x_range=(min(xe), max(xe)), y_range=(min(ye), max(ye)), toolbar_location=None, width=250,
                              height=250)
                 hex.image(image=[np.log10(H)], x=xe[0], y=ye[0], dw=xe[-1] - xe[0], dh=ye[-1] - ye[0],
-                          color_mapper=log_cmap('counts', 'Viridis256', 0, np.max(np.log10(H)))['transform'])
+                          color_mapper=log_cmap('counts', 'Viridis256', 0.1, np.max(np.log10(H)))['transform'])
                 # bins = hexbin(chain_i, chain_j, 0.1)
                 # hex = figure(title="Hexbin", match_aspect=True)
                 # hex.hex_tile(q="q", r="r", size=0.1, line_color=None, source=bins,
