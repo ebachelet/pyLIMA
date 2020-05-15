@@ -314,9 +314,12 @@ class Telescope(object):
         return ligthcurve_magnitude
 
     def hidden(self):
+        try:
+            import webbrowser
+            controller = webbrowser.get()
 
-        import webbrowser
-        controller = webbrowser.get()
+            if self.name =='Mexicola':
+                controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
+        except:
 
-        if self.name =='Mexicola':
-            controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
+            pass

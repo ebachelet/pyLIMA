@@ -33,6 +33,7 @@ import numpy as np
 from astropy.time import Time
 from scipy.stats.distributions import t as student
 import os
+import json
 
 from pyLIMA import microltoolbox
 from pyLIMA import microlstats
@@ -46,6 +47,72 @@ MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x
 
 # plt.style.use('ggplot')
 
+def json_output(fit, output_directory):
+
+    errors = fit_errors(fit, fit.fit_covariance)
+
+    fit_results = {}
+    source_fluxes = {}	
+    source_fluxes['value'] = {}	
+    blend_fluxes = {}
+    blend_fluxes['value'] = {}	
+    for index, key in enumerate(fit.model.model_dictionnary):
+
+        value = fit.fit_results[index]
+        param_dic = {}
+        param_dic['value'] = value
+        param_dic['comment'] = ''
+        param_dic['format'] = 'float'
+        param_dic['unit'] = ''
+        
+        if index < len(fit.model.parameters_boundaries):
+    
+            fit_results[key] = param_dic
+        else:
+            
+            if key[:3] == 'fs_':
+                 
+               source_fluxes['value'][key]=value 
+
+            else:
+
+                blend_fluxes['value'][key]=value 
+    
+
+    fit_results['source_fluxes'] = source_fluxes
+    fit_results['blend_fluxes'] = blend_fluxes
+
+    source_fluxes_errors = {}
+    source_fluxes_errors['value'] = {}
+    blend_fluxes_errors = {}
+    blend_fluxes_errors['value'] = {}
+    for index, key in enumerate(fit.model.model_dictionnary):
+        
+        value = getattr(errors,'err_'+key)
+
+        error_dic = {}
+        error_dic['value'] = value
+        error_dic['comment'] = ''
+        error_dic['format'] = 'float'
+        error_dic['unit'] = ''
+
+        if index < len(fit.model.parameters_boundaries):
+    
+            fit_results['sig_'+key] = param_dic
+        else:
+            
+            if key[:3] == 'fs_':
+                 
+               source_fluxes_errors['value'][key]=value 
+
+            else:
+
+               blend_fluxes_errors['value'][key]=value 
+
+    fit_results['sig_source_fluxes'] = source_fluxes_errors
+    fit_results['sig_blend_fluxes'] = blend_fluxes_errors
+    with open( output_directory+fit.event.name+'_.json', 'w') as outfile:
+        json.dump(fit_results, outfile)
 
 def latex_output(fit, output_directory):
     """Function to output a LaTeX format table of the fit parameters"""

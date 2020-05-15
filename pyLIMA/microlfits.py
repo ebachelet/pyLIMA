@@ -368,10 +368,12 @@ class MLFits(object):
 
         # Best solution
 
-        limit_parameters = len(self.model.parameters_boundaries)
+
         if self.fluxes_MCMC_method != 'MCMC':
+            limit_parameters = len(self.model.parameters_boundaries)
             best_solution = self.guess[:limit_parameters]
         else:
+            limit_parameters = len(self.guess)
             best_solution = self.guess
         nwalkers = 16 * len(best_solution)
         nlinks = 1000
@@ -396,10 +398,10 @@ class MLFits(object):
                     for parameter in parameter_trial:
                         individual.append(parameter)
 
-            if self.fluxes_MCMC_method == 'MCMC':
+            #if self.fluxes_MCMC_method == 'MCMC':
 
-                fluxes = self.find_fluxes(individual, self.model)
-                individual += (fluxes*np.random.uniform(0.99,1.01,len(fluxes))).tolist()
+            #    fluxes = self.find_fluxes(individual, self.model)
+            #    individual += (fluxes*np.random.uniform(0.99,1.01,len(fluxes))+np.random.uni).tolist()
 
             chichi = self.chichi_MCMC(individual)
 
@@ -521,7 +523,7 @@ class MLFits(object):
             bounds=self.model.parameters_boundaries,
             mutation=(0.5,1.5), popsize=int(self.DE_population_size), maxiter=100000, tol=0.0,
             atol=1, strategy='rand1bin',
-            recombination=0.7, polish=True, init='latinhypercube',
+            recombination=0.6, polish=True, init='latinhypercube',
             disp=True,workers = worker,
         )
 
