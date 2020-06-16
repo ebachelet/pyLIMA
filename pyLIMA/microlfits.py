@@ -368,10 +368,12 @@ class MLFits(object):
 
         # Best solution
 
-        limit_parameters = len(self.model.parameters_boundaries)
+
         if self.fluxes_MCMC_method != 'MCMC':
+            limit_parameters = len(self.model.parameters_boundaries)
             best_solution = self.guess[:limit_parameters]
         else:
+            limit_parameters = len(self.guess)
             best_solution = self.guess
         nwalkers = 16 * len(best_solution)
         nlinks = 1000
@@ -396,9 +398,10 @@ class MLFits(object):
                     for parameter in parameter_trial:
                         individual.append(parameter)
 
-            if self.fluxes_MCMC_method == 'MCMC':
-                fluxes = self.find_fluxes(individual, self.model)
-                individual += fluxes
+            #if self.fluxes_MCMC_method == 'MCMC':
+
+            #    fluxes = self.find_fluxes(individual, self.model)
+            #    individual += (fluxes*np.random.uniform(0.99,1.01,len(fluxes))+np.random.uni).tolist()
 
             chichi = self.chichi_MCMC(individual)
 
@@ -520,7 +523,7 @@ class MLFits(object):
             bounds=self.model.parameters_boundaries,
             mutation=(0.5,1.5), popsize=int(self.DE_population_size), maxiter=100000, tol=0.0,
             atol=1, strategy='rand1bin',
-            recombination=0.7, polish=True, init='latinhypercube',
+            recombination=0.6, polish=True, init='latinhypercube',
             disp=True,workers = worker,
         )
 
@@ -551,7 +554,7 @@ class MLFits(object):
 
             self.guess = paczynski_parameters + self.find_fluxes(paczynski_parameters, self.model)
 
-            fit_results, fit_covariance, fit_time = self.lmarquardt()
+            fit_results, fit_covariance, fit_time = self.trust_region_reflective()
 
         computation_time = python_time.time() - starting_time
 
@@ -659,7 +662,7 @@ class MLFits(object):
                 # Try to extract the covariance matrix from the lmarquard_fit output
                 jacobian = lmarquardt_fit['jac']
 
-                covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
+                covariance_matrix = np.linalg.pinv(np.dot(jacobian.T, jacobian))
 
 
 
@@ -799,8 +802,14 @@ class MLFits(object):
         except:
 
             jacobian = self.LM_Jacobian(fit_result)
+        try:
 
-        covariance_matrix = np.linalg.inv(np.dot(jacobian.T, jacobian))
+            covariance_matrix = np.linalg.pinv(np.dot(jacobian.T, jacobian))
+    
+        except:
+  
+            covariance_matrix = np.zeros((len(self.model.model_dictionnary),
+                                              len(self.model.model_dictionnary)))
         n_data = 0
         for telescope in self.event.telescopes:
             n_data = n_data + telescope.n_data('flux')

@@ -418,22 +418,23 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
         :return: a list containing the trial(s) associated to the parameter_key string
         :rtype: list of float
      """
-    if ('to' in parameter_key) :
-        epsilon = np.random.uniform(-0.01, 0.01)
-        to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
+    #if ('to' in parameter_key) :
+    #    epsilon = np.random.uniform(-0.01, 0.01)
+    #    to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
-        return [to_parameters_trial]
+    #    return [to_parameters_trial]
 
-    if 'fs' in parameter_key:
-        epsilon = np.random.uniform(0.99, 1.00)
+   # if 'fs' in parameter_key:
+   #     epsilon = np.random.uniform(0,0.0001)
 
-        fs_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
-        g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
-
-        return [fs_trial, g_trial]
+   #     fs_trial = parameters[parameters_dictionnary[parameter_key]] +epsilon
+        #g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
+   #     epsilon = np.random.uniform(0,0.0001)
+   #     g_trial = parameters[parameters_dictionnary[parameter_key] + 1] +epsilon
+   #     return [fs_trial, g_trial]
         # return
-    if ('g_' in parameter_key) or ('fb_' in parameter_key):
-        return
+    #if ('g_' in parameter_key) or ('fb_' in parameter_key):
+    #    return
 
     # if 'pi' in parameter_key:
 
@@ -444,22 +445,22 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
 
     #    return [pi_trial]
 
-    if 'rho' in parameter_key:
-        epsilon = np.random.uniform(0.99, 1.01)
-        rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
-        return [rho_parameters_trial]
+    #if 'rho' in parameter_key:
+    #    epsilon = np.random.uniform(0.99, 1.01)
+    #    rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
+    #    return [rho_parameters_trial]
 
-    if 'logs' in parameter_key:
-        epsilon = np.random.uniform(-0.05, 0.05)
+    #if 'logs' in parameter_key:
+    #    epsilon = np.random.uniform(-0.05, 0.05)
 
-        logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
-        return [logs_parameters_trial]
-    if 'logq' in parameter_key:
-        epsilon = np.random.uniform(-0.05, 0.05)
+    #    logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
+    #    return [logs_parameters_trial]
+    #if 'logq' in parameter_key:
+    #    epsilon = np.random.uniform(-0.05, 0.05)
 
-        logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
-        return [logq_parameters_trial]
-    epsilon = np.random.uniform(0.99, 1.01)
-    all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
+    #    logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
+    #    return [logq_parameters_trial]
+    epsilon = np.random.uniform(-1, 1)*10**-6
+    all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
 
     return [all_other_parameter_trial]
