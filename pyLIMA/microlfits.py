@@ -692,7 +692,11 @@ class MLFits(object):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-       
+        prior = microlpriors.priors_on_models(pyLIMA_parameters, self.model, binary_regime=self.binary_regime)
+        if prior == np.inf:
+            datalength = [i.n_data() for i in self.event.telescopes]
+
+            return np.array([np.inf]*int(np.sum(datalength)))
         residuals = np.array([])
 
         for telescope in self.event.telescopes:
@@ -701,15 +705,13 @@ class MLFits(object):
 
             residuals = np.append(residuals, residus)
 
-        prior = microlpriors.priors_on_models(pyLIMA_parameters,self.model, binary_regime=self.binary_regime)
+
 
         if prior != np.inf:
 
            residuals += prior/len(residuals)
 
-        else:
 
-           residuals *= prior
 
         # print python_time.time()-start
 

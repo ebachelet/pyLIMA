@@ -16,7 +16,7 @@ import time
 VBB = VBBinaryLensing.VBBinaryLensing()
 VBB.Tol = 0.001
 VBB.RelTol = 0.001
-
+VBB.minannuli=2 # stabilizing for rho>>caustics
 
 def impact_parameter(tau, uo):
     """
@@ -109,15 +109,15 @@ def amplification_FSPLarge(tau, uo, rho, limb_darkening_coefficient):
     :return: the FSPL magnification A_FSPL(t) for large sources
     :rtype: array_like
     """
-    VBB.LoadESPLTable(os.path.dirname(VBBinaryLensing.__file__)+'/data/ESPL.tbl')
-   
+    VBB.LoadESPLTable(os.path.dirname(VBBinaryLensing.__file__)+'/VBBinaryLensing/data/ESPL.tbl')
+
     amplification_fspl = []
 
     impact_param = (tau**2+uo**2)**0.5
 
     for ind,u in enumerate(impact_param):
 
-        magnification_VBB = VBB.ESPLMag2(u,rho,)#limb_darkening_coefficient)
+        magnification_VBB = VBB.ESPLMagDark(u,rho,limb_darkening_coefficient)
 
         amplification_fspl.append(magnification_VBB)
 
