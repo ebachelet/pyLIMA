@@ -2,7 +2,7 @@ from setuptools import setup, find_packages, Extension
 
 setup(
     name="pyLIMA",
-    version="0.8.2",
+    version="0.8.3",
     description="Microlsening analysis package.",
     keywords='Microlsening analysis package.',
     author="Etienne Bachelet",
