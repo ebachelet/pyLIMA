@@ -148,6 +148,8 @@ class Telescope(object):
         self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
         self.spacecraft_positions = [] #only for space base observatory, should be a list as
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
+        self.weight = np.full(self.lightcurve_flux[:,0].size,1.0)
+            # MD: initialise fitting weight
         self.hidden()
 
     def arrange_the_lightcurve_columns(self, choice):

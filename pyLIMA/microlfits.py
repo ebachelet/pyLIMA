@@ -88,9 +88,89 @@ class MLFits(object):
         self.pool = None
 
 
-
-
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+              grid_resolution=10, computational_pool=None, binary_regime=None,
+              robust=False):
+        """This function realize the requested microlensing fit, and set the according results
+        attributes.
+
+        :param object model: the model object requested. More details on the microlmodels module.
+
+        :param string method: The fitting method you want to use. Has to be a string  in :
+
+                                 'LM' --> Levenberg-Marquardt algorithm. Based on the
+                                 scipy.optimize.leastsq routine.
+                                          **WARNING** : the parameter maxfev (number of maximum
+                                          iterations) is set to 50000
+                                          the parameter ftol (relative precision on the chi^2) is
+                                          set to 0.00001
+                                          your fit may not converge because of these limits.
+                                          The starting points of this method are found using the
+                                          initial_guess method.
+                                          Obviously, this can fail. In this case, switch to
+                                          method 'DE'.
+
+                                 'DE' --> Differential evolution algoritm. Based on the
+                                 scipy.optimize.differential_evolution.
+                                          Look Storn & Price (1997) : "Differential Evolution – A
+                                          Simple and Efficient Heuristic for global Optimization
+                                          over Continuous Spaces"
+                                          Because this method is heuristic, it is not 100% sure a
+                                          satisfying solution is found. Just relaunch :)
+                                          The result is then use as a starting point for the 'LM'
+                                          method.
+
+
+                                 'MCMC' --> Monte-Carlo Markov Chain algorithm. Based on the
+                                 emcee python package :
+                                          " emcee: The MCMC Hammer" (Foreman-Mackey et al. 2013).
+                                          The inital population is computed around the best
+                                          solution returned by
+                                          the 'DE' method.
+
+
+        :param int DE_population_size:  The population factor desired for the DE method. Default is 10.
+
+        :param string flux_estimation_MCMC: The desired method to estimate the fluxes (f_source and g) of the
+                                             telescopes. 'MCMC' will do this through an MCMC method (default) when
+                                             everything else will do this thanks to a 1D polyfit through np.polyfit.
+
+        Note that a sanity check is done post-fit to assess the fit quality with the check_fit
+        function.
+        """
+        # This is the outer loop for robust fitting
+        
+        for tel in self.event.telescopes:
+            tel.weight = np.full(tel.lightcurve_flux[:,0].size,1.0)
+        # re-initialise weights to 1.0 here */
+        self.ml_dofit(model, method, DE_population_size=DE_population_size,
+            flux_estimation_MCMC=flux_estimation_MCMC,
+            fix_parameters_dictionnary=fix_parameters_dictionnary,
+            grid_resolution=grid_resolution, computational_pool=computational_pool,
+            binary_regime=binary_regime)
+        fit_parameters = self.fit_results[:-1]
+            # "fit_results" contains list of fit parameters and chi^2 at the end
+        print(fit_parameters)
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_parameters)
+        #print(pyLIMA_parameters)
+        res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
+        print(res)
+        median_abs_value = np.array(list(map(np.median, list(map(np.abs, res)))))
+        print(median_abs_value)
+        cutoff = 6.0*median_abs_value
+        # the following is to be coded properly (element-wise key stages copied from C)
+        w = np.divide(res, cutoff)
+        print(w)
+        w = np.square(w)
+        print(w)
+        for index, tel in enumerate(self.event.telescopes):
+            tweight = w[index]
+            print(tweight)
+            tel.weight = np.where(tweight >= 1.0, 0.0, 1.0-tweight)
+            print(tel.weight)
+       
+
+    def ml_dofit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
@@ -842,7 +922,7 @@ class MLFits(object):
 
         return chichi_list
 
-    def model_residuals(self, telescope, pyLIMA_parameters):
+    def model_residuals(self, telescope, pyLIMA_parameters, use_weight=True):
         """ Compute the residuals of a telescope lightcurve according to the model.
 
         :param object telescope: a telescope object. More details in telescopes module.
@@ -850,9 +930,11 @@ class MLFits(object):
 
         :return: the residuals in flux, the priors
         :rtype: array_like, float
+        :use_weight (True): flag to determine whether to apply additional weight factor to
+                                   aupplied error bar
         """
-
-
+        
+        # MD: parameter "use_weight" added to account for robust fitting, weights are initialised to 1.0
 
         lightcurve = telescope.lightcurve_flux
 
@@ -862,22 +944,27 @@ class MLFits(object):
         microlensing_model = self.model.compute_the_microlensing_model(telescope,pyLIMA_parameters)
 
         residuals = (flux - microlensing_model[0]) / errflux
-
+        if (use_weight):
+            residuals = residuals * telescope.weight
+                # MD: apply further weight factor to account for robust fitting
         return residuals
 
-    def all_telescope_residuals(self, pyLIMA_parameters):
+    def all_telescope_residuals(self, pyLIMA_parameters, use_weight=True):
         """ Compute the residuals of all telescopes according to the model.
 
         :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
 
         :return: the residuals in flux,
         :rtype: list, a list of array of residuals in flux
+        :use_weight (True): flag to determine whether to apply additional weight factor to
+                                   aupplied error bar
         """
-
+        # MD: parameter "use_weight" added to account for robust fitting, weights are initialised to 1.0
+        
         residuals = []
         for telescope in self.event.telescopes:
             # Find the residuals of telescope observation regarding the parameters and model
-            residus = self.model_residuals(telescope, pyLIMA_parameters)
+            residus = self.model_residuals(telescope, pyLIMA_parameters, use_weight)
             # no prior here
             residuals.append(residus)
         # print python_time.time()-start

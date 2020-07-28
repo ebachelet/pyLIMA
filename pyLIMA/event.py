@@ -12,7 +12,6 @@ import numpy as np
 
 from pyLIMA import microlfits
 
-
 class EventException(Exception):
     pass
 
@@ -64,7 +63,8 @@ class Event(object):
         self.fits = []
 
     def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-            grid_resolution=10, computational_pool=None, binary_regime=None):
+            grid_resolution=10, computational_pool=None, binary_regime=None,
+            robust=False):
         """Function to fit the event with a model and a method.
 
 
@@ -104,8 +104,8 @@ class Event(object):
         fit = microlfits.MLFits(self)
         fit.mlfit(model, method, DE_population_size=DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
                   fix_parameters_dictionnary=fix_parameters_dictionnary,
-                  grid_resolution=grid_resolution, computational_pool=computational_pool, binary_regime=binary_regime)
-
+                  grid_resolution=grid_resolution, computational_pool=computational_pool, binary_regime=binary_regime,robust=robust)
+            # MD: new option "robust"
         self.fits.append(fit)
 
     def telescopes_names(self):
