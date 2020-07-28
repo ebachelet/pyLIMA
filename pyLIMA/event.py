@@ -16,6 +16,8 @@ from pyLIMA import microlfits
 class EventException(Exception):
     pass
 
+class Festival(object):
+
 
 class Event(object):
     """
