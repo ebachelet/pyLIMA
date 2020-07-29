@@ -26,6 +26,24 @@ from pyLIMA import microlcaustics
 
 warnings.filterwarnings("ignore")
 
+def models_converged(all_models, last_idx, eps=0.05):
+    """ assesses convergence of models for robust fitting """
+    idx = last_idx
+    for k in range(1,(last_idx+3)//2):
+        cvg = True
+        start = True
+        for j in range(0,k):
+            # modified chi^2 is last element in model parameters list
+            if abs(all_models[last_idx-j][-1] - all_models[last_idx-j-k][-1]) > eps:
+                cvg = False
+                break
+            if start or all_models[last_idx-j][-1] < all_models[idx][-1]:
+                idx = last_idx-j
+                start = False
+        if cvg:
+            return True, idx
+    return False, last_idx
+
 class FitException(Exception):
     pass
 
@@ -90,7 +108,7 @@ class MLFits(object):
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None,
-              robust=False):
+              robust=False,use_last_as_guess=False):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -138,40 +156,79 @@ class MLFits(object):
         Note that a sanity check is done post-fit to assess the fit quality with the check_fit
         function.
         """
-        # This is the outer loop for robust fitting
         
+        print('')
+        print('Start fit on ' + self.event.name + ', with model ' + model.model_type + ' and method ' + method,end='')
+        if robust:
+            print(" (Robust fit)")
+        else:
+            print()
+            
         for tel in self.event.telescopes:
             tel.weight = np.full(tel.lightcurve_flux[:,0].size,1.0)
         # re-initialise weights to 1.0 here */
-        self.ml_dofit(model, method, DE_population_size=DE_population_size,
-            flux_estimation_MCMC=flux_estimation_MCMC,
-            fix_parameters_dictionnary=fix_parameters_dictionnary,
-            grid_resolution=grid_resolution, computational_pool=computational_pool,
-            binary_regime=binary_regime)
-        fit_parameters = self.fit_results[:-1]
-            # "fit_results" contains list of fit parameters and chi^2 at the end
-        print(fit_parameters)
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_parameters)
-        #print(pyLIMA_parameters)
-        res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
-        print(res)
-        median_abs_value = np.array(list(map(np.median, list(map(np.abs, res)))))
-        print(median_abs_value)
-        cutoff = 6.0*median_abs_value
-        # the following is to be coded properly (element-wise key stages copied from C)
-        w = np.divide(res, cutoff)
-        print(w)
-        w = np.square(w)
-        print(w)
-        for index, tel in enumerate(self.event.telescopes):
-            tweight = w[index]
-            print(tweight)
-            tel.weight = np.where(tweight >= 1.0, 0.0, 1.0-tweight)
-            print(tel.weight)
-       
+        
+        if method != 'LM':
+            robust = False
+            
+        n = 0
+        
+        verbosity=1
+        all_fit_results = []
+        
+        # This is the outer loop for robust fitting
+        while True:
+        
+            ok = self.ml_dofit(model, method, DE_population_size=DE_population_size,
+                flux_estimation_MCMC=flux_estimation_MCMC,
+                fix_parameters_dictionnary=fix_parameters_dictionnary,
+                grid_resolution=grid_resolution, computational_pool=computational_pool,
+                binary_regime=binary_regime,use_last_as_guess=use_last_as_guess,verbosity=verbosity)
+                
+            if not ok:
+                return
+                
+            if not robust:
+                break
+                
+            all_fit_results.append(self.fit_results)
+                
+            fit_parameters = self.fit_results[:-1]
+                # "fit_results" contains list of fit parameters and chi^2 at the end
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.fit_results[:-1])
+            res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
+            
+            # calculate median absolute residual for each telescope's data set
+            median_abs_value = np.array(list(map(np.median, list(map(np.abs, res)))))
+                
+            # apply bi-square weights according to M. Dominik et al. 2007, MNRAS 380, 792
+            #      as the weight will be multiplied with the residual,
+            #      a further squaring is made when evaluating (modified) chi^2
+            cutoff = 6.0*median_abs_value
+            w = np.divide(res, cutoff)
+            w = np.square(w)
+            for index, tel in enumerate(self.event.telescopes):
+                tweight = w[index]
+                tel.weight = np.where(tweight >= 1.0, 0.0, 1.0-tweight)
+                
+            use_last_as_guess = True
+                # use current model parameters as initial guess for next step
+            verbosity = 0
+                # suppress detailed output on ml_dofit()
+            
+            converged, index = models_converged(all_fit_results,n)
+            n += 1
+            
+            if converged:
+                # only keep best robust-fitting model in "fit_results"
+                fit_results = all_fit_results[index]
+                print("Final result:")
+                print(fit_results)
+                break
+                
 
     def ml_dofit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-              grid_resolution=10, computational_pool=None, binary_regime=None):
+              grid_resolution=10, computational_pool=None, binary_regime=None, use_last_as_guess=False,verbosity=1):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -219,9 +276,9 @@ class MLFits(object):
         Note that a sanity check is done post-fit to assess the fit quality with the check_fit
         function.
         """
-        print('')
-        print('Start fit on ' + self.event.name + ', with model ' + model.model_type + ' and method ' + method)
-        self.event.check_event()
+        
+        if (verbosity > 0):
+            self.event.check_event()
 
         self.model = model
         self.method = method
@@ -254,11 +311,11 @@ class MLFits(object):
                       " Given the requested total model " + str(self.model.model_dictionnary.keys()) + \
                       " you need at least " + str(
                     len(self.model.model_dictionnary)) + ' data points to use the method LM!')
-                return
+                return False
 
             else:
 
-                self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
+                self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt(use_last_as_guess=use_last_as_guess,verbosity=verbosity)
 
         if self.method == 'TRF':
             self.fit_results, self.fit_covariance, self.fit_time = self.trust_region_reflective()
@@ -275,6 +332,8 @@ class MLFits(object):
             self.grid_parameters = self.grids()
 
         fit_quality_flag = 'Good Fit'
+        
+        return True
 
         #if self.method != 'MCMC':
         #    fit_quality_flag = self.check_fit()
@@ -674,7 +733,7 @@ class MLFits(object):
 
         return chichi
 
-    def lmarquardt(self):
+    def lmarquardt(self,use_last_as_guess=False,verbosity=1):
         """The LM method. This is based on the Levenberg-Marquardt algorithm:
 
            "A Method for the Solution of Certain Problems in Least Squares"
@@ -704,14 +763,19 @@ class MLFits(object):
 
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
+        if use_last_as_guess:
+            self.guess = self.fit_results[:-1]
         if self.guess == []:
             self.guess = self.initial_guess()
+        if verbosity > 0:
+            print(self.guess)
+        
         n_data = 0
         for telescope in self.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
         n_parameters = len(self.model.model_dictionnary)
-
+        
         if self.model.Jacobian_flag == 'OK':
             lmarquardt_fit = scipy.optimize.leastsq(self.residuals_LM, self.guess, maxfev=50000,
                                                     Dfun=self.LM_Jacobian, col_deriv=0, full_output=1, ftol=10 ** -8,
@@ -729,7 +793,6 @@ class MLFits(object):
                 covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                               len(self.model.model_dictionnary)))
         else:
-
 
             lmarquardt_fit = scipy.optimize.least_squares(self.residuals_LM, self.guess, method='lm', x_scale='jac', ftol=10 ** -10,
                                                           xtol=10 ** -10, gtol=10 ** -10,
@@ -756,7 +819,8 @@ class MLFits(object):
 
 
         # import pdb; pdb.set_trace()
-        print(sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS')
+        if verbosity > 0:
+            print(sys._getframe().f_code.co_name, ' : Levenberg_marquardt fit SUCCESS')
         print(fit_result)
         return fit_result, covariance_matrix, computation_time
 
