@@ -202,6 +202,7 @@ class MLFits(object):
             median_abs_value = np.array(list(map(np.median, list(map(np.abs, res)))))
                 
             # apply bi-square weights according to M. Dominik et al. 2007, MNRAS 380, 792
+            #                                      M. Dominik et al. 2019, MNRAS 484, 5608
             #      as the weight will be multiplied with the residual,
             #      a further squaring is made when evaluating (modified) chi^2
             cutoff = 6.0*median_abs_value
