@@ -8,6 +8,7 @@ Created on Wed 30 Sep 2020
 from __future__ import division
 
 import sys
+import copy
 import numpy as np
 
 
@@ -28,11 +29,11 @@ class AnomalyStatus(object):
 
          alldata : numpy array of full photometric data sorted in time sequence
 
-         event_all : instance of Event class with all data (old and new)
+         event : instance of Event class with all data (old and new)
 
- 	 event_prev : instance of Event class with previous data and model  
+         eventOld : instance of Event class with previous data and model
 
-         event_curr : instance of Event class with data and model corresponding to current assessment step
+         eventNew : instance of Event class with data and model corresponding to current assessment step
 
          status : SIGNALMEN status (0 = ordinary, 1 = check, 2 = anomaly) after assessment
 
@@ -55,6 +56,7 @@ class AnomalyStatus(object):
         """ Initialization of the attributes described above. """
 
         self.event = event
+        # build array of all data, containing time, flux, flux_err, mag, mag_err, telescope_index
         alldata_list = []
         tel_idx = 0
         for telescope in self.event.telescopes:
@@ -62,7 +64,29 @@ class AnomalyStatus(object):
             lightcurve = np.c_[telescope.lightcurve_flux,telescope.lightcurve_magnitude[:,1:3],np.full(dlen,tel_idx)]
             alldata_list.append(lightcurve)
             tel_idx += 1
-        self.alldata = np.concatenate(alldata_list)
+        self._alldata = np.concatenate(alldata_list)
+        # sort array with all data in time sequence
+        # do not use quicksort given that array is partially presorted
+        self._alldata = self._alldata[self._alldata[:,0].argsort(kind='heapsort')]
+
+    def assess(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+            grid_resolution=10, computational_pool=None, binary_regime=None,
+            robust=False):
+        """ Method to assess an event for an ongoing anomaly
+
+        [add details...]
+
+        """
+        self.eventOld = copy.deepcopy(self.event)  # copy from Event object provided as argument
+        # construct data to be stored in Telescope objects from _alldata array
+        tel_idx = 0
+        for telescope in self.eventOld.telescopes:
+            selection = self._alldata[self._alldata[:,5].astype(int) == tel_idx]
+            telescope.lightcurve_flux = selection[:,0:3]
+            telescope.lightcurve_magnitude = selection[:,np.array([True,False,False,True,True,False])]
+            tel_idx += 1
+        self.eventOld.fit(model,method)
+
 
     def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
             grid_resolution=10, computational_pool=None, binary_regime=None,
