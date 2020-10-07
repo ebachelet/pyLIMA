@@ -56,12 +56,22 @@ class AnomalyStatus(object):
         """ Initialization of the attributes described above. """
 
         self.event = event
-        # build array of all data, containing time, flux, flux_err, mag, mag_err, telescope_index
+        # build array of all data, containing time, flux, flux_err, mag, mag_err, telescope_index, [deltas_north, deltas_east]
+        # include [deltas_north, deltas_east] only if these are provided in the deltas_position array of the telescope object
         alldata_list = []
         tel_idx = 0
+        if isinstance(self.event.telescopes[0].deltas_positions,list):
+            par_deltas_exist = self.event.telescopes[0].deltas_positions
+        else:
+            par_deltas_exist = self.event.telescopes[0].deltas_positions.size != 0
+             # check whether parallax offsets have been calculated according to the model type
         for telescope in self.event.telescopes:
             dlen = len(telescope.lightcurve_flux)
-            lightcurve = np.c_[telescope.lightcurve_flux,telescope.lightcurve_magnitude[:,1:3],np.full(dlen,tel_idx)]
+            if par_deltas_exist:
+                lightcurve = np.c_[telescope.lightcurve_flux,telescope.lightcurve_magnitude[:,1:3],np.full(dlen,tel_idx),
+                    telescope.deltas_positions[0,:],telescope.deltas_positions[1,:]]
+            else:
+                lightcurve = np.c_[telescope.lightcurve_flux,telescope.lightcurve_magnitude[:,1:3],np.full(dlen,tel_idx)]
             alldata_list.append(lightcurve)
             tel_idx += 1
         self._alldata = np.concatenate(alldata_list)
@@ -79,13 +89,23 @@ class AnomalyStatus(object):
         """
         self.eventOld = copy.deepcopy(self.event)  # copy from Event object provided as argument
         # construct data to be stored in Telescope objects from _alldata array
+        if isinstance(self.event.telescopes[0].deltas_positions,list):
+            par_deltas_exist = self.event.telescopes[0].deltas_positions
+        else:
+            par_deltas_exist = self.event.telescopes[0].deltas_positions.size != 0
+             # check whether parallax offsets have been calculated according to the model type
         tel_idx = 0
         for telescope in self.eventOld.telescopes:
             selection = self._alldata[self._alldata[:,5].astype(int) == tel_idx]
             telescope.lightcurve_flux = selection[:,0:3]
-            telescope.lightcurve_magnitude = selection[:,np.array([True,False,False,True,True,False])]
+            if par_deltas_exist:
+                telescope.lightcurve_magnitude = selection[:,np.array([True,False,False,True,True,False,False,False])]
+                telescope.deltas_positions = np.array([selection[:,6],selection[:,7]])
+            else:
+                telescope.lightcurve_magnitude = selection[:,np.array([True,False,False,True,True,False])]
             tel_idx += 1
         self.eventOld.fit(model,method)
+           # need to use robust fitting !!!!
 
 
     def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
