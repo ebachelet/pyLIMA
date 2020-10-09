@@ -11,6 +11,58 @@ import sys
 import copy
 import numpy as np
 
+class _Deviation(object):
+    """
+    Groups evaluation of deviation of a point
+    
+    FLOAT sig;
+    FLOAT sigscaled;
+    FLOAT crit_dev;
+    """
+    
+    def __init__(self,sig,sigscaled,crit_dev):
+        self.sig = sig
+        self.sigscaled = sigscaled
+        self.crit_dev = crit_dev
+        
+
+class _DataPoint(object):
+    """
+    Holds information on a specific data point, corresponds to struct ANOMALY_LIST in signalmen.c
+    
+    Grouped in data_flux:
+        FLOAT time;
+        FLOAT mag;
+        FLOAT err;
+        FLOAT seeing;  (not implemented in pyLIMA)
+        FLOAT backgnd; (not implemented in pyLIMA)
+        FLOAT airmass; (not implemented in pyLIMA)
+        FLOAT exptime; (not implemented in pyLIMA)
+        int type;      (not implemented in pyLIMA)
+        
+    tel_idx:
+        int arch_index;
+        
+    tel_name:
+        char extsite[256];
+        
+    char filter;
+ 
+    Grouped in deviation
+        FLOAT sig;
+        FLOAT sigscaled;
+        FLOAT crit_dev;
+    """
+    
+    def __init__(self,anom_status,data_idx,deviation=[]):
+        self.data_idx = data_idx
+        self.data_flux = anom_status._alldata[data_idx,0:3]
+        self.tel_idx = anom_status._alldata[data_idx,5].astype(int)
+        self.tel_name = anom_status.event.telescopes[self.tel_idx].name
+        self.filter = anom_status.event.telescopes[self.tel_idx].filter
+        self.deviation = deviation
+        # Question: Should we store fluxes or magnitudes here -> see "signalmen.c" for details
+
 
 class AnomalyStatus(object):
     """
@@ -31,7 +83,7 @@ class AnomalyStatus(object):
 
          event : instance of Event class with all data (old and new)
 
-         eventOld : instance of Event class with previous data and model
+         old_event : instance of Event class with previous data and model
 
          eventNew : instance of Event class with data and model corresponding to current assessment step
 
@@ -49,6 +101,16 @@ class AnomalyStatus(object):
              taking into account the time range and further exclusion criteria]
   
          ["alldata" initially has to be populated with data stored in "event_all" and sorted in time sequence]
+         
+     unsigned long ndata; /* data to be considered for fit (0..ndata-1) */
+     unsigned long totdata; /* total # data */
+     unsigned long olddata; /* total # data previous run */
+     
+     ANOMALY_LIST_PTR exclude_list;
+     boolean include_modelling;
+     unsigned long include_Idx;
+     
+
          
     """
 
@@ -78,25 +140,33 @@ class AnomalyStatus(object):
         # sort array with all data in time sequence
         # do not use quicksort given that array is partially presorted
         self._alldata = self._alldata[self._alldata[:,0].argsort(kind='heapsort')]
-
-    def assess(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-            grid_resolution=10, computational_pool=None, binary_regime=None,
-            robust=False):
-        """ Method to assess an event for an ongoing anomaly
-
-        [add details...]
-
+        self._totdata = len(self._alldata)  # Total number of data points
+        
+        
+    def _filter_data(self, this_event, ndata, exclude_list):
+        """ Filter event data from self._alldata to this_event.telescopes
+        
+        (please explain parameters)
+        
         """
-        self.eventOld = copy.deepcopy(self.event)  # copy from Event object provided as argument
-        # construct data to be stored in Telescope objects from _alldata array
+        
+        # extract data indices from exclude_list
+        if exclude_list:
+            exclude_indices = [datapoint.data_idx for datapoint in exclude_list]
+            mask = np.ones(len(self._alldata),dtype=bool)
+            mask[exclude_indices] = False
+            selected_data = self._alldata[mask][0:ndata,:]
+        else:
+            selected_data = self._alldata[0:ndata,:]
+            
         if isinstance(self.event.telescopes[0].deltas_positions,list):
             par_deltas_exist = self.event.telescopes[0].deltas_positions
         else:
             par_deltas_exist = self.event.telescopes[0].deltas_positions.size != 0
              # check whether parallax offsets have been calculated according to the model type
         tel_idx = 0
-        for telescope in self.eventOld.telescopes:
-            selection = self._alldata[self._alldata[:,5].astype(int) == tel_idx]
+        for telescope in this_event.telescopes:
+            selection = selected_data[selected_data[:,5].astype(int) == tel_idx]
             telescope.lightcurve_flux = selection[:,0:3]
             if par_deltas_exist:
                 telescope.lightcurve_magnitude = selection[:,np.array([True,False,False,True,True,False,False,False])]
@@ -104,155 +174,33 @@ class AnomalyStatus(object):
             else:
                 telescope.lightcurve_magnitude = selection[:,np.array([True,False,False,True,True,False])]
             tel_idx += 1
-        self.eventOld.fit(model,method)
-           # need to use robust fitting !!!!
 
 
-    def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
+    def assess(self, model, method, start_time, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
             grid_resolution=10, computational_pool=None, binary_regime=None,
             robust=False):
-        """Function to fit the event with a model and a method.
+        """ Method to assess an event for an ongoing anomaly
+        
+        start_time  Start assessment after start_time
 
-
-        :param model: the model you want to fit. More details in the microlfits module
-
-        :param method: the fitting method you want to use. Has to be a string in the
-        available_methods parameter:
-
-            'LM' : Levenberg-Marquardt algorithm
-
-            'DE' : Differential Evolution algorithm
-
-            'MCMC' : Monte-Carlo Markov Chain algorithm
-
-            More details in the microlfits module
-
-        A microlfits object is added in the event.fits list. For example, if you request two fits,
-        you will obtain :
-
-        event.fits=[fit1,fit2]
-
-        More details in the microlfits module.
+        [add details...]
 
         """
-        available_kind = ['Microlensing']
-        available_methods = ['LM', 'DE', 'MCMC', 'GRIDS', 'TRF']
-
-        if self.kind not in available_kind:
-            print('ERROR : No possible fit yet for a non microlensing event, sorry :(')
-            raise EventException('Can not fit this event kind')
-
-        if method not in available_methods:
-            print('ERROR : Wrong method request, has to be a string selected between ' + \
-                  ' or '.join(available_methods) + '')
-            raise EventException('Wrong fit method request')
-
-        fit = microlfits.MLFits(self)
-        fit.mlfit(model, method, DE_population_size=DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
-                  fix_parameters_dictionnary=fix_parameters_dictionnary,
-                  grid_resolution=grid_resolution, computational_pool=computational_pool, binary_regime=binary_regime,robust=robust)
-            # MD: new option "robust"
-        self.fits.append(fit)
-
-    def telescopes_names(self):
-        """Print the the telescope's names contain in the event.
-        """
-        print([self.telescopes[i].name for i in range(len(self.telescopes))])
-
-    def check_event(self):
-        """Function to check if everything is correctly set before the fit.
-        An ERROR is returned if the check is not successful
-        Should be used before any event_fit function calls
-
-        First check if the event name is a string.
-        Then check if the right ascension (event.ra) is between 0 and 360 degrees.
-        Then check if the declination (event.dec) is between -90 and 90 degrees.
-        Then check if you have any telescopes ingested.
-        Finally check if your telescopes have a lightcurve attributes different from None.
-        """
-
-        if not isinstance(self.name, str):
-            raise EventException('ERROR : The event name (' + str(
-                self.name) + ') is not correct, it has to be a string')
-
-        if (self.ra > 360) or (self.ra < 0):
-            raise EventException('ERROR : The event ra (' + str(
-                self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees')
-
-        if (self.dec > 90) or (self.dec < -90):
-            raise EventException('ERROR : The event dec (' + str(
-                self.dec) + ') is not correct, it has to be between -90 and 90 degrees')
-
-        if len(self.telescopes) == 0:
-            raise EventException('There is no telescope associated to your event, no fit possible!')
-
-        else:
-
-            for telescope in self.telescopes:
-
-                if (len(telescope.lightcurve_magnitude) == 0) & \
-                        (len(telescope.lightcurve_flux) == 0):
-                    print('ERROR : There is no associated lightcurve in magnitude or flux with ' \
-                          'this telescopes : ' \
-                          + telescope.name + ', add one with telescope.lightcurve = your_data')
-                    raise EventException('There is no lightcurve associated to the  telescope ' + str(
-                        telescope.name) + ', no fit possible!')
-
-        print(sys._getframe().f_code.co_name, ' : Everything looks fine, this event can be fitted')
-
-    def find_survey(self, choice=None):
-        """Function to find the survey telescope in the telescopes list,
-        and put it on the first place (useful for some fits functions).
-
-        :param choice: the name of the telescope choosing as the survey. Has to be a string.
-                           Default is the first telescope.
-        """
-        self.survey = choice or self.telescopes[0].name
-
-        names = [telescope.name for telescope in self.telescopes]
-        if any(self.survey in name for name in names):
-
-            index = np.where(self.survey == np.array(names))[0]
-            sorting = np.arange(0, len(self.telescopes))
-            sorting = np.delete(sorting, index)
-            sorting = np.insert(sorting, 0, index)
-            self.telescopes = [self.telescopes[i] for i in sorting]
-
-        else:
-
-            print('ERROR : There is no telescope names containing ' + self.survey)
-            return
-
-    def lightcurves_in_flux(self, choice='Yes'):
-        """ Transform all telescopes magnitude lightcurves in flux units.
+        
+        # This is some sample test code
+        self.old_event = copy.deepcopy(self.event)  # copy from Event object provided as argument
+        self._filter_data(self.old_event,self._totdata,[])
+        self.old_event.fit(model,method)
+           # need to use robust fitting for SIGNALMEN assessment !!!!
+        
+        # get index of first data point AFTER start_time, self._alldata is sorted in time order
+        next_idx = self._alldata[:,0].searchsorted(start_time, side='right')
+        
+        while next_idx < self._totdata:   # main loop to step through data points
+            next_idx += 1
+            
+        # Note: pyLIMA needs to be enabled to support fits with "insufficient" data -> provide defined result
+        #           [see SIGNALMEN recipe]
+        #       check both the inclusion of data in fit, and providing well-defined fit result
 
 
-            :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'.
-            Defaul is 'Yes'. More details in the telescope module
-        """
-
-        for telescope in self.telescopes:
-            telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
-
-    def compute_parallax_all_telescopes(self, parallax_model):
-        """ Compute the parallax displacement for all the telescopes, if this is desired in
-        the second order parameter.
-        """
-
-        for telescope in self.telescopes:
-
-            if len(telescope.deltas_positions) == 0:
-                telescope.compute_parallax(self, parallax_model)
-
-    def total_number_of_data_points(self):
-        """ Compute the parallax displacement for all the telescopes, if this is desired in
-            the second order parameter.
-            :return: n_data, the total number of points
-            :rtype: float
-        """
-        n_data = 0.0
-
-        for telescope in self.telescopes:
-            n_data = n_data + telescope.n_data('flux')
-
-        return n_data
