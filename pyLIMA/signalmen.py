@@ -11,19 +11,27 @@ import sys
 import copy
 import numpy as np
 
+# TBF: DUMMY function
+def calculate_flux(event,time,tel_idx):
+    return 100.0
+
 class _Deviation(object):
     """
     Groups evaluation of deviation of a point
     
+    FLOAT delta;
     FLOAT sig;
     FLOAT sigscaled;
     FLOAT crit_dev;
+    FLOAT reject_dev;
     """
     
-    def __init__(self,sig,sigscaled,crit_dev):
+    def __init__(self, delta, sig, sigscaled, crit_dev, crit_rej):
+        self.delta = delta
         self.sig = sig
         self.sigscaled = sigscaled
         self.crit_dev = crit_dev
+        self.crit_rej = crit_rej
         
 
 class _DataPoint(object):
@@ -49,9 +57,11 @@ class _DataPoint(object):
     char filter;
  
     Grouped in deviation
+        FLOAT delta;
         FLOAT sig;
         FLOAT sigscaled;
         FLOAT crit_dev;
+        FLOAT crit_rej;
     """
     
     def __init__(self,anom_status,data_idx,deviation=[]):
@@ -61,7 +71,7 @@ class _DataPoint(object):
         self.tel_name = anom_status.event.telescopes[self.tel_idx].name
         self.filter = anom_status.event.telescopes[self.tel_idx].filter
         self.deviation = deviation
-        # Question: Should we store fluxes or magnitudes here -> see "signalmen.c" for details
+        # TBF: Question: Should we store fluxes or magnitudes here -> see "signalmen.c" for details
 
 
 class AnomalyStatus(object):
@@ -176,9 +186,48 @@ class AnomalyStatus(object):
             tel_idx += 1
 
 
+    def test_point(self, data_idx, event_list, DEV_PERC, REJECT_PERC):
+        """ determine deviation of data point with index "data_idx" with respect to models provided in "event_list"
+        """
+        
+        deviation_list = []
+        for event in event_list:
+            time = self._alldata[data_idx,0]
+            flux = self._alldata[data_idx,1]
+            errflux = self._alldata[data_idx,2]
+            tel_idx = self._alldata[data_idx,5].astype(int)
+            flux_model = calculate_flux(event,time,tel_idx)  # TBF: specify model rather than event ???? -> most recent model ???
+                # TBF: calculate_flux function is missing !!!!
+            
+            delta = flux-flux_model
+            sig = delta/errflux
+            
+            # get f_source from model parameters
+            pyLIMA_parameters = self.event.fits[-1].model.compute_pyLIMA_parameters(self.event.fits[-1].fit_results[:-1])
+            f_source = getattr(pyLIMA_parameters, 'fs_' + self.new_event.telescopes[tel_idx].name)
+            
+            delta /= f_source   # difference in magnification
+            
+            # calculate median scatter and percentiles
+            percentiles = event.fits[-1].medscattdev([DEV_PERC,REJECT_PERC])
+                # Note: this calculates values for all telescopes, but those are required for one of them only...
+                # TBF:  maybe change this...
+            median = percentiles[tel_idx][0]
+            crit_dev = percentiles[tel_idx][1]
+            crit_rej = percentiles[tel_idx][2]
+            sig_scaled = sig
+            if (median > 1.0):
+                sig_scaled /= median
+      
+            deviation = _Deviation(delta, sig, sig_scaled, crit_dev, crit_rej)
+            deviation_list.append(deviation)
+            
+        return deviation_list
+
+
     def assess(self, model, method, start_time, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
             grid_resolution=10, computational_pool=None, binary_regime=None,
-            robust=False):
+            robust=True, DEV_PERC = 0.05, REJECT_PERC = 0.05):
         """ Method to assess an event for an ongoing anomaly
         
         start_time  Start assessment after start_time
@@ -187,17 +236,34 @@ class AnomalyStatus(object):
 
         """
         
-        # This is some sample test code
         self.old_event = copy.deepcopy(self.event)  # copy from Event object provided as argument
-        self._filter_data(self.old_event,self._totdata,[])
-        self.old_event.fit(model,method)
-           # need to use robust fitting for SIGNALMEN assessment !!!!
-        
+
         # get index of first data point AFTER start_time, self._alldata is sorted in time order
         next_idx = self._alldata[:,0].searchsorted(start_time, side='right')
         
+        # TBF: properly establish old model, current code is PLACEHOLDER only...
+        self._filter_data(self.old_event,next_idx-1,[])  # NOTE: check validity
+        model.event = self.old_event
+        self.old_event.fit(model,method,robust=robust)
+           
+        # initialise new_event and use old model as starting point
+        self.new_event = copy.deepcopy(self.old_event)
+           
         while next_idx < self._totdata:   # main loop to step through data points
+            
+            # include new data point(s) in determining new model
+            self._filter_data(self.new_event,next_idx,[])
+            model.event = self.new_event
+            self.new_event.fit(model,method,robust=robust)
+            
+            # TBF: apparently, this comes up with a new guess, but I need to start at the previous parameters
+            
+            deviations = self.test_point(next_idx,[self.old_event,self.new_event], DEV_PERC, REJECT_PERC)
+                # assess data points with regard to either model
+            
             next_idx += 1
+            
+            break
             
         # Note: pyLIMA needs to be enabled to support fits with "insufficient" data -> provide defined result
         #           [see SIGNALMEN recipe]

@@ -104,7 +104,45 @@ class MLFits(object):
         self.MCMC_probabilities = []
         self.fluxes_MCMC_method = ''
         self.pool = None
+        
+        
+    def medscattdev_tel(self, percentage_list):
+        """ determine the median absolute scatter and further percentiles for the absolute residual for a givrn telescope
+        """
+            
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.fit_results[:-1])
+        res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
+            
+        percentage_list = list(1.0-perc for perc in percentage_list)
+        plist = [0.5]+percentage_list
+        
+        # calculate all percentiles for each telescope's data set
+        percentiles = list(np.quantile(tres,np.array(plist),interpolation='linear') for tres in list(map(np.square,res)))
+            # returns list of np.arrays
+            # np.array holds quantiles for 0.5 (median) and others according to specified quantile
+            # uses linear interpolation of squared residual
+               
+        return np.sqrt(percentiles)
 
+
+    def medscattdev(self, percentage_list):
+        """ determine the median absolute scatter and further percentiles for the absolute residual for all telescopes
+        """
+        
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.fit_results[:-1])
+        res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
+        
+        percentage_list = list(1.0-perc for perc in percentage_list)
+        plist = [0.5]+percentage_list
+    
+        # calculate all percentiles for each telescope's data set
+        percentiles = list(np.quantile(tres,np.array(plist),interpolation='linear') for tres in list(map(np.square,res)))
+           # returns list of np.arrays
+           # np.array holds quantiles for 0.5 (median) and others according to specified quantile
+           # uses linear interpolation of squared residual
+           
+        return np.sqrt(percentiles)
+        
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
               grid_resolution=10, computational_pool=None, binary_regime=None,
@@ -199,7 +237,8 @@ class MLFits(object):
             res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
             
             # calculate median absolute residual for each telescope's data set
-            median_abs_value = np.array(list(map(np.median, list(map(np.abs, res)))))
+            # use square root of median of squared residual for compatibility with SIGNALMEN C implementation
+            median_abs_value = np.sqrt(np.array(list(map(np.median, list(map(np.square, res))))))
                 
             # apply bi-square weights according to M. Dominik et al. 2007, MNRAS 380, 792
             #                                      M. Dominik et al. 2019, MNRAS 484, 5608
