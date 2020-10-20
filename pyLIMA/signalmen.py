@@ -14,6 +14,40 @@ import numpy as np
 # TBF: DUMMY function
 def calculate_flux(event,time,tel_idx):
     return 100.0
+    
+
+def raise_flags(deviations, DEV_SIG_OLD, DEV_SIG, THRESH_CHISQ):
+    """
+    Raise deviation assessment flags according to the deviations and return as list
+    
+    deviations is list of _Deviation objects with the calculated deviations with respect to the old model and the new model
+    
+    flags[0]:   |sigscaled[0]| > DEV_SIG_OLD (old model)
+    flags[1]:   |sigscaled[1]| > DEV_SIG  (new model)
+    flags[2]:   Delta chi^2 > THRESH_CHISQ  (this option is currently not implemented)
+    flags[3]:   |sigscaled[0]| > crit_dev[0] (old model)
+    flags[4]:   |sigscaled[1]| > crit_dev[1] (new model)
+    """
+    
+    flags = np.zeros(5,dtype='Bool')
+    
+    if abs(deviations[0].sigscaled) > DEV_SIG_OLD:
+        flags[0] = True
+    
+    if abs(deviations[1].sigscaled) > DEV_SIG:
+        flags[1] = True
+         
+    # if delta_chisq > THRESH_CHISQ:
+    #     flags[2] = True
+    
+    if abs(deviations[0].sigscaled) > deviations[0].crit_dev:
+        flags[3] = True
+    
+    if abs(deviations[1].sigscaled) > deviations[1].crit_dev:
+        flags[4] = True
+         
+    return(flags)
+    
 
 class _Deviation(object):
     """
@@ -209,12 +243,11 @@ class AnomalyStatus(object):
             delta /= f_source   # difference in magnification
             
             # calculate median scatter and percentiles
-            percentiles = event.fits[-1].medscattdev([DEV_PERC,REJECT_PERC])
-                # Note: this calculates values for all telescopes, but those are required for one of them only...
-                # TBF:  maybe change this...
-            median = percentiles[tel_idx][0]
-            crit_dev = percentiles[tel_idx][1]
-            crit_rej = percentiles[tel_idx][2]
+            percentiles = event.fits[-1].medscattdev_tel(event.telescopes[tel_idx], [DEV_PERC, REJECT_PERC])
+            median = percentiles[0]
+            crit_dev = percentiles[1]
+            crit_rej = percentiles[2]
+            
             sig_scaled = sig
             if (median > 1.0):
                 sig_scaled /= median
@@ -227,7 +260,7 @@ class AnomalyStatus(object):
 
     def assess(self, model, method, start_time, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
             grid_resolution=10, computational_pool=None, binary_regime=None,
-            robust=True, DEV_PERC = 0.05, REJECT_PERC = 0.05):
+            robust=True, DEV_SIG=2.0, DEV_PERC=0.05, REJECT_SIG=2.0, REJECT_PERC=0.05, DEV_SIG_OLD=3.0,  THRESH_CHISQ=25.0):
         """ Method to assess an event for an ongoing anomaly
         
         start_time  Start assessment after start_time
@@ -260,6 +293,8 @@ class AnomalyStatus(object):
             
             deviations = self.test_point(next_idx,[self.old_event,self.new_event], DEV_PERC, REJECT_PERC)
                 # assess data points with regard to either model
+                
+            flags = raise_flags(deviations, DEV_SIG_OLD, DEV_SIG, THRESH_CHISQ)
             
             next_idx += 1
             

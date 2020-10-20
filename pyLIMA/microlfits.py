@@ -106,19 +106,18 @@ class MLFits(object):
         self.pool = None
         
         
-    def medscattdev_tel(self, percentage_list):
+    def medscattdev_tel(self, telescope, percentage_list):
         """ determine the median absolute scatter and further percentiles for the absolute residual for a givrn telescope
         """
             
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.fit_results[:-1])
-        res = self.all_telescope_residuals(pyLIMA_parameters, use_weight=False)
+        res = self.model_residuals(telescope, pyLIMA_parameters, use_weight=False)
             
         percentage_list = list(1.0-perc for perc in percentage_list)
         plist = [0.5]+percentage_list
         
         # calculate all percentiles for each telescope's data set
-        percentiles = list(np.quantile(tres,np.array(plist),interpolation='linear') for tres in list(map(np.square,res)))
-            # returns list of np.arrays
+        percentiles = np.quantile(np.square(res),np.array(plist),interpolation='linear')
             # np.array holds quantiles for 0.5 (median) and others according to specified quantile
             # uses linear interpolation of squared residual
                
