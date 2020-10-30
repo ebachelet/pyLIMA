@@ -330,11 +330,11 @@ class AnomalyStatus(object):
         next_idx = self._alldata[:,0].searchsorted(start_time, side='right')
         
         # TBF: properly establish old model, current code is PLACEHOLDER only...
-        self._filter_data(self.old_event,next_idx-1,[])  # TBF: check range
+        self._filter_data(self.old_event, next_idx-1, [])  # TBF: check range
         old_model = copy.copy(model)
         old_model.event = self.old_event
         
-        self.old_event.fit(old_model,method,robust=robust)
+        self.old_event.fit(old_model, method, robust=robust)
            
         # initialise new_event and use old model as starting point
         self.new_event = copy.deepcopy(self.old_event)
@@ -344,14 +344,11 @@ class AnomalyStatus(object):
             # TBF: skip data points for assessment if there is an insufficient number for this telescope
             
             # include new data point(s) in determining new model
-            self._filter_data(self.new_event,next_idx,[])
-            new_model = copy.copy(model)
+            self._filter_data(self.new_event, next_idx,[])
+            new_model = copy.copy(old_model)    # copies in particular previous fit parameters
             new_model.event = self.new_event
             
-            self.new_event.fit(new_model,method,robust=robust)
-            
-            # TBF: apparently, this comes up with a new guess, but I need to start at the previous parameters
-            # set flag appropriately
+            self.new_event.fit(new_model, method, use_last_as_guess=True, robust=robust)
             
             deviations = self.test_point(next_idx,[self.old_event,self.new_event], DEV_PERC, REJECT_PERC)
                 # assess data points with regard to either model
@@ -364,7 +361,7 @@ class AnomalyStatus(object):
                 # new anomaly sequence has been detected
                 
                 # create list of anomalous data points
-                this_anomaly = _DataPoint(self,next_idx,deviations)
+                this_anomaly = _DataPoint(self,next_idx, deviations)
                 this_anomaly_list = [this_anomaly]
             
             next_idx += 1

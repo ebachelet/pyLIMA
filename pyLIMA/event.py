@@ -64,7 +64,7 @@ class Event(object):
 
     def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
             grid_resolution=10, computational_pool=None, binary_regime=None,
-            robust=False):
+            use_last_as_guess=False, robust=False):
         """Function to fit the event with a model and a method.
 
 
@@ -102,9 +102,15 @@ class Event(object):
             raise EventException('Wrong fit method request')
 
         fit = microlfits.MLFits(self)
+        
+        # copy results of last fit
+        if use_last_as_guess:
+            fit.fit_results = self.fits[-1].fit_results
+            
         fit.mlfit(model, method, DE_population_size=DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
                   fix_parameters_dictionnary=fix_parameters_dictionnary,
-                  grid_resolution=grid_resolution, computational_pool=computational_pool, binary_regime=binary_regime,robust=robust)
+                  grid_resolution=grid_resolution, computational_pool=computational_pool, binary_regime=binary_regime,
+                  use_last_as_guess=use_last_as_guess, robust=robust)
             # MD: new option "robust"
         self.fits.append(fit)
 
