@@ -1,13 +1,12 @@
-Example
-=======
+Examples
+========
 
-To run an example, you need `ipython notebook <http://ipython.org/notebook.html>`_
+Examples are available in the pyLIMA source, see ref:`Installation`
 
+Jupyter notebooks
+-----------------
 
-Then, go to your pyLIMA root folder, and then type :
-
-
-ipython notebook &
+To run an example, you can use `Juptyer notebook <https://jupyter.org>`_
 
 
 Click on examples folder :
@@ -18,10 +17,10 @@ Click on examples folder :
 Select one of the pyLIMA_example_*.ipynb.
 
 
+Pure Python
+-----------
 
-
-
-People who do not have ipython notebook can edit and run the file :
+You can also run (and edit) classic python file :
 
 pyLIMA_example_*.py
 

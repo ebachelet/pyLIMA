@@ -1,28 +1,32 @@
-Virtual environnement
-=====================
+Virtual Environments
+======================
 
 
-We highly recommand to setup a virtual environnement to run pyLIMA. This is not mandatory however. 
-`here <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ is a quick guide to virtual environements.
+You can use a virtual environment to run pyLIMA (and to run other packages). 
+`Here <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ is a quick guide to virtual environements.
 
 Here is the description using pip, procedure should be similar if your more familiar with anaconda.
 
 Install virtualenv:
 
-**> pip install --user virtualenv**
+.. code-block:: bash
 
-close and reopen terminal, or virtualenv command may not work
+    pip install --U virtualenv
 
-[!!!!! WARNING !!!!! : SPHYNX is bugged for double hyphen. There is a double hyphen before user, not a single one!]
+Create an environment, here we called it pyLIMA_env:
 
-Create an environnement, here we called it pyLIMA:
-
-**> virtualenv ~/envs/pyLIMA**
+.. code-block:: bash
+    
+    python3 -m venv pyLIMA_env
  
-Activate the environnement:\
+Activate the environnement:
 
-**> source ~/envs/pyLIMA/bin/activate**
+.. code-block:: bash
 
-If you ever want to deactiate the env, you can use:
+    source ~/envs/pyLIMA_env/bin/activate
 
-**> deactivate**
+Deactivate the environnement:
+
+.. code-block:: bash
+    
+    deactivate
