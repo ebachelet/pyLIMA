@@ -13,7 +13,7 @@ on the `pyLIMA paper(s) <https://arxiv.org/abs/1709.08704>`_.
 
 .. toctree::
    source/Installation
-   source/Convention
+   source/Conventions
    source/Examples
      
 

@@ -1,12 +1,19 @@
 Installation
 ============
 
+
+PIP
+---
+
 The last stable version can be installed via pip:
 
 .. code-block:: bash
 
     python -m pip install -U pip
     pip install -U pyLIMA
+
+From Source
+-----------
     
 You can also get the development version on GitHUB:
 

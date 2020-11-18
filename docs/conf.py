@@ -30,7 +30,7 @@ import os
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
+# ones.f
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
@@ -66,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyLIMA'
-copyright = u'2016, Etienne Bachelet % friends'
+copyright = u'2020, Etienne Bachelet & friends'
 author = u'Etienne Bachelet'
 
 # The version info for the project you're documenting, acts as replacement for
