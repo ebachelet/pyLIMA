@@ -64,7 +64,7 @@ templates_path = ['_templates']
 #
 # source_suffix = ['.rst', '.md']
 source_suffix = '.rst'
-exclude_patterns = ['../pyLIMA/test']
+exclude_patterns = ['../pyLIMA/test/*']
 # The master toctree document.
 master_doc = 'index'
 
