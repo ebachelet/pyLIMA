@@ -49,9 +49,12 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'autoapi.extension'
 ]
 autosummary_generate = True
+autoapi_type = 'python'
+autoapi_dirs = ['../pyLIMA/', 'src']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
