@@ -24,8 +24,8 @@ You can also have a look to pyLIMA's :ref:`Conventions`.
 pyLIMA modules details
 ----------------------
 
-Here are referenced the (hopefully up-to-date) documentation
-of all submodules.
+Here is the (hopefully up-to-date) documentation
+for all submodules.
 
 .. toctree::
    :maxdepth: 1

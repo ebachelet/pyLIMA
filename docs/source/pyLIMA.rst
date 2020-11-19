@@ -1,9 +1,6 @@
 pyLIMA package
 ==============
 
-Submodules
-----------
-
 pyLIMA.event module
 -------------------
 
