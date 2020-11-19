@@ -54,7 +54,7 @@ extensions = [
 ]
 autosummary_generate = True
 autoapi_type = 'python'
-autoapi_dirs = ['../pyLIMA/', 'src']
+autoapi_dirs = ['../pyLIMA', './source']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
