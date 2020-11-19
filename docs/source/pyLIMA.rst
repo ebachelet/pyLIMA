@@ -7,4 +7,5 @@ Some words.
    :toctree: _autosummary
    :recursive:
 
-   pyLIMA
+   pyLIMA.event
+   
