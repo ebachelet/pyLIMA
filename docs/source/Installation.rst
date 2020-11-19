@@ -30,7 +30,7 @@ Virtual Environments
 
 
 You can use a virtual environment to run pyLIMA (and to run other packages). 
-`Here <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ is a quick guide to virtual environements.
+`Here <https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/>`_ is a quick guide to virtual environements.
 
 Here is the description using pip, procedure should be similar if your more familiar with anaconda.
 

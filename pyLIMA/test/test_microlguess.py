@@ -105,14 +105,15 @@ def test_MCMC_parameters_initialization():
 
     parameter_key_4 = 'fs_LCOGT'
     trial_4 = microlguess.MCMC_parameters_initialization(parameter_key_4, parameters_dictionnary, parameters)
-    assert len(trial_4) == 2
+
+    assert len(trial_4) == 1
     assert (trial_4[0]>0.9*4.4) & (trial_4[0]<1.1*4.4)  
-    assert 4.4*(1+5.5) == np.round(trial_4[0]*(1+trial_4[1]),5) 	
+
  
     parameter_key_5 = 'g_LCOGT'
     trial_5 = microlguess.MCMC_parameters_initialization(parameter_key_5, parameters_dictionnary, parameters)
-    assert trial_5 == None
-
+    assert len(trial_4) == 1
+    assert (trial_5[0]>0.9*5.5) & (trial_5[0]<1.1*5.5)   	
 
 
 

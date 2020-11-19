@@ -7,11 +7,11 @@ pyLIMA
 ======
 
 pyLIMA is the first microlensing analysis open-source software, primarly designed to 
-fit real data. But more can be done, see the :ref:`Examples`. You can find more information
+fit real data. But more can be done, see the :ref:`examples`. You can find more information
 on the `pyLIMA paper(s) <https://arxiv.org/abs/1709.08704>`_.
 
-You probably need to start with the :ref:`Installation` step and then run some :ref:`Examples`.
-You can also have a look to pyLIMA's :ref:`Conventions`.
+You probably need to start with the :ref:`installation` step and then run some :ref:`examples`.
+You can also have a look to pyLIMA's :ref:`conventions`.
 
 .. toctree::
    :maxdepth: 2
