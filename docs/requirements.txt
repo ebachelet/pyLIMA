@@ -4,3 +4,4 @@ jupyter
 numpy
 setuptools>=40.6.0
 setuptools_scm
+sphinx-autoapi
