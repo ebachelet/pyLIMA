@@ -15,7 +15,7 @@ The last stable version can be installed via pip:
 From Source
 -----------
     
-You can also get the development version on GitHUB:
+You can also get the development version on GitHub:
 
 .. code-block:: bash
 
