@@ -20,7 +20,7 @@ You can also practice by simulating events.
 
 
 
-[Documentation](https://ebachelet.github.io/pyLIMA/)
+[Documentation](https://pylima.readthedocs.io/en/latest/)
 
 ### Required materials 
 

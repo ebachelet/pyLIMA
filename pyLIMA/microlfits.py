@@ -697,6 +697,7 @@ class MLFits(object):
 
         prior = microlpriors.priors_on_models(pyLIMA_parameters, self.model, binary_regime=self.binary_regime)
         if prior == np.inf:
+           
             datalength = [i.n_data() for i in self.event.telescopes]
 
             return np.array([np.inf]*int(np.sum(datalength)))

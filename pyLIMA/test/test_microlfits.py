@@ -13,6 +13,9 @@ from pyLIMA import microlfits
 from pyLIMA import microlmodels
 
 
+
+
+
 def _create_event():
     event = mock.MagicMock()
     event.telescopes = [mock.MagicMock()]
@@ -23,6 +26,7 @@ def _create_event():
     event.telescopes[0].filter = 'I'
     event.telescopes[0].gamma = 0.5
     event.total_number_of_data_points.return_value = sum([len(i.lightcurve_flux) for i in event.telescopes])
+    event.telescopes[0].n_data.return_value = len( event.telescopes[0].lightcurve_flux)
     return event
 
 
@@ -37,6 +41,7 @@ def _create_model(kind):
                 sorted(model_dictionnary.items(), key=lambda x: x[1]))
 
     model.pyLIMA_standards_dictionnary = model.model_dictionnary
+
     model.compute_the_microlensing_model.return_value = np.random.random(100).tolist(), 0.0,0.0
     model.model_magnification.return_value = np.random.random(100).tolist()
     fancy_namedtuple = collections.namedtuple('Parameters', model.model_dictionnary.keys())
@@ -44,16 +49,19 @@ def _create_model(kind):
     model.model_type = kind
     model.model_Jacobian.return_value = np.random.random((100,6)).T
     model.derive_telescope_flux.return_value = 42, 69
-    model.compute_pyLIMA_parameters.return_value = np.random.uniform(0,2,len(model.model_dictionnary.keys()))
+
+    model.compute_pyLIMA_parameters.return_value = fancy_namedtuple(10.0, 0.1, 20, 10, 5)
     
     return model
 
 
 def test_mlfit_PSPL_LM_without_guess():
     current_event = _create_event()
-    model = model = microlmodels.create_model('PSPL',current_event)
+    model = microlmodels.create_model('PSPL',current_event)
+   
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
+
 
     assert fit.fit_covariance.shape == (3 + 2 * len(current_event.telescopes), 3 + 2 * len(current_event.telescopes))
     assert len(fit.fit_results) == 3 + 2 * len(current_event.telescopes) + 1
@@ -62,7 +70,7 @@ def test_mlfit_PSPL_LM_without_guess():
 def test_mlfit_FSPL_LM_without_guess():
     current_event = _create_event()
     model = model = microlmodels.create_model('FSPL',current_event)
-
+   
     fit = microlfits.MLFits(current_event)
     fit.mlfit(model, 'LM')
 

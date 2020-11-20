@@ -1,6 +1,9 @@
+.. _conventions:
+
 Conventions
 ===========
-pyLIMA use the following conventions.
+
+pyLIMA uses the following conventions:
 
 The time given in observations is expected to be in HJD.
 

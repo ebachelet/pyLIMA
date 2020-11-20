@@ -91,9 +91,10 @@ def test_define_parameters_model_dictionnary():
 def test_define_parameters_boundaries():
     event = _create_event()
 
+
     Model = microlmodels.create_model('FSPL', event, blend_flux_ratio=False)
 
-    assert Model.parameters_boundaries == [(0,42), (0.0, 1.0), (1.0, 500), (5*10**-5, 0.05)]
+    assert Model.parameters_boundaries == [(0,42), (0.0, 1.0), (0.1, 500), (5*10**-5, 0.05)]
 
 def test_magnification_USBL_computation():
     event = _create_event()
