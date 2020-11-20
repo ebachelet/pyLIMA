@@ -11,10 +11,6 @@ import sys
 import copy
 import numpy as np
 
-# TBF: DUMMY function
-def calculate_flux(event,time,tel_idx):
-    return 100.0
-    
 
 def raise_flags(deviations, DEV_SIG_OLD, DEV_SIG, THRESH_CHISQ):
     """
@@ -264,20 +260,22 @@ class AnomalyStatus(object):
             flux = self._alldata[data_idx,1]
             errflux = self._alldata[data_idx,2]
             tel_idx = self._alldata[data_idx,5].astype(int)
-            flux_model = calculate_flux(event,time,tel_idx)  # TBF: specify model rather than event ???? -> most recent model ???
-                # TBF: calculate_flux function is missing !!!!
+           
+            
+            # get f_source and f_blend from model parameters
+            pyLIMA_parameters = event.fits[-1].model.compute_pyLIMA_parameters(event.fits[-1].fit_results[:-1])
+            f_source = getattr(pyLIMA_parameters, 'fs_' + event.telescopes[tel_idx].name)
+            if self.event.fits[-1].model.blend_flux_ratio:
+                f_blend = f_source * getattr(pyLIMA_parameters, 'g_' + event.telescopes[tel_idx].name)
+            else:
+                f_blend = getattr(pyLIMA_parameters, 'fb_' + event.telescopes[tel_idx].name)
+                
+            magnif_model = event.fits[-1].model.calculate_magnif(pyLIMA_parameters, tel_idx, time)
+            flux_model = f_source * magnif_model + f_blend
             
             delta = flux-flux_model
             sig = delta/errflux
-            
-            # get f_source from model parameters
-            pyLIMA_parameters = self.event.fits[-1].model.compute_pyLIMA_parameters(self.event.fits[-1].fit_results[:-1])
-            f_source = getattr(pyLIMA_parameters, 'fs_' + self.new_event.telescopes[tel_idx].name)
-            if self.event.fits[-1].model.blend_flux_ratio:
-                f_blend = f_source * getattr(pyLIMA_parameters, 'g_' + self.new_event.telescopes[tel_idx].name)
-            else:
-                f_blend = getattr(pyLIMA_parameters, 'fb_' + self.new_event.telescopes[tel_idx].name)
-            
+                        
             anomaly_level = delta / (flux_model-f_blend)
                 # this is equal to the relative difference in magnification [A_i - A(t_i)]/A(t_i)
                 

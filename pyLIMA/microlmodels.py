@@ -18,6 +18,7 @@ thismodule = sys.modules[__name__]
 import numpy as np
 import collections
 import time as python_time
+import copy
 
 from pyLIMA import microlguess
 from pyLIMA import microlmagnification
@@ -27,6 +28,7 @@ from pyLIMA import microlorbitalmotion
 from pyLIMA import microlcaustics
 from pyLIMA import stars
 from pyLIMA import microlxallarap
+from pyLIMA import telescopes
 
 resource_package = __name__
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
@@ -343,6 +345,44 @@ class MLModel(object):
             microlensing_model = f_source * amplification + g_blending
 
         return microlensing_model, f_source, g_blending
+        
+        
+    # MD 20-Nov-20
+    def calculate_magnif(self, pyLIMA_parameters, tel_idx, time):
+        """ Compute the magnification for the given model and pyLIMA_parameters for epoch time
+             and the location of telescope specified by tel_idx in self.event
+        
+        :param object model: an object of class MLModel (or a derived class)
+        :param pyLIMA_parameters: the fitted model parameters
+        :param tel_idx: the index of the telescope in the list self.event.telescopes
+        :returns: the magnification
+        :rtype: float
+        """
+        
+        my_model = copy.copy(self)
+        my_model.event = copy.copy(self.event)
+    
+        # set up telescope object with one data point at epoch = time
+        my_lightcurve_flux = np.array([[time,1.0,0.1]])
+        my_lightcurve_magnitude = np.array([[time,18.0,0.1]])
+        my_telescope = telescopes.Telescope(name=self.event.telescopes[tel_idx].name,
+            camera_filter=self.event.telescopes[tel_idx].filter,
+            light_curve_flux=my_lightcurve_flux,
+            light_curve_flux_dictionnary={'time': 0, 'flux': 1, 'err_flux': 2},
+            light_curve_magnitude=my_lightcurve_magnitude,
+            light_curve_magnitude_dictionnary={'time': 0, 'mag': 1, 'err_mag': 2},
+            clean_the_lightcurve='No',
+            location = self.event.telescopes[tel_idx],
+            spacecraft_name=self.event.telescopes[tel_idx].spacecraft_name)
+        # TBF: should pass spacecraft_positions, altitude, longitude, latitude, gamma
+                                             
+        my_model.event.telescopes = [my_telescope]
+    
+        my_telescope.compute_parallax(my_model.event,my_model.parallax_model)
+    
+        print("time:",time, "tel_idx:",tel_idx,"magnif:",my_model.model_magnification(my_telescope,pyLIMA_parameters)[0])
+        return my_model.model_magnification(my_telescope,pyLIMA_parameters)[0]
+        
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, amplification):
         """
