@@ -346,8 +346,8 @@ class MLFits(object):
             :rtype: tuple
 
             **WARNING** :
-                   nwalkers is set to 16 times the len of pazynski_parameters
-                   nlinks is set to 1000
+                   nwalkers is set to 4 times the len of pazynski_parameters
+                   nlinks is set to 4000
                    5*nwalkers*nlinks MCMC steps in total
         """
 
@@ -375,8 +375,8 @@ class MLFits(object):
         else:
             limit_parameters = len(self.guess)
             best_solution = self.guess
-        nwalkers = 16 * len(best_solution)
-        nlinks = 1000
+        nwalkers = 4*len(best_solution)
+        nlinks = 4*1000
 
         # Initialize the population of MCMC
         population = []
