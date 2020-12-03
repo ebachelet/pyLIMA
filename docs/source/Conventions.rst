@@ -34,8 +34,9 @@ In case the parallax is used, the angle :math:`\beta` between the East component
 :math:`\beta` is accessible with:
 
 .. code-block:: python
+
    piEN = 0.8
    piEE = -0.5
    
-   beta = pyLIMA.icrolparallax.EN_trajectory_angle(piEN,piEE)
+   beta = pyLIMA.microlparallax.EN_trajectory_angle(piEN,piEE)
    print(beta) #2.12939564...
