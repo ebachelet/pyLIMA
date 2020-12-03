@@ -29,6 +29,6 @@ Then, the source trajectory x,y is define as :
 
 In case the parallax is used, the angle :math:`\beta` between the East components and the trajectory at t0par is ( `Gould2004 <https://iopscience.iop.org/article/10.1086/382782>`_):
 
--  :math:`\beta = arctan(piEN/piEE)`
+-  :math:`\beta = arctan(\pi_{EN}/\pi_{EE})`
 
 
