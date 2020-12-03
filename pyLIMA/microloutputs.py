@@ -38,6 +38,7 @@ import json
 from pyLIMA import microltoolbox
 from pyLIMA import microlstats
 from pyLIMA import microlcaustics
+from pyLIMA import microlparallax
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.21
@@ -1309,6 +1310,36 @@ def plot_geometry(fit):
                               color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
                               radius_dimension = 'max',fill_alpha=0.5)
 
+    if fit.model.parallax_model[0] != 'None':
+
+        piEN = pyLIMA_parameters.piEN
+        piEE = pyLIMA_parameters.piEE
+        
+        EN_trajectory_angle = microlparallax.EN_trajectory_angle(piEN,piEE)
+
+        plot_angle = np.pi+EN_trajectory_angle
+
+        east = [-0.1,0]
+        north = [0,0.1]
+
+
+        rota_mat = np.array([[np.cos(plot_angle),-np.sin(plot_angle)],[np.sin(plot_angle),np.cos(plot_angle)]])
+        east = np.dot(rota_mat,east)
+        north = np.dot(rota_mat,north)
+
+        figure_axes.plot([0.8,0.8+east[0]],[0.8,0.8+east[1]],'k', transform=plt.gca().transAxes)
+        Ecoords = [-0.125,0]
+        Ecoords = np.dot(rota_mat,Ecoords)
+        figure_axes.text(0.8+Ecoords[0],0.8+Ecoords[1],'E',c='k',transform=plt.gca().transAxes)
+
+
+        figure_axes.plot([0.8,0.8+north[0]],[0.8,0.8+north[1]],'k', transform=plt.gca().transAxes)
+        Ncoords = [0,0.125]
+        Ncoords = np.dot(rota_mat,Ncoords)
+        figure_axes.text(0.8+Ncoords[0],0.8+Ncoords[1],'N',c='k',transform=plt.gca().transAxes)
+    
+    
+    
     legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
     for handle in legend.legendHandles:
         try:

@@ -3,8 +3,6 @@
 Conventions
 ===========
 
-pyLIMA uses the following conventions:
-
 The time given in observations is expected to be in HJD.
 
 Following the idea of uniform notations in the field, pyLIMA is based on `Gould2000 <http://adsabs.harvard.edu/abs/2000ApJ...542..785G/>`_. 
@@ -27,4 +25,10 @@ Then, the source trajectory x,y is define as :
 
 -  :math:`x = \tau . cos(\alpha)- u_o . sin(\alpha)`
 -  :math:`y = \tau . sin(\alpha)+ u_o . cos(\alpha)`
+
+
+In case the parallax is used, the angle :math:`\beta` between the East components and the trajectory at t0par is ( `Gould2004 <https://iopscience.iop.org/article/10.1086/382782>`_):
+
+-  :math:`\beta = arctan(piEN/piEE)`
+
 

@@ -24,6 +24,20 @@ JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
 # MAX_WINDOW_WIDTH = 80 # Max Value: 65535
 # MAX_WINDOW_HEIGHT = 65535 # Max Value: 65535
 
+def EN_trajectory_angle(piEN,piEE):
+    """Finf the angle between the East vector and the source trajectory (at t0par)
+
+    :param float piEN: the North parallax component
+    :param float piEE: the East parallax component
+    
+    :return: the angle in radians
+    :rtype: float
+    """
+    
+    angle = np.arctan2(piEN,piEE)
+    
+    return angle
+
 def horizons_obscodes(observatory):
     """Transform observatory names to JPL horizon codes.
     Write by Tim Lister, thanks :)
