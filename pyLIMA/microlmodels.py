@@ -552,7 +552,7 @@ class MLModel(object):
     
 
                 
-        return source_trajectory_x, source_trajectory_y, dseparation
+        return -source_trajectory_x, -source_trajectory_y, dseparation
         
 
 class ModelPSPL(MLModel):
@@ -864,13 +864,19 @@ class ModelFSPLarge(MLModel):
                                                                           pyLIMA_parameters.tE,
                                                                           pyLIMA_parameters)
         rho = pyLIMA_parameters.rho
-        linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
-        #linear_limb_darkening = telescope.gamma
-        #import pdb;
-        #pdb.set_trace()
-        return microlmagnification.amplification_FSPLarge(source_trajectory_x, source_trajectory_y, rho,
+        
+        try:
+            linear_limb_darkening = telescope.gamma * 6 / (4 + 2*telescope.gamma+telescope.sigma)
+            sqrt_limb_darkening = telescope.sigma * 5 / (4 + 2*telescope.gamma+telescope.sigma)
+            return microlmagnification.amplification_FSPLarge(source_trajectory_x, source_trajectory_y, rho,
+                                                      linear_limb_darkening,sqrt_limb_darkening=sqrt_limb_darkening)
+        except:
+        
+            linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
+        
+            return microlmagnification.amplification_FSPLarge(source_trajectory_x, source_trajectory_y, rho,
                                                       linear_limb_darkening)
-
+       
 
 class ModelDSPL(MLModel):
     @property

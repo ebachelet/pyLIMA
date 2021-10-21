@@ -26,6 +26,42 @@ from pyLIMA import microlcaustics
 
 warnings.filterwarnings("ignore")
 
+
+def bootstrap_errors(original_fit):
+
+    parameters = []
+    psi = []
+    for i in range(250):
+    
+
+        boostrap_event = copy.deepcopy(original_fit.event)
+        boostrap_model = copy.deepcopy(original_fit.model)
+        boostrap_model.parameters_guess = original_fit.fit_results[:-1]
+
+        for telescope in boostrap_event.telescopes:
+        
+            data_mask =   np.array(float(len(telescope.lightcurve_flux))*np.random.rand(len(telescope.lightcurve_flux)),dtype=np.int)
+            telescope.lightcurve_flux = telescope.lightcurve_flux[data_mask]
+            #telescope.lightcurve_flux[:,2] = [np.median(telescope.lightcurve_flux[:,2])]*len(telescope.lightcurve_flux[:,2])
+            telescope.magnitude = telescope.lightcurve_magnitude[data_mask]    
+            try:
+                telescope.deltas_positions[0] = telescope.deltas_positions[0][data_mask]
+                telescope.deltas_positions[1] = telescope.deltas_positions[1][data_mask]
+            except:
+                pass
+        fit = MLFits(boostrap_event)
+        fit.mlfit(boostrap_model, original_fit.method, DE_population_size= original_fit.DE_population_size, flux_estimation_MCMC=original_fit.fluxes_MCMC_method,
+                  binary_regime=original_fit.binary_regime)
+
+        usqr = fit.fit_results[1]**2 + ((2459319.3 - fit.fit_results[0]) / fit.fit_results[2])**2
+        pspl_deno = (usqr * (usqr + 4.))**0.5
+        psip = 4.0 / (pspl_deno) - 2.0 / (usqr + 2.0 + pspl_deno)
+        
+        parameters.append(fit.fit_results)
+        psi.append(psip)
+        
+    import pdb; pdb.set_trace()
+
 class FitException(Exception):
     pass
 
@@ -91,7 +127,7 @@ class MLFits(object):
 
 
     def mlfit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-              grid_resolution=10, computational_pool=None, binary_regime=None):
+              grid_resolution=10, computational_pool=None, binary_regime=None, error_estimate=None):
         """This function realize the requested microlensing fit, and set the according results
         attributes.
 
@@ -147,7 +183,8 @@ class MLFits(object):
         self.method = method
         self.fluxes_MCMC_method = flux_estimation_MCMC
         self.DE_population_size = DE_population_size
-
+        self.error_estimate = error_estimate
+        
         self.model.define_model_parameters()
 
         if method != 'DE':
@@ -181,7 +218,11 @@ class MLFits(object):
                 self.fit_results, self.fit_covariance, self.fit_time = self.lmarquardt()
 
         if self.method == 'TRF':
+        
             self.fit_results, self.fit_covariance, self.fit_time = self.trust_region_reflective()
+            if self.error_estimate == 'boostrap':
+                boostrap_method = bootstrap_errors(self) 
+           
         if self.method == 'DE':
             self.fit_results, self.fit_covariance, self.fit_time = self.differential_evolution(pool)
 
@@ -221,7 +262,7 @@ class MLFits(object):
         """
         if self.model.parameters_guess != []:
 
-            for index,parameter in enumerate(self.model.parameters_guess):
+            for index,parameter in enumerate(self.model.parameters_guess[:len(self.model.parameters_boundaries)]):
 
                  if (parameter<self.model.parameters_boundaries[index][0]) | (parameter>self.model.parameters_boundaries[index][1]):
 
@@ -326,7 +367,8 @@ class MLFits(object):
 
             telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
 
-        guess_paczynski_parameters += telescopes_fluxes
+        if len(guess_paczynski_parameters) != len(list(self.model.model_dictionnary.keys())):
+            guess_paczynski_parameters += telescopes_fluxes
 
         
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
@@ -375,8 +417,8 @@ class MLFits(object):
         else:
             limit_parameters = len(self.guess)
             best_solution = self.guess
-        nwalkers = 4*len(best_solution)
-        nlinks = 4*1000
+        nwalkers = 8*len(best_solution)
+        nlinks = 5*1000
 
         # Initialize the population of MCMC
         population = []
@@ -431,14 +473,14 @@ class MLFits(object):
                                         a=2.0, pool= pool)
         # First estimation using population as a starting points.
 
-        final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks, progress=True)
+        #final_positions, final_probabilities, state = sampler.run_mcmc(population, nlinks, progress=True)
 
-        print('MCMC preburn done')
+        #print('MCMC preburn done')
 
 
-        sampler.reset()
+        #sampler.reset()
 
-        sampler.run_mcmc(final_positions, nlinks, progress=True)
+        sampler.run_mcmc(population, nlinks, progress=True)
         MCMC_chains = np.c_[sampler.get_chain().reshape(nlinks*nwalkers,number_of_parameters),sampler.get_log_prob().reshape(nlinks*nwalkers)]
 
         # Final estimation using the previous output.
@@ -523,7 +565,7 @@ class MLFits(object):
             bounds=self.model.parameters_boundaries,
             mutation=(0.5,1.5), popsize=int(self.DE_population_size), maxiter=100000, tol=0.0,
             atol=1, strategy='rand1bin',
-            recombination=0.6, polish=True, init='latinhypercube',
+            recombination=0.7, polish=True, init='latinhypercube',
             disp=True,workers = worker,
         )
 
@@ -817,6 +859,8 @@ class MLFits(object):
 
         n_parameters = len(self.model.model_dictionnary)
         covariance_matrix *= fit_result[-1] / (n_data - n_parameters)
+        
+            
         print(sys._getframe().f_code.co_name, ' : TRF fit SUCCESS')
         print(fit_result)
         return fit_result, covariance_matrix, computation_time
@@ -915,6 +959,9 @@ class MLFits(object):
                 telescopes_fluxes.append(f_blending)
         return telescopes_fluxes
 
+ 
+    
+        
     def grids(self):
         """ Compute models on a grid. ON CONSTRUCTION.
         """
