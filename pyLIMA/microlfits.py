@@ -417,7 +417,7 @@ class MLFits(object):
         else:
             limit_parameters = len(self.guess)
             best_solution = self.guess
-        nwalkers = 8*len(best_solution)
+        nwalkers = 2*len(best_solution)
         nlinks = 5*1000
 
         # Initialize the population of MCMC

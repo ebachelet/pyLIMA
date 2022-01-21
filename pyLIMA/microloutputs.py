@@ -1336,14 +1336,12 @@ def plot_geometry(fit):
         north = np.dot(rota_mat,north)
 
         figure_axes.plot([0.8,0.8+east[0]],[0.8,0.8+east[1]],'k', transform=plt.gca().transAxes)
-        figure_axes.plot([0.0,0.0+east[0]],[0.0,0.0+east[1]],'k')
         Ecoords = [0,0.15]
         Ecoords = np.dot(rota_mat,Ecoords)
         figure_axes.text(0.8+Ecoords[0],0.8+Ecoords[1],'E',c='k',transform=plt.gca().transAxes,size=25)
 
 
         figure_axes.plot([0.8,0.8+north[0]],[0.8,0.8+north[1]],'k', transform=plt.gca().transAxes)
-        figure_axes.plot([0.0,0.0+north[0]],[0.0,0.0+north[1]],'k',)
         Ncoords = [0.15,0.0]
         Ncoords = np.dot(rota_mat,Ncoords)
         figure_axes.text(0.8+Ncoords[0],0.8+Ncoords[1],'N',c='k',transform=plt.gca().transAxes,size=25)
