@@ -27,7 +27,7 @@ from bokeh.models import BasicTickFormatter
 from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
 from bokeh.models import ColumnDataSource
 from bokeh.models import Arrow, OpenHead
-from bokeh.models.markers import Circle
+from bokeh.models import Circle
 
 import numpy as np
 from astropy.time import Time
