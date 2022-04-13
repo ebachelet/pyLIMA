@@ -461,6 +461,6 @@ def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parame
     #    logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
     #    return [logq_parameters_trial]
     epsilon = np.random.uniform(-1, 1)*10**-6
-    all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
+    all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] *(1+epsilon)
 
     return [all_other_parameter_trial]

@@ -88,7 +88,7 @@ def Jacobian_amplification_PSPL(tau, uo):
     # return both magnification and U, required by some methods
     return amplification_pspl, impact_param
 
-def amplification_FSPLarge(tau, uo, rho, limb_darkening_coefficient):
+def amplification_FSPLarge(tau, uo, rho, limb_darkening_coefficient,sqrt_limb_darkening_coefficient=None):
     """
     The VBB FSPL for large source. Faster than the numba implementations...
 
@@ -110,7 +110,12 @@ def amplification_FSPLarge(tau, uo, rho, limb_darkening_coefficient):
     :rtype: array_like
     """
     VBB.LoadESPLTable(os.path.dirname(VBBinaryLensing.__file__)+'/VBBinaryLensing/data/ESPL.tbl')
-
+    VBB.a1 = limb_darkening_coefficient
+    
+    if sqrt_limb_darkening_coefficient:
+        VBB.SetLDprofile(VBB.LDsquareroot)
+        VBB.a2 = sqrt_darkening_coefficient
+        
     amplification_fspl = []
 
     impact_param = (tau**2+uo**2)**0.5

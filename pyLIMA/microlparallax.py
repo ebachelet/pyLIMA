@@ -25,7 +25,7 @@ JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
 # MAX_WINDOW_HEIGHT = 65535 # Max Value: 65535
 
 def EN_trajectory_angle(piEN,piEE):
-    """Finf the angle between the East vector and the source trajectory (at t0par)
+    """Find the angle between the North vector and the lens trajectory (at t0par). See Gould2004, RESOLUTION OF THE MACHO-LMC-5 PUZZLE: THE JERK-PARALLAX MICROLENS DEGENERACY
 
     :param float piEN: the North parallax component
     :param float piEE: the East parallax component
@@ -34,7 +34,7 @@ def EN_trajectory_angle(piEN,piEE):
     :rtype: float
     """
     
-    angle = np.arctan2(piEN,piEE)
+    angle = np.arctan2(piEE,piEN)
     
     return angle
 
