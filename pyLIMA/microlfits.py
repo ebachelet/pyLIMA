@@ -335,22 +335,19 @@ class MLFits(object):
             if self.model.model_type == 'FSPL':
                 guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
 
+            if self.model.model_type == 'FSPLee':
+                guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+
+            if self.model.model_type == 'FSPLarge':
+                guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+
             if self.model.model_type == 'DSPL':
                 guess_paczynski_parameters, f_source = microlguess.initial_guess_DSPL(self.event)
 
-            # Estimate  the telescopes fluxes (flux_source + g_blending) parameters
-
-            
-            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
-
-            # The survey fluxes are already known from microlguess
-            telescopes_fluxes[0] = f_source
-            telescopes_fluxes[1] = 0.0
-
-            if  'piEN' in self.model.model_dictionnary.keys():
+            if 'piEN' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
-            if  'XiEN' in self.model.model_dictionnary.keys():
+            if 'XiEN' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
             if 'dsdt' in self.model.model_dictionnary.keys():
@@ -359,8 +356,13 @@ class MLFits(object):
             if 'spot_size' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
+            # Estimate  the telescopes fluxes (flux_source + g_blending) parameters
 
+            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
 
+            # The survey fluxes are already known from microlguess
+            telescopes_fluxes[0] = f_source
+            telescopes_fluxes[1] = 0.0
         else:
 
             guess_paczynski_parameters = list(self.model.parameters_guess)
