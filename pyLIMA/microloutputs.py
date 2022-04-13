@@ -1331,7 +1331,7 @@ def plot_geometry(fit):
         east = [0,0.1]
 
 
-        rota_mat = np.array([[np.cos(plot_angle),-np.sin(plot_angle)],[np.sin(plot_angle),np.cos(plot_angle)]])
+        rota_mat = np.array([[np.cos(plot_angle),-np.sin(plot_angle)],  [np.sin(plot_angle),np.cos(plot_angle)]])
         east = np.dot(rota_mat,east)
         north = np.dot(rota_mat,north)
 
