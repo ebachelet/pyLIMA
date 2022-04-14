@@ -1,14 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon May 23 16:00:51 2016
-
-@author: ebachelet
-"""
-
 import numpy as np
 import scipy.signal as ss
-
-from pyLIMA import microltoolbox
 
 
 def initial_guess_PSPL(event):
@@ -23,7 +14,7 @@ def initial_guess_PSPL(event):
                 the survey telescope.
     :rtype: list,float
     """
-
+    import pyLIMA.toolbox.brightness_transformation
     # to estimation
     to_estimations = []
     maximum_flux_estimations = []
@@ -32,24 +23,24 @@ def initial_guess_PSPL(event):
     for telescope in event.telescopes:
         # Lot of process here, if one fails, just skip
         lightcurve_magnitude = telescope.lightcurve_magnitude
-        mean_error_magnitude = np.mean(lightcurve_magnitude[:, 2])
+        mean_error_magnitude = np.mean(lightcurve_magnitude['err_mag'].value)
         try:
 
             # only the best photometry
-            good_photometry_indexes = np.where((lightcurve_magnitude[:, 2] <
+            good_photometry_indexes = np.where((lightcurve_magnitude['err_mag'].value <
                                                 max(0.1, mean_error_magnitude)))[0]
             lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
 
-            lightcurve_bis = lightcurve_bis[lightcurve_bis[:, 0].argsort(), :]
+            lightcurve_bis = lightcurve_bis[lightcurve_bis['time'].value.argsort(), :]
 
-            mag = lightcurve_bis[:, 1]
-            flux = microltoolbox.magnitude_to_flux(mag)
+            mag = lightcurve_bis['mag'].value
+            flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
 
             # clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1.
             mag_clean = ss.savgol_filter(mag, 3, 1)
-            time = lightcurve_bis[:, 0]
+            time = lightcurve_bis['time'].value
             flux_clean = microltoolbox.flux_to_magnitude(mag_clean)
-            errmag = lightcurve_bis[:, 2]
+            errmag = lightcurve_bis['err_mag'].value
 
             flux_source = min(flux_clean)
             good_points = np.where(flux_clean > flux_source)[0]
@@ -78,12 +69,12 @@ def initial_guess_PSPL(event):
             max_flux = max(flux[good_points])
             to_estimations.append(to)
             maximum_flux_estimations.append(max_flux)
-            errors_magnitude.append(np.mean(lightcurve_bis[good_points, 2]))
+            errors_magnitude.append(np.mean(lightcurve_bis[good_points]['err_mag'].value))
 
         except:
 
-            time = lightcurve_magnitude[:, 0]
-            flux = microltoolbox.magnitude_to_flux(lightcurve_magnitude[:, 1])
+            time = lightcurve_magnitude['time'].value
+            flux = microltoolbox.magnitude_to_flux(lightcurve_magnitude['mag'].value)
             to = np.median(time)
             max_flux = max(flux)
             to_estimations.append(to)
@@ -95,14 +86,14 @@ def initial_guess_PSPL(event):
         1 / np.array(errors_magnitude) ** 2)
     survey = event.telescopes[0]
     lightcurve = survey.lightcurve_magnitude
-    lightcurve = lightcurve[lightcurve[:, 0].argsort(), :]
+    lightcurve = lightcurve[lightcurve['time'].value.argsort(), :]
 
     ## fs, uo, tE estimations only one the survey telescope
 
 
-    time = lightcurve[:, 0]
-    flux = microltoolbox.magnitude_to_flux(lightcurve[:, 1])
-    errflux = microltoolbox.error_magnitude_to_error_flux(lightcurve[:, 2], flux)
+    time = lightcurve['time'].value
+    flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(lightcurve['mag'].value)
+    errflux = pyLIMA.toolbox.brightness_transformation.error_magnitude_to_error_flux(lightcurve['err_mag'].value, flux)
 
     # fs estimation, no blend
 
@@ -260,62 +251,3 @@ def initial_guess_DSPL(event):
 
     # [to1,uo1,delta_to,uo2,tE,q_F_i], fsource
     return DSPL_guess, fs_guess
-
-
-
-def MCMC_parameters_initialization(parameter_key, parameters_dictionnary, parameters):
-    """Generate a random parameter for the MCMC initialization.
-
-        :param str parameter_key: the parameter on which we apply the function
-        :param dict parameters_dictionnary: the dictionnary of parameters keys associared to the parameters input
-        :param list parameters: a list of float which indicate the model parameters
-
-        :return: a list containing the trial(s) associated to the parameter_key string
-        :rtype: list of float
-     """
-    #if ('to' in parameter_key) :
-    #    epsilon = np.random.uniform(-0.01, 0.01)
-    #    to_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
-
-    #    return [to_parameters_trial]
-
-   # if 'fs' in parameter_key:
-   #     epsilon = np.random.uniform(0,0.0001)
-
-   #     fs_trial = parameters[parameters_dictionnary[parameter_key]] +epsilon
-        #g_trial = (1 + parameters[parameters_dictionnary[parameter_key] + 1]) / epsilon - 1
-   #     epsilon = np.random.uniform(0,0.0001)
-   #     g_trial = parameters[parameters_dictionnary[parameter_key] + 1] +epsilon
-   #     return [fs_trial, g_trial]
-        # return
-    #if ('g_' in parameter_key) or ('fb_' in parameter_key):
-    #    return
-
-    # if 'pi' in parameter_key:
-
-    #    epsilon = np.random.uniform(0.9, 1.1)
-    #    sign = np.random.choice([-1,1])
-
-    #    pi_trial = sign*parameters[parameters_dictionnary[parameter_key]] * epsilon
-
-    #    return [pi_trial]
-
-    #if 'rho' in parameter_key:
-    #    epsilon = np.random.uniform(0.99, 1.01)
-    #    rho_parameters_trial = parameters[parameters_dictionnary[parameter_key]] * epsilon
-    #    return [rho_parameters_trial]
-
-    #if 'logs' in parameter_key:
-    #    epsilon = np.random.uniform(-0.05, 0.05)
-
-    #    logs_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
-    #    return [logs_parameters_trial]
-    #if 'logq' in parameter_key:
-    #    epsilon = np.random.uniform(-0.05, 0.05)
-
-    #    logq_parameters_trial = parameters[parameters_dictionnary[parameter_key]] + epsilon
-    #    return [logq_parameters_trial]
-    epsilon = np.random.uniform(-1, 1)*10**-6
-    all_other_parameter_trial = parameters[parameters_dictionnary[parameter_key]] *(1+epsilon)
-
-    return [all_other_parameter_trial]

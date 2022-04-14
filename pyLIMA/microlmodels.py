@@ -278,7 +278,9 @@ class MLModel(object):
         self.pyLIMA_standards_dictionnary = OrderedDict(
             sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
 
-        self.parameters_boundaries = microlguess.differential_evolution_parameters_boundaries(self)
+        import pyLIMA.priors.parameters_boundaries
+        self.parameters_boundaries = \
+            pyLIMA.priors.parameters_boundaries.differential_evolution_parameters_boundaries(self)
 
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
@@ -364,8 +366,8 @@ class MLModel(object):
 
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
-            flux = lightcurve[:, 1]
-            errflux = lightcurve[:, 2]
+            flux = lightcurve['flux'].value
+            errflux = lightcurve['err_flux'].value
 
             try:
                 f_source, f_blending = np.polyfit(magnification, flux, 1, w=1 / errflux)
@@ -480,7 +482,7 @@ class MLModel(object):
         # Linear basic trajectory
 
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:, 0]
+        time = lightcurve['time'].value
 
         tau = (time - to) / tE
         beta = np.array([uo] * len(tau))
@@ -600,8 +602,8 @@ class ModelPSPL(MLModel):
 
         lightcurve = telescope.lightcurve_flux
 
-        time = lightcurve[:, 0]
-        errflux = lightcurve[:, 2]
+        time = lightcurve['time'].value
+        errflux = lightcurve['err_flux'].value
 
         # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
         # Amplification[1] is U(t).
@@ -687,8 +689,8 @@ class ModelFSPL(MLModel):
         fake_model = ModelPSPL(self.event)
         fake_model.define_model_parameters()
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:, 0]
-        errflux = lightcurve[:, 2]
+        time = lightcurve['time'].value
+        errflux = lightcurve['err_flux']
         gamma = telescope.gamma
 
         # Derivative of A = Yoo et al (2004) method.
@@ -1279,7 +1281,7 @@ class ModelVariablePL(MLModel):
         :rtype: array_like
         """
         lightcurve = telescope.lightcurve_flux
-        time = lightcurve[:, 0]
+        time = lightcurve['time'].value
 
         pulsations = self.compute_pulsations(time, telescope.filter, pyLIMA_parameters)
         amplification = self.model_magnification(telescope, pyLIMA_parameters)
@@ -1308,8 +1310,8 @@ class ModelVariablePL(MLModel):
             if self.variable_blend:
 
                 lightcurve = telescope.lightcurve_flux
-                flux = lightcurve[:, 1]
-                errflux = lightcurve[:, 2]
+                flux = lightcurve['flux'].value
+                errflux = lightcurve['err_flux'].value
                 try:
                     f_source, f_blending = np.polyfit(amplification, flux, 1, w=1 / errflux)
                 except:
@@ -1320,8 +1322,8 @@ class ModelVariablePL(MLModel):
                 magnification = amplification*pulsations
 
                 lightcurve = telescope.lightcurve_flux
-                flux = lightcurve[:, 1]
-                errflux = lightcurve[:, 2]
+                flux = lightcurve['flux'].value
+                errflux = lightcurve['err_flux'].value
                 try:
                     f_source, f_blending = np.polyfit(magnification, flux, 1, w=1 / errflux)
                 except ValueError:

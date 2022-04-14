@@ -42,8 +42,7 @@ def bootstrap_errors(original_fit):
         
             data_mask =   np.array(float(len(telescope.lightcurve_flux))*np.random.rand(len(telescope.lightcurve_flux)),dtype=np.int)
             telescope.lightcurve_flux = telescope.lightcurve_flux[data_mask]
-            #telescope.lightcurve_flux[:,2] = [np.median(telescope.lightcurve_flux[:,2])]*len(telescope.lightcurve_flux[:,2])
-            telescope.magnitude = telescope.lightcurve_magnitude[data_mask]    
+            telescope.magnitude = telescope.lightcurve_magnitude[data_mask]
             try:
                 telescope.deltas_positions[0] = telescope.deltas_positions[0][data_mask]
                 telescope.deltas_positions[1] = telescope.deltas_positions[1][data_mask]
@@ -324,25 +323,25 @@ class MLFits(object):
            :return guess_parameters: a list containing parameters guess related to the model.
            :rtype: list
         """
-
+        import pyLIMA.priors.guess
         if len(self.model.parameters_guess) == 0:
 
             # Estimate  the Paczynski parameters
 
             if self.model.model_type == 'PSPL':
-                guess_paczynski_parameters, f_source = microlguess.initial_guess_PSPL(self.event)
+                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_PSPL(self.event)
 
             if self.model.model_type == 'FSPL':
-                guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.event)
 
             if self.model.model_type == 'FSPLee':
-                guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.event)
 
             if self.model.model_type == 'FSPLarge':
-                guess_paczynski_parameters, f_source = microlguess.initial_guess_FSPL(self.event)
+                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.event)
 
             if self.model.model_type == 'DSPL':
-                guess_paczynski_parameters, f_source = microlguess.initial_guess_DSPL(self.event)
+                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_DSPL(self.event)
 
             if 'piEN' in self.model.model_dictionnary.keys():
                 guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
@@ -805,7 +804,7 @@ class MLFits(object):
         for telescope in self.event.telescopes:
             derivative_fs = np.zeros((len(dresdfs)))
             derivative_g = np.zeros((len(dresdg)))
-            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux[:, 0]))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux['time'].value))
             derivative_fs[index] = dresdfs[index]
             derivative_g[index] = dresdg[index]
             jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
@@ -903,8 +902,8 @@ class MLFits(object):
 
         lightcurve = telescope.lightcurve_flux
 
-        flux = lightcurve[:, 1]
-        errflux = lightcurve[:, 2]
+        flux = lightcurve['flux'].value
+        errflux = lightcurve['err_flux'].value
 
         microlensing_model = self.model.compute_the_microlensing_model(telescope,pyLIMA_parameters)
 
@@ -947,7 +946,7 @@ class MLFits(object):
 
         for telescope in self.event.telescopes:
 
-            flux = telescope.lightcurve_flux[:, 1]
+            flux = telescope.lightcurve_flux['flux'].value
 
             ml_model, f_source, f_blending = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 

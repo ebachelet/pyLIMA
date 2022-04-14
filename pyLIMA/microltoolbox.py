@@ -6,7 +6,7 @@ Created on Mon May 23 17:18:15 2016
 """
 
 import numpy as np
-import copy
+
 
 # magnitude reference
 MAGNITUDE_CONSTANT = 27.4
@@ -31,61 +31,6 @@ def chichi(residuals_fn, fit_process_parameters):
     return _chichi
 
 
-def magnitude_to_flux(magnitude):
-    """ Transform the injected magnitude to the the corresponding flux.
-
-    :param array_like magnitude: the magnitude you want to transform.
-
-    :return: the transformed magnitude in flux unit
-    :rtype: array_like
-    """
-
-    flux = 10 ** ((MAGNITUDE_CONSTANT - magnitude) / 2.5)
-
-    return flux
-
-
-def flux_to_magnitude(flux):
-    """ Transform the injected flux to the the corresponding magnitude.
-
-    :param array_like flux: the flux you want to transform.
-
-    :return: the transformed magnitude
-    :rtype: array_like
-    """
-
-    mag = MAGNITUDE_CONSTANT - 2.5 * np.log10(flux)
-
-    return mag
-
-
-def error_magnitude_to_error_flux(error_magnitude, flux):
-    """ Transform the injected magnitude error to the the corresponding error in flux.
-
-    :param array_like error_magnitude: the magnitude errors measurements you want to transform.
-    :param array_like flux: the fluxes corresponding to these errors
-
-    :return: the transformed errors in flux units
-    :rtype: array_like
-    """
-
-    error_flux = np.abs(-error_magnitude * flux * np.log(10) / 2.5)
-
-    return error_flux
-
-
-def error_flux_to_error_magnitude(error_flux, flux):
-    """ Transform the injected flux error to the the corresponding error in magnitude.
-
-    :param array_like error_flux: the flux errors measurements you want to transform.
-    :param array_like flux: the fluxes corresponding to these errors
-
-    :return: the transformed errors in magnitude
-    :rtype: array_like
-    """
-    error_magnitude = np.abs(-2.5 * error_flux / (flux * np.log(10)))
-
-    return error_magnitude
 
 
 def MCMC_compute_fs_g(fit, mcmc_chains):
@@ -140,7 +85,7 @@ def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, paramete
     normalised_lightcurve = []
     for telescope in fit.event.telescopes:
 
-        flux = telescope.lightcurve_flux[:, 1]
+        flux = telescope.lightcurve_flux['flux'].value
 
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
@@ -170,14 +115,18 @@ def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, paramete
 
                 flux_normalised = fs_ref * amp + fb_ref
 
-            magnitude_normalised = flux_to_magnitude(flux_normalised)+residuals
+            import pyLIMA.toolbox.brightness_transformation
+            import pyLIMA.telescopes
 
-            time = telescope.lightcurve_magnitude[:,0]
-            err_mag = telescope.lightcurve_magnitude[:,2]
+            magnitude_normalised = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(flux_normalised)+residuals
 
-            lightcurve_normalised = [time, magnitude_normalised, err_mag]
+            time = telescope.lightcurve_magnitude['time'].value
+            err_mag = telescope.lightcurve_magnitude['err_mag'].value
 
-            lightcurve = np.array(lightcurve_normalised).T
+            lightcurve_normalised = np.c_[time, magnitude_normalised, err_mag]
+
+            lightcurve = pyLIMA.telescopes.construct_time_series(lightcurve_normalised,['time', 'mag', 'err_mag'],
+                                                                 ['JD','mag','mag'])
 
 
 

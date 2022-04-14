@@ -16,8 +16,6 @@ from astropy.time import Time
 from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian, cartesian_to_spherical
 from astropy.coordinates import get_body_barycentric, get_body, get_moon, get_body_barycentric_posvel
 
-TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
-JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
 
 
 ### Uncomment the following if the spacecraft dataset is huge! and also in optcallback

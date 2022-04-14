@@ -6,10 +6,9 @@ Created on Mon Nov  9 16:38:14 2015
 """
 from __future__ import division
 from datetime import datetime
-from collections import OrderedDict
 import collections
 import copy
-import json
+
 import cycler
 import matplotlib
 import matplotlib.pyplot as plt
@@ -18,13 +17,13 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib.colors import LogNorm
 from matplotlib.font_manager import FontProperties
 
-from bokeh.io import output_file, show
-from bokeh.layouts import gridplot, grid, layout, row
-from bokeh.plotting import figure, curdoc
-from bokeh.transform import linear_cmap, log_cmap
-from bokeh.util.hex import hexbin
+from bokeh.io import show
+from bokeh.layouts import gridplot, row
+from bokeh.plotting import figure
+from bokeh.transform import log_cmap
+
 from bokeh.models import BasicTickFormatter
-from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
+from bokeh.models.widgets import DataTable, TableColumn
 from bokeh.models import ColumnDataSource
 from bokeh.models import Arrow, OpenHead
 from bokeh.models import Circle
@@ -466,7 +465,7 @@ def create_the_fake_telescopes(fit, parameters):
     for telescope_index in telescopes_index:
 
         reference_telescope = copy.copy(fit.event.telescopes[telescope_index])
-        telescope_time = fit.event.telescopes[telescope_index].lightcurve_flux[:, 0]
+        telescope_time = fit.event.telescopes[telescope_index].lightcurve_flux['time'].value
 
         if fit.event.telescopes[telescope_index].location == 'Space':
 		
@@ -485,13 +484,16 @@ def create_the_fake_telescopes(fit, parameters):
         else:
             time = np.linspace(np.min([np.min(telescope_time), pyLIMA_parameters.to - 3 * pyLIMA_parameters.tE]),
                              np.max([np.max(telescope_time), pyLIMA_parameters.to + 3 * pyLIMA_parameters.tE]), 5000)
+        import pyLIMA.telescopes
 
-        reference_telescope.lightcurve_magnitude = np.array([time, [0] * len(time), [0] * len(time)]).T
+        reference_telescope.lightcurve_magnitude = \
+            pyLIMA.telescopes.construct_time_series(np.c_[time, [0] * len(time), [0] * len(time)],
+                                                    ['time','mag','err_mag'],['JD','mag','mag'])
         reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
         if fit.model.parallax_model[0] != 'None':
 
-            reference_telescope.compute_parallax(fit.event, fit.model.parallax_model)
+            reference_telescope.compute_parallax(fit.event.ra,fit.event.dec, fit.model.parallax_model)
 
         fit.event.fake_telescopes.append(reference_telescope)
 
@@ -937,9 +939,11 @@ def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color=
 
     telescope = fit.event.fake_telescopes[telescope_index]
 
-    time = telescope.lightcurve_flux[:, 0]
+    time = telescope.lightcurve_flux['time'].value
     flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
-    magnitude = microltoolbox.flux_to_magnitude(flux_model)
+
+    import pyLIMA.toolbox.brightness_transformation
+    magnitude = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(flux_model)
 
     if label == True:
 
@@ -981,9 +985,9 @@ def plot_residuals(figure_axe, fit, parameters=None, bokeh_plot=None):
         pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(fit.fit_results)
 
     for index, telescope in enumerate(fit.event.telescopes):
-        time = telescope.lightcurve_flux[:, 0]
-        flux = telescope.lightcurve_flux[:, 1]
-        err_mag = telescope.lightcurve_magnitude[:, 2]
+        time = telescope.lightcurve_flux['time'].value
+        flux = telescope.lightcurve_flux['time'].value
+        err_mag = telescope.lightcurve_magnitude['err_mag'].value
 
         flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
 
@@ -1026,13 +1030,14 @@ def plot_align_data(figure_axe, fit, telescope_index=0, parameters=None, bokeh_p
     for index, telescope in enumerate(fit.event.telescopes):
         lightcurve = normalised_lightcurves[index]
 
-        figure_axe.errorbar(lightcurve[:, 0], lightcurve[:, 1], yerr=lightcurve[:, 2], ls='None',
+
+        figure_axe.errorbar(lightcurve['time'].value, lightcurve['mag'].value, yerr=lightcurve['err_mag'].value, ls='None',
                             marker=str(MARKER_SYMBOLS[0][index]), markersize=7.5, capsize=0.0,
                             label=telescope.name)
 
         if bokeh_plot is not None:
 
-            bokeh_plot.scatter(lightcurve[:, 0], lightcurve[:, 1],
+            bokeh_plot.scatter(lightcurve['time'].value, lightcurve['mag'].value,
                                color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index]
                                , size=5, legend=telescope.name,
                                muted_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index],
@@ -1041,7 +1046,7 @@ def plot_align_data(figure_axe, fit, telescope_index=0, parameters=None, bokeh_p
             err_xs = []
             err_ys = []
 
-            for x, y, yerr in zip(lightcurve[:, 0], lightcurve[:, 1], lightcurve[:, 2]):
+            for x, y, yerr in zip(lightcurve['time'].value, lightcurve['mag'].value, lightcurve['err_mag'].value):
                 err_xs.append((x, x))
                 err_ys.append((y - yerr, y + yerr))
 
@@ -1064,14 +1069,16 @@ def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_tel
     :return: the aligned to survey lightcurve in magnitude
     :rtype: array_like
     """
-    time = lightcurve_telescope_flux[:, 0]
-    flux = lightcurve_telescope_flux[:, 1]
-    error_flux = lightcurve_telescope_flux[:, 2]
-    err_mag = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
+    import pyLIMA.toolbox.brightness_transformation
+
+    time = lightcurve_telescope_flux['time'].value
+    flux = lightcurve_telescope_flux['flux'].value
+    error_flux = lightcurve_telescope_flux['err_flux'].value
+    err_mag = pyLIMA.toolbox.brightness_transformation.error_flux_to_error_magnitude(error_flux, flux)
 
     residuals = 2.5 * np.log10(model_telescope / flux)
-
-    magnitude_normalised = microltoolbox.flux_to_magnitude(model_ghost) + residuals
+    import pyLIMA.toolbox.brightness_transformation
+    magnitude_normalised = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(model_ghost) + residuals
 
     lightcurve_normalised = [time, magnitude_normalised, err_mag]
 
@@ -1217,7 +1224,7 @@ def plot_geometry(fit):
         for index in [-1, 0, 1]:
 
             try:
-                index = np.argmin(np.abs(telescope.lightcurve_magnitude[:, 0] -
+                index = np.argmin(np.abs(telescope.lightcurve_magnitude['time'].value -
                                          (pyLIMA_parameters.to + index * pyLIMA_parameters.tE)))
                 sign = np.sign(trajectory_x[index+1]-trajectory_x[index])
                 derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (

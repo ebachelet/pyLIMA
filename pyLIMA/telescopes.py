@@ -7,15 +7,20 @@ Created on Thu Aug 27 16:39:32 2015
 from __future__ import division
 
 import numpy as np
-import astropy.io.fits as fits
+from astropy.table import QTable
 
-from pyLIMA import microltoolbox
-from pyLIMA import microlparallax
 
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected lightcurve format differs, please
 # indicate this in the correponding lightcurve_magnitude_dictionnary or lightcurve_flux_dictionnary, see below.
-PYLIMA_LIGHTCURVE_MAGNITUDE_CONVENTION = ['time', 'mag', 'err_mag']
-PYLIMA_LIGHTCURVE_FLUX_CONVENTION = ['time', 'flux', 'err_flux']
+PYLIMA_LIGHTCURVE_MAGNITUDE_NAMES = ['time', 'mag', 'err_mag']
+PYLIMA_LIGHTCURVE_FLUX_NAMES = ['time', 'flux', 'err_flux']
+
+
+def construct_time_series(data, columns_names, column_units):
+
+    table = QTable(data, names=columns_names,units=column_units)
+
+    return table
 
 
 class Telescope(object):
@@ -85,59 +90,22 @@ class Telescope(object):
                                       Highly recommanded!
     """
 
-    def __init__(self, name='NDG', camera_filter='I', light_curve_magnitude=None,
-                 light_curve_magnitude_dictionnary=None,
-                 light_curve_flux=None, light_curve_flux_dictionnary=None,
-                 reference_flux=0.0, clean_the_lightcurve='Yes',
+    def __init__(self, name='NDG', camera_filter='I', light_curve=None,
+                 light_curve_names=None, light_curve_units=None, clean_the_light_curve=False,
                  location = 'Earth', spacecraft_name=None):
         """Initialization of the attributes described above."""
 
         self.name = name
         self.filter = camera_filter  # Claret2011 convention
 
-        if light_curve_magnitude_dictionnary is None:
-            light_curve_magnitude_dictionnary = {'time': 0, 'mag': 1, 'err_mag': 2}
+        if 'mag' in light_curve_units:
 
-        if light_curve_flux_dictionnary is None:
-            light_curve_flux_dictionnary = {'time': 0, 'flux': 1, 'err_flux': 2}
-
-        self.lightcurve_magnitude_dictionnary = light_curve_magnitude_dictionnary
-        self.lightcurve_flux_dictionnary = light_curve_flux_dictionnary
-        self.reference_flux = reference_flux
-
-        self.lightcurve_magnitude = []
-        self.lightcurve_flux = []
-
-        if light_curve_magnitude is None:
-
-            pass
-
-        else:
-
-            self.lightcurve_magnitude = light_curve_magnitude
-            self.lightcurve_magnitude = self.arrange_the_lightcurve_columns('magnitude')
-
-            if clean_the_lightcurve == 'Yes':
-                self.lightcurve_magnitude = self.clean_data_magnitude()
-
+            self.lightcurve_magnitude = construct_time_series(light_curve,light_curve_names,light_curve_units)
             self.lightcurve_flux = self.lightcurve_in_flux()
 
-            if clean_the_lightcurve == 'Yes':
-                self.lightcurve_flux = self.clean_data_flux()
-
-        if light_curve_flux is None:
-
-            pass
-
-        else:
-
-            self.lightcurve_flux = light_curve_flux
-            self.lightcurve_flux = self.arrange_the_lightcurve_columns('flux')
-
-            if clean_the_lightcurve == 'Yes':
-                self.lightcurve_flux = self.clean_data_flux()
-
-            self.lightcurve_magnitude = self.lightcurve_in_magnitude()
+        if 'flux' in light_curve_units:
+            self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
+            self.lightcurve_flux = self.lightcurve_in_magnitude()
 
         self.location = location
         self.altitude = 0.0  # meters
@@ -150,36 +118,6 @@ class Telescope(object):
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
         self.hidden()
 
-    def arrange_the_lightcurve_columns(self, choice):
-        """Rearange the lightcurve to the pyLIMA convention.
-
-        :param string choice: 'magnitude' or 'flux'. A string which indicated on which lightcurves apply
-                                   the sorting.
-
-
-        :return: the lightcurve sorted in pyLIMA convention
-        :rtype: array_like
-        """
-
-        if choice == 'magnitude':
-
-            lightcurve = []
-            for good_column in PYLIMA_LIGHTCURVE_MAGNITUDE_CONVENTION:
-                lightcurve.append(self.lightcurve_magnitude[:, self.lightcurve_magnitude_dictionnary[good_column]])
-
-            lightcurve = np.array(lightcurve).T
-            return lightcurve
-
-        if choice == 'flux':
-
-            lightcurve = []
-            for good_column in PYLIMA_LIGHTCURVE_FLUX_CONVENTION:
-                lightcurve.append(self.lightcurve_flux[:, self.lightcurve_flux_dictionnary[good_column]])
-
-            lightcurve = np.array(lightcurve).T
-            lightcurve[:, 1] = lightcurve[:, 1] + self.reference_flux
-            return lightcurve
-
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.
 
@@ -190,10 +128,10 @@ class Telescope(object):
         """
 
         if choice == 'flux':
-            return len(self.lightcurve_flux[:, 0])
+            return len(self.lightcurve_flux['time'])
 
         if choice == 'magnitude':
-            return len(self.lightcurve_magnitude[:, 0])
+            return len(self.lightcurve_magnitude['mag'])
 
     def find_gamma(self, star):
         """
@@ -206,13 +144,14 @@ class Telescope(object):
 
         self.gamma = star.find_gamma(self.filter)
 
-    def compute_parallax(self, event, parallax):
+    def compute_parallax(self, event_ra, event_dec, parallax):
         """ Compute and set the deltas_positions attribute due to the parallax.
 
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
-        para = microlparallax.MLParallaxes(event, parallax)
+        import pyLIMA.parallax.parallax
+        para = pyLIMA.parallax.parallax.MLParallaxes(event_ra, event_dec, parallax)
         para.parallax_combination(self)
         print('Parallax(' + parallax[0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
@@ -279,16 +218,18 @@ class Telescope(object):
         :return: the lightcurve in flux, lightcurve_flux.
         :rtype: array_like
         """
+        import pyLIMA.toolbox.brightness_transformation
 
         lightcurve = self.lightcurve_magnitude
 
-        time = lightcurve[:, 0]
-        mag = lightcurve[:, 1]
-        err_mag = lightcurve[:, 2]
+        time = lightcurve['time'].value
+        mag = lightcurve['mag'].value
+        err_mag = lightcurve['err_mag'].value
 
-        flux = microltoolbox.magnitude_to_flux(mag)
-        error_flux = microltoolbox.error_magnitude_to_error_flux(err_mag, flux)
-        lightcurve_in_flux = np.array([time, flux, error_flux]).T
+        flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
+        err_flux = pyLIMA.toolbox.brightness_transformation.error_magnitude_to_error_flux(err_mag, flux)
+        lightcurve_in_flux = construct_time_series(np.c_[time, flux, err_flux],PYLIMA_LIGHTCURVE_FLUX_NAMES,
+                                                   [lightcurve['time'].unit,'w/m^2','w/m^2'])
 
         return lightcurve_in_flux
 
@@ -300,18 +241,20 @@ class Telescope(object):
         :return: the lightcurve in magnitude, lightcurve_magnitude.
         :rtype: array_like
         """
+        import pyLIMA.toolbox.brightness_transformation
+
         lightcurve = self.lightcurve_flux
 
-        time = lightcurve[:, 0]
-        flux = lightcurve[:, 1]
-        error_flux = lightcurve[:, 2]
+        time = lightcurve['time'].value
+        flux = lightcurve['flux'].value
+        err_flux = lightcurve['err_flux'].value
 
-        magnitude = microltoolbox.flux_to_magnitude(flux)
-        error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
+        mag = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(flux)
+        err_mag = pyLIMA.toolbox.brightness_transformation.error_flux_to_error_magnitude(err_flux, flux)
+        lightcurve_in_mag = construct_time_series(np.c_[time, mag, err_mag], PYLIMA_LIGHTCURVE_MAGNITUDE_NAMES,
+                                                   [lightcurve['time'].unit, 'mag', 'mag'])
 
-        ligthcurve_magnitude = np.array([time, magnitude, error_magnitude]).T
-
-        return ligthcurve_magnitude
+        return lightcurve_in_mag
 
     def hidden(self):
         try:
