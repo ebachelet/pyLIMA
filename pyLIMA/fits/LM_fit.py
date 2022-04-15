@@ -4,15 +4,14 @@ import numpy as np
 import sys
 
 from pyLIMA.fits.fit import MLfit
-import pyLIMA.fits.residuals
+import pyLIMA.fits.objective_functions
 
 
 class LMfit(MLfit):
 
-    def __init__(self, event, model):
+    def __init__(self, model):
         """The fit class has to be intialized with an event object."""
 
-        self.event = event
         self.model = model
         self.guess = []
         self.fit_results = []
@@ -24,14 +23,12 @@ class LMfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
+        photometric_residuals = pyLIMA.fits.objective_functions.all_telescope_norm_photometric_residuals(self.model,
+                                                                                                         pyLIMA_parameters)
 
-        photometric_residuals = pyLIMA.fits.residuals.all_telescope_photometric_residuals(self.event, self.model,
-                                                                                          pyLIMA_parameters)
-
-        #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_residuals(self.event, pyLIMA_parameters)
+        #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_residuals(self.model.event, pyLIMA_parameters)
 
         #return np.r_[photometric_residuals,astrometric_residuals]
 
@@ -45,7 +42,7 @@ class LMfit(MLfit):
         # algorithm find it.
         self.guess = self.initial_guess()
         n_data = 0
-        for telescope in self.event.telescopes:
+        for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
         n_parameters = len(self.model.model_dictionnary)
@@ -97,7 +94,7 @@ class LMfit(MLfit):
         count = 0
         # import pdb;
         # pdb.set_trace()
-        for telescope in self.event.telescopes:
+        for telescope in self.model.event.telescopes:
 
             if count == 0:
 
@@ -119,7 +116,7 @@ class LMfit(MLfit):
         dresdfs = _jacobi[-2]
         dresdg = _jacobi[-1]
 
-        for telescope in self.event.telescopes:
+        for telescope in self.model.event.telescopes:
             derivative_fs = np.zeros((len(dresdfs)))
             derivative_g = np.zeros((len(dresdg)))
             index = np.arange(start_index, start_index + len(telescope.lightcurve_flux['time'].value))

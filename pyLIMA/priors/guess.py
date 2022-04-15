@@ -39,7 +39,7 @@ def initial_guess_PSPL(event):
             # clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1.
             mag_clean = ss.savgol_filter(mag, 3, 1)
             time = lightcurve_bis['time'].value
-            flux_clean = microltoolbox.flux_to_magnitude(mag_clean)
+            flux_clean = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag_clean)
             errmag = lightcurve_bis['err_mag'].value
 
             flux_source = min(flux_clean)
@@ -74,7 +74,7 @@ def initial_guess_PSPL(event):
         except:
 
             time = lightcurve_magnitude['time'].value
-            flux = microltoolbox.magnitude_to_flux(lightcurve_magnitude['mag'].value)
+            flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(lightcurve_magnitude['mag'].value)
             to = np.median(time)
             max_flux = max(flux)
             to_estimations.append(to)
@@ -86,7 +86,9 @@ def initial_guess_PSPL(event):
         1 / np.array(errors_magnitude) ** 2)
     survey = event.telescopes[0]
     lightcurve = survey.lightcurve_magnitude
-    lightcurve = lightcurve[lightcurve['time'].value.argsort(), :]
+
+
+    lightcurve = lightcurve[lightcurve['time'].value.argsort()]
 
     ## fs, uo, tE estimations only one the survey telescope
 

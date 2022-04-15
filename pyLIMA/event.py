@@ -57,11 +57,10 @@ class Event(object):
         self.name = 'Sagittarius A*'
         self.ra = 266.416792
         self.dec = -29.007806
-        self.Teff = 5000  # Kelvins
-        self.log_g = 4.5
         self.telescopes = []
-        self.survey = 'None'
+        self.survey = None
         self.fits = []
+        self.parallax_model = None
 
     def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
             grid_resolution=10, computational_pool=None, binary_regime=None, error_estimate=None):
@@ -192,11 +191,14 @@ class Event(object):
         """ Compute the parallax displacement for all the telescopes, if this is desired in
         the second order parameter.
         """
+        import pyLIMA.parallax.parallax
+
+        self.parallax_model = pyLIMA.parallax.parallax.MLParallaxes(self.ra, self.dec, parallax_model)
 
         for telescope in self.telescopes:
 
             if len(telescope.deltas_positions) == 0:
-                telescope.compute_parallax(self.ra, self.dec, parallax_model)
+                telescope.compute_parallax(self.parallax_model)
 
     def total_number_of_data_points(self):
         """ Compute the parallax displacement for all the telescopes, if this is desired in

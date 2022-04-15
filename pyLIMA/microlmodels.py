@@ -335,11 +335,14 @@ class MLModel(object):
         f_source, g_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,magnification)
 
         if self.blend_flux_ratio:
-            microlensing_model = f_source * (magnification + g_blending)
+            photometric_model = f_source * (magnification + g_blending)
         else:
-            microlensing_model = f_source * magnification + g_blending
+            photometric_model = f_source * magnification + g_blending
 
-        return microlensing_model, f_source, g_blending
+        astrometric_model = None
+        microlensing_model = {'flux':photometric_model,'astrometry':astrometric_model,'f_source':f_source,
+                              'g_blending':g_blending}
+        return microlensing_model
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, magnification):
         """
@@ -534,7 +537,7 @@ class MLModel(object):
         if self.orbital_motion_model[0] != 'None':
         
                 dseparation, dalpha = microlorbitalmotion.orbital_motion_shifts(self.orbital_motion_model,
-                                                                                telescope.lightcurve_flux[:, 0],
+                                                                                telescope.lightcurve_flux['time'].value,
                                                                                 pyLIMA_parameters)
                 alpha += dalpha
 
@@ -572,7 +575,7 @@ class ModelPSPL(MLModel):
 
         return model_dictionary
 
-    def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter = False):
+    def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
         """ The magnification associated to a PSPL model. More details in microlmagnification module.
 
         :param object telescope: a telescope object. More details in telescope module.
@@ -582,12 +585,25 @@ class ModelPSPL(MLModel):
         :return: magnification
         :rtype: array_like
         """
-        import pyLIMA.magnification.magnification_PSPL
-        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
-                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
+        if self.astrometry:
 
-        return pyLIMA.magnification.magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
-                                                                          return_impact_parameter)
+            import pyLIMA.magnification.magnification_VBB
+            pyLIMA.magnification.magnification_VBB.VBB.astrometry = True
+
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to,
+                                                                                 pyLIMA_parameters.uo,
+                                                                                 pyLIMA_parameters.tE,
+                                                                                 pyLIMA_parameters)
+
+
+        else:
+
+            import pyLIMA.magnification.magnification_PSPL
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
+
+            return pyLIMA.magnification.magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
+                                                                              return_impact_parameter)
 
     def model_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model

@@ -5,23 +5,14 @@ Created on Thu Aug 27 16:39:32 2015
 @author: ebachelet
 """
 from __future__ import division
-
 import numpy as np
-from astropy.table import QTable
 
+from pyLIMA.toolbox.time_series import construct_time_series
 
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected lightcurve format differs, please
 # indicate this in the correponding lightcurve_magnitude_dictionnary or lightcurve_flux_dictionnary, see below.
 PYLIMA_LIGHTCURVE_MAGNITUDE_NAMES = ['time', 'mag', 'err_mag']
-PYLIMA_LIGHTCURVE_FLUX_NAMES = ['time', 'flux', 'err_flux']
-
-
-def construct_time_series(data, columns_names, column_units):
-
-    table = QTable(data, names=columns_names,units=column_units)
-
-    return table
-
+PYLIMA_LIGHTCURVE_FLUX_NAMES = ['time', 'flux', 'err_flux', 'inv_err_flux']
 
 class Telescope(object):
     """
@@ -92,7 +83,8 @@ class Telescope(object):
 
     def __init__(self, name='NDG', camera_filter='I', light_curve=None,
                  light_curve_names=None, light_curve_units=None, clean_the_light_curve=False,
-                 location = 'Earth', spacecraft_name=None):
+                 location = 'Earth', spacecraft_name=None,
+                 astrometry=None, astrometry_names=None, astrometry_units=None):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -106,6 +98,10 @@ class Telescope(object):
         if 'flux' in light_curve_units:
             self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
             self.lightcurve_flux = self.lightcurve_in_magnitude()
+
+        if astrometry:
+
+            self.astrometry = construct_time_series(astrometry, astrometry_names, astrometry_units)
 
         self.location = location
         self.altitude = 0.0  # meters
@@ -144,16 +140,15 @@ class Telescope(object):
 
         self.gamma = star.find_gamma(self.filter)
 
-    def compute_parallax(self, event_ra, event_dec, parallax):
+    def compute_parallax(self, parallax_obj):
         """ Compute and set the deltas_positions attribute due to the parallax.
 
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
-        import pyLIMA.parallax.parallax
-        para = pyLIMA.parallax.parallax.MLParallaxes(event_ra, event_dec, parallax)
-        para.parallax_combination(self)
-        print('Parallax(' + parallax[0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
+
+        parallax_obj.parallax_combination(self)
+        print('Parallax(' + parallax_obj.parallax_model + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
     def clean_data_magnitude(self):
         """
@@ -228,8 +223,10 @@ class Telescope(object):
 
         flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
         err_flux = pyLIMA.toolbox.brightness_transformation.error_magnitude_to_error_flux(err_mag, flux)
-        lightcurve_in_flux = construct_time_series(np.c_[time, flux, err_flux],PYLIMA_LIGHTCURVE_FLUX_NAMES,
-                                                   [lightcurve['time'].unit,'w/m^2','w/m^2'])
+        inv_err_flux = 1.0/err_flux
+        lightcurve_in_flux = construct_time_series(np.c_[time, flux, err_flux, inv_err_flux],
+                                                   PYLIMA_LIGHTCURVE_FLUX_NAMES,
+                                                   [lightcurve['time'].unit, 'w/m^2', 'w/m^2', 'm^2/W'])
 
         return lightcurve_in_flux
 

@@ -1,4 +1,9 @@
 import sys
+import numpy as np
+
+class FitException(Exception):
+    pass
+
 
 class MLfit(object):
     """
@@ -40,10 +45,9 @@ class MLfit(object):
 
     """
 
-    def __init__(self, event, model):
+    def __init__(self, model):
         """The fit class has to be intialized with an event object."""
 
-        self.event = event
         self.model = model
 
 
@@ -54,6 +58,21 @@ class MLfit(object):
 
         return likelihood_astrometry+likelihood_astrometry
 
+    def covariance_matrix(self, extra_parameters=None):
+
+        photometric_errors = np.hstack([i.lightcurve_flux['err_flux'].value for i in self.model.event.telescopes])
+
+
+        errors = photometric_errors
+        basic_covariance_matrix = np.zeros((len(errors),
+                                            len(errors)))
+
+        np.fill_diagonal(basic_covariance_matrix, errors**2)
+
+        covariance = basic_covariance_matrix
+
+        return covariance
+
     def initial_guess(self):
         """Try to estimate the microlensing parameters. Only use for PSPL and FSPL
            models. More details on microlguess module.
@@ -62,54 +81,63 @@ class MLfit(object):
            :rtype: list
         """
         import pyLIMA.priors.guess
+
         if len(self.model.parameters_guess) == 0:
 
-            # Estimate  the Paczynski parameters
+            try:
+                # Estimate the Paczynski parameters
 
-            if self.model.model_type == 'PSPL':
-                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_PSPL(self.event)
+                if self.model.model_type == 'PSPL':
+                    guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_PSPL(self.model.event)
 
-            if self.model.model_type == 'FSPL':
-                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.event)
+                if self.model.model_type == 'FSPL':
+                    guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.model.event)
 
-            if self.model.model_type == 'FSPLee':
-                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.event)
+                if self.model.model_type == 'FSPLee':
+                    guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.model.event)
 
-            if self.model.model_type == 'FSPLarge':
-                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.event)
+                if self.model.model_type == 'FSPLarge':
+                    guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.model.event)
 
-            if self.model.model_type == 'DSPL':
-                guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_DSPL(self.event)
+                if self.model.model_type == 'DSPL':
+                    guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_DSPL(self.model.event)
 
-            if 'piEN' in self.model.model_dictionnary.keys():
-                guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
+                if 'piEN' in self.model.model_dictionnary.keys():
+                    guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
-            if 'XiEN' in self.model.model_dictionnary.keys():
-                guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+                if 'XiEN' in self.model.model_dictionnary.keys():
+                    guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
-            if 'dsdt' in self.model.model_dictionnary.keys():
-                guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+                if 'dsdt' in self.model.model_dictionnary.keys():
+                    guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
-            if 'spot_size' in self.model.model_dictionnary.keys():
-                guess_paczynski_parameters = guess_paczynski_parameters + [0]
+                if 'spot_size' in self.model.model_dictionnary.keys():
+                    guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
-            # Estimate  the telescopes fluxes (flux_source + g_blending) parameters
+            except:
 
-            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters, self.model)
-
-            # The survey fluxes are already known from microlguess
-            telescopes_fluxes[0] = f_source
-            telescopes_fluxes[1] = 0.0
+                raise FitException('Can not estimate guess, likely your model is too complex to automatic estimate. '
+                                   'Please provide some in model.parameters_guess or run a DE fit.')
         else:
 
             guess_paczynski_parameters = list(self.model.parameters_guess)
 
-            telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters)
+        for ind in range(len(guess_paczynski_parameters)):
+
+            if guess_paczynski_parameters[ind] < self.model.parameters_boundaries[ind][0]:
+                guess_paczynski_parameters[ind] = self.model.parameters_boundaries[ind][0]
+
+            if guess_paczynski_parameters[ind] > self.model.parameters_boundaries[ind][1]:
+                guess_paczynski_parameters[ind] = self.model.parameters_boundaries[ind][1]
+
+        print(guess_paczynski_parameters)
+        telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters)
 
         if len(guess_paczynski_parameters) != len(list(self.model.model_dictionnary.keys())):
             guess_paczynski_parameters += telescopes_fluxes
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
+        print('Using guess: ',guess_paczynski_parameters)
         return guess_paczynski_parameters
 
     def likelihood_astrometry(self):
@@ -164,12 +192,14 @@ class MLfit(object):
         telescopes_fluxes = []
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-        for telescope in self.event.telescopes:
+        for telescope in self.model.event.telescopes:
 
             flux = telescope.lightcurve_flux['flux'].value
 
-            ml_model, f_source, f_blending = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+            ml_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
+            f_source = ml_model['f_source']
+            f_blending = ml_model['g_blending']
             # Prior here
             if f_source < 0:
 

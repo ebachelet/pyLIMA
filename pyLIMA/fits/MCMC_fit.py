@@ -5,15 +5,14 @@ import sys
 import emcee
 
 from pyLIMA.fits.fit import MLfit
-import pyLIMA.fits.residuals
+import pyLIMA.fits.objective_functions
 
 
 class MCMCfit(MLfit):
 
-    def __init__(self, event, model, MCMC_walkers=2, MCMC_links = 5000, telescopes_fluxes_method='MCMC'):
+    def __init__(self, model, MCMC_walkers=2, MCMC_links = 5000, telescopes_fluxes_method='MCMC'):
         """The fit class has to be intialized with an event object."""
 
-        self.event = event
         self.model = model
         self.MCMC_walkers = MCMC_walkers #times number of dimension!
         self.MCMC_links = MCMC_links
@@ -28,10 +27,10 @@ class MCMCfit(MLfit):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-        photometric_chi2 = pyLIMA.fits.residuals.all_telescope_photometric_chi2(self.event, self.model,
+        photometric_chi2 = pyLIMA.fits.objective_functions.all_telescope_photometric_chi2(self.model,
                                                                                           pyLIMA_parameters)
 
-        #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_chi2(self.event, pyLIMA_parameters)
+        #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_chi2(self.model.event, pyLIMA_parameters)
 
         return -0.5*photometric_chi2
 

@@ -493,7 +493,7 @@ def create_the_fake_telescopes(fit, parameters):
 
         if fit.model.parallax_model[0] != 'None':
 
-            reference_telescope.compute_parallax(fit.event.ra,fit.event.dec, fit.model.parallax_model)
+            reference_telescope.compute_parallax(fit.model.event.parallax_model)
 
         fit.event.fake_telescopes.append(reference_telescope)
 

@@ -821,7 +821,7 @@ class MLFits(object):
         # algorithm find it.
         if self.guess == []:
             self.guess = self.initial_guess()
-
+        print(self.guess)
         bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -np.inf] * len(self.event.telescopes)
         bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.event.telescopes)
 
