@@ -332,16 +332,13 @@ class MLModel(object):
         :rtype: array_like, float
         """
         magnification = self.model_magnification(telescope, pyLIMA_parameters)
-        f_source, g_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,magnification)
+        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters,magnification)
 
-        if self.blend_flux_ratio:
-            photometric_model = f_source * (magnification + g_blending)
-        else:
-            photometric_model = f_source * magnification + g_blending
+        photometric_model = f_source * magnification + f_blending
 
         astrometric_model = None
         microlensing_model = {'flux':photometric_model,'astrometry':astrometric_model,'f_source':f_source,
-                              'g_blending':g_blending}
+                              'f_blending':f_blending}
         return microlensing_model
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, magnification):
@@ -361,8 +358,9 @@ class MLModel(object):
 
             if self.blend_flux_ratio:
                 g_blending = 2 * getattr(pyLIMA_parameters, 'g_' + telescope.name) / 2
+                f_blending = f_source*g_blending
             else:
-                g_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
+                f_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
 
 
         except TypeError:
@@ -374,18 +372,12 @@ class MLModel(object):
 
             try:
                 f_source, f_blending = np.polyfit(magnification, flux, 1, w=1 / errflux)
-
-                if self.blend_flux_ratio:
-                    g_blending = f_blending / f_source
-                else:
-                    g_blending = f_blending
-
             except:
 
                 f_source = 0.0
-                g_blending = 0.0
+                f_blending = 0.0
 
-        return f_source, g_blending
+        return f_source, f_blending
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the

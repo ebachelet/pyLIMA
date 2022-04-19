@@ -87,7 +87,7 @@ def align_the_data_to_the_reference_telescope(fit, telescope_index = 0, paramete
 
         flux = telescope.lightcurve_flux['flux'].value
 
-        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['flux']
 
         residuals = 2.5 * np.log10(flux_model / flux)
 

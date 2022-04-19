@@ -92,7 +92,7 @@ class Telescope(object):
 
         if 'mag' in light_curve_units:
 
-            self.lightcurve_magnitude = construct_time_series(light_curve,light_curve_names,light_curve_units)
+            self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
             self.lightcurve_flux = self.lightcurve_in_flux()
 
         if 'flux' in light_curve_units:
@@ -252,6 +252,19 @@ class Telescope(object):
                                                    [lightcurve['time'].unit, 'mag', 'mag'])
 
         return lightcurve_in_mag
+    def plot_data(self, choice='Mag'):
+
+        from pyLIMA.toolbox import plots
+        import matplotlib.pyplot as plt
+
+        if choice=='Mag':
+            plots.plot_light_curve_magnitude(self.lightcurve_magnitude['time'].value,
+                                             self.lightcurve_magnitude['mag'].value,
+                                             self.lightcurve_magnitude['err_mag'].value,
+                                             name=self.name)
+
+            plt.gca().invert_yaxis()
+
 
     def hidden(self):
         try:

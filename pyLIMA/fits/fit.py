@@ -199,7 +199,7 @@ class MLfit(object):
             ml_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
             f_source = ml_model['f_source']
-            f_blending = ml_model['g_blending']
+            f_blending = ml_model['f_blending']
             # Prior here
             if f_source < 0:
 

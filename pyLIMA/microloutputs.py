@@ -940,7 +940,7 @@ def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color=
     telescope = fit.event.fake_telescopes[telescope_index]
 
     time = telescope.lightcurve_flux['time'].value
-    flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+    flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['flux']
 
     import pyLIMA.toolbox.brightness_transformation
     magnitude = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(flux_model)
@@ -989,7 +989,7 @@ def plot_residuals(figure_axe, fit, parameters=None, bokeh_plot=None):
         flux = telescope.lightcurve_flux['time'].value
         err_mag = telescope.lightcurve_magnitude['err_mag'].value
 
-        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[0]
+        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['flux']
 
         residuals = 2.5 * np.log10(flux_model / flux)
 
