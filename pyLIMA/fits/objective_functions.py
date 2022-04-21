@@ -2,7 +2,7 @@ import numpy as np
 import pyLIMA.toolbox.brightness_transformation
 
 
-def photometric_residuals(telescope, model, pyLIMA_parameters):
+def photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=None):
     """ Compute the residuals of a telescope lightcurve according to the model.
 
     :param object telescope: a telescope object. More details in telescopes module.
@@ -20,13 +20,15 @@ def photometric_residuals(telescope, model, pyLIMA_parameters):
 
         residuals = flux - microlensing_model['flux']
 
-        return residuals
+        errflux = (lightcurve['err_flux'].value**2+rescaling_parameter**2*flux**2)**0.5
+
+        return residuals/errflux+np.log(errflux)
 
     except:
 
         return []
 
-def norm_photometric_residuals(telescope, model, pyLIMA_parameters):
+def norm_photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=None):
     """ Compute the residuals of a telescope lightcurve according to the model.
 
     :param object telescope: a telescope object. More details in telescopes module.
@@ -38,11 +40,12 @@ def norm_photometric_residuals(telescope, model, pyLIMA_parameters):
     try:
         lightcurve = telescope.lightcurve_flux
 
+
         inv_err_flux = lightcurve['inv_err_flux'].value
 
-        residuals = photometric_residuals(telescope, model, pyLIMA_parameters)
+        residuals = photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=rescaling_parameter)
 
-        norm_residuals = residuals*inv_err_flux
+        norm_residuals = residuals
 
         return norm_residuals
 
@@ -70,7 +73,7 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters):
 
     return residuals
 
-def all_telescope_norm_photometric_residuals(model, pyLIMA_parameters):
+def all_telescope_norm_photometric_residuals(model, pyLIMA_parameters, rescaling_parameters=None):
     """ Compute the residuals of all telescopes according to the model.
 
     :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
@@ -80,9 +83,10 @@ def all_telescope_norm_photometric_residuals(model, pyLIMA_parameters):
     """
 
     residuals = []
-    for telescope in model.event.telescopes:
+
+    for ind,telescope in enumerate(model.event.telescopes):
         # Find the residuals of telescope observation regarding the parameters and model
-        residus = norm_photometric_residuals(telescope, model, pyLIMA_parameters)
+        residus = norm_photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=rescaling_parameters[ind])
 
         residuals = np.append(residuals, residus)
 

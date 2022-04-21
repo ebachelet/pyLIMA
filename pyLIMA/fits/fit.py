@@ -45,10 +45,25 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model):
+    def __init__(self, model, rescaling=False):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
+        self.fit_parameters = []
+        self.rescaling = rescaling
+
+        self.model.define_model_parameters()
+        self.define_fit_parameters()
+
+    def define_fit_parameters(self):
+
+        self.fit_parameters = self.model.model_dictionnary.copy()
+
+        if self.rescaling:
+
+            for telescope in self.model.event.telescopes:
+
+                self.fit_parameters['k_'+telescope.name] = len(self.fit_parameters)
 
 
     def objective_function(self):
@@ -56,12 +71,11 @@ class MLfit(object):
         likelihood_photometry = self.likelihood_photometry()
         likelihood_astrometry = self.likelihood_astrometry()
 
-        return likelihood_astrometry+likelihood_astrometry
+        return likelihood_photometry+likelihood_astrometry
 
     def covariance_matrix(self, extra_parameters=None):
 
         photometric_errors = np.hstack([i.lightcurve_flux['err_flux'].value for i in self.model.event.telescopes])
-
 
         errors = photometric_errors
         basic_covariance_matrix = np.zeros((len(errors),
@@ -119,6 +133,11 @@ class MLfit(object):
                 raise FitException('Can not estimate guess, likely your model is too complex to automatic estimate. '
                                    'Please provide some in model.parameters_guess or run a DE fit.')
         else:
+
+            if len(self.model.parameters_guess) != len(self.model.parameters_boundaries):
+
+                raise FitException('Dimensions of parameters guess does not match the dimensions of parameters '
+                                   'boundaries. Check your parameters_guess input versus the model parameters.')
 
             guess_paczynski_parameters = list(self.model.parameters_guess)
 
@@ -188,6 +207,7 @@ class MLfit(object):
         :return: a list of tuple with the (fs,g) telescopes flux parameters.
         :rtype: list
         """
+
 
         telescopes_fluxes = []
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)

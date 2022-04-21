@@ -1,6 +1,6 @@
 import numpy as np
 
-def differential_evolution_parameters_boundaries(model):
+def parameters_boundaries(model):
     """ This function define the parameters boundaries for a specific model.
 
        :param object model: a microlmodels object.

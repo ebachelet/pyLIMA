@@ -9,10 +9,11 @@ import pyLIMA.fits.objective_functions
 
 class LMfit(MLfit):
 
-    def __init__(self, model):
+    def __init__(self, model, rescaling=False):
         """The fit class has to be intialized with an event object."""
 
-        self.model = model
+        super().__init__(model, rescaling)
+
         self.guess = []
         self.fit_results = []
         self.fit_covariance_matrix = []
@@ -23,10 +24,14 @@ class LMfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        model_parameters = fit_process_parameters[:len(self.model.model_dictionnary.keys())]
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
 
         photometric_residuals = pyLIMA.fits.objective_functions.all_telescope_norm_photometric_residuals(self.model,
-                                                                                                         pyLIMA_parameters)
+                                                                                                         pyLIMA_parameters,
+                                                                                                         rescaling_parameters=fit_process_parameters[len(self.model.model_dictionnary.keys()):])
 
         #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_residuals(self.model.event, pyLIMA_parameters)
 
@@ -41,6 +46,13 @@ class LMfit(MLfit):
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
         self.guess = self.initial_guess()
+
+        if self.rescaling:
+
+            for telescope in self.model.event.telescopes:
+
+                self.guess.append(0)
+
         n_data = 0
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')

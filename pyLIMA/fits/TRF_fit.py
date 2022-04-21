@@ -19,6 +19,12 @@ class TRFfit(LMfit):
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
         self.guess = self.initial_guess()
+        if self.rescaling:
+
+            for telescope in self.model.event.telescopes:
+
+                self.guess.append(0)
+
         n_data = 0
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
@@ -28,8 +34,8 @@ class TRFfit(LMfit):
         #if self.model.Jacobian_flag == 'OK':
 
         # No Jacobian now
-        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -np.inf] * len(self.model.event.telescopes)
-        bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.model.event.telescopes)
+        bounds_min = [i[0] for i in self.model.parameters_boundaries] + [0, -np.inf] * len(self.model.event.telescopes) + [0] * len(self.model.event.telescopes)
+        bounds_max = [i[1] for i in self.model.parameters_boundaries] + [np.inf, np.inf] * len(self.model.event.telescopes) + [10] * len(self.model.event.telescopes)
 
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='trf',
                                               bounds=(bounds_min, bounds_max), ftol=10 ** -10,

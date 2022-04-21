@@ -6,6 +6,22 @@ from astropy.time import Time
 from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian, cartesian_to_spherical
 from astropy.coordinates import get_body, get_body_barycentric_posvel
 
+def compute_parallax_curvature(piE, delta_positions):
+    """ Compute the curvature induce by the parallax of from
+    deltas_positions of a telescope.
+
+    :param array_like piE: the microlensing parallax vector. Have a look :
+                           http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+    :param array_like delta_positions: the delta_positions of the telescope. More details in microlparallax module.
+    :return: delta_tau and delta_u, the shift introduce by parallax
+    :rtype: array_like,array_like
+    """
+
+    delta_tau = np.dot(piE, delta_positions)
+    delta_beta = np.cross(piE, delta_positions.T)
+
+    return delta_tau, delta_beta
+
 
 class MLParallaxes(object):
     """

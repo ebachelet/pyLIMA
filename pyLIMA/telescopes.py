@@ -89,6 +89,9 @@ class Telescope(object):
 
         self.name = name
         self.filter = camera_filter  # Claret2011 convention
+        self.lightcurve_magnitude = None
+        self.lightcurve_flux = None
+        self.astrometry = None
 
         if 'mag' in light_curve_units:
 

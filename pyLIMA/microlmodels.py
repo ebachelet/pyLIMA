@@ -15,7 +15,6 @@ import collections
 from scipy import interpolate, misc
 
 
-from pyLIMA import microlguess
 from pyLIMA import microlparallax
 from pyLIMA import microlorbitalmotion
 from pyLIMA import microlcaustics
@@ -280,7 +279,7 @@ class MLModel(object):
 
         import pyLIMA.priors.parameters_boundaries
         self.parameters_boundaries = \
-            pyLIMA.priors.parameters_boundaries.differential_evolution_parameters_boundaries(self)
+            pyLIMA.priors.parameters_boundaries.parameters_boundaries(self)
 
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
