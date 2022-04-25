@@ -45,12 +45,12 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model, rescaling=False):
+    def __init__(self, model, rescaling_photometry=False):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
+        self.rescaling_photometry = rescaling_photometry
         self.fit_parameters = []
-        self.rescaling = rescaling
 
         self.model.define_model_parameters()
         self.define_fit_parameters()
@@ -59,7 +59,7 @@ class MLfit(object):
 
         self.fit_parameters = self.model.model_dictionnary.copy()
 
-        if self.rescaling:
+        if self.rescaling_photometry:
 
             for telescope in self.model.event.telescopes:
 

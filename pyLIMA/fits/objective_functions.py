@@ -2,7 +2,7 @@ import numpy as np
 import pyLIMA.toolbox.brightness_transformation
 
 
-def photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=None):
+def photometric_residuals(flux, photometric_model):
     """ Compute the residuals of a telescope lightcurve according to the model.
 
     :param object telescope: a telescope object. More details in telescopes module.
@@ -11,111 +11,78 @@ def photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_paramet
     :return: the residuals in flux, the priors
     :rtype: array_like, float
     """
-    try:
+
+    residuals = flux - photometric_model
+
+    return residuals
+
+
+def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, rescaling_photometry_parameters=None):
+    """ Compute the residuals of all telescopes according to the model.
+
+    :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
+
+    :return: the residuals in flux,
+    :rtype: list, a list of array of residuals in flux
+    """
+
+    residuals = []
+    errfluxes = []
+
+    for ind,telescope in enumerate(model.event.telescopes):
+        # Find the residuals of telescope observation regarding the parameters and model
         lightcurve = telescope.lightcurve_flux
 
         flux = lightcurve['flux'].value
 
         microlensing_model = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-        residuals = flux - microlensing_model['flux']
+        residus = photometric_residuals(flux, microlensing_model['flux'])
 
-        errflux = (lightcurve['err_flux'].value**2+rescaling_parameter**2*flux**2)**0.5
+        if norm:
 
-        return residuals/errflux+np.log(errflux)
+            if rescaling_photometry_parameters is not None:
 
-    except:
+                err_flux = (lightcurve['err_flux'].value**2+rescaling_photometry_parameters[ind]**2*microlensing_model['flux']**2)**0.5
+                residus /= err_flux
+                errfluxes = np.append(errfluxes, err_flux)
 
-        return []
+            else:
 
-def norm_photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=None):
-    """ Compute the residuals of a telescope lightcurve according to the model.
-
-    :param object telescope: a telescope object. More details in telescopes module.
-    :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
-
-    :return: the residuals in flux, the priors
-    :rtype: array_like, float
-    """
-    try:
-        lightcurve = telescope.lightcurve_flux
-
-
-        inv_err_flux = lightcurve['inv_err_flux'].value
-
-        residuals = photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=rescaling_parameter)
-
-        norm_residuals = residuals
-
-        return norm_residuals
-
-    except:
-
-        return []
-
-
-
-def all_telescope_photometric_residuals(model, pyLIMA_parameters):
-    """ Compute the residuals of all telescopes according to the model.
-
-    :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
-
-    :return: the residuals in flux,
-    :rtype: list, a list of array of residuals in flux
-    """
-
-    residuals = []
-    for telescope in model.event.telescopes:
-        # Find the residuals of telescope observation regarding the parameters and model
-        residus = photometric_residuals(telescope, model, pyLIMA_parameters)
+                residus *= lightcurve['inv_err_flux'].value
+                errfluxes = np.append(errfluxes, lightcurve['err_flux'].value)
 
         residuals = np.append(residuals, residus)
 
-    return residuals
 
-def all_telescope_norm_photometric_residuals(model, pyLIMA_parameters, rescaling_parameters=None):
-    """ Compute the residuals of all telescopes according to the model.
-
-    :param object pyLIMA_parameters: object containing the model parameters, see microlmodels for more details
-
-    :return: the residuals in flux,
-    :rtype: list, a list of array of residuals in flux
-    """
-
-    residuals = []
-
-    for ind,telescope in enumerate(model.event.telescopes):
-        # Find the residuals of telescope observation regarding the parameters and model
-        residus = norm_photometric_residuals(telescope, model, pyLIMA_parameters, rescaling_parameter=rescaling_parameters[ind])
-
-        residuals = np.append(residuals, residus)
-
-    return residuals
-
-
+    return residuals, errfluxes
 
 
 def photometric_chi2(telescope, model, pyLIMA_parameters):
 
-    try:
-        residuals = norm_photometric_residuals(telescope, model, pyLIMA_parameters)
-        chi2 = np.sum(residuals**2)
+    pass
 
-        return chi2
+def all_telescope_photometric_chi2(model, pyLIMA_parameters,rescaling_parameters=None):
 
-    except:
+    pass
 
-        return 0
 
-def all_telescope_photometric_chi2(model, pyLIMA_parameters):
+def all_telescope_photometric_likelihood(model, pyLIMA_parameters, rescaling_photometry_parameters=None):
 
-    CHI2 = 0
-    for telescope in model.event.telescopes:
+    #CHI2 = 0
+    #for telescope in model.event.telescopes:
 
-        chi2 = photometric_chi2(telescope, model, pyLIMA_parameters)
-        CHI2 += chi2
+    #    chi2 = photometric_chi2(telescope, model, pyLIMA_parameters)
+    #    CHI2 += chi2
 
-    return CHI2
+    #return CHI2
+
+    residus, errflux = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,
+                                                  rescaling_photometry_parameters=rescaling_photometry_parameters)
+
+    chi2 = np.sum(residus**2)+2*np.sum(np.log(errflux))+len(errflux)*np.log(2*np.pi)
+
+    return chi2
 
 
 def photometric_residuals_in_magnitude(telescope, model, pyLIMA_parameters):

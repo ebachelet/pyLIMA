@@ -3,16 +3,15 @@ import time as python_time
 import numpy as np
 import sys
 
-from pyLIMA.fits.fit import MLfit
+from pyLIMA.fits.MLfit import MLfit
 import pyLIMA.fits.objective_functions
-
 
 class LMfit(MLfit):
 
-    def __init__(self, model, rescaling=False):
+    def __init__(self, model, rescaling_photometry=False):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, rescaling)
+        super().__init__(model, rescaling_photometry)
 
         self.guess = []
         self.fit_results = []
@@ -28,16 +27,25 @@ class LMfit(MLfit):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
+        if self.rescaling_photometry:
 
-        photometric_residuals = pyLIMA.fits.objective_functions.all_telescope_norm_photometric_residuals(self.model,
-                                                                                                         pyLIMA_parameters,
-                                                                                                         rescaling_parameters=fit_process_parameters[len(self.model.model_dictionnary.keys()):])
+            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model, pyLIMA_parameters, norm=True,
+                                                               rescaling_photometry_parameters=fit_process_parameters[len(self.model.model_dictionnary.keys()):])
+        else:
+
+            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
+                                                                                                   pyLIMA_parameters,
+                                                                                                   norm=True,
+                                                                                                   rescaling_photometry_parameters=None)
+       
+
+        chi2 = residus ** 2 + 2 * np.log(errflux) + 1.8378770664093453 #.log(2 * np.pi)
 
         #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_residuals(self.model.event, pyLIMA_parameters)
 
         #return np.r_[photometric_residuals,astrometric_residuals]
 
-        return photometric_residuals
+        return chi2**0.5
 
     def fit(self):
 
@@ -47,11 +55,11 @@ class LMfit(MLfit):
         # algorithm find it.
         self.guess = self.initial_guess()
 
-        if self.rescaling:
+        if self.rescaling_photometry:
 
             for telescope in self.model.event.telescopes:
 
-                self.guess.append(0)
+                self.guess.append(0.1)
 
         n_data = 0
         for telescope in self.model.event.telescopes:
@@ -62,10 +70,9 @@ class LMfit(MLfit):
         #if self.model.Jacobian_flag == 'OK':
 
         # No Jacobian now
-        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',
-                                                      ftol=10 ** -10,
-                                                      xtol=10 ** -10, gtol=10 ** -10,
-                                                      )
+        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',  max_nfev=50000,
+                                              gtol=10 ** -10)
+
 
 
         fit_result = lm_fit['x'].tolist()
