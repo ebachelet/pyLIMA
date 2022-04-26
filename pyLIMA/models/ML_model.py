@@ -90,6 +90,7 @@ class MLmodel(object):
                  orbital_motion=['None', 0.0], blend_flux_parameter='fb'):
         """ Initialization of the attributes described above.
         """
+
         self.event = event
         self.parallax_model = parallax
         self.xallarap_model = xallarap
@@ -203,15 +204,17 @@ class MLmodel(object):
 
         for telescope in self.event.telescopes:
 
-            self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+            if telescope.lightcurve_flux is not None:
 
-            if self.blend_flux_parameter == 'fb':
+                self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
 
-                self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+                if self.blend_flux_parameter == 'fb':
 
-            if self.blend_flux_parameter == 'g':
+                    self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
 
-                self.pyLIMA_standards_dictionnary['g_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+                if self.blend_flux_parameter == 'g':
+
+                    self.pyLIMA_standards_dictionnary['g_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
 
 
         self.pyLIMA_standards_dictionnary = OrderedDict(sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
@@ -272,13 +275,23 @@ class MLmodel(object):
         :rtype: array_like, float
         """
 
-        magnification = self.model_magnification(telescope, pyLIMA_parameters)
-        f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
-
-        photometric_model = f_source * magnification + f_blending
-
+        photometric_model = None
         astrometric_model = None
-        microlensing_model = {'flux': photometric_model, 'astrometry': astrometric_model, 'f_source': f_source,
+        f_source = None
+        f_blending = None
+        magnification = self.model_magnification(telescope, pyLIMA_parameters)
+
+        if telescope.lightcurve_flux is not None:
+
+            f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification['magnification'])
+
+            photometric_model = f_source * magnification['magnification'] + f_blending
+
+        if telescope.astrometry is not None:
+
+            astrometric_model = magnification['astrometry']
+
+        microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model, 'f_source': f_source,
                               'f_blending': f_blending}
         return microlensing_model
 
@@ -405,8 +418,16 @@ class MLmodel(object):
         """
         # Linear basic trajectory
 
-        lightcurve = telescope.lightcurve_flux
-        time = lightcurve['time'].value
+
+        if telescope.lightcurve_flux is not None:
+
+            lightcurve = telescope.lightcurve_flux
+            time = lightcurve['time'].value
+
+        else:
+
+            astrometry = telescope.astrometry
+            time = astrometry['time'].value
 
         tau = (time - pyLIMA_parameters.to) / pyLIMA_parameters.tE
         beta = np.array([pyLIMA_parameters.uo] * len(tau))
@@ -414,13 +435,17 @@ class MLmodel(object):
         # These following second order induce curvatures in the source trajectory
         # Parallax?
         if 'piEN' in pyLIMA_parameters._fields:
+            try:
+                piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
+                parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(piE,
+                                                                                                    telescope.deltas_positions)
 
-            piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
-            parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(piE,
-                                                                                                telescope.deltas_positions)
+                tau += parallax_delta_tau
+                beta += parallax_delta_beta
 
-            tau += parallax_delta_tau
-            beta += parallax_delta_beta
+            except:
+
+                pass
 
         # Xallarap?
         if 'XiEN' in pyLIMA_parameters._fields:

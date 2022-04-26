@@ -4,19 +4,22 @@ import numpy as np
 import sys
 from multiprocessing import Process, Manager
 
-from pyLIMA.fits.MLfit import MLfit
+from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
+from pyLIMA.priors import parameters_boundaries
 
 class DEfit(MLfit):
 
-    def __init__(self, model, rescaling_photometry=False, DE_population_size = 10, max_iteration = 10000):
+    def __init__(self, model, rescaling_photometry=False, DE_population_size=10, max_iteration=10000, telescopes_fluxes_method='DE'):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescaling_photometry)
 
         self.DE_population = Manager().list() # to be recognize by all process during parallelization
         self.DE_population_size = DE_population_size
+        self.fit_boundaries = []
         self.max_iteration = max_iteration
+        self.telescopes_fluxes_method = telescopes_fluxes_method
         self.fit_time = 0 #s
 
     def fit_type(self):
@@ -24,29 +27,43 @@ class DEfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
+        likelihood = 0
         model_parameters = fit_process_parameters[:-len(self.model.event.telescopes)]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
+        if self.model.photometry:
 
-        if self.rescaling_photometry:
+            if self.rescaling_photometry:
 
-            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
+                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
+                                                                                                       pyLIMA_parameters,
+                                                                                                       norm=True,
+                                                                                                       rescaling_photometry_parameters=fit_process_parameters[
+                                                                                                                                       -len(self.model.event.telescopes):])
+            else:
+
+                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
+                                                                                                       pyLIMA_parameters,
+                                                                                                       norm=True,
+                                                                                                       rescaling_photometry_parameters=None)
+
+            photometric_likelihood = 0.5*(np.sum(residus ** 2 + 2 * np.log(errflux)) + len(errflux)*1.8378770664093453)
+
+            likelihood += photometric_likelihood
+
+        if self.model.astrometry:
+
+            residus, errors= pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
                                                                                                    pyLIMA_parameters,
                                                                                                    norm=True,
-                                                                                                   rescaling_photometry_parameters=fit_process_parameters[
-                                                                                                                                   -len(self.model.event.telescopes):])
-        else:
+                                                                                                   rescaling_astrometry_parameters=None)
 
-            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                   pyLIMA_parameters,
-                                                                                                   norm=True,
-                                                                                                   rescaling_photometry_parameters=None)
+            astrometric_likelihood = 0.5*(np.sum(residus ** 2 + 2 * np.log(errors)) + len(errors)*1.8378770664093453)
 
-        photometric_likelihood = np.sum(residus ** 2 + 2 * np.log(errflux)) + len(errflux)*1.8378770664093453
-        #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_chi2(self.model.event, pyLIMA_parameters)
-        self.DE_population.append(fit_process_parameters.tolist() + [photometric_likelihood])
-        return photometric_likelihood
+            likelihood += astrometric_likelihood
+        self.DE_population.append(fit_process_parameters.tolist() + [likelihood])
+        return likelihood
 
     def fit(self, computational_pool=None):
 
@@ -62,11 +79,15 @@ class DEfit(MLfit):
 
         bounds = self.model.parameters_boundaries
 
+        if self.telescopes_fluxes_method == 'DE':
+
+            bounds += parameters_boundaries.telescopes_fluxes_boundaries(self.model)
+
         if self.rescaling_photometry:
 
-            for telescope in self.model.event.telescopes:
+            bounds += parameters_boundaries.rescaling_boundaries(self.model)
 
-                bounds.append((0, 10))
+        self.fit_boundaries = bounds
 
         n_data = 0
         for telescope in self.model.event.telescopes:
@@ -74,10 +95,10 @@ class DEfit(MLfit):
 
         differential_evolution_estimation = scipy.optimize.differential_evolution(self.objective_function,
                                                                                   bounds=bounds,
-                                                                                  mutation=(0.5,1.5), popsize=int(self.DE_population_size),
-                                                                                  maxiter=self.max_iteration, tol=0.00,
-                                                                                  atol=0.001*n_data, strategy='best1bin',
-                                                                                  recombination=0.7, polish=True, init='latinhypercube',
+                                                                                  mutation=(0.1,1.9), popsize=int(self.DE_population_size),
+                                                                                  maxiter=self.max_iteration, tol=0.0001,
+                                                                                  atol=0.000, strategy='rand1bin',
+                                                                                  recombination=0.25, polish=True, init='latinhypercube',
                                                                                   disp=True, workers=worker)
 
 

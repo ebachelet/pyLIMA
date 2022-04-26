@@ -4,16 +4,17 @@ import numpy as np
 import sys
 import emcee
 
-from pyLIMA.fits.fit import MLfit
+from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
 
 
 class MCMCfit(MLfit):
 
-    def __init__(self, model, MCMC_walkers=2, MCMC_links = 5000, telescopes_fluxes_method='MCMC'):
+    def __init__(self, model, rescaling_photometry=False, MCMC_walkers=2, MCMC_links = 5000, telescopes_fluxes_method='MCMC'):
         """The fit class has to be intialized with an event object."""
 
-        self.model = model
+        super().__init__(model, rescaling_photometry)
+
         self.MCMC_walkers = MCMC_walkers #times number of dimension!
         self.MCMC_links = MCMC_links
         self.MCMC_chains = []
@@ -25,22 +26,36 @@ class MCMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        model_parameters = fit_process_parameters[:-len(self.model.event.telescopes)]
 
-        photometric_chi2 = pyLIMA.fits.objective_functions.all_telescope_photometric_chi2(self.model,
-                                                                                          pyLIMA_parameters)
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
-        #astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_chi2(self.model.event, pyLIMA_parameters)
+        if self.rescaling_photometry:
 
-        return -0.5*photometric_chi2
+            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
+                                                                                                   pyLIMA_parameters,
+                                                                                                   norm=True,
+                                                                                                   rescaling_photometry_parameters=fit_process_parameters[
+                                                                                                                                   -len(
+                                                                                                                                       self.model.event.telescopes):])
+        else:
 
-    def fit(self,pool=None):
+            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
+                                                                                                   pyLIMA_parameters,
+                                                                                                   norm=True,
+                                                                                                   rescaling_photometry_parameters=None)
+
+        photometric_likelihood = -0.5*(np.sum(residus ** 2 + 2 * np.log(errflux)) + len(errflux) * 1.8378770664093453)
+        # astrometric_residuals = pyLIMA.fits.residuals.all_telescope_astrometric_chi2(self.model.event, pyLIMA_parameters)
+
+        return photometric_likelihood
+
+
+    def fit(self, computational_pool=False):
 
         start = python_time.time()
 
         self.guess = self.initial_guess()
-
-
 
         if self.telescopes_fluxes_method != 'MCMC':
             limit_parameters = len(self.model.parameters_boundaries)
@@ -49,6 +64,12 @@ class MCMCfit(MLfit):
             limit_parameters = len(self.guess)
             best_solution = self.guess
 
+        if self.rescaling_photometry:
+
+            for telescope in self.model.event.telescopes:
+
+                best_solution.append(0.0)
+
         number_of_parameters = len(best_solution)
         nwalkers = self.MCMC_walkers * number_of_parameters
         nlinks = self.MCMC_links
@@ -56,6 +77,9 @@ class MCMCfit(MLfit):
         # Initialize the population of MCMC
         population = best_solution+np.random.randn(nwalkers,number_of_parameters)
 
+        if computational_pool:
+
+            pool = computational_pool
 
         try:
             # create a new MPI pool
@@ -68,7 +92,7 @@ class MCMCfit(MLfit):
 
             pass
 
-        sampler = emcee.EnsembleSampler(nwalkers,number_of_parameters , self.objective_function,
+        sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.objective_function,
                                         a=2.0, pool=pool)
 
         sampler.run_mcmc(population, nlinks, progress=True)

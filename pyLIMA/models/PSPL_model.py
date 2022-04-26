@@ -2,7 +2,7 @@ import numpy as np
 
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_PSPL
-
+from pyLIMA.astrometry import astrometric_shifts
 
 class PSPLmodel(MLmodel):
     @property
@@ -37,16 +37,26 @@ class PSPLmodel(MLmodel):
 
         source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters)
 
-        if self.astrometry:
+        if telescope.astrometry is not None:
 
             import pyLIMA.magnification.magnification_VBB
             pyLIMA.magnification.magnification_VBB.VBB.astrometry = True
 
+            magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
+                                                                  return_impact_parameter)
+
+            shifts = astrometric_shifts.PSPL_shifts(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
 
         else:
 
-            return magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
+            shifts = None
+            magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
                                                                               return_impact_parameter)
+
+        magnification_model = {'magnification':magnification,'astrometry':shifts}
+
+
+        return magnification_model
 
     def light_curve_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model lightcurve

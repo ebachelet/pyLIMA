@@ -4,8 +4,6 @@ import numpy as np
 import sys
 
 from pyLIMA.fits.LM_fit import LMfit
-import pyLIMA.fits.residuals
-
 
 class TRFfit(LMfit):
 

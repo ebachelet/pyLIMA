@@ -94,7 +94,13 @@ class MLParallaxes(object):
 
         location = telescope.location
 
-        time = telescope.lightcurve_flux['time'].value
+        try:
+
+            time = telescope.lightcurve_flux['time'].value
+
+        except:
+            time = telescope.astrometry['time'].value
+
         delta_North = np.array([])
         delta_East = np.array([])
 

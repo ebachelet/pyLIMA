@@ -93,16 +93,17 @@ class Telescope(object):
         self.lightcurve_flux = None
         self.astrometry = None
 
-        if 'mag' in light_curve_units:
+        if light_curve is not None:
+            if 'mag' in light_curve_units:
 
-            self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
-            self.lightcurve_flux = self.lightcurve_in_flux()
+                self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                self.lightcurve_flux = self.lightcurve_in_flux()
 
-        if 'flux' in light_curve_units:
-            self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
-            self.lightcurve_flux = self.lightcurve_in_magnitude()
+            if 'flux' in light_curve_units:
+                self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                self.lightcurve_flux = self.lightcurve_in_magnitude()
 
-        if astrometry:
+        if astrometry is not None:
 
             self.astrometry = construct_time_series(astrometry, astrometry_names, astrometry_units)
 
@@ -125,13 +126,15 @@ class Telescope(object):
         :return: the size of the corresponding lightcurve
         :rtype: int
         """
+        try:
+            if choice == 'flux':
+                return len(self.lightcurve_flux['time'])
 
-        if choice == 'flux':
-            return len(self.lightcurve_flux['time'])
+            if choice == 'magnitude':
+                return len(self.lightcurve_magnitude['mag'])
+        except:
 
-        if choice == 'magnitude':
-            return len(self.lightcurve_magnitude['mag'])
-
+            return 0
     def find_gamma(self, star):
         """
         Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter.

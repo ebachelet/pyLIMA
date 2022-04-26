@@ -3,7 +3,7 @@ import time as python_time
 import numpy as np
 import sys
 
-from pyLIMA.fits.MLfit import MLfit
+from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
 
 class LMfit(MLfit):

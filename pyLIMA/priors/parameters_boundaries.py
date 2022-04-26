@@ -9,10 +9,20 @@ def parameters_boundaries(model):
        :rtype: list
     """
 
-    minimum_observing_time_telescopes = [min(telescope.lightcurve_flux['time'].value) - 0 for telescope in
-                                         model.event.telescopes]
-    maximum_observing_time_telescopes = [max(telescope.lightcurve_flux['time'].value) + 0 for telescope in
-                                         model.event.telescopes]
+    minimum_observing_time_telescopes = []
+    maximum_observing_time_telescopes = []
+
+    for telescope in model.event.telescopes:
+
+        try:
+
+            minimum_observing_time_telescopes.append(min(telescope.lightcurve_flux['time'].value))
+            maximum_observing_time_telescopes.append(max(telescope.lightcurve_flux['time'].value))
+
+        except:
+
+            minimum_observing_time_telescopes.append(min(telescope.astrometry['time'].value))
+            maximum_observing_time_telescopes.append(max(telescope.astrometry['time'].value))
 
     to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
     delta_to_boundaries = (-150, 150)
@@ -36,6 +46,7 @@ def parameters_boundaries(model):
     v_boundaries = (-2, 2)
     mass_boundaries = [10 ** -1, 10]
     rE_boundaries = [10 ** -1, 100]
+    theta_E_boundaries = (0.0,10.0)
 
     v_boundaries = (-2, 2)
 
@@ -87,6 +98,11 @@ def parameters_boundaries(model):
         # for ind,telo in enumerate(model.event.telescopes):
         # parameters_boundaries+=[fluxes[ind], blend[ind]]
 
+
+    if model.astrometry:
+
+        parameters_boundaries.append(theta_E_boundaries)
+
     if model.model_type == 'VariablePL':
         parameters_boundaries = [to_boundaries, uo_boundaries, tE_boundaries, rho_boundaries, period_variable]
 
@@ -135,3 +151,32 @@ def parameters_boundaries(model):
     # if source_spots
 
     return parameters_boundaries
+
+
+def telescopes_fluxes_boundaries(model):
+
+    fluxes_boundaries = []
+
+    for telescope in model.event.telescopes:
+
+        fluxes_boundaries.append((0,np.max(telescope.lightcurve_flux['flux'].value)))
+
+        if model.blend_flux_parameter == 'fb':
+
+            fluxes_boundaries.append((-fluxes_boundaries[-1][1], fluxes_boundaries[-1][1]))
+
+        if model.blend_flux_parameter == 'g':
+
+            fluxes_boundaries.append((-1, 1000))
+
+    return fluxes_boundaries
+
+def rescaling_boundaries(model):
+
+    rescaling_boundaries = []
+
+    for telescope in model.event.telescopes:
+
+        rescaling_boundaries.append((0,10))
+
+    return rescaling_boundaries
