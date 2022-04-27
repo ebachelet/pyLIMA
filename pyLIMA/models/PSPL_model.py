@@ -47,6 +47,13 @@ class PSPLmodel(MLmodel):
 
             shifts = astrometric_shifts.PSPL_shifts(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
 
+            angle = np.arctan2(pyLIMA_parameters.piEE, pyLIMA_parameters.piEN)
+
+            Deltay = shifts[0] * np.cos(angle) - np.sin(angle) * shifts[1]
+            Deltax = shifts[0] * np.sin(angle) + np.cos(angle) * shifts[1]
+
+            shifts = [Deltax,Deltay]
+
         else:
 
             shifts = None

@@ -87,7 +87,7 @@ class MLmodel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
-                 orbital_motion=['None', 0.0], blend_flux_parameter='fb'):
+                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend'):
         """ Initialization of the attributes described above.
         """
 
@@ -144,82 +144,83 @@ class MLmodel(object):
     def define_pyLIMA_standard_parameters(self):
         """ Define the standard pyLIMA parameters dictionnary."""
 
-        self.pyLIMA_standards_dictionnary = self.paczynski_model_parameters()
+        model_dictionnary = self.paczynski_model_parameters()
+
+        model_dictionnary_updated = self.astrometric_model_parameters(model_dictionnary)
+
+        self.second_order_model_parameters(model_dictionnary_updated)
+
+        self.telescopes_fluxes_model_parameters(model_dictionnary_updated)
+
+        self.pyLIMA_standards_dictionnary = OrderedDict(
+            sorted(model_dictionnary_updated.items(), key=lambda x: x[1]))
+
+        self.parameters_boundaries = pyLIMA.priors.parameters_boundaries.parameters_boundaries(self.event, self.pyLIMA_standards_dictionnary)
+
+
+    def astrometric_model_parameters(self, model_dictionnary):
 
         for telescope in self.event.telescopes:
 
             if telescope.astrometry is not None:
 
-                self.pyLIMA_standards_dictionnary['theta_E'] = len(self.pyLIMA_standards_dictionnary)
+                model_dictionnary['theta_E'] = len(model_dictionnary)
 
                 break
+        return model_dictionnary
+
+    def second_order_model_parameters(self, model_dictionnary):
 
         if self.parallax_model[0] != 'None':
 
             self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['piEN'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['piEE'] = len(self.pyLIMA_standards_dictionnary)
+            model_dictionnary['piEN'] = len(model_dictionnary)
+            model_dictionnary['piEE'] = len(model_dictionnary)
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
-
-        if self.xallarap_model[0] != 'None':
-
-            self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['XiEN'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['XiEE'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['ra_xallarap'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['dec_xallarap'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['period_xallarap'] = len(self.pyLIMA_standards_dictionnary)
-
-            if self.xallarap_model[0] != 'Circular':
-
-                self.pyLIMA_standards_dictionnary['eccentricity_xallarap'] = len(self.pyLIMA_standards_dictionnary)
-                self.pyLIMA_standards_dictionnary['t_periastron_xallarap'] = len(self.pyLIMA_standards_dictionnary)
 
         if self.orbital_motion_model[0] == '2D':
 
             self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['dsdt'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['dalphadt'] = len(self.pyLIMA_standards_dictionnary)
+            model_dictionnary['dsdt'] = len(model_dictionnary)
+            model_dictionnary['dalphadt'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == 'Circular':
 
             self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
+            model_dictionnary['v_para'] = len(model_dictionnary)
+            model_dictionnary['v_perp'] = len(model_dictionnary)
+            model_dictionnary['v_radial'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == 'Keplerian':
 
             self.Jacobian_flag = 'No way'
-            self.pyLIMA_standards_dictionnary['logs_z'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['v_para'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['v_perp'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['v_radial'] = len(self.pyLIMA_standards_dictionnary)
-            self.pyLIMA_standards_dictionnary['mass_lens'] = len(self.pyLIMA_standards_dictionnary)
+            model_dictionnary['logs_z'] = len(model_dictionnary)
+            model_dictionnary['v_para'] = len(model_dictionnary)
+            model_dictionnary['v_perp'] = len(model_dictionnary)
+            model_dictionnary['v_radial'] = len(model_dictionnary)
+            model_dictionnary['mass_lens'] = len(model_dictionnary)
 
-            if 'theta_E' not in self.pyLIMA_standards_dictionnary.keys():
+        return model_dictionnary
 
-                self.pyLIMA_standards_dictionnary['theta_E'] = len(self.pyLIMA_standards_dictionnary)
+    def telescopes_fluxes_model_parameters(self, model_dictionnary):
 
         for telescope in self.event.telescopes:
 
             if telescope.lightcurve_flux is not None:
 
-                self.pyLIMA_standards_dictionnary['fs_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+                model_dictionnary['fsource_' + telescope.name] = len(model_dictionnary)
 
-                if self.blend_flux_parameter == 'fb':
+                if self.blend_flux_parameter == 'fblend':
 
-                    self.pyLIMA_standards_dictionnary['fb_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+                    model_dictionnary['fblend_' + telescope.name] = len(model_dictionnary)
 
-                if self.blend_flux_parameter == 'g':
+                if self.blend_flux_parameter == 'gblend':
 
-                    self.pyLIMA_standards_dictionnary['g_' + telescope.name] = len(self.pyLIMA_standards_dictionnary)
+                    model_dictionnary['gblend_' + telescope.name] = len(model_dictionnary)
 
 
-        self.pyLIMA_standards_dictionnary = OrderedDict(sorted(self.pyLIMA_standards_dictionnary.items(), key=lambda x: x[1]))
-
-        self.parameters_boundaries = pyLIMA.priors.parameters_boundaries.parameters_boundaries(self)
+        return model_dictionnary
 
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
@@ -308,15 +309,15 @@ class MLmodel(object):
         """
         try:
             # Fluxes parameters are fitted
-            f_source = 2 * getattr(pyLIMA_parameters, 'fs_' + telescope.name) / 2
+            f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
 
-            if self.blend_flux_parameter == 'fb':
+            if self.blend_flux_parameter == 'fblend':
 
-                f_blending = 2 * getattr(pyLIMA_parameters, 'fb_' + telescope.name) / 2
+                f_blending = 2 * getattr(pyLIMA_parameters, 'fblend_' + telescope.name) / 2
 
-            if self.blend_flux_parameter == 'g':
+            if self.blend_flux_parameter == 'gblend':
 
-                g_blending = 2 * getattr(pyLIMA_parameters, 'g_' + telescope.name) / 2
+                g_blending = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
                 f_blending = f_source * g_blending
 
         except TypeError:
@@ -324,10 +325,9 @@ class MLmodel(object):
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve['flux'].value
-            errflux = lightcurve['err_flux'].value
 
             try:
-                f_source, f_blending = np.polyfit(magnification, flux, 1, w=1 / errflux)
+                f_source, f_blending = np.polyfit(magnification, flux, 1)
             except:
 
                 f_source = 0.0

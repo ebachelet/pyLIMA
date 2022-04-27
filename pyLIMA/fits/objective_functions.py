@@ -43,8 +43,8 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
                 else:
 
-                    residus_ra /= astrometry['delta_ra'].value
-                    residus_dec /= astrometry['delta_dec'].value
+                    residus_ra /= astrometry['err_delta_ra'].value
+                    residus_dec /= astrometry['err_delta_dec'].value
 
                     err_astrometry = np.append(err_astrometry, astrometry['err_delta_ra'].value)
                     err_astrometry = np.append(err_astrometry, astrometry['err_delta_dec'].value)
@@ -85,7 +85,8 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
     residuals = []
     errfluxes = []
 
-    for ind,telescope in enumerate(model.event.telescopes):
+    ind = 0
+    for telescope in model.event.telescopes:
 
         if telescope.lightcurve_flux is not None:
 
@@ -113,7 +114,7 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
 
 
             residuals = np.append(residuals, residus)
-
+            ind += 1
 
     return residuals, errfluxes
 

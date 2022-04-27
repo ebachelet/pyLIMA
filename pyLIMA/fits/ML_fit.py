@@ -1,5 +1,9 @@
 import sys
 import numpy as np
+from collections import OrderedDict
+
+
+from pyLIMA.priors import parameters_boundaries
 
 class FitException(Exception):
     pass
@@ -45,26 +49,57 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model, rescaling_photometry=False):
+    def __init__(self, model, rescale_photometry=False):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
-        self.rescaling_photometry = rescaling_photometry
+        self.rescale_photometry = rescale_photometry
         self.fit_parameters = []
+        self.fit_parameters_boundaries = []
+
+        self.fit_parameters_guess = []
+        self.model_parameters_guess = []
+        self.rescale_photometry_parameters_guess = []
+        self.telescopes_fluxes_parameters_guess = []
+
+        self.model_parameters_index = []
+        self.rescale_photometry_parameters_index = []
 
         self.model.define_model_parameters()
         self.define_fit_parameters()
+        self.define_fit_parameters_boundaries()
 
     def define_fit_parameters(self):
 
-        self.fit_parameters = self.model.model_dictionnary.copy()
+        fit_parameters_dictionnary = self.model.paczynski_model_parameters()
 
-        if self.rescaling_photometry:
+        fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
+
+        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(fit_parameters_dictionnary_updated)
+
+        fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(fit_parameters_dictionnary_updated)
+
+
+        if self.rescale_photometry:
 
             for telescope in self.model.event.telescopes:
 
-                self.fit_parameters['k_'+telescope.name] = len(self.fit_parameters)
+                if telescope.lightcurve_flux is not None:
 
+                    fit_parameters_dictionnary_updated['k_photometry_'+telescope.name] = \
+                        len(fit_parameters_dictionnary_updated)
+
+        self.fit_parameters = OrderedDict(
+        sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
+
+        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
+                                 i in self.fit_parameters.keys()]
+        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'k_photometry' in i]
+
+
+    def define_fit_parameters_boundaries(self):
+
+        self.fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
 
     def objective_function(self):
 
@@ -87,7 +122,7 @@ class MLfit(object):
 
         return covariance
 
-    def initial_guess(self):
+    def model_guess(self):
         """Try to estimate the microlensing parameters. Only use for PSPL and FSPL
            models. More details on microlguess module.
 
@@ -96,7 +131,7 @@ class MLfit(object):
         """
         import pyLIMA.priors.guess
 
-        if len(self.model.parameters_guess) == 0:
+        if len(self.model_parameters_guess) == 0:
 
             try:
                 # Estimate the Paczynski parameters
@@ -116,17 +151,19 @@ class MLfit(object):
                 if self.model.model_type == 'DSPL':
                     guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_DSPL(self.model.event)
 
-                if 'piEN' in self.model.model_dictionnary.keys():
+                if 'piEN' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
-                if 'XiEN' in self.model.model_dictionnary.keys():
+                if 'XiEN' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
-                if 'dsdt' in self.model.model_dictionnary.keys():
+                if 'dsdt' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
 
-                if 'spot_size' in self.model.model_dictionnary.keys():
+                if 'spot_size' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0]
+
+                self.model_parameters_guess = guess_paczynski_parameters
 
             except:
 
@@ -134,30 +171,42 @@ class MLfit(object):
                                    'Please provide some in model.parameters_guess or run a DE fit.')
         else:
 
-            if len(self.model.parameters_guess) != len(self.model.parameters_boundaries):
+            pass
 
-                raise FitException('Dimensions of parameters guess does not match the dimensions of parameters '
-                                   'boundaries. Check your parameters_guess input versus the model parameters.')
+    def telescopes_fluxes_guess(self):
 
-            guess_paczynski_parameters = list(self.model.parameters_guess)
+        if self.telescopes_fluxes_parameters_guess == []:
 
-        for ind in range(len(guess_paczynski_parameters)):
+            telescopes_fluxes = self.find_fluxes(self.model_parameters_guess)
 
-            if guess_paczynski_parameters[ind] < self.model.parameters_boundaries[ind][0]:
-                guess_paczynski_parameters[ind] = self.model.parameters_boundaries[ind][0]
+            self.telescopes_fluxes_parameters_guess = telescopes_fluxes
 
-            if guess_paczynski_parameters[ind] > self.model.parameters_boundaries[ind][1]:
-                guess_paczynski_parameters[ind] = self.model.parameters_boundaries[ind][1]
+    def rescale_photometry_guess(self):
 
-        print(guess_paczynski_parameters)
-        telescopes_fluxes = self.find_fluxes(guess_paczynski_parameters)
+        if self.rescale_photometry_parameters_guess == []:
 
-        if len(guess_paczynski_parameters) != len(list(self.model.model_dictionnary.keys())):
-            guess_paczynski_parameters += telescopes_fluxes
+            rescale_photometry_guess = []
+
+            for telescope in self.model.event.telescopes:
+
+                if telescope.lightcurve_flux is not None:
+
+                    rescale_photometry_guess.append(0.1)
+
+            self.rescale_photometry_parameters_guess = rescale_photometry_guess
+
+    def initial_guess(self):
+
+        self.model_guess()
+        self.telescopes_fluxes_guess()
+        self.rescale_photometry_guess()
+
+        fit_parameters_guess = self.model_parameters_guess+self.telescopes_fluxes_parameters_guess+self.rescale_photometry_parameters_guess
+        fit_parameters_guess = [float(i) for i in fit_parameters_guess]
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
-        print('Using guess: ',guess_paczynski_parameters)
-        return guess_paczynski_parameters
+        print('Using guess: ',fit_parameters_guess)
+        return fit_parameters_guess
 
     def likelihood_astrometry(self):
 
@@ -214,19 +263,20 @@ class MLfit(object):
 
         for telescope in self.model.event.telescopes:
 
-            flux = telescope.lightcurve_flux['flux'].value
+            if telescope.lightcurve_flux is not None:
+                flux = telescope.lightcurve_flux['flux'].value
 
-            ml_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+                ml_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-            f_source = ml_model['f_source']
-            f_blending = ml_model['f_blending']
-            # Prior here
-            if f_source < 0:
+                f_source = ml_model['f_source']
+                f_blending = ml_model['f_blending']
+                # Prior here
+                if f_source < 0:
 
-                telescopes_fluxes.append(np.min(flux))
-                telescopes_fluxes.append(0.0)
-            else:
-                telescopes_fluxes.append(f_source)
-                telescopes_fluxes.append(f_blending)
+                    telescopes_fluxes.append(np.min(flux))
+                    telescopes_fluxes.append(0.0)
+                else:
+                    telescopes_fluxes.append(f_source)
+                    telescopes_fluxes.append(f_blending)
         return telescopes_fluxes
 

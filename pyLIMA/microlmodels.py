@@ -279,7 +279,7 @@ class MLModel(object):
 
         import pyLIMA.priors.parameters_boundaries
         self.parameters_boundaries = \
-            pyLIMA.priors.parameters_boundaries.parameters_boundaries(self)
+            pyLIMA.priors.parameters_boundaries.parameters_boundaries(self.event, self.pyLIMA_standards_dictionnary)
 
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
@@ -576,25 +576,13 @@ class ModelPSPL(MLModel):
         :return: magnification
         :rtype: array_like
         """
-        if self.astrometry:
 
-            import pyLIMA.magnification.magnification_VBB
-            pyLIMA.magnification.magnification_VBB.VBB.astrometry = True
+        import pyLIMA.magnification.magnification_PSPL
+        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
+                                                    pyLIMA_parameters.tE, pyLIMA_parameters)
 
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to,
-                                                                                 pyLIMA_parameters.uo,
-                                                                                 pyLIMA_parameters.tE,
-                                                                                 pyLIMA_parameters)
-
-
-        else:
-
-            import pyLIMA.magnification.magnification_PSPL
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to, pyLIMA_parameters.uo,
-                                                        pyLIMA_parameters.tE, pyLIMA_parameters)
-
-            return pyLIMA.magnification.magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
-                                                                              return_impact_parameter)
+        return pyLIMA.magnification.magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
+                                                                          return_impact_parameter)
 
     def model_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model

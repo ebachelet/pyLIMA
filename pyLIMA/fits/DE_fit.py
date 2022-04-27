@@ -2,45 +2,77 @@ import scipy
 import time as python_time
 import numpy as np
 import sys
-from multiprocessing import Process, Manager
+from multiprocessing import Manager
+from collections import OrderedDict
+
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
-from pyLIMA.priors import parameters_boundaries
 
 class DEfit(MLfit):
 
-    def __init__(self, model, rescaling_photometry=False, DE_population_size=10, max_iteration=10000, telescopes_fluxes_method='DE'):
+    def __init__(self, model, rescale_photometry=False, DE_population_size=10, max_iteration=10000, telescopes_fluxes_method='DE'):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, rescaling_photometry)
+        self.telescopes_fluxes_method = telescopes_fluxes_method
+
+        super().__init__(model, rescale_photometry)
 
         self.DE_population = Manager().list() # to be recognize by all process during parallelization
-        self.DE_population_size = DE_population_size
+        self.DE_population_size = DE_population_size #Times number of dimensions!
         self.fit_boundaries = []
         self.max_iteration = max_iteration
-        self.telescopes_fluxes_method = telescopes_fluxes_method
         self.fit_time = 0 #s
 
     def fit_type(self):
         return "Differential Evolution"
 
+    def define_fit_parameters(self):
+
+        fit_parameters_dictionnary = self.model.paczynski_model_parameters()
+
+        fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
+
+        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(
+            fit_parameters_dictionnary_updated)
+
+        if self.telescopes_fluxes_method == 'DE':
+            fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
+            fit_parameters_dictionnary_updated)
+
+        if self.rescale_photometry:
+
+            for telescope in self.model.event.telescopes:
+
+                if telescope.lightcurve_flux is not None:
+                    fit_parameters_dictionnary_updated['k_photometry_' + telescope.name] = \
+                        len(fit_parameters_dictionnary_updated)
+
+        self.fit_parameters = OrderedDict(
+            sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
+
+        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if i in self.fit_parameters.keys()]
+        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'k_photometry' in i]
+
     def objective_function(self, fit_process_parameters):
 
         likelihood = 0
-        model_parameters = fit_process_parameters[:-len(self.model.event.telescopes)]
+
+
+        model_parameters = fit_process_parameters[self.model_parameters_index]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         if self.model.photometry:
 
-            if self.rescaling_photometry:
+            if self.rescale_photometry:
+
+                rescaling_photometry_parameters = fit_process_parameters[self.rescale_photometry_parameters_index]
 
                 residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
                                                                                                        pyLIMA_parameters,
                                                                                                        norm=True,
-                                                                                                       rescaling_photometry_parameters=fit_process_parameters[
-                                                                                                                                       -len(self.model.event.telescopes):])
+                                                                                                       rescaling_photometry_parameters=rescaling_photometry_parameters)
             else:
 
                 residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
@@ -48,7 +80,7 @@ class DEfit(MLfit):
                                                                                                        norm=True,
                                                                                                        rescaling_photometry_parameters=None)
 
-            photometric_likelihood = 0.5*(np.sum(residus ** 2 + 2 * np.log(errflux)) + len(errflux)*1.8378770664093453)
+            photometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errflux**2)))
 
             likelihood += photometric_likelihood
 
@@ -59,10 +91,12 @@ class DEfit(MLfit):
                                                                                                    norm=True,
                                                                                                    rescaling_astrometry_parameters=None)
 
-            astrometric_likelihood = 0.5*(np.sum(residus ** 2 + 2 * np.log(errors)) + len(errors)*1.8378770664093453)
+            astrometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errors**2)))
 
             likelihood += astrometric_likelihood
+
         self.DE_population.append(fit_process_parameters.tolist() + [likelihood])
+
         return likelihood
 
     def fit(self, computational_pool=None):
@@ -77,17 +111,7 @@ class DEfit(MLfit):
 
             worker = 1
 
-        bounds = self.model.parameters_boundaries
-
-        if self.telescopes_fluxes_method == 'DE':
-
-            bounds += parameters_boundaries.telescopes_fluxes_boundaries(self.model)
-
-        if self.rescaling_photometry:
-
-            bounds += parameters_boundaries.rescaling_boundaries(self.model)
-
-        self.fit_boundaries = bounds
+        bounds = self.fit_parameters_boundaries
 
         n_data = 0
         for telescope in self.model.event.telescopes:
@@ -95,10 +119,10 @@ class DEfit(MLfit):
 
         differential_evolution_estimation = scipy.optimize.differential_evolution(self.objective_function,
                                                                                   bounds=bounds,
-                                                                                  mutation=(0.1,1.9), popsize=int(self.DE_population_size),
-                                                                                  maxiter=self.max_iteration, tol=0.0001,
-                                                                                  atol=0.000, strategy='rand1bin',
-                                                                                  recombination=0.25, polish=True, init='latinhypercube',
+                                                                                  mutation=(0.1, 1.9), popsize=int(self.DE_population_size),
+                                                                                  maxiter=self.max_iteration, tol=0.0,
+                                                                                  atol=1, strategy='rand2bin',
+                                                                                  recombination=0.5, polish=True, init='latinhypercube',
                                                                                   disp=True, workers=worker)
 
 
