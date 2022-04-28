@@ -21,66 +21,68 @@ def initial_guess_PSPL(event):
     errors_magnitude = []
 
     for telescope in event.telescopes:
-        # Lot of process here, if one fails, just skip
-        lightcurve_magnitude = telescope.lightcurve_magnitude
-        mean_error_magnitude = np.mean(lightcurve_magnitude['err_mag'].value)
-        try:
 
-            # only the best photometry
-            good_photometry_indexes = np.where((lightcurve_magnitude['err_mag'].value <
-                                                max(0.1, mean_error_magnitude)))[0]
-            lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
+        if telescope.lightcurve_magnitude is not None:
+            # Lot of process here, if one fails, just skip
+            lightcurve_magnitude = telescope.lightcurve_magnitude
+            mean_error_magnitude = np.mean(lightcurve_magnitude['err_mag'].value)
+            try:
 
-            lightcurve_bis = lightcurve_bis[lightcurve_bis['time'].value.argsort(), :]
+                # only the best photometry
+                good_photometry_indexes = np.where((lightcurve_magnitude['err_mag'].value <
+                                                    max(0.1, mean_error_magnitude)))[0]
+                lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
 
-            mag = lightcurve_bis['mag'].value
-            flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
+                lightcurve_bis = lightcurve_bis[lightcurve_bis['time'].value.argsort(), :]
 
-            # clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1.
-            mag_clean = ss.savgol_filter(mag, 3, 1)
-            time = lightcurve_bis['time'].value
-            flux_clean = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag_clean)
-            errmag = lightcurve_bis['err_mag'].value
+                mag = lightcurve_bis['mag'].value
+                flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
 
-            flux_source = min(flux_clean)
-            good_points = np.where(flux_clean > flux_source)[0]
+                # clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1.
+                mag_clean = ss.savgol_filter(mag, 3, 1)
+                time = lightcurve_bis['time'].value
+                flux_clean = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag_clean)
+                errmag = lightcurve_bis['err_mag'].value
 
-            while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
+                flux_source = min(flux_clean)
+                good_points = np.where(flux_clean > flux_source)[0]
 
-                indexes = \
-                    np.where((flux_clean[good_points] > np.median(flux_clean[good_points])) & (
-                        errmag[good_points] <= max(0.1, 2.0 * np.mean(errmag[good_points]))))[0]
+                while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
 
-                if len(indexes) < 1:
+                    indexes = \
+                        np.where((flux_clean[good_points] > np.median(flux_clean[good_points])) & (
+                            errmag[good_points] <= max(0.1, 2.0 * np.mean(errmag[good_points]))))[0]
 
-                    break
+                    if len(indexes) < 1:
 
-                else:
+                        break
 
-                    good_points = good_points[indexes]
+                    else:
 
-                    # gravity = (
-                    #   np.median(time[good_points]), np.median(flux_clean[good_points]),
-                    #    np.mean(errmag[good_points]))
+                        good_points = good_points[indexes]
 
-                    # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
+                        # gravity = (
+                        #   np.median(time[good_points]), np.median(flux_clean[good_points]),
+                        #    np.mean(errmag[good_points]))
 
-            to = np.median(time[good_points])
-            max_flux = max(flux[good_points])
-            to_estimations.append(to)
-            maximum_flux_estimations.append(max_flux)
-            errors_magnitude.append(np.mean(lightcurve_bis[good_points]['err_mag'].value))
+                        # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
 
-        except:
+                to = np.median(time[good_points])
+                max_flux = max(flux[good_points])
+                to_estimations.append(to)
+                maximum_flux_estimations.append(max_flux)
+                errors_magnitude.append(np.mean(lightcurve_bis[good_points]['err_mag'].value))
 
-            time = lightcurve_magnitude['time'].value
-            flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(lightcurve_magnitude['mag'].value)
-            to = np.median(time)
-            max_flux = max(flux)
-            to_estimations.append(to)
-            maximum_flux_estimations.append(max_flux)
+            except:
 
-            errors_magnitude.append(mean_error_magnitude)
+                time = lightcurve_magnitude['time'].value
+                flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(lightcurve_magnitude['mag'].value)
+                to = np.median(time)
+                max_flux = max(flux)
+                to_estimations.append(to)
+                maximum_flux_estimations.append(max_flux)
+
+                errors_magnitude.append(mean_error_magnitude)
 
     to_guess = sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) / sum(
         1 / np.array(errors_magnitude) ** 2)

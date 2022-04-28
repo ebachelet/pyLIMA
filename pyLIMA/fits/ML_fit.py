@@ -55,9 +55,7 @@ class MLfit(object):
         self.model = model
         self.rescale_photometry = rescale_photometry
         self.fit_parameters = []
-        self.fit_parameters_boundaries = []
 
-        self.fit_parameters_guess = []
         self.model_parameters_guess = []
         self.rescale_photometry_parameters_guess = []
         self.telescopes_fluxes_parameters_guess = []
@@ -67,7 +65,6 @@ class MLfit(object):
 
         self.model.define_model_parameters()
         self.define_fit_parameters()
-        self.define_fit_parameters_boundaries()
 
     def define_fit_parameters(self):
 
@@ -86,7 +83,7 @@ class MLfit(object):
 
                 if telescope.lightcurve_flux is not None:
 
-                    fit_parameters_dictionnary_updated['k_photometry_'+telescope.name] = \
+                    fit_parameters_dictionnary_updated['logk_photometry_'+telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
         self.fit_parameters = OrderedDict(
@@ -94,12 +91,15 @@ class MLfit(object):
 
         self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
                                  i in self.fit_parameters.keys()]
-        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'k_photometry' in i]
+        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'logk_photometry' in i]
 
+        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
 
-    def define_fit_parameters_boundaries(self):
+        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
 
-        self.fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
+        for ind, key in enumerate(self.fit_parameters.keys()):
+
+            self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
 
     def objective_function(self):
 
@@ -137,19 +137,28 @@ class MLfit(object):
                 # Estimate the Paczynski parameters
 
                 if self.model.model_type == 'PSPL':
+
                     guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_PSPL(self.model.event)
 
                 if self.model.model_type == 'FSPL':
+
                     guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.model.event)
 
                 if self.model.model_type == 'FSPLee':
+
                     guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.model.event)
 
                 if self.model.model_type == 'FSPLarge':
+
                     guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_FSPL(self.model.event)
 
                 if self.model.model_type == 'DSPL':
+
                     guess_paczynski_parameters, f_source = pyLIMA.priors.guess.initial_guess_DSPL(self.model.event)
+
+                if 'theta_E' in self.fit_parameters.keys():
+
+                    guess_paczynski_parameters = guess_paczynski_parameters + [1.0]
 
                 if 'piEN' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
@@ -171,6 +180,8 @@ class MLfit(object):
                                    'Please provide some in model.parameters_guess or run a DE fit.')
         else:
 
+            self.model_parameters_guess = [float(i) for i in self.model_parameters_guess ]
+
             pass
 
     def telescopes_fluxes_guess(self):
@@ -181,19 +192,30 @@ class MLfit(object):
 
             self.telescopes_fluxes_parameters_guess = telescopes_fluxes
 
+        self.telescopes_fluxes_parameters_guess = [float(i) for i in self.telescopes_fluxes_parameters_guess]
+
     def rescale_photometry_guess(self):
 
-        if self.rescale_photometry_parameters_guess == []:
+        if self.rescale_photometry:
 
-            rescale_photometry_guess = []
+            if self.rescale_photometry_parameters_guess == []:
 
-            for telescope in self.model.event.telescopes:
+                rescale_photometry_guess = []
 
-                if telescope.lightcurve_flux is not None:
+                for telescope in self.model.event.telescopes:
 
-                    rescale_photometry_guess.append(0.1)
+                    if telescope.lightcurve_flux is not None:
 
-            self.rescale_photometry_parameters_guess = rescale_photometry_guess
+                        rescale_photometry_guess.append(0.1)
+
+                self.rescale_photometry_parameters_guess = rescale_photometry_guess
+
+            self.rescale_photometry_parameters_guess = [float(i) for i in self.rescale_photometry_parameters_guess]
+
+        else:
+
+            self.rescale_photometry_parameters_guess = []
+
 
     def initial_guess(self):
 

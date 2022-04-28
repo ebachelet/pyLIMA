@@ -89,10 +89,9 @@ def gblend_boundaries():
 
     return (-1.0,1000)
 
-
 def rescale_photometry_boundaries():
 
-    return (0.0,10.0)
+    return (-20,2.5)
 
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.
@@ -128,7 +127,7 @@ def parameters_boundaries(event, model_dictionnary):
 
                 function_name = key + '_boundaries(event)'
 
-            if 'k_photometry' in key:
+            if 'logk_photometry' in key:
 
                 function_name = 'rescale_photometry_boundaries()'
 

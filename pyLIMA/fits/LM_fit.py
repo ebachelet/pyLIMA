@@ -11,7 +11,7 @@ class LMfit(MLfit):
     def __init__(self, model):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, rescalephotometry=False)
+        super().__init__(model, rescale_photometry=False)
 
         self.guess = []
         self.fit_results = []
@@ -36,7 +36,7 @@ class LMfit(MLfit):
                                                                                                        norm=True,
                                                                                                        rescaling_photometry_parameters=None)
 
-            likelihood = np.append(likelihood, residus**2)
+            likelihood = np.append(likelihood, residus)
 
 
         if self.model.astrometry:
@@ -46,9 +46,9 @@ class LMfit(MLfit):
                                                                                                   norm=True,
                                                                                                   rescaling_astrometry_parameters=None)
 
-            likelihood = np.append(likelihood, residus**2)
+            likelihood = np.append(likelihood, residus)
 
-        return (2*likelihood)**0.5
+        return likelihood
 
     def fit(self):
 
@@ -63,18 +63,18 @@ class LMfit(MLfit):
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
-        n_parameters = len(self.model.model_dictionnary)
 
         #if self.model.Jacobian_flag == 'OK':
 
         # No Jacobian now
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',  max_nfev=50000,
-                                              gtol=10 ** -10)
+                                              xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
+
 
 
 
         fit_result = lm_fit['x'].tolist()
-        fit_result.append(lm_fit['cost']) #likelihood
+        fit_result.append(lm_fit['cost']*2) #likelihood
 
 
         try:

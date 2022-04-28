@@ -1,12 +1,14 @@
-import scipy
 import time as python_time
 import numpy as np
 import sys
 import emcee
+from collections import OrderedDict
+
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
-from collections import OrderedDict
+from pyLIMA.priors import parameters_boundaries
+
 
 
 class MCMCfit(MLfit):
@@ -34,9 +36,10 @@ class MCMCfit(MLfit):
         fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
 
         fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(
-            fit_parameters_dictionnary_updated)
+            fit_parametersUSBL_dictionnary_updated)
 
         if self.telescopes_fluxes_method == 'MCMC':
+
             fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
                 fit_parameters_dictionnary_updated)
 
@@ -45,7 +48,8 @@ class MCMCfit(MLfit):
             for telescope in self.model.event.telescopes:
 
                 if telescope.lightcurve_flux is not None:
-                    fit_parameters_dictionnary_updated['k_photometry_' + telescope.name] = \
+
+                    fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
         self.fit_parameters = OrderedDict(
@@ -54,7 +58,14 @@ class MCMCfit(MLfit):
         self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
                                        i in self.fit_parameters.keys()]
         self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if
-                                                    'k_photometry' in i]
+                                                    'logk_photometry' in i]
+
+        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
+
+
+        for ind, key in enumerate(self.fit_parameters.keys()):
+
+            self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
 
     def objective_function(self, fit_process_parameters):
 
@@ -68,7 +79,7 @@ class MCMCfit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = fit_process_parameters[self.rescale_photometry_parameters_index]
+                rescaling_photometry_parameters = np.exp(fit_process_parameters[self.rescale_photometry_parameters_index])
 
                 residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
                                                                                                        pyLIMA_parameters,
@@ -108,8 +119,12 @@ class MCMCfit(MLfit):
         nwalkers = self.MCMC_walkers * number_of_parameters
         nlinks = self.MCMC_links
 
+
+        import pdb;
+        pdb.set_trace()
         # Initialize the population of MCMC
-        population = best_solution+np.random.randn(nwalkers,number_of_parameters)*10**-6
+        population = best_solution*np.random.uniform(0.999999, 1.000001, (nwalkers,number_of_parameters))+np.random.uniform(-1, 1,(nwalkers,number_of_parameters))*10**-4
+
 
         if computational_pool:
 
