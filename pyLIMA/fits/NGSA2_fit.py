@@ -1,4 +1,3 @@
-import scipy
 import time as python_time
 import numpy as np
 import sys
@@ -26,13 +25,14 @@ class MLProblem(ElementwiseProblem):
             self.objective_photometry = None
 
         if objective_astrometry is not None:
-            #pass
+
             n_obj += 1
             self.objective_astrometry = objective_astrometry
 
         else:
-            #pass
+
             self.objective_astrometry = None
+
 
         super().__init__(n_var=n_var,
                          n_obj=n_obj,
@@ -52,22 +52,13 @@ class MLProblem(ElementwiseProblem):
             objectives.append(self.objective_photometry(x))
 
         if self.objective_astrometry is not None:
-            #pass
+
             objectives.append(self.objective_astrometry(x))
 
         out["F"] = objectives
 
 
 class NGSA2fit(MLfit):
-
-    def __init__(self, model, rescale_photometry=False, telescopes_fluxes_method='NGSA2'):
-        """The fit class has to be intialized with an event object."""
-
-
-        self.telescopes_fluxes_method = telescopes_fluxes_method
-
-        super().__init__(model, rescale_photometry)
-
 
     def fit_type(self):
         return "Non-dominated Sorting Genetic Algorithm"
@@ -95,13 +86,26 @@ class NGSA2fit(MLfit):
                     fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
+        if self.rescale_astrometry:
+
+            for telescope in self.model.event.telescopes:
+
+                if telescope.astrometry is not None:
+
+                    fit_parameters_dictionnary_updated['logk_astrometry_' + telescope.name] = \
+                        len(fit_parameters_dictionnary_updated)
+
+
         self.fit_parameters = OrderedDict(
             sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
         self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
                                        i in self.fit_parameters.keys()]
+
         self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if
                                                     'logk_photometry' in i]
+
+        self.rescale_astrometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'logk_astrometry' in i]
 
         fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
 
@@ -118,7 +122,7 @@ class NGSA2fit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = np.exp(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
 
                 residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
                                                                                                        pyLIMA_parameters,
@@ -135,7 +139,7 @@ class NGSA2fit(MLfit):
 
             likelihood = photometric_likelihood
 
-        return likelihood
+            return likelihood
 
     def likelihood_astrometry(self, fit_process_parameters):
 
@@ -154,6 +158,7 @@ class NGSA2fit(MLfit):
 
             likelihood = astrometric_likelihood
 
+
         return likelihood
 
 
@@ -164,29 +169,34 @@ class NGSA2fit(MLfit):
         from pymoo.algorithms.moo.nsga2 import NSGA2
         from pymoo.factory import get_sampling, get_crossover, get_mutation
 
+        number_of_parameters = len(self.fit_parameters.keys())
+
         algorithm = NSGA2(
-            pop_size=40,
-            n_offsprings=10,
+            pop_size=2*number_of_parameters,
+            n_offsprings=int(0.5*number_of_parameters),
             sampling=get_sampling("real_random"),
-            crossover=get_crossover("real_sbx", prob=0.5, eta=15),
+            crossover=get_crossover("real_sbx", prob=0.9, eta=15),
             mutation=get_mutation("real_pm", eta=20),
-            eliminate_duplicates=True
-        )
+            eliminate_duplicates=True)
 
         from pymoo.factory import get_termination
 
         termination = get_termination('default',n_max_gen=10000,)
 
-        if self.model.astrometry is not None:
+        if self.model.astrometry:
 
             astrometry = self.likelihood_astrometry
+
         else:
+
             astrometry = None
 
-        if self.model.photometry is not None:
+        if self.model.photometry:
 
             photometry = self.likelihood_photometry
+
         else:
+
             photometry = None
 
         bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys()]

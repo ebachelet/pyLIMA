@@ -22,13 +22,13 @@ class TRFfit(LMfit):
 
         bounds_min = [self.fit_parameters[key][1][0] for key in self.fit_parameters.keys()]
         bounds_max = [self.fit_parameters[key][1][1] for key in self.fit_parameters.keys()]
-        self.fit_scale = np.array([np.max(self.fit_parameters[key][1]) for key in self.fit_parameters.keys()])
 
         n_data = 0
+
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
         # No Jacobian now
-        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='trf', x_scale=self.fit_scale,
+        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='trf',
                                               bounds=(bounds_min, bounds_max),  max_nfev=50000, xtol=10**-10,
                                               ftol=10**-10, gtol=10 ** -10)
 

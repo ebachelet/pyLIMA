@@ -35,15 +35,13 @@ class PSPLmodel(MLmodel):
         :rtype: array_like
         """
 
-        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters)
-
         if telescope.astrometry is not None:
+
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
 
             import pyLIMA.magnification.magnification_VBB
             pyLIMA.magnification.magnification_VBB.VBB.astrometry = True
 
-            magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
-                                                                  return_impact_parameter)
 
             shifts = astrometric_shifts.PSPL_shifts(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
 
@@ -55,10 +53,17 @@ class PSPLmodel(MLmodel):
             shifts = [Deltax,Deltay]
 
         else:
-
             shifts = None
+
+        if telescope.lightcurve_flux is not None:
+
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
+
             magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
                                                                               return_impact_parameter)
+        else:
+
+            magnification = None
 
         magnification_model = {'magnification':magnification,'astrometry':shifts}
 

@@ -1,4 +1,4 @@
-import scipy
+from tqdm import tqdm
 import time as python_time
 import numpy as np
 import sys
@@ -11,7 +11,7 @@ import pyLIMA.fits.objective_functions
 
 
 
-class DEfit(MLfit):
+class DEMCfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000):
@@ -26,12 +26,11 @@ class DEfit(MLfit):
         self.fit_time = 0 #s
 
     def fit_type(self):
-        return "Differential Evolution"
+        return "Differential Evolution Markov Chain"
 
     def objective_function(self, fit_process_parameters):
 
         likelihood = 0
-        
         model_parameters = fit_process_parameters[self.model_parameters_index]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
@@ -80,43 +79,122 @@ class DEfit(MLfit):
 
             likelihood += astrometric_likelihood
 
-        self.DE_population.append(fit_process_parameters.tolist() + [likelihood])
+        #self.DE_population.append(fit_process_parameters.tolist() + [likelihood])
 
         return likelihood
+
+    def gelman_rubin(self, chain):
+        ssq = np.var(chain, axis=1, ddof=1)
+        W = np.mean(ssq, axis=0)
+        θb = np.mean(chain, axis=1)
+        θbb = np.mean(θb, axis=0)
+        m = chain.shape[0]
+        n = chain.shape[1]
+        B = n / (m - 1) * np.sum((θbb - θb) ** 2, axis=0)
+        var_θ = (n - 1) / n * W + 1 / n * B
+        GR= np.sqrt(var_θ / W)
+        return GR
+
+    def new_individual(self, ind1, pop):
+
+        crossover = np.random.uniform(0.1, 1.0)
+
+        ind2, ind3 = np.random.randint(0, len(pop), 2)
+        parent1 = pop[ind1]
+        parent2 = pop[ind2]
+        parent3 = pop[ind3]
+
+        mutate = np.random.uniform(0, 1, len(parent1[:-1])) < crossover
+        mutation = np.random.uniform(-2, 2, len(parent1[:-1]))
+
+        shifts = np.random.normal(0,10**-3,len(parent1[:-1]))
+
+        progress = (parent2[:-1] - parent3[:-1]) * mutation
+        child = np.copy(parent1)
+
+        child[:-1][mutate] += progress[mutate]
+        child[:-1] += shifts
+
+        objective = 0
+
+        for ind, param in enumerate(self.fit_parameters.keys()):
+
+            if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
+                objective = np.inf
+                break
+
+        if np.isinf(objective):
+
+            pass
+
+        else:
+
+            objective = self.objective_function(child[:-1])
+
+        casino = np.random.uniform(0, 1)
+
+        if np.exp(-objective + parent1[-1]) > casino:
+        #if objective<parent1[-1]:
+
+            child[-1] = objective
+
+            return child
+
+        else:
+
+            return parent1
+
+    def ptform(self, u):
+
+        x = []
+        for ind,key in enumerate(self.fit_parameters):
+
+            bound = self.fit_parameters[key][1]
+            x.append(u[ind]*(bound[1]-bound[0])+bound[0])
+
+        return np.array(x)
+
+
+    def objective_function2(self, fit_process_parameters):
+
+        like = self.objective_function(fit_process_parameters)
+
+        return -like
 
     def fit(self, computational_pool=None):
 
         starting_time = python_time.time()
 
-        if computational_pool:
+        initial_population = []
 
-            worker = computational_pool.map
+        for i in range(int(self.DE_population_size*len(self.fit_parameters))):
 
-        else:
+            individual = []
+            for j in self.fit_parameters.keys():
 
-            worker = 1
+                individual.append(np.random.uniform(self.fit_parameters[j][1][0],self.fit_parameters[j][1][1]))
 
-        bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys()]
+            individual = np.array(individual)
+            objective = self.objective_function(individual)
+            individual = np.r_[individual,objective]
+            initial_population.append(individual)
 
-        differential_evolution_estimation = scipy.optimize.differential_evolution(self.objective_function,
-                                                                                  bounds=bounds,
-                                                                                  mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
-                                                                                  maxiter=self.max_iteration, tol=0.00,
-                                                                                  atol=1.0, strategy='rand1bin',
-                                                                                  recombination=0.5, polish=True, init='latinhypercube',
-                                                                                  disp=True, workers=worker)
+        initial_population = np.array(initial_population)
+        all_population = []
+        all_population.append(initial_population)
 
+        loop_population = np.copy(initial_population)
 
-        # paczynski_parameters are all parameter0s to compute the model, excepted the telescopes fluxes.
-        paczynski_parameters = differential_evolution_estimation['x'].tolist()
+        for loop in tqdm(range(self.max_iteration)):
 
-        print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
-        print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
+            indexes = [(i, loop_population) for i in range(len(loop_population))]
 
-        fit_results = np.hstack((differential_evolution_estimation['x'], differential_evolution_estimation['fun']))
+            loop_population = np.array(computational_pool.starmap(self.new_individual, indexes))
+
+            all_population.append(loop_population)
+
+        self.DE_population = np.array(all_population)
 
         computation_time = python_time.time() - starting_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
-        self.DE_population = np.array(self.DE_population)
-        self.fit_results = fit_results
         self.fit_time = computation_time

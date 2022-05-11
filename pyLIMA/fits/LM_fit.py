@@ -8,10 +8,10 @@ import pyLIMA.fits.objective_functions
 
 class LMfit(MLfit):
 
-    def __init__(self, model):
+    def __init__(self, model, fancy_parameters=False,telescopes_fluxes_method='fit'):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, rescale_photometry=False)
+        super().__init__(model, fancy_parameters=fancy_parameters, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.guess = []
         self.fit_results = []

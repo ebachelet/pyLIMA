@@ -92,73 +92,82 @@ class MLParallaxes(object):
 
        """
 
-        location = telescope.location
+        for data_type in ['astrometry', 'photometry']:
 
-        try:
+            try:
 
-            time = telescope.lightcurve_flux['time'].value
+                location = telescope.location
 
-        except:
-            time = telescope.astrometry['time'].value
+                if data_type == 'photometry':
 
-        delta_North = np.array([])
-        delta_East = np.array([])
+                    time = telescope.lightcurve_flux['time'].value
 
-        if location == 'NewHorizon':
-            delta_North, delta_East = self.lonely_satellite(time, telescope)
+                else:
 
-        if location == 'Earth':
+                    time = telescope.astrometry['time'].value
 
-            if (self.parallax_model == 'Annual'):
-                telescope_positions = self.annual_parallax(time)
+                delta_North = np.array([])
+                delta_East = np.array([])
 
-                delta_North = np.append(delta_North, telescope_positions[0])
-                delta_East = np.append(delta_East, telescope_positions[1])
+                if location == 'NewHorizon':
+                    delta_North, delta_East = self.lonely_satellite(time, telescope)
 
-            if (self.parallax_model == 'Terrestrial'):
-                altitude = telescope.altitude
-                longitude = telescope.longitude
-                latitude = telescope.latitude
+                if location == 'Earth':
 
-                telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
+                    if (self.parallax_model == 'Annual'):
+                        telescope_positions = self.annual_parallax(time)
 
-                delta_North = np.append(delta_North, telescope_positions[0])
-                delta_East = np.append(delta_East, telescope_positions[1])
+                        delta_North = np.append(delta_North, telescope_positions[0])
+                        delta_East = np.append(delta_East, telescope_positions[1])
 
-            if (self.parallax_model == 'Full'):
-                telescope_positions = self.annual_parallax(time)
+                    if (self.parallax_model == 'Terrestrial'):
+                        altitude = telescope.altitude
+                        longitude = telescope.longitude
+                        latitude = telescope.latitude
 
-                delta_North = np.append(delta_North, telescope_positions[0])
-                delta_East = np.append(delta_East, telescope_positions[1])
+                        telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
 
-                altitude = telescope.altitude
-                longitude = telescope.longitude
-                latitude = telescope.latitude
+                        delta_North = np.append(delta_North, telescope_positions[0])
+                        delta_East = np.append(delta_East, telescope_positions[1])
 
-                telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
+                    if (self.parallax_model == 'Full'):
+                        telescope_positions = self.annual_parallax(time)
 
-                delta_North += telescope_positions[0]
-                delta_East += telescope_positions[1]
+                        delta_North = np.append(delta_North, telescope_positions[0])
+                        delta_East = np.append(delta_East, telescope_positions[1])
 
-        if location == 'Space':
-            telescope_positions = self.annual_parallax(time)
-            delta_North = np.append(delta_North, telescope_positions[0])
-            delta_East = np.append(delta_East, telescope_positions[1])
-            name = telescope.spacecraft_name
+                        altitude = telescope.altitude
+                        longitude = telescope.longitude
+                        latitude = telescope.latitude
 
-            telescope_positions = -self.space_parallax(time, name, telescope)
-            # import pdb;
-            # pdb.set_trace()
-            # delta_North = np.append(delta_North, telescope_positions[0])
-            # delta_East = np.append(delta_East, telescope_positions[1])
+                        telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
 
-            delta_North += telescope_positions[0]
-            delta_East += telescope_positions[1]
+                        delta_North += telescope_positions[0]
+                        delta_East += telescope_positions[1]
 
-        deltas_position = np.array([delta_North, delta_East])
+                if location == 'Space':
+                    telescope_positions = self.annual_parallax(time)
+                    delta_North = np.append(delta_North, telescope_positions[0])
+                    delta_East = np.append(delta_East, telescope_positions[1])
+                    name = telescope.spacecraft_name
 
-        # set the attributes deltas_positions for the telescope object
-        telescope.deltas_positions = deltas_position
+                    telescope_positions = -self.space_parallax(time, name, telescope)
+                    # import pdb;
+                    # pdb.set_trace()
+                    # delta_North = np.append(delta_North, telescope_positions[0])
+                    # delta_East = np.append(delta_East, telescope_positions[1])
+
+                    delta_North += telescope_positions[0]
+                    delta_East += telescope_positions[1]
+
+                deltas_position = np.array([delta_North, delta_East])
+
+                # set the attributes deltas_positions for the telescope object
+                telescope.deltas_positions[data_type] = deltas_position
+
+            except:
+
+                pass
 
     def annual_parallax(self, time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :

@@ -408,7 +408,7 @@ class MLmodel(object):
 
         return pyLIMA_parameters.to, pyLIMA_parameters.uo
 
-    def source_trajectory(self, telescope, pyLIMA_parameters):
+    def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None):
         """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
 
         :param object telescope: a telescope object. More details in telescope module.
@@ -419,26 +419,35 @@ class MLmodel(object):
         # Linear basic trajectory
 
 
-        if telescope.lightcurve_flux is not None:
+        if data_type == 'photometry':
 
             lightcurve = telescope.lightcurve_flux
             time = lightcurve['time'].value
 
-        else:
+            if 'piEN' in pyLIMA_parameters._fields:
+
+                delta_positions = telescope.deltas_positions['photometry']
+
+        if data_type == 'astrometry':
 
             astrometry = telescope.astrometry
             time = astrometry['time'].value
+
+            if 'piEN' in pyLIMA_parameters._fields:
+
+                delta_positions = telescope.deltas_positions['astrometry']
 
         tau = (time - pyLIMA_parameters.to) / pyLIMA_parameters.tE
         beta = np.array([pyLIMA_parameters.uo] * len(tau))
 
         # These following second order induce curvatures in the source trajectory
         # Parallax?
+
         if 'piEN' in pyLIMA_parameters._fields:
+
             try:
                 piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
-                parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(piE,
-                                                                                                    telescope.deltas_positions)
+                parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(piE, delta_positions)
 
                 tau += parallax_delta_tau
                 beta += parallax_delta_beta

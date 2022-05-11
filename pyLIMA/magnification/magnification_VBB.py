@@ -3,8 +3,8 @@ import numpy as np
 import os
 
 VBB = VBBinaryLensing.VBBinaryLensing()
-VBB.Tol = 0.001
-VBB.RelTol = 0.001
+VBB.Tol = 0.01
+VBB.RelTol = 0.01
 VBB.minannuli = 2  # stabilizing for rho>>caustics
 
 

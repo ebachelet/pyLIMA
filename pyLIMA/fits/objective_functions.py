@@ -39,7 +39,16 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
             if norm:
 
                 if rescaling_astrometry_parameters is not None:
-                    pass
+
+                    errors = astrometry['err_delta_ra'].value+np.abs(rescaling_astrometry_parameters*microlensing_model['astrometry'][0])
+                    residus_ra /= errors
+                    err_astrometry = np.append(err_astrometry, errors)
+
+                    errors = astrometry['err_delta_dec'].value+np.abs(rescaling_astrometry_parameters*microlensing_model['astrometry'][1])
+                    residus_dec /= errors
+                    err_astrometry = np.append(err_astrometry, errors)
+
+
 
                 else:
 
@@ -103,7 +112,7 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
 
                 if rescaling_photometry_parameters is not None:
 
-                    err_flux = (lightcurve['err_flux'].value**2+rescaling_photometry_parameters[ind]**2*microlensing_model['photometry']**2)**0.5
+                    err_flux = lightcurve['err_flux'].value+rescaling_photometry_parameters[ind]*microlensing_model['photometry']
                     residus /= err_flux
                     errfluxes = np.append(errfluxes, err_flux)
 

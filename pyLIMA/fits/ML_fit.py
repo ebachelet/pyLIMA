@@ -1,9 +1,27 @@
 import sys
 import numpy as np
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 
 from pyLIMA.priors import parameters_boundaries
+
+
+def logto(x): return np.log10(x.to)
+
+
+def to(x): return 10 ** x.logto
+
+
+def logtE(x): return np.log10(x.tE)
+
+
+def tE(x): return 10 ** x.logtE
+
+
+def logrho(x): return np.log10(x.rho)
+
+
+def rho(x): return 10 ** x.logrho
 
 class FitException(Exception):
     pass
@@ -49,11 +67,14 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model, rescale_photometry=False):
+    def __init__(self, model, fancy_parameters=True, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit'):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
+        self.fancy_parameters = fancy_parameters
         self.rescale_photometry = rescale_photometry
+        self.rescale_astrometry = rescale_astrometry
+        self.telescopes_fluxes_method = telescopes_fluxes_method
         self.fit_parameters = []
 
         self.model_parameters_guess = []
@@ -62,9 +83,28 @@ class MLfit(object):
 
         self.model_parameters_index = []
         self.rescale_photometry_parameters_index = []
+        self.rescale_astrometry_parameters_index = []
 
         self.model.define_model_parameters()
+        self.define_fancy_parameters()
         self.define_fit_parameters()
+
+    def define_fancy_parameters(self):
+
+        import pickle
+
+        standard_fancy = {'logtE': 'tE', 'logrho': 'rho',}
+
+        for key in standard_fancy.keys():
+
+            parameter = standard_fancy[key]
+            if parameter in self.model.model_dictionnary.keys():
+                self.model.fancy_to_pyLIMA_dictionnary[key] = parameter
+
+                self.model.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval(key)))
+                self.model.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval(parameter)))
+
+        self.model.define_model_parameters()
 
     def define_fit_parameters(self):
 
@@ -72,34 +112,105 @@ class MLfit(object):
 
         fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
 
-        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(fit_parameters_dictionnary_updated)
+        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(
+            fit_parameters_dictionnary_updated)
 
-        fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(fit_parameters_dictionnary_updated)
-
+        if self.telescopes_fluxes_method == 'fit':
+            fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
+                fit_parameters_dictionnary_updated)
 
         if self.rescale_photometry:
 
             for telescope in self.model.event.telescopes:
 
                 if telescope.lightcurve_flux is not None:
+                    fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
+                        len(fit_parameters_dictionnary_updated)
 
-                    fit_parameters_dictionnary_updated['logk_photometry_'+telescope.name] = \
+        if self.rescale_astrometry:
+
+            for telescope in self.model.event.telescopes:
+
+                if telescope.astrometry is not None:
+                    fit_parameters_dictionnary_updated['logk_astrometry_' + telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
         self.fit_parameters = OrderedDict(
-        sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
-
-        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
-                                 i in self.fit_parameters.keys()]
-        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'logk_photometry' in i]
-
-        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
+            sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
         fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
 
         for ind, key in enumerate(self.fit_parameters.keys()):
 
             self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
+
+        if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
+
+            list_of_keys = [i for i in self.fit_parameters.keys()]
+
+            for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
+                new_bounds = []
+                index = np.where(self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(list_of_keys))[0][0]
+
+                parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
+                bounds = self.fit_parameters[parameter][1]
+                x = namedtuple('parameters', parameter)
+
+                setattr(x, parameter, bounds[0])
+                new_bounds.append(self.model.pyLIMA_to_fancy[key](x))
+                setattr(x, parameter, bounds[1])
+                new_bounds.append(self.model.pyLIMA_to_fancy[key](x))
+
+                self.fit_parameters.pop(parameter)
+
+                self.fit_parameters[key] = [index, new_bounds]
+
+        self.fit_parameters = OrderedDict(
+            sorted(self.fit_parameters.items(), key=lambda x: x[1]))
+
+        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
+                                       i in self.fit_parameters.keys()]
+
+        self.rescale_photometry_parameters_index = [self.fit_parameters[i][0] for i in self.fit_parameters.keys() if
+                                                    'logk_photometry' in i]
+
+        self.rescale_astrometry_parameters_index = [self.fit_parameters[i][0] for i in self.fit_parameters.keys() if
+                                                    'logk_astrometry' in i]
+
+    def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
+        """ Transform the fancy parameters to the pyLIMA standards. The output got all
+        the necessary standard attributes, example to, uo, tE...
+
+
+        :param object fancy_parameters: the fancy_parameters as namedtuple
+        :return: the pyLIMA standards are added to the fancy parameters
+        :rtype: object
+        """
+        # start_time = python_time.time()
+        if len(self.fancy_to_pyLIMA) != 0:
+            # import pdb;
+            # pdb.set_trace()
+            for key_parameter in self.fancy_to_pyLIMA.keys():
+                setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
+
+        # print 'fancy to PYLIMA', python_time.time() - start_time
+        return fancy_parameters
+
+    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
+        """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
+            the necessary fancy attributes.
+
+
+        :param object pyLIMA_parameters: the  standard pyLIMA parameters as namedtuple
+        :return: the fancy parameters are added to the fancy parameters
+        :rtype: object
+        """
+        if len(self.pyLIMA_to_fancy) != 0:
+
+            for key_parameter in self.pyLIMA_to_fancy.keys():
+                setattr(pyLIMA_parameters, key_parameter, self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
+
+        return pyLIMA_parameters
 
     def objective_function(self):
 
@@ -180,19 +291,25 @@ class MLfit(object):
                                    'Please provide some in model.parameters_guess or run a DE fit.')
         else:
 
-            self.model_parameters_guess = [float(i) for i in self.model_parameters_guess ]
+            self.model_parameters_guess = [float(i) for i in self.model_parameters_guess]
 
             pass
 
     def telescopes_fluxes_guess(self):
 
-        if self.telescopes_fluxes_parameters_guess == []:
+        if self.telescopes_fluxes_method == 'fit':
 
-            telescopes_fluxes = self.find_fluxes(self.model_parameters_guess)
+            if self.telescopes_fluxes_parameters_guess == []:
 
-            self.telescopes_fluxes_parameters_guess = telescopes_fluxes
+                telescopes_fluxes = self.find_fluxes(self.model_parameters_guess)
 
-        self.telescopes_fluxes_parameters_guess = [float(i) for i in self.telescopes_fluxes_parameters_guess]
+                self.telescopes_fluxes_parameters_guess = telescopes_fluxes
+
+            self.telescopes_fluxes_parameters_guess = [float(i) for i in self.telescopes_fluxes_parameters_guess]
+
+        else:
+
+            self.telescopes_fluxes_parameters_guess = []
 
     def rescale_photometry_guess(self):
 
@@ -225,6 +342,26 @@ class MLfit(object):
 
         fit_parameters_guess = self.model_parameters_guess+self.telescopes_fluxes_parameters_guess+self.rescale_photometry_parameters_guess
         fit_parameters_guess = [float(i) for i in fit_parameters_guess]
+
+        if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
+
+            list_of_keys = [i for i in self.fit_parameters.keys()]
+
+            for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
+
+                try:
+                    index = np.where(self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(list_of_keys))[0][0]
+
+                    parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
+                    value = fit_parameters_guess[index]
+                    x = namedtuple('parameters', parameter)
+
+                    setattr(x, parameter, value)
+                    fit_parameters_guess[index] = self.model.pyLIMA_to_fancy[key](x)
+
+                except:
+
+                    pass
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
         print('Using guess: ',fit_parameters_guess)

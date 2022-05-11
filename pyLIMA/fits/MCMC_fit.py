@@ -2,23 +2,16 @@ import time as python_time
 import numpy as np
 import sys
 import emcee
-from collections import OrderedDict
-
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
-from pyLIMA.priors import parameters_boundaries
-
-
 
 class MCMCfit(MLfit):
 
-    def __init__(self, model, rescale_photometry=False, MCMC_walkers=2, MCMC_links = 5000, telescopes_fluxes_method='MCMC'):
+    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit', MCMC_walkers=2, MCMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
-        self.telescopes_fluxes_method = telescopes_fluxes_method
-
-        super().__init__(model, rescale_photometry)
+        super().__init__(model, rescale_photometry, rescale_astrometry, telescopes_fluxes_method)
 
         self.MCMC_walkers = MCMC_walkers #times number of dimension!
         self.MCMC_links = MCMC_links
@@ -28,44 +21,6 @@ class MCMCfit(MLfit):
 
     def fit_type(self):
         return "Monte Carlo Markov Chain (Affine Invariant)"
-
-    def define_fit_parameters(self):
-
-        fit_parameters_dictionnary = self.model.paczynski_model_parameters()
-
-        fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
-
-        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(
-            fit_parametersUSBL_dictionnary_updated)
-
-        if self.telescopes_fluxes_method == 'MCMC':
-
-            fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
-                fit_parameters_dictionnary_updated)
-
-        if self.rescale_photometry:
-
-            for telescope in self.model.event.telescopes:
-
-                if telescope.lightcurve_flux is not None:
-
-                    fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
-                        len(fit_parameters_dictionnary_updated)
-
-        self.fit_parameters = OrderedDict(
-            sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
-
-        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
-                                       i in self.fit_parameters.keys()]
-        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if
-                                                    'logk_photometry' in i]
-
-        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
-
-
-        for ind, key in enumerate(self.fit_parameters.keys()):
-
-            self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
 
     def objective_function(self, fit_process_parameters):
 
@@ -79,7 +34,7 @@ class MCMCfit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = np.exp(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
 
                 residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
                                                                                                        pyLIMA_parameters,
@@ -168,10 +123,3 @@ class MCMCfit(MLfit):
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
         self.MCMC_chains = MCMC_chains
 
-    def telescopes_fluxes_guess(self):
-
-        if (self.telescopes_fluxes_parameters_guess == []) & (self.telescopes_fluxes_method=='MCMC'):
-
-            telescopes_fluxes = self.find_fluxes(self.model_parameters_guess)
-
-            self.telescopes_fluxes_parameters_guess = telescopes_fluxes

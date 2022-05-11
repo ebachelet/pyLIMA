@@ -486,7 +486,7 @@ class MLModel(object):
         if 'piEN' in pyLIMA_parameters._fields:
             piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
             parallax_delta_tau, parallax_delta_beta = microlparallax.compute_parallax_curvature(piE,
-                                                                                                telescope.deltas_positions)
+                                                                                                telescope.deltas_positions['photometry'])
 
             tau += parallax_delta_tau
             beta += parallax_delta_beta

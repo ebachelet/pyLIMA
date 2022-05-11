@@ -1,23 +1,23 @@
 import numpy as np
 
-def to_boundaries(event):
+def to_boundaries():
 
-    minimum_observing_time_telescopes = []
-    maximum_observing_time_telescopes = []
+    #minimum_observing_time_telescopes = []
+    #maximum_observing_time_telescopes = []
 
-    for telescope in event.telescopes:
+    #for telescope in event.telescopes:
 
-        try:
+    #    try:
 
-            minimum_observing_time_telescopes.append(min(telescope.lightcurve_flux['time'].value))
-            maximum_observing_time_telescopes.append(max(telescope.lightcurve_flux['time'].value))
+    #        minimum_observing_time_telescopes.append(min(telescope.lightcurve_flux['time'].value))
+    #        maximum_observing_time_telescopes.append(max(telescope.lightcurve_flux['time'].value))
 
-        except:
+    #    except:
 
-            minimum_observing_time_telescopes.append(min(telescope.astrometry['time'].value))
-            maximum_observing_time_telescopes.append(max(telescope.astrometry['time'].value))
+    #        minimum_observing_time_telescopes.append(min(telescope.astrometry['time'].value))
+    #        maximum_observing_time_telescopes.append(max(telescope.astrometry['time'].value))
 
-    to_boundaries = (min(minimum_observing_time_telescopes), max(maximum_observing_time_telescopes))
+    to_boundaries = (2400000, 2500000)
 
     return to_boundaries
 
@@ -59,11 +59,11 @@ def alpha_boundaries():
 
 def piEN_boundaries():
 
-    return (-2.0,2.0)
+    return (-1.0,1.0)
 
 def piEE_boundaries():
 
-    return (-2.0,2.0)
+    return (-1.0,1.0)
 
 def dsdt_boundaries():
 
@@ -92,6 +92,11 @@ def gblend_boundaries():
 def rescale_photometry_boundaries():
 
     return (-20,2.5)
+
+def rescale_astrometry_boundaries():
+
+    return (-20,2.5)
+
 
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.
@@ -123,13 +128,13 @@ def parameters_boundaries(event, model_dictionnary):
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
                 function_name = key.split('_')[0] + '_boundaries(flux)'
 
-            if 'to' in key:
-
-                function_name = key + '_boundaries(event)'
-
             if 'logk_photometry' in key:
 
                 function_name = 'rescale_photometry_boundaries()'
+
+            if 'logk_astrometry' in key:
+
+                function_name = 'rescale_astrometry_boundaries()'
 
             bounds.append(eval(function_name))
 
