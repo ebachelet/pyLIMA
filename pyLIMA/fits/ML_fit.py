@@ -2,14 +2,14 @@ import sys
 import numpy as np
 from collections import OrderedDict, namedtuple
 
-
 from pyLIMA.priors import parameters_boundaries
 
+### Standard fancy parameters functions
 
-def logto(x): return np.log10(x.to)
+def logt0(x): return np.log10(x.t0)
 
 
-def to(x): return 10 ** x.logto
+def t0(x): return 10 ** x.logt0
 
 
 def logtE(x): return np.log10(x.tE)
@@ -439,3 +439,52 @@ class MLfit(object):
                     telescopes_fluxes.append(f_blending)
         return telescopes_fluxes
 
+
+    def objective_function_Jacobian(self, fit_process_parameters):
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
+        count = 0
+
+        for telescope in self.event.telescopes:
+
+            jack = self.model.magnification_Jacobian(telescope, pyLIMA_parameters)/telescope.lightcurve_flux['err_flux']
+
+            if self.model.blend_flux_parameter == 'gblend':
+
+                f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
+                g_blending = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
+
+                jack[:,3] += g_blending/telescope.lightcurve_flux['err_flux']
+                jack[:,4] *= f_source
+
+            if count == 0:
+
+                _jacobi = jack
+
+            else:
+
+                _jacobi = np.c_[_jacobi, jack]
+
+            count += 1
+
+        # The objective function is : (data-model)/errors
+        _jacobi = -_jacobi
+        jacobi = _jacobi[:-2]
+        # Split the fs and g derivatives in several columns correpsonding to
+        # each observatories
+        start_index = 0
+        dresdfs = _jacobi[-2]
+        dresdg = _jacobi[-1]
+
+        for telescope in self.event.telescopes:
+            derivative_fs = np.zeros((len(dresdfs)))
+            derivative_g = np.zeros((len(dresdg)))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux['time'].value))
+            derivative_fs[index] = dresdfs[index]
+            derivative_g[index] = dresdg[index]
+            jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
+
+            start_index = index[-1] + 1
+
+        return jacobi.T

@@ -234,7 +234,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
 def simulate_a_microlensing_model(event, model='PSPL', args=(), parallax=['None', 0.0], xallarap=['None'],
                                   orbital_motion=['None', 0.0], source_spots='None'):
-    """ Simulate a a microlensing model.
+    """ Simulate a microlensing model.
 
     :param object event: the microlensing event you look at. More details in event module
     :param str model: the microlensing model you want. Default is 'PSPL'. More details in microlmodels module

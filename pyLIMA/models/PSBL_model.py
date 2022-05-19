@@ -1,15 +1,15 @@
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_VBB
 
-class USBLmodel(MLmodel):
+class PSBLmodel(MLmodel):
     @property
     def model_type(self):
         """ Return the kind of microlensing model.
 
-        :returns: USBL
+        :returns: PSBL
         :rtype: string
         """
-        return 'USBL'
+        return 'PSBL'
 
     def paczynski_model_parameters(self):
         """ Define the USBL standard parameters, [to,uo,tE,rho, logs,logq,alpha]
@@ -17,7 +17,7 @@ class USBLmodel(MLmodel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3, 'logs': 4, 'logq': 5, 'alpha': 6}
+        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'logs': 3, 'logq': 4, 'alpha': 5}
 
         self.Jacobian_flag = 'No way'
 
@@ -44,15 +44,14 @@ class USBLmodel(MLmodel):
 
             separation = source_trajectoire[2] + 10 ** pyLIMA_parameters.logs
 
-            magnification_USBL = \
-               magnification_VBB.magnification_USBL(separation, 10 ** pyLIMA_parameters.logq,
-                                                                          source_trajectoire[0], source_trajectoire[1],
-                                                                          pyLIMA_parameters.rho)
+            magnification_PSBL = \
+              magnification_VBB.magnification_PSBL(separation, 10 ** pyLIMA_parameters.logq,
+                                                                    source_trajectoire[0], source_trajectoire[1])
 
         else:
 
-            magnification_USBL = None
+            magnification_PSBL = None
 
 
-        return magnification_USBL
+        return magnification_pSBL
 

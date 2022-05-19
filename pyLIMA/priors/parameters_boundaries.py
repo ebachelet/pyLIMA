@@ -1,6 +1,6 @@
 import numpy as np
 
-def to_boundaries():
+def t0_boundaries():
 
     #minimum_observing_time_telescopes = []
     #maximum_observing_time_telescopes = []
@@ -21,15 +21,15 @@ def to_boundaries():
 
     return to_boundaries
 
-def delta_to_boundaries():
+def delta_t0_boundaries():
 
     return (-150, 150)
 
-def delta_uo_boundaries():
+def delta_u0_boundaries():
 
     return (-1.0,1.0)
 
-def uo_boundaries():
+def u0_boundaries():
 
     return (0.0,1.0)
 
@@ -65,15 +65,27 @@ def piEE_boundaries():
 
     return (-1.0,1.0)
 
-def dsdt_boundaries():
+def v_para_boundaries():
 
     return (-10.0,10.0)
 
-def dalphadt_boundaries():
+def v_perp_boundaries():
+
+    return (-10.0,10.0)
+
+def v_radial_boundaries():
 
     return (-10.0,10.0)
 
 def theta_E_boundaries():
+
+    return (0.0,10.0)
+
+def r_s_boundaries():
+
+    return (0.0,10.0)
+
+def a_s_boundaries():
 
     return (0.0,10.0)
 
@@ -87,16 +99,19 @@ def fblend_boundaries(flux):
 
 def gblend_boundaries():
 
-    return (-1.0,1000)
+    return (-1.0, 1000)
 
 def rescale_photometry_boundaries():
 
-    return (-20,2.5)
+    return (-20, 2.5)
 
 def rescale_astrometry_boundaries():
 
-    return (-20,2.5)
+    return (-20, 2.5)
 
+def mass_lens_boundaries():
+
+    return (0.1,10.0)
 
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.

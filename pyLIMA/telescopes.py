@@ -94,14 +94,16 @@ class Telescope(object):
         self.astrometry = None
 
         if light_curve is not None:
-            if 'mag' in light_curve_units:
+
+            if 'mag' in light_curve_names:
 
                 self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
                 self.lightcurve_flux = self.lightcurve_in_flux()
 
-            if 'flux' in light_curve_units:
-                self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
-                self.lightcurve_flux = self.lightcurve_in_magnitude()
+            if 'flux' in light_curve_names:
+
+                self.lightcurve_flux = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                self.lightcurve_magnitude = self.lightcurve_in_magnitude()
 
         if astrometry is not None:
 

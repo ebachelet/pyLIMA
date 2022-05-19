@@ -168,7 +168,7 @@ def orbital_motion_keplerian(to_om, v_para, v_perp, v_radial, separation_0, sepa
 
     # speed = (r_0[0]**2*(np.sum(v_0**2)))**0.5/a_true
 
-    eps = np.sum(( v_0) ** 2) / 2 - 4 * np.pi ** 2 * mass / np.sum(r_0 ** 2) ** 0.5
+    eps = np.sum((v_0) ** 2) / 2 - 4 * np.pi ** 2 * mass / np.sum(r_0 ** 2) ** 0.5
     a_true = -(4 * np.pi ** 2 * mass) / (2 * eps)
     period = (a_true ** 3 / mass) ** 0.5
 

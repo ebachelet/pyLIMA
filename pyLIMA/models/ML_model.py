@@ -2,13 +2,10 @@ import numpy as np
 import abc
 import collections
 from collections import OrderedDict
-import sys
-import pkg_resources
-from scipy import interpolate, misc
 
 import pyLIMA.priors.parameters_boundaries
 import pyLIMA.parallax.parallax
-
+from pyLIMA.orbitalmotion import orbital_motion
 
 
 class MLmodel(object):
@@ -182,8 +179,8 @@ class MLmodel(object):
         if self.orbital_motion_model[0] == '2D':
 
             self.Jacobian_flag = 'No way'
-            model_dictionnary['dsdt'] = len(model_dictionnary)
-            model_dictionnary['dalphadt'] = len(model_dictionnary)
+            model_dictionnary['v_para'] = len(model_dictionnary)
+            model_dictionnary['v_perp'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == 'Circular':
 
@@ -192,13 +189,25 @@ class MLmodel(object):
             model_dictionnary['v_perp'] = len(model_dictionnary)
             model_dictionnary['v_radial'] = len(model_dictionnary)
 
+            if 'theta_E' not in model_dictionnary.keys():
+
+                model_dictionnary['theta_E'] = len(model_dictionnary)
+
+            model_dictionnary['mass_lens'] = len(model_dictionnary)
+
         if self.orbital_motion_model[0] == 'Keplerian':
 
             self.Jacobian_flag = 'No way'
-            model_dictionnary['logs_z'] = len(model_dictionnary)
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
             model_dictionnary['v_radial'] = len(model_dictionnary)
+            model_dictionnary['r_s'] = len(model_dictionnary)
+            model_dictionnary['a_s'] = len(model_dictionnary)
+
+            if 'theta_E' not in model_dictionnary.keys():
+
+                model_dictionnary['theta_E'] = len(model_dictionnary)
+
             model_dictionnary['mass_lens'] = len(model_dictionnary)
 
         return model_dictionnary
@@ -269,6 +278,8 @@ class MLmodel(object):
 
         flux(t) = f_source*magnification(t)+f_blending
 
+        and the astrometric shifts if need be.
+
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
         :param array_like amplification: the magnification associated to the model
@@ -280,20 +291,22 @@ class MLmodel(object):
         astrometric_model = None
         f_source = None
         f_blending = None
-        magnification = self.model_magnification(telescope, pyLIMA_parameters)
 
         if telescope.lightcurve_flux is not None:
 
-            f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification['magnification'])
+            magnification = self.model_magnification(telescope, pyLIMA_parameters)
 
-            photometric_model = f_source * magnification['magnification'] + f_blending
+            f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
+
+            photometric_model = f_source * magnification + f_blending
 
         if telescope.astrometry is not None:
 
-            astrometric_model = magnification['astrometry']
+            astrometric_model = self.model_astrometry(telescope, pyLIMA_parameters)
 
         microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model, 'f_source': f_source,
                               'f_blending': f_blending}
+
         return microlensing_model
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, magnification):
@@ -402,11 +415,11 @@ class MLmodel(object):
 
     def uo_to_from_uc_tc(self, pyLIMA_parameters):
 
-        return pyLIMA_parameters.to, pyLIMA_parameters.uo
+        return pyLIMA_parameters.t0, pyLIMA_parameters.u0
 
     def uc_tc_from_uo_to(self, pyLIMA_parameters):
 
-        return pyLIMA_parameters.to, pyLIMA_parameters.uo
+        return pyLIMA_parameters.t0, pyLIMA_parameters.u0
 
     def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None):
         """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
@@ -437,8 +450,8 @@ class MLmodel(object):
 
                 delta_positions = telescope.deltas_positions['astrometry']
 
-        tau = (time - pyLIMA_parameters.to) / pyLIMA_parameters.tE
-        beta = np.array([pyLIMA_parameters.uo] * len(tau))
+        tau = (time - pyLIMA_parameters.t0) / pyLIMA_parameters.tE
+        beta = np.array([pyLIMA_parameters.u0] * len(tau))
 
         # These following second order induce curvatures in the source trajectory
         # Parallax?
@@ -493,7 +506,7 @@ class MLmodel(object):
 
         if self.orbital_motion_model[0] != 'None':
 
-            dseparation, dalpha = microlorbitalmotion.orbital_motion_shifts(self.orbital_motion_model,
+            dseparation, dalpha = orbital_motion.orbital_motion_shifts(self.orbital_motion_model,
                                                                             telescope.lightcurve_flux['time'].value,
                                                                             pyLIMA_parameters)
             alpha += dalpha

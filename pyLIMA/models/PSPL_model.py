@@ -15,14 +15,46 @@ class PSPLmodel(MLmodel):
         return 'PSPL'
 
     def paczynski_model_parameters(self):
-        """ Define the PSPL standard parameters, [to,uo,tE]
+        """ Define the PSPL standard parameters, [t0,u0,tE]
 
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'to': 0, 'uo': 1, 'tE': 2}
+        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2}
 
         return model_dictionary
+
+    def model_astrometry(self, telescope, pyLIMA_parameters):
+
+        """ The astrometric shifts associated to a PSPL model. More details in microlmagnification module.
+
+               :param object telescope: a telescope object. More details in telescope module.
+               :param object pyLIMA_parameters: a namedtuple which contain the parameters
+
+
+               :return: astro_shifts
+               :rtype: array_like
+        """
+
+        if telescope.astrometry is not None:
+
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+                                                                                 data_type='astrometry')
+
+            shifts = astrometric_shifts.PSPL_shifts(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
+
+            angle = np.arctan2(pyLIMA_parameters.piEE, pyLIMA_parameters.piEN)
+
+            Deltay = shifts[0] * np.cos(angle) - np.sin(angle) * shifts[1]
+            Deltax = shifts[0] * np.sin(angle) + np.cos(angle) * shifts[1]
+
+            astro_shifts = np.array([Deltax, Deltay])
+
+        else:
+
+            astro_shifts = None
+
+        return astro_shifts
 
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
         """ The magnification associated to a PSPL model. More details in microlmagnification module.
@@ -35,29 +67,10 @@ class PSPLmodel(MLmodel):
         :rtype: array_like
         """
 
-        if telescope.astrometry is not None:
-
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
-
-            import pyLIMA.magnification.magnification_VBB
-            pyLIMA.magnification.magnification_VBB.VBB.astrometry = True
-
-
-            shifts = astrometric_shifts.PSPL_shifts(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
-
-            angle = np.arctan2(pyLIMA_parameters.piEE, pyLIMA_parameters.piEN)
-
-            Deltay = shifts[0] * np.cos(angle) - np.sin(angle) * shifts[1]
-            Deltax = shifts[0] * np.sin(angle) + np.cos(angle) * shifts[1]
-
-            shifts = [Deltax,Deltay]
-
-        else:
-            shifts = None
-
         if telescope.lightcurve_flux is not None:
 
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+                                                                                 data_type='photometry')
 
             magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y,
                                                                               return_impact_parameter)
@@ -65,12 +78,9 @@ class PSPLmodel(MLmodel):
 
             magnification = None
 
-        magnification_model = {'magnification':magnification,'astrometry':shifts}
+        return magnification
 
-
-        return magnification_model
-
-    def light_curve_Jacobian(self, telescope, pyLIMA_parameters):
+    def magnification_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model lightcurve
 
         :param object telescope: a telescope object. More details in telescope module.
@@ -84,7 +94,6 @@ class PSPLmodel(MLmodel):
         lightcurve = telescope.lightcurve_flux
 
         time = lightcurve['time'].value
-        errflux = lightcurve['err_flux'].value
 
         # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
         # Amplification[1] is U(t).
@@ -92,26 +101,29 @@ class PSPLmodel(MLmodel):
         dAmplificationdU = (-8) / (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
 
         # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
-        dUdto = -(time - pyLIMA_parameters.to) / (pyLIMA_parameters.tE ** 2 * Amplification[1])
-        dUduo = pyLIMA_parameters.uo / Amplification[1]
-        dUdtE = -(time - pyLIMA_parameters.to) ** 2 / (pyLIMA_parameters.tE ** 3 * Amplification[1])
+        dUdt0 = -(time - pyLIMA_parameters.t0) / (pyLIMA_parameters.tE ** 2 * Amplification[1])
+        dUdu0 = pyLIMA_parameters.u0 / Amplification[1]
+        dUdtE = -(time - pyLIMA_parameters.t0) ** 2 / (pyLIMA_parameters.tE ** 3 * Amplification[1])
 
-        # Derivative of the model
+        dAdt0 = dAmplificationdU * dUdt0
+        dAdu0 = dAmplificationdU * dUdu0
+        dAdtE = dAmplificationdU * dUdtE
 
-        dresdto = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdto / errflux
-        dresduo = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUduo / errflux
-        dresdtE = getattr(pyLIMA_parameters, 'fs_' + telescope.name) * dAmplificationdU * dUdtE / errflux
+        fsource_Jacobian = Amplification[0]
+        fblend_Jacobian = [1]*len(Amplification[0])
 
-        if self.blend_flux_parameter == 'fb':
-
-            dresdfs = (Amplification[0]) / errflux
-            dresdg = 1 / errflux
-
-        if self.blend_flux_parameter == 'g':
-
-            dresdfs = (Amplification[0] + getattr(pyLIMA_parameters, 'g_' + telescope.name)) / errflux
-            dresdg = getattr(pyLIMA_parameters, 'fs_' + telescope.name) / errflux
-
-        jacobi = np.array([dresdto, dresduo, dresdtE, dresdfs, dresdg])
+        jacobi = np.array([dAdt0, dAdu0, dAdtE, fsource_Jacobian, fblend_Jacobian])
 
         return jacobi
+
+    def astrometry_Jacobian(self, telescope, pyLIMA_parameters):
+        """ The derivative of a PSPL model lightcurve
+
+        :param object telescope: a telescope object. More details in telescope module.
+        :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        :return: jacobi
+        :rtype: array_like
+        """
+
+        pass
+

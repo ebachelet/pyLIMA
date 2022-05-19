@@ -117,6 +117,7 @@ class DEfit(MLfit):
 
         computation_time = python_time.time() - starting_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
+
         self.DE_population = np.array(self.DE_population)
         self.fit_results = fit_results
         self.fit_time = computation_time

@@ -1,7 +1,8 @@
 import numpy as np
 
-# magnitude reference
+# ZERO POINT AND EXPOSURE TIME MATCH ~Roman telescope by default
 ZERO_POINT = 27.4
+EXPOSURE_TIME = 50 #s
 
 def magnitude_to_flux(magnitude):
     """ Transform the injected magnitude to the the corresponding flux.
@@ -58,3 +59,25 @@ def error_flux_to_error_magnitude(error_flux, flux):
     error_magnitude = np.abs(2.5 * error_flux / (flux * np.log(10)))
 
     return error_magnitude
+
+def noisy_observations(flux):
+    """Add Poisson noise to observations.
+
+        :param array_like flux: the observed flux
+        :param array_like error_flux: the error on observed flux
+
+        :return: a numpy array which represents the observed noisy flux
+
+        :rtype: array_like
+
+    """
+
+    photons = flux*EXPOSURE_TIME
+
+    photons_observed = np.random.poisson(photons)
+    err_photons_observed = photons_observed**0.5
+
+    flux_observed = photons_observed/EXPOSURE_TIME
+    err_flux_observed = err_photons_observed/EXPOSURE_TIME
+
+    return flux_observed, err_flux_observed
