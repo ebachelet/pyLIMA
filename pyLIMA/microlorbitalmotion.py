@@ -121,8 +121,6 @@ def orbital_motion_circular(to_om, v_para, v_perp, v_radial, separation_0, time)
         inclination = np.arcsin(w2 * w3 / (norm_w13 * norm_w))
         phi0 = np.arctan(-w1 * norm_w / (norm_w13 * w3))  # omega_N + phi_0 !!!
 
-
-
     else:
 
         omega = w2/365.25

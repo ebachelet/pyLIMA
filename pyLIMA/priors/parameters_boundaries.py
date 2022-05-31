@@ -87,7 +87,7 @@ def r_s_boundaries():
 
 def a_s_boundaries():
 
-    return (0.0,10.0)
+    return (1.0,10.0)
 
 def fsource_boundaries(flux):
 
@@ -112,6 +112,10 @@ def rescale_astrometry_boundaries():
 def mass_lens_boundaries():
 
     return (0.1,10.0)
+
+def rE_boundaries():
+
+    return (0.1,100.0) #AU
 
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.

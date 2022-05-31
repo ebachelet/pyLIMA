@@ -105,7 +105,7 @@ class DEMCfit(MLfit):
 
         #mutation = np.random.uniform(-2, 2, len(parent1[:-1]))
         eps1 = 10**-4
-        eps2 = 10**-7
+        eps2 = 10**-8
 
         mutation = np.random.uniform(1-eps1, 1+eps1, len(parent1[:-1]))
         gamma = 2.38/(2*2*len(parent1[:-1]))**0.5
@@ -121,7 +121,7 @@ class DEMCfit(MLfit):
 
         mutation *= gamma
         
-        shifts = np.random.normal(0, eps2, len(parent1[:-1]))#*self.scale
+        shifts = np.random.normal(0, eps2, len(parent1[:-1]))*self.scale
 
         progress = (parent2[:-1] - parent3[:-1]) * mutation
         #progress1 = np.sum([pop[i] for i in indexes[::2]],axis=0)

@@ -26,34 +26,32 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
         v_perp = pyLIMA_parameters.v_perp
         v_radial = pyLIMA_parameters.v_radial
         separation = 10 ** pyLIMA_parameters.logs
-        theta_E = pyLIMA_parameters.theta_E
 
-        dseparation, dalpha = orbital_motion_keplerian(time, orbital_motion_model[1], v_para, v_perp, v_radial,
-                                                      separation, theta_E, mass_lens=None, r_s=-v_para/v_radial, a_s=1)
-
-        ds,da =  orbital_motion_circular(time, orbital_motion_model[1], v_para, v_perp, v_radial,
-                                                      separation)
-
+        dseparation, dalpha = orbital_motion_keplerian(time, orbital_motion_model[1], v_para, v_perp, v_radial, separation, rE=None, mass_lens=None, r_s=None, a_s=None)
+        ds,da =  orbital_motion_circular(time, orbital_motion_model[1], v_para, v_perp, v_radial,separation)
+        import pdb;
+        pdb.set_trace()
     if orbital_motion_model[0] == 'Keplerian':
 
         v_para = pyLIMA_parameters.v_para
         v_perp = pyLIMA_parameters.v_perp
         v_radial = pyLIMA_parameters.v_radial
         separation = 10 ** pyLIMA_parameters.logs
-        theta_E = pyLIMA_parameters.theta_E
-        Ml = pyLIMA_parameters.mass_lens
-        r_s = 10 ** pyLIMA_parameters.r_s
-        a_s = 10 ** pyLIMA_parameters.a_s
+        rE = pyLIMA_parameters.rE
+        mass_lens = pyLIMA_parameters.mass_lens
+
+        r_s = pyLIMA_parameters.r_s
+        a_s = pyLIMA_parameters.a_s
 
         dseparation, dalpha = orbital_motion_keplerian(time, orbital_motion_model[1], v_para, v_perp, v_radial,
-                                                       separation, theta_E, r_s=r_s, a_s=a_s)
+                                                       separation, rE, mass_lens=mass_lens, r_s=r_s, a_s=a_s)
 
         dalpha = -dalpha
 
 
     return dseparation, dalpha
 
-def orbital_motion_keplerian(time, to_om, v_para, v_perp, v_radial, separation_0, theta_E,mass_lens=None,r_s=None,a_s=None):
+def orbital_motion_keplerian(time, to_om, v_para, v_perp, v_radial, separation_0, rE=None, mass_lens=None,r_s=None,a_s=None):
     """" https: // arxiv.org / pdf / 2011.04780.pdf"""
 
     v_para /= 365.25
@@ -68,64 +66,115 @@ def orbital_motion_keplerian(time, to_om, v_para, v_perp, v_radial, separation_0
 
         a_s = 1
 
-    separation_z = r_s*separation_0
-
-    RE = theta_E*separation_0
-
-    speed_norm = np.sum(v_para**2+v_perp**2+v_radial**2)
-
-    r_0 = np.array([separation_0, 0, separation_z]) * RE
-    r_norm = np.sum(r_0**2)**0.5
-    a_true = a_s*r_norm
-
-
-    v_0 = r_0[0] * np.array([v_para, v_perp, v_radial])
-    h_0 = np.cross(r_0, v_0)
-
-    import pdb;
-    pdb.set_trace()
     if (mass_lens is None):
 
-        longitude_ascending_node = np.arctan2(h_0[2]/h_0[1])
-        inclination = np.arcsin(h_0[2]/np.sum(h_0**2)**0.5/np.cos(longitude_ascending_node))
-        omega = speed_norm**0.5/a_true
-        theta = omega*(time-to_om)
-        r_prime = np.r_[np.cos(theta), np.sin(theta),0]
-        R_inc = np.array([[np.cos(inclination), -np.sin(inclination),0],
-                          [np.sin(inclination),np.cos(inclination),0],
-                          [0,0,1]])
-        R_omega_N = np.array([[1,0,0],
-                              [0,np.cos(longitude_ascending_node), -np.sin(longitude_ascending_node)],
-                              [0,np.sin(longitude_ascending_node), np.cos(longitude_ascending_node)]])
+        separation_z = r_s * separation_0
+        r_0 = np.array([separation_0, 0, separation_z])
+        v_0 = r_0[0] * np.array([v_para, v_perp, v_radial])
 
-        Rmatrix = np.dot(R_omega_N, R_inc)
+        r_norm = np.sum(r_0 ** 2) ** 0.5
+        v_norm = np.sum(v_0 ** 2) ** 0.5
 
-        r_vector = np.dot(Rmatrix, r_prime)
+        a_true = a_s * r_norm
 
-        separation = np.sum(r_vector[0]**2+r_vector[1]**2)**0.5
-        alpha = np.arctan2(r_vector[1],r_vector[0])
+        h_0 = np.cross(r_0, v_0)
+        h_0 /= np.sum(h_0 ** 2) ** 0.5
 
-        #!!!!... to continue
+
+
+        orbital_velocity = np.sign(v_radial)*v_norm/r_norm
+
+        inclination = np.arccos(h_0[2])
+        longitude_ascending_node = np.arctan2(-h_0[0], h_0[1])
+        #longitude_ascending_node =  np.arctan2(-h_0[1] / np.sin(inclination), h_0[0] / np.sin(inclination))
+        #longitude_ascending_node = 0
+        #N = np.cross([0,0,1],h_0)
+        #N /= np.sum(N**2)**0.5
+
+        #long = np.arccos(N[0])
+
+        omega_peri = np.arcsin(r_0[2]/a_true)/2
+        omega_peri2 = np.arccos(np.sqrt((v_0[2]/(a_true*orbital_velocity*np.sin(inclination))+1)/2))
+        import pdb;
+        pdb.set_trace()
+        print(orbital_velocity, inclination, omega_peri)
+
+        theta = orbital_velocity * (time - to_om)+omega_peri
+
+        r_prime = a_true*np.c_[np.cos(theta), np.sin(theta), [0] * len(theta)]
+
+       # R_inc = np.array([[np.cos(inclination), -np.sin(inclination), 0],
+       #                   [np.sin(inclination), np.cos(inclination), 0],
+       #                   [0, 0, 1]])
+        R_inc = np.array([[1,0,0],
+                          [0,np.cos(inclination), -np.sin(inclination)],
+                          [0,np.sin(inclination), np.cos(inclination)]])
+       #R_node = np.array([[1, 0, 0],
+       #                       [0, np.cos(longitude_ascending_node), -np.sin(longitude_ascending_node)],
+       #                       [0, np.sin(longitude_ascending_node), np.cos(longitude_ascending_node)]])
+
+        R_node = np.array([[np.cos(longitude_ascending_node), -np.sin(longitude_ascending_node),0],
+                           [np.sin(longitude_ascending_node), np.cos(longitude_ascending_node),0],
+                           [0,0,1]])
+        #R_node = np.array([[np.cos(longitude_ascending_node), 0, -np.sin(longitude_ascending_node)],
+        #                   [0,1,0],
+        #                   [np.sin(longitude_ascending_node), 0, np.cos(longitude_ascending_node)]])
+        #R_peri = np.array([[1, 0, 0],
+        #                         [0, np.cos(omega_peri), -np.sin(omega_peri)],
+        #                         [0, np.sin(omega_peri), np.cos(omega_peri)]])
+
+        R_peri = np.array([[np.cos(omega_peri), -np.sin(omega_peri), 0],
+                           [np.sin(omega_peri), np.cos(omega_peri), 0],
+                           [0, 0, 1]])
+
+        Rmatrix = np.dot(R_node, np.dot(R_inc, R_peri))
+
+        r_microlens = np.dot(Rmatrix, r_prime.T)
+
+        import matplotlib.pyplot as plt
+
+        plt.scatter(r_microlens[0],r_microlens[1])
+        plt.xlim(-separation_0, separation_0)
+        plt.ylim(-separation_0, separation_0)
+
+
+
+        plt.show()
 
     else:
 
-        eps = speed_norm / 2 - 4 * np.pi ** 2 * mass_lens / r_norm
+        separation_z = r_s * separation_0
+        r_0 = np.array([separation_0, 0, separation_z]) * rE
+        v_0 = r_0[0] * np.array([v_para, v_perp, v_radial])
 
-        Gmass = -a_true * 2 * eps
-        N = (Gmass / a_true ** 3) ** 0.5
+        r_norm = np.sum(r_0 ** 2) ** 0.5
+        v_norm = np.sum(v_0 ** 2) ** 0.5
 
-        e_0 = np.cross(v_0, h_0)/Gmass-r_0/r_norm #Laplace_Runge_Lenz
-        ellipticity = np.sum(e_0 ** 2) ** 0.5
-        #ellipticity = (1-np.sum(h_0**2)**0.5/(Gmass*a_true))**0.5
-        x_0 = e_0 / ellipticity
+        a_true = a_s * r_norm
+
+        h_0 = np.cross(r_0, v_0)
+        h_0 /= np.sum(h_0 ** 2) ** 0.5
+
+
+        #eps = v_norm / 2 - 4 * np.pi ** 2 * mass_lens / r_norm
+
+        #Gmass = -a_true * 2 * eps
+
+        GMass = rE**3*separation_0**3*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
+
+        orbital_velocity = (GMass / a_true ** 3) ** 0.5
+
+        e_0 = np.cross(v_0, h_0)/GMass-r_0/r_norm #Laplace_Runge_Lenz
+        eccentricity = np.sum(e_0 ** 2) ** 0.5
+        #eccentricity = (1-np.sum(h_0**2)**0.5/(Gmass*a_true))**0.5
+        x_0 = e_0 / eccentricity
         z_0 = h_0/np.sum(h_0**2)**0.5
         y_0 = np.cross(z_0, x_0)
 
         cos_true_anomaly = np.dot(r_0/r_norm, x_0)
 
-        cos_eccentric_anomaly = (cos_true_anomaly + ellipticity) / (1 + ellipticity * cos_true_anomaly)
+        cos_eccentric_anomaly = (cos_true_anomaly + eccentricity) / (1 + eccentricity * cos_true_anomaly)
         eccentric_anomaly = np.arccos(cos_eccentric_anomaly)
-
 
         if np.dot(r_0, y_0) > 0:
 
@@ -135,29 +184,25 @@ def orbital_motion_keplerian(time, to_om, v_para, v_perp, v_radial, separation_0
 
             eccentric_anomaly *= -1
 
-        t_periastron = to_om - (eccentric_anomaly - ellipticity * np.sin(eccentric_anomaly)) / N
+        t_periastron = to_om - (eccentric_anomaly - eccentricity * np.sin(eccentric_anomaly)) / orbital_velocity
 
         Rmatrix = np.c_[x_0, y_0, z_0]
 
-
-        eccentric_anomaly = eccentric_anomaly_function(time, ellipticity, t_periastron, N)
+        eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity)
 
         r_prime = np.array(
-            [np.cos(eccentric_anomaly) - ellipticity, (1 - ellipticity ** 2) ** 0.5 * np.sin(eccentric_anomaly),
+            [np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 * np.sin(eccentric_anomaly),
              0]) * a_true
-        r_microlens = np.dot(Rmatrix, r_prime) / RE
-        separation = (r_microlens[0] ** 2 + r_microlens[1] ** 2) ** 0.5
-        angle = np.arctan2(r_microlens[1], r_microlens[0])
 
-        eccentric_anomaly_0 = eccentric_anomaly_function([to_om], ellipticity, t_periastron, N)
-        r_prime_0 = np.array(
-            [np.cos(eccentric_anomaly_0) - ellipticity, (1 - ellipticity ** 2) ** 0.5 * np.sin(eccentric_anomaly_0),
-             0]) * a_true
-        r_microlens_0 = np.dot(Rmatrix, r_prime_0) / RE
-        separation0 = (r_microlens_0[0] ** 2 + r_microlens_0[1] ** 2) ** 0.5
-        angle_0 = np.arctan2(r_microlens_0[1], r_microlens_0[0])
+        r_microlens = np.dot(Rmatrix, r_prime.T)/rE
 
-        return separation - separation0, (angle - angle_0)
+    sep = (r_microlens[0] ** 2 + r_microlens[1] ** 2) ** 0.5
+    angle = np.arctan2(r_microlens[1], r_microlens[0])
+
+    separation0 = separation_0
+    angle_0 = 0
+
+    return sep - separation0, (angle - angle_0)
 
 
 def orbital_motion_2D_trajectory_shift(to_om, time, dalpha_dt):
@@ -246,6 +291,7 @@ def orbital_motion_circular(time, to_om, v_para, v_perp, v_radial, separation_0)
         omega = w2/365.25
         inclination = np.pi / 2
         phi0 = 0
+    print(omega,inclination,phi0)
 
     eps0 = (np.cos(phi0) ** 2 + np.sin(inclination) ** 2 * np.sin(phi0) ** 2) ** 0.5
     a_true = separation_0 / eps0
