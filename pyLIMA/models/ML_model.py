@@ -199,7 +199,6 @@ class MLmodel(object):
             model_dictionnary['r_s'] = len(model_dictionnary)
             model_dictionnary['a_s'] = len(model_dictionnary)
             model_dictionnary['rE'] = len(model_dictionnary)
-            model_dictionnary['mass_lens'] = len(model_dictionnary)
 
 
         return model_dictionnary

@@ -17,7 +17,7 @@ class USBLmodel(MLmodel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3, 'logs': 4, 'logq': 5, 'alpha': 6}
+        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3, 'separation': 4, 'mass_ratio': 5, 'alpha': 6}
 
         self.Jacobian_flag = 'No way'
 
@@ -40,12 +40,13 @@ class USBLmodel(MLmodel):
 
         if telescope.lightcurve_flux is not None:
 
+
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
 
-            separation = source_trajectoire[2] + 10 ** pyLIMA_parameters.logs
-
+            separation = source_trajectoire[2] + pyLIMA_parameters.separation
+            print(separation,pyLIMA_parameters.mass_ratio)
             magnification_USBL = \
-               magnification_VBB.magnification_USBL(separation, 10 ** pyLIMA_parameters.logq,
+               magnification_VBB.magnification_USBL(separation, pyLIMA_parameters.mass_ratio,
                                                                           source_trajectoire[0], source_trajectoire[1],
                                                                           pyLIMA_parameters.rho)
 

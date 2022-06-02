@@ -23,6 +23,18 @@ def logrho(x): return np.log10(x.rho)
 
 def rho(x): return 10 ** x.logrho
 
+def logs(x): return np.log10(x.separation)
+
+
+def separation(x): return 10 ** x.logs
+
+
+def logq(x): return np.log10(x.mass_ratio)
+
+
+def mass_ratio(x): return 10 ** x.logq
+
+
 class FitException(Exception):
     pass
 
@@ -93,7 +105,7 @@ class MLfit(object):
 
         import pickle
 
-        standard_fancy = {'logtE': 'tE', 'logrho': 'rho',}
+        standard_fancy = {'logtE': 'tE', 'logrho': 'rho', 'logs': 'separation', 'logq': 'mass_ratio'}
 
         for key in standard_fancy.keys():
 

@@ -17,7 +17,7 @@ class PSBLmodel(MLmodel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'logs': 3, 'logq': 4, 'alpha': 5}
+        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'separation': 3, 'mass_ratio': 4, 'alpha': 5}
 
         self.Jacobian_flag = 'No way'
 
@@ -42,10 +42,10 @@ class PSBLmodel(MLmodel):
 
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
 
-            separation = source_trajectoire[2] + 10 ** pyLIMA_parameters.logs
+            separation = source_trajectoire[2] + pyLIMA_parameters.separation
 
             magnification_PSBL = \
-              magnification_VBB.magnification_PSBL(separation, 10 ** pyLIMA_parameters.logq,
+              magnification_VBB.magnification_PSBL(separation,mass_ratio,
                                                                     source_trajectoire[0], source_trajectoire[1])
 
         else:

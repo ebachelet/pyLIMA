@@ -45,13 +45,13 @@ def q_flux_boundaries():
 
     return (0.001,1.0)
 
-def logs_boundaries():
+def separation_boundaries():
 
-    return (-1.0,1.0)
+    return (0.1,10.0)
 
-def logq_boundaries():
+def mass_ratio_boundaries():
 
-    return (-6.0,0.0)
+    return (10**(-6.0),1.0)
 
 def alpha_boundaries():
 
@@ -83,11 +83,15 @@ def theta_E_boundaries():
 
 def r_s_boundaries():
 
-    return (0.0,10.0)
+    return (-2,2.0)
 
 def a_s_boundaries():
 
-    return (1.0,10.0)
+    return (1.0,2)
+
+def rE_boundaries():
+
+    return (0.1,100.0) #AU
 
 def fsource_boundaries(flux):
 
@@ -108,14 +112,6 @@ def rescale_photometry_boundaries():
 def rescale_astrometry_boundaries():
 
     return (-20, 2.5)
-
-def mass_lens_boundaries():
-
-    return (0.1,10.0)
-
-def rE_boundaries():
-
-    return (0.1,100.0) #AU
 
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.
