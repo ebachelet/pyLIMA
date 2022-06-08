@@ -6,6 +6,22 @@ from astropy.time import Time
 from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian, cartesian_to_spherical
 from astropy.coordinates import get_body, get_body_barycentric_posvel
 
+
+def EN_trajectory_angle(piEN, piEE):
+    """Find the angle between the North vector and the lens trajectory (at t0par). See Gould2004, RESOLUTION OF THE MACHO-LMC-5 PUZZLE: THE JERK-PARALLAX MICROLENS DEGENERACY
+
+    :param float piEN: the North parallax component
+    :param float piEE: the East parallax component
+
+    :return: the angle in radians
+    :rtype: float
+    """
+
+    angle = np.arctan2(piEE, piEN)
+
+    return angle
+
+
 def compute_parallax_curvature(piE, delta_positions):
     """ Compute the curvature induce by the parallax of from
     deltas_positions of a telescope.

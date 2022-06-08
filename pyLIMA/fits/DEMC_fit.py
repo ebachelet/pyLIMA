@@ -85,32 +85,35 @@ class DEMCfit(MLfit):
 
     def new_individual(self, ind1, pop):
 
-        ind2, ind3 = np.random.choice(len(pop), 2, replace=False, p=pop[:, -1]/pop[:, -1].sum())
+        proba = np.copy(pop[:, -1])
+        proba[ind1] = 0
+        proba /= proba.sum()
 
-        #number_of_parents = np.random.randint(1, int(len(pop))/4)*2
-        #indexes = np.random.choice(len(pop), number_of_parents, replace=False)
+        #ind2, ind3, ind4 = np.random.choice(len(pop), 3, replace=False, p=proba)
+
+        number_of_parents = np.random.randint(1, int(len(pop))/4)*2
+        indexes = np.random.choice(len(pop), number_of_parents, replace=False)#, p=proba)
 
         parent1 = pop[ind1]
-        parent2 = pop[ind2]
-        parent3 = pop[ind3]
+        #parent2 = pop[ind2]
+        #parent3 = pop[ind3]
+        #parent4 = pop[ind4]
 
         crossover = np.random.uniform(0.0, 1.0)
 
         mutate = np.random.uniform(0, 1, len(parent1[:-1])) < crossover
 
-        #if np.all(mutate == False):
+        if np.all(mutate == False):
 
-        #    rand = np.random.randint(0, len(mutate))
-        #    mutate[rand] = True
+            rand = np.random.randint(0, len(mutate))
+            mutate[rand] = True
 
         #mutation = np.random.uniform(-2, 2, len(parent1[:-1]))
         eps1 = 10**-4
-        eps2 = 10**-8
+        eps2 = 10**-6
 
         mutation = np.random.uniform(1-eps1, 1+eps1, len(parent1[:-1]))
-        gamma = 2.38/(2*2*len(parent1[:-1]))**0.5
-
-        #mutation = np.random.uniform(-2, 2, len(parent1[:-1]))
+        gamma = 2.38/(2*len(indexes)/2*len(parent1[:-1][mutate]))**0.5
 
         jumping_modes = np.random.randint(0, 5)
 
@@ -120,14 +123,13 @@ class DEMCfit(MLfit):
             gamma = 1
 
         mutation *= gamma
-        
-        shifts = np.random.normal(0, eps2, len(parent1[:-1]))*self.scale
 
-        progress = (parent2[:-1] - parent3[:-1]) * mutation
-        #progress1 = np.sum([pop[i] for i in indexes[::2]],axis=0)
-        #progress2 = np.sum([pop[i] for i in indexes[1::2]],axis=0)
-        #progress = (progress1[:-1]-progress2[:-1])*mutation
+        shifts = np.random.normal(0, eps2, len(parent1[:-1]))#*self.scale
 
+        progress1 = np.sum([pop[i] for i in indexes[::2]], axis=0)
+        progress2 = np.sum([pop[i] for i in indexes[1::2]], axis=0)
+
+        progress = (progress1[:-1]-progress2[:-1])*mutation
         child = np.copy(parent1)
 
         child[:-1][mutate] += progress[mutate]
@@ -137,27 +139,28 @@ class DEMCfit(MLfit):
 
             if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
 
-                return parent1,0
+                return parent1, 0
+
 
         objective = self.objective_function(child[:-1])
 
         casino = np.random.uniform(0, 1)
 
-        if np.exp(-objective + parent1[-1]) > casino:
+        if np.exp((-objective + parent1[-1])*self.scale) > casino:
 
             child[-1] = objective
 
-            return child,1
+            return child, 1
 
         else:
 
-            return parent1,0
+            return parent1, 0
 
     def fit(self, computational_pool=None):
 
         starting_time = python_time.time()
-        self.scale = np.abs([self.fit_parameters[i][1][0] for i in self.fit_parameters.keys()])
-
+        #self.scale = np.abs([self.fit_parameters[i][1][0] for i in self.fit_parameters.keys()])
+        self.scale = 1
         initial_population = []
 
         for i in range(int(self.DE_population_size*len(self.fit_parameters))):
@@ -204,7 +207,17 @@ class DEMCfit(MLfit):
                 loop_population = np.array(loop_population)
 
             all_population.append(loop_population)
-            print(np.sum(acceptance)/len(loop_population))
+            accepted = np.sum(acceptance)/len(loop_population)
+            print(accepted, self.scale)
+
+            if accepted < 0.05:
+
+                self.scale /= 2
+
+            if accepted > 0.35:
+
+                self.scale *= 2
+
 
         self.DE_population = np.array(all_population)
 

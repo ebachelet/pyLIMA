@@ -1,7 +1,7 @@
-from pyLIMA.models.ML_model import MLmodel
+from pyLIMA.models.USBL_model import USBLmodel
 from pyLIMA.magnification import magnification_VBB
 
-class PSBLmodel(MLmodel):
+class PSBLmodel(USBLmodel):
     @property
     def model_type(self):
         """ Return the kind of microlensing model.

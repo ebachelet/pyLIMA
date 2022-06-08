@@ -339,6 +339,20 @@ class MLmodel(object):
 
         return f_source, f_blending
 
+
+    def find_telescopes_fluxes(self, fancy_parameters):
+
+        pyLIMA_parameters = self.compute_pyLIMA_parameters(fancy_parameters)
+
+        fluxes = []
+        for telescope in self.event.telescopes:
+
+            model = self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+            fluxes.append(model['f_source'])
+            fluxes.append(model['f_blending'])
+
+        return fluxes
+
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the
         standard pyLIMA parameters needed to compute a model.

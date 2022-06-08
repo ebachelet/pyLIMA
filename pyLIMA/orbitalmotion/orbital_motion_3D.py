@@ -54,15 +54,14 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
         a_true = a_s * r_norm
 
         h_0 = np.cross(r_0, v_0)
-        h_0 /= np.sum(h_0 ** 2) ** 0.5
 
-        GMass = rE**3*separation_0**3*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
-
+        #GMass = rE**3*separation_0**3*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
+        GMass = v_norm**2/2*(-1.0/2/a_true+1/r_norm)**(-1)
         orbital_velocity = (GMass / a_true ** 3) ** 0.5
 
         e_0 = np.cross(v_0, h_0)/GMass-r_0/r_norm #Laplace_Runge_Lenz
         eccentricity = np.sum(e_0 ** 2) ** 0.5
-
+        h_0 /= np.sum(h_0 ** 2) ** 0.5
 
         #eccentricity = (1-np.sum(h_0**2)**0.5/(Gmass*a_true))**0.5
         x_0 = e_0 / eccentricity
@@ -75,7 +74,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
 
             cos_true_anomaly = -1
 
-        if cos_true_anomaly >1:
+        if cos_true_anomaly > 1:
 
             cos_true_anomaly = 1
 
@@ -105,10 +104,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
 
     separation0 = separation_0
     angle_0 = 0
-    if (sep[0]>100) or np.isnan(sep[0]):
-        import pdb;
-        pdb.set_trace()
-    print(separation_0,r_s,a_s, v_para, v_perp, v_radial,rE)
+
     return sep - separation0, (angle - angle_0)
 
 
