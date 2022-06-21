@@ -45,19 +45,19 @@ class PSPLmodel(MLmodel):
 
             angle = np.arctan2(pyLIMA_parameters.piEE, pyLIMA_parameters.piEN)
 
-            #Deltay = shifts[0] * np.cos(angle) - np.sin(angle) * shifts[1]+source_trajectory_y*pyLIMA_parameters.theta_E
-            #Deltay -= Deltay[0]
-            Deltay = shifts[1]+source_trajectory_y*pyLIMA_parameters.theta_E
-            Deltay -= Deltay[0]
-
             Deltax = shifts[0] + source_trajectory_x * pyLIMA_parameters.theta_E
             Deltax -= Deltax[0]
-            #Deltax = shifts[0] * np.sin(angle) + np.cos(angle) * shifts[1]+source_trajectory_x*pyLIMA_parameters.theta_E
-            #Deltax -= Deltax[0]
+
+            Deltay = shifts[1] + source_trajectory_y * pyLIMA_parameters.theta_E
+            Deltay -= Deltay[0]
+
+            Delta_dec = Deltax*np.cos(angle)-np.sin(angle)*Deltay
+            Delta_ra = Deltax*np.sin(angle)+np.cos(angle)*Deltay
+
             #import pdb;
             #pdb.set_trace()
 
-            astro_shifts = np.array([Deltax, Deltay])
+            astro_shifts = np.array([Delta_ra, Delta_dec])
 
         else:
 

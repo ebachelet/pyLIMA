@@ -1,6 +1,6 @@
 import telnetlib
-
-
+from astroquery.jplhorizons import Horizons
+import numpy as np
 
 TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
 JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
@@ -292,7 +292,7 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
 
 
 def horizons_API(body, start_time, end_time, observatory='ELP', step_size='60m'):
-    # Lookup observatory name
+
     OBSERVATORY_ID = horizons_obscodes(observatory)
     body = horizons_obscodes(body)
 
@@ -300,9 +300,18 @@ def horizons_API(body, start_time, end_time, observatory='ELP', step_size='60m')
 
     tstop = 'JD' + str(end_time)
 
-    import sys
-    import requests
-    f = open(sys.argv[1])
-    request = 'https: // ssd.jpl.nasa.gov / api / horizons.api?format = text & COMMAND = '499' & OBJ_DATA = 'YES' & MAKE_EPHEM = 'YES' & EPHEM_TYPE = 'OBSERVER' & CENTER = '500' & START_TIME = 'JD2457000' & STOP_TIME = 'JD2457200' & STEP_SIZE = '1%20d' & QUANTITIES = '1,3,6''
-    print(r.text)
-    f.close()
+    obj = Horizons(id=body, location=OBSERVATORY_ID, epochs={'start': tstart, 'stop': tstop, 'step': step_size})
+    ephemerides = obj.ephemerides()
+
+
+    dates = ephemerides['datetime_jd'].data.data
+    ra = ephemerides['RA'].data.data
+    dec =ephemerides['DEC'].data.data
+    distances = ephemerides['delta'].data.data
+
+    flag = 'Succes connection to JPL'
+    print('Successfully ephemeris from JPL!')
+
+    positions = np.c_[dates,ra,dec,distances]
+
+    return flag, positions

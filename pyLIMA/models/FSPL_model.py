@@ -11,7 +11,7 @@ thismodule = sys.modules[__name__]
 
 resource_package = __name__
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
-template = pkg_resources.resource_filename(resource_package, resource_path)
+template = pkg_resources.resource_filename('pyLIMA', resource_path)
 
 try:
 
@@ -41,6 +41,15 @@ yoo_table = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
 
 
 class FSPLmodel(MLmodel):
+
+    def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
+                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend'):
+
+        super().__init__(event, parallax=parallax, xallarap=xallarap,
+                 orbital_motion=orbital_motion, blend_flux_parameter=blend_flux_parameter)
+
+        self.yoo_table = yoo_table
+
     @property
     def model_type(self):
         """ Return the kind of microlensing model.
@@ -74,10 +83,8 @@ class FSPLmodel(MLmodel):
         :rtype: array_like,array_like
         """
         if telescope.lightcurve_flux is not None:
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters.to,
-                                                                                 pyLIMA_parameters.uo,
-                                                                                 pyLIMA_parameters.tE,
-                                                                                 pyLIMA_parameters)
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+                                                                                 data_type='photometry')
             rho = pyLIMA_parameters.rho
             gamma = telescope.gamma
 

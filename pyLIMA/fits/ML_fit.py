@@ -132,6 +132,7 @@ class MLfit(object):
             fit_parameters_dictionnary_updated)
 
         if self.telescopes_fluxes_method == 'fit':
+
             fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
                 fit_parameters_dictionnary_updated)
 
@@ -140,6 +141,7 @@ class MLfit(object):
             for telescope in self.model.event.telescopes:
 
                 if telescope.lightcurve_flux is not None:
+
                     fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
@@ -148,6 +150,7 @@ class MLfit(object):
             for telescope in self.model.event.telescopes:
 
                 if telescope.astrometry is not None:
+
                     fit_parameters_dictionnary_updated['logk_astrometry_' + telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
@@ -308,8 +311,6 @@ class MLfit(object):
         else:
 
             self.model_parameters_guess = [float(i) for i in self.model_parameters_guess]
-
-            pass
 
     def telescopes_fluxes_guess(self):
 

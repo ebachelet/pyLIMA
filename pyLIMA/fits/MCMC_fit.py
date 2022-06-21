@@ -74,9 +74,6 @@ class MCMCfit(MLfit):
         nwalkers = self.MCMC_walkers * number_of_parameters
         nlinks = self.MCMC_links
 
-
-        import pdb;
-        pdb.set_trace()
         # Initialize the population of MCMC
         population = best_solution*np.random.uniform(0.999999, 1.000001, (nwalkers,number_of_parameters))+np.random.uniform(-1, 1,(nwalkers,number_of_parameters))*10**-4
 

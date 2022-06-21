@@ -163,7 +163,8 @@ class MLParallaxes(object):
                         delta_East += telescope_positions[1]
 
                 if location == 'Space':
-
+                    import pdb;
+                    pdb.set_trace()
                     telescope_positions = self.annual_parallax(time)
                     delta_North = np.append(delta_North, telescope_positions[0])
                     delta_East = np.append(delta_East, telescope_positions[1])
@@ -285,9 +286,14 @@ class MLParallaxes(object):
         else:
             # call JPL!
             import pyLIMA.parallax.JPL_ephemerides
-            satellite_positions = pyLIMA.parallax.JPL_ephemerides.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
-                                                         step_size='1440m', verbose=False)[1]
+            #satellite_positions = pyLIMA.parallax.JPL_ephemerides.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
+            #                                             step_size='1440m', verbose=False)[1]
+            satellite_positions = pyLIMA.parallax.JPL_ephemerides.horizons_API(satellite_name, tstart, tend,
+                                                                                         observatory='Geocentric',
+                                                                                         step_size='1440m')[1]
+
             telescope.spacecraft_positions = np.array(satellite_positions).astype(float)
+
         satellite_positions = np.array(satellite_positions)
         dates = satellite_positions[:, 0].astype(float)
         ra = satellite_positions[:, 1].astype(float)

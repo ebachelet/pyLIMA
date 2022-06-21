@@ -99,6 +99,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
         model_telescope.name = tel.name
         model_telescope.filter = tel.filter
         model_telescope.location = tel.location
+        model_telescope.gamma = tel.gamma
 
         if tel.location == 'Space':
 

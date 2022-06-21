@@ -98,7 +98,7 @@ class DEMCfit(MLfit):
         #crossover = self.crossover
         crossover_index = np.random.choice(len(self.crossover), 1, p=self.prob_crossover)
         crossover = self.crossover[crossover_index]
-       #crossover = np.random.uniform(0.0, 1.0, len(parent1[:-1]))
+        #crossover = np.random.uniform(0.0, 1.0, len(parent1[:-1]))
 
         mutate = np.random.uniform(0, 1, len(parent1[:-1])) < crossover
 
@@ -174,7 +174,7 @@ class DEMCfit(MLfit):
         #self.scale = np.abs([self.fit_parameters[i][1][0] for i in self.fit_parameters.keys()])
         self.scale = np.ones(len(self.fit_parameters.keys()))
 
-        n_crossover = len(self.fit_parameters.keys())
+        #n_crossover = len(self.fit_parameters.keys())
         n_crossover = 3
         self.crossover = np.arange(1,n_crossover+1)/n_crossover
         self.prob_crossover = np.ones(n_crossover)/n_crossover
