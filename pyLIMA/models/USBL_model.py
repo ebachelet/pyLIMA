@@ -5,7 +5,7 @@ from pyLIMA.magnification import magnification_VBB
 
 class USBLmodel(MLmodel):
 
-    def __init__(self,event, parallax=['None', 0.0], xallarap=['None'],
+    def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
                  orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
                  origin = 'center_of_mass'):
         """The fit class has to be intialized with an event object."""
@@ -49,6 +49,7 @@ class USBLmodel(MLmodel):
             :rtype: array_like,
         """
 
+
         if telescope.lightcurve_flux is not None:
 
             self.u0_t0_from_uc_tc(pyLIMA_parameters)
@@ -74,11 +75,19 @@ class USBLmodel(MLmodel):
 
             self.x_center = 0
 
-        else:
+        if self.origin == 'primary':
+
             center_of_mass = -(pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio) / (
                         1 + pyLIMA_parameters.mass_ratio)
 
             self.x_center = center_of_mass
+
+        if self.origin == 'companion':
+
+            center_of_mass = -(pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio) / (
+                    1 + pyLIMA_parameters.mass_ratio)
+
+            self.x_center = center_of_mass + pyLIMA_parameters.separation
 
     def u0_t0_from_uc_tc(self,pyLIMA_parameters):
 
@@ -107,7 +116,7 @@ class USBLmodel(MLmodel):
                                               new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
         uc = pyLIMA_parameters.u0 + (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
-                       new_origin_y * np.cos(pyLIMA_parameters.alpha))
+                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
         setattr(pyLIMA_parameters, 't0', tc)
         setattr(pyLIMA_parameters, 'u0', uc)

@@ -107,14 +107,18 @@ class MLfit(object):
 
         standard_fancy = {'logtE': 'tE', 'logrho': 'rho', 'logs': 'separation', 'logq': 'mass_ratio'}
 
-        for key in standard_fancy.keys():
+        if self.fancy_parameters:
 
-            parameter = standard_fancy[key]
-            if parameter in self.model.model_dictionnary.keys():
-                self.model.fancy_to_pyLIMA_dictionnary[key] = parameter
+            for key in standard_fancy.keys():
 
-                self.model.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval(key)))
-                self.model.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval(parameter)))
+                parameter = standard_fancy[key]
+
+                if parameter in self.model.model_dictionnary.keys():
+
+                    self.model.fancy_to_pyLIMA_dictionnary[key] = parameter
+
+                    self.model.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval(key)))
+                    self.model.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval(parameter)))
 
         self.model.define_model_parameters()
 
@@ -300,7 +304,7 @@ class MLfit(object):
             except:
 
                 raise FitException('Can not estimate guess, likely your model is too complex to automatic estimate. '
-                                   'Please provide some in model.parameters_guess or run a DE fit.')
+                                   'Please provide some in self.model_parameters_guess or run a DE fit.')
         else:
 
             self.model_parameters_guess = [float(i) for i in self.model_parameters_guess]

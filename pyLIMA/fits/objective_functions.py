@@ -21,7 +21,8 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
     residuals = []
     err_astrometry = []
-
+    #import pdb;
+    #pdb.set_trace()
     for ind, telescope in enumerate(model.event.telescopes):
 
         if telescope.astrometry is not None:

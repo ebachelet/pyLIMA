@@ -74,7 +74,7 @@ class LMfit(MLfit):
 
 
         fit_result = lm_fit['x'].tolist()
-        fit_result.append(lm_fit['cost']*2) #likelihood
+        fit_result.append(lm_fit['cost'])
 
 
         try:

@@ -74,7 +74,6 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
     # timeout = TIMEOUT_JPL
     expected_number_of_lines = (end_time - start_time) * 24
     timeout = max(JPL_TYPICAL_REQUEST_TIME_PER_LINE * expected_number_of_lines, 5)
-
     t = telnetlib.Telnet('horizons.jpl.nasa.gov', 6775)
     t.set_option_negotiation_callback(optcallback)
     data = t.read_until('Horizons> '.encode('utf-8'))
@@ -287,6 +286,23 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
                   }
     flag = 'Succes connection to JPL'
     print('Successfully ephemeris from JPL!')
-    # import pdb;
-    # pdb.set_trace()
+
     return flag, horemp
+
+
+
+def horizons_API(body, start_time, end_time, observatory='ELP', step_size='60m'):
+    # Lookup observatory name
+    OBSERVATORY_ID = horizons_obscodes(observatory)
+    body = horizons_obscodes(body)
+
+    tstart = 'JD' + str(start_time)
+
+    tstop = 'JD' + str(end_time)
+
+    import sys
+    import requests
+    f = open(sys.argv[1])
+    request = 'https: // ssd.jpl.nasa.gov / api / horizons.api?format = text & COMMAND = '499' & OBJ_DATA = 'YES' & MAKE_EPHEM = 'YES' & EPHEM_TYPE = 'OBSERVER' & CENTER = '500' & START_TIME = 'JD2457000' & STOP_TIME = 'JD2457200' & STEP_SIZE = '1%20d' & QUANTITIES = '1,3,6''
+    print(r.text)
+    f.close()

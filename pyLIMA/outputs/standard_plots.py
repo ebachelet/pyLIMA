@@ -17,7 +17,7 @@ MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x
 
 
 
-def standard_light_curves_plot(microlensing_model, model_parameters):
+def plot_lightcurves(microlensing_model, model_parameters):
 
     # Change matplotlib default colors
     n_telescopes = len(microlensing_model.event.telescopes)
@@ -133,7 +133,6 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
             Earth = False
 
     return list_of_telescopes
-
 
 def plot_models(figure_axe, microlensing_model, model_parameters, plot_unit='Mag'):
 
@@ -289,6 +288,10 @@ def plot_geometry(microlensing_model, model_parameters):
             pyLIMA_parameters.mass_ratio,
             resolution=5000)
 
+        center_of_mass = pyLIMA_parameters.separation*pyLIMA_parameters.mass_ratio/(1+pyLIMA_parameters.mass_ratio)
+        plt.scatter(-center_of_mass,0,s=10,c='k')
+        plt.scatter(-center_of_mass+pyLIMA_parameters.separation, 0, s=10, c='k')
+
         for count, caustic in enumerate(caustics):
 
             try:
@@ -329,7 +332,6 @@ def plot_geometry(microlensing_model, model_parameters):
                             alpha=0.5, label=telescope.name, s=0.1)
 
         figure_axes.add_collection(coll)
-
     if microlensing_model.parallax_model[0] != 'None':
 
         piEN = pyLIMA_parameters.piEN

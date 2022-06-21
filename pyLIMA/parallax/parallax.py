@@ -147,6 +147,7 @@ class MLParallaxes(object):
                         delta_East = np.append(delta_East, telescope_positions[1])
 
                     if (self.parallax_model == 'Full'):
+
                         telescope_positions = self.annual_parallax(time)
 
                         delta_North = np.append(delta_North, telescope_positions[0])
@@ -162,6 +163,7 @@ class MLParallaxes(object):
                         delta_East += telescope_positions[1]
 
                 if location == 'Space':
+
                     telescope_positions = self.annual_parallax(time)
                     delta_North = np.append(delta_North, telescope_positions[0])
                     delta_East = np.append(delta_East, telescope_positions[1])
