@@ -35,7 +35,7 @@ def plot_lightcurves(microlensing_model, model_parameters):
 
         telescopes_fluxes = microlensing_model.find_telescopes_fluxes(model_parameters)
 
-    model_parameters = np.r_[model_parameters,telescopes_fluxes]
+        model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
     plot_models(figure_axes[0], microlensing_model, model_parameters, plot_unit='Mag')
     plot_aligned_data(figure_axes[0], microlensing_model, model_parameters, plot_unit='Mag')
