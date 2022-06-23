@@ -11,7 +11,7 @@ class MCMCfit(MLfit):
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit', MCMC_walkers=2, MCMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
+        super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
 
         self.MCMC_walkers = MCMC_walkers #times number of dimension!
