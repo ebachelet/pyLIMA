@@ -79,7 +79,7 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model, fancy_parameters=True, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit'):
+    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit'):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
@@ -158,6 +158,25 @@ class MLfit(object):
             sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
         fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
+
+
+        #t_0 limit fix
+        mins_time = []
+        maxs_time = []
+
+        for telescope in self.model.event.telescopes:
+
+            if telescope.lightcurve_flux is not None:
+
+                mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
+                maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
+
+            if telescope.astrometry is not None:
+
+                mins_time.append(np.min(telescope.astrometry['time'].value))
+                maxs_time.append(np.max(telescope.astrometry['time'].value))
+
+        fit_parameters_boundaries[0] = [np.min(mins_time),np.max(maxs_time)]
 
         for ind, key in enumerate(self.fit_parameters.keys()):
 

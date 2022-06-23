@@ -23,7 +23,8 @@ class DEMCfit(MLfit):
                  telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, fancy_parameters, rescale_photometry, rescale_astrometry, telescopes_fluxes_method)
+        super().__init__(model,model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
 
         self.DE_population = Manager().list() # to be recognize by all process during parallelization
         self.DE_population_size = DE_population_size #Times number of dimensions!
@@ -174,8 +175,8 @@ class DEMCfit(MLfit):
         #self.scale = np.abs([self.fit_parameters[i][1][0] for i in self.fit_parameters.keys()])
         self.scale = np.ones(len(self.fit_parameters.keys()))
 
-        #n_crossover = len(self.fit_parameters.keys())
-        n_crossover = 3
+        n_crossover = len(self.fit_parameters.keys())
+        n_crossover = int(n_crossover/3)
         self.crossover = np.arange(1,n_crossover+1)/n_crossover
         self.prob_crossover = np.ones(n_crossover)/n_crossover
 
@@ -266,7 +267,7 @@ class DEMCfit(MLfit):
                 #pdb.set_trace()
             all_population.append(loop_population)
             accepted = np.sum(acceptance)/len(loop_population)
-            print(accepted,np.min(loop_population[:,-1]),self.scale)
+            print(accepted,np.min(loop_population[:,-1]))
 
 
 

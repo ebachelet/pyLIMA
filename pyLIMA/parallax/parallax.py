@@ -3,9 +3,9 @@ from astropy import constants as astronomical_constants
 from scipy import interpolate
 
 from astropy.time import Time
-from astropy.coordinates import solar_system_ephemeris, EarthLocation,spherical_to_cartesian, cartesian_to_spherical
-from astropy.coordinates import get_body, get_body_barycentric_posvel
+from astropy.coordinates import solar_system_ephemeris, spherical_to_cartesian
 
+from pyLIMA.parallax import astropy_ephemerides
 
 def EN_trajectory_angle(piEN, piEE):
     """Find the angle between the North vector and the lens trajectory (at t0par). See Gould2004, RESOLUTION OF THE MACHO-LMC-5 PUZZLE: THE JERK-PARALLAX MICROLENS DEGENERACY
@@ -126,17 +126,21 @@ class MLParallaxes(object):
                 delta_East = np.array([])
 
                 if location == 'NewHorizon':
+
                     delta_North, delta_East = self.lonely_satellite(time, telescope)
 
                 if location == 'Earth':
 
                     if (self.parallax_model == 'Annual'):
-                        telescope_positions = self.annual_parallax(time)
+
+                        telescope_positions, earth_positions = self.annual_parallax(time)
+                        telescope.Earth_positions = earth_positions
 
                         delta_North = np.append(delta_North, telescope_positions[0])
                         delta_East = np.append(delta_East, telescope_positions[1])
 
                     if (self.parallax_model == 'Terrestrial'):
+
                         altitude = telescope.altitude
                         longitude = telescope.longitude
                         latitude = telescope.latitude
@@ -148,7 +152,8 @@ class MLParallaxes(object):
 
                     if (self.parallax_model == 'Full'):
 
-                        telescope_positions = self.annual_parallax(time)
+                        telescope_positions, earth_positions = self.annual_parallax(time)
+                        telescope.Earth_positions = earth_positions
 
                         delta_North = np.append(delta_North, telescope_positions[0])
                         delta_East = np.append(delta_East, telescope_positions[1])
@@ -163,9 +168,10 @@ class MLParallaxes(object):
                         delta_East += telescope_positions[1]
 
                 if location == 'Space':
-                    import pdb;
-                    pdb.set_trace()
-                    telescope_positions = self.annual_parallax(time)
+
+                    telescope_positions, earth_positions = self.annual_parallax(time)
+                    telescope.Earth_positions = earth_positions
+
                     delta_North = np.append(delta_North, telescope_positions[0])
                     delta_East = np.append(delta_East, telescope_positions[1])
                     name = telescope.spacecraft_name
@@ -203,23 +209,22 @@ class MLParallaxes(object):
         """
 
         with solar_system_ephemeris.set('builtin'):
-            time_jd_reference = Time(self.to_par, format='jd')
-            Earth_position_time_reference = get_body_barycentric_posvel('Earth', time_jd_reference)
+
+            Earth_position_time_reference = astropy_ephemerides.Earth_ephemerides(self.to_par)
             Sun_position_time_reference = -Earth_position_time_reference[0]
             Sun_speed_time_reference = -Earth_position_time_reference[1]
 
-            time_jd = Time(time_to_treat, format='jd')
-            Earth_position = get_body_barycentric_posvel('Earth', time_jd)
+            Earth_position = astropy_ephemerides.Earth_ephemerides(time_to_treat)
+            Earth_projected = np.array([np.dot(Earth_position[0].xyz.value.T, self.North), np.dot(Earth_position[0].xyz.value.T, self.East)])
+
             Sun_position = -Earth_position[0]
 
             delta_Sun = Sun_position.xyz.value.T - np.c_[
-                time_to_treat - self.to_par] * Sun_speed_time_reference.xyz.value \
-                        - Sun_position_time_reference.xyz.value
+                time_to_treat - self.to_par] * Sun_speed_time_reference.xyz.value - Sun_position_time_reference.xyz.value
 
-            delta_Sun_projected = np.array(
-                [np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
+            delta_Sun_projected = np.array([np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
 
-            return delta_Sun_projected
+            return delta_Sun_projected, Earth_projected
 
     def terrestrial_parallax(self, time_to_treat, altitude, longitude, latitude):
         """ Compute the position shift due to the distance of the obervatories from the Earth

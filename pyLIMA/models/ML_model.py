@@ -157,13 +157,24 @@ class MLmodel(object):
 
     def astrometric_model_parameters(self, model_dictionnary):
 
+        parameter = 0
         for telescope in self.event.telescopes:
 
-            if telescope.astrometry is not None:
+            if (telescope.astrometry is not None) & (parameter == 0):
 
                 model_dictionnary['theta_E'] = len(model_dictionnary)
+                model_dictionnary['parallax_source'] = len(model_dictionnary)
+                model_dictionnary['mu_source_N'] = len(model_dictionnary)
+                model_dictionnary['mu_source_E'] = len(model_dictionnary)
 
-                break
+                parameter += 1
+
+            if (telescope.astrometry is not None) & (parameter == 1):
+
+                model_dictionnary['position_source_N_'+telescope.name] = len(model_dictionnary)
+                model_dictionnary['position_source_E_'+telescope.name] = len(model_dictionnary)
+
+
         return model_dictionnary
 
     def second_order_model_parameters(self, model_dictionnary):
@@ -222,6 +233,11 @@ class MLmodel(object):
 
         return model_dictionnary
 
+
+
+
+
+        return model_dictionnary
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
          if you have some fancy parameters request.
@@ -435,7 +451,6 @@ class MLmodel(object):
         :rtype: array_like,array_like
         """
         # Linear basic trajectory
-
 
         if data_type == 'photometry':
 

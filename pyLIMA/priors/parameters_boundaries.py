@@ -113,6 +113,27 @@ def rescale_astrometry_boundaries():
 
     return (-20, 2.5)
 
+def parallax_source_boundaries():
+
+    return (0,10) #as
+
+def mu_source_N_boundaries():
+
+    return (-20, 20) #pixel/yr
+
+def mu_source_E_boundaries():
+
+    return (-20, 20) #pixel/yr
+
+def position_pixel_boundaries():
+
+    return (0,4096) #pix
+
+def position_mas_boundaries():
+
+    return (0, 12960000000) #(0,360) degree in mas
+
+
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.
 
@@ -151,32 +172,32 @@ def parameters_boundaries(event, model_dictionnary):
 
                 function_name = 'rescale_astrometry_boundaries()'
 
+            if 'position' in key:
+
+                try:
+
+                    telescope_ind = np.where(key.split('position_source_N_')[1] == np.array(telescopes_names))[0][0]
+
+                except:
+
+                    telescope_ind = np.where(key.split('position_source_E_')[1] == np.array(telescopes_names))[0][0]
+
+                if event.telescopes[telescope_ind].astrometry['delta_ra'].unit == 'mas':
+
+                    function_name = 'position_mas_boundaries()'
+
+                else:
+
+                    function_name = 'position_pixel_boundaries()'
+
             bounds.append(eval(function_name))
 
         except:
 
             pass
+
     return bounds
 
-def telescopes_fluxes_boundaries(event):
-
-    fluxes_boundaries = []
-
-    for telescope in event.telescopes:
-
-        if telescope.lightcurve_flux is not None:
-
-            fluxes_boundaries.append((0,np.max(telescope.lightcurve_flux['flux'].value)))
-
-            if model.blend_flux_parameter == 'fblend':
-
-                fluxes_boundaries.append((-fluxes_boundaries[-1][1], fluxes_boundaries[-1][1]))
-
-            if model.blend_flux_parameter == 'gblend':
-
-                fluxes_boundaries.append((-1, 1000))
-
-    return fluxes_boundaries
 
 def rescaling_photometry_boundaries(model):
 

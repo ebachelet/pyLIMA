@@ -37,19 +37,18 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
             residus_ra = astrometric_residuals(astro_ra, microlensing_model['astrometry'][0])
             residus_dec = astrometric_residuals(astro_dec, microlensing_model['astrometry'][1])
-            #import pdb;
-            #pdb.set_trace()
+
             if norm:
 
                 if rescaling_astrometry_parameters is not None:
 
-                    errors = (astrometry['err_delta_ra'].value**2+rescaling_astrometry_parameters[ind]**2*
-                              microlensing_model['astrometry'][0]**2)**0.5
+                    errors = astrometry['err_delta_ra'].value+rescaling_astrometry_parameters[ind]
+
                     residus_ra /= errors
                     err_astrometry = np.append(err_astrometry, errors)
 
-                    errors = (astrometry['err_delta_dec'].value**2+rescaling_astrometry_parameters[ind]**2*
-                              microlensing_model['astrometry'][1]**2)**0.5
+                    errors = astrometry['err_delta_dec'].value+rescaling_astrometry_parameters[ind]
+
                     residus_dec /= errors
                     err_astrometry = np.append(err_astrometry, errors)
 
@@ -118,7 +117,7 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
 
                 if rescaling_photometry_parameters is not None:
 
-                    err_flux = (lightcurve['err_flux'].value**2+rescaling_photometry_parameters[ind]**2*microlensing_model['photometry']**2)**0.5
+                    err_flux = lightcurve['err_flux'].value+rescaling_photometry_parameters[ind]*microlensing_model['photometry']
                     residus /= err_flux
                     errfluxes = np.append(errfluxes, err_flux)
 

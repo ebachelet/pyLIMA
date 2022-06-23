@@ -115,6 +115,8 @@ class Telescope(object):
         self.latitude = 49.49  # degrees
         self.gamma = 0.0  # This mean you will fit uniform source brightness
         self.deltas_positions = {}
+        self.Earth_positions = {}
+
         self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
         self.spacecraft_positions = [] #only for space base observatory, should be a list as
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]

@@ -2,7 +2,7 @@ import numpy as np
 
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_PSPL
-from pyLIMA.astrometry import astrometric_shifts
+from pyLIMA.astrometry import astrometric_shifts, astrometric_positions
 
 class PSPLmodel(MLmodel):
     @property
@@ -41,23 +41,15 @@ class PSPLmodel(MLmodel):
             source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                  data_type='astrometry')
 
-            shifts = astrometric_shifts.PSPL_shifts(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
+            shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
 
-            angle = np.arctan2(pyLIMA_parameters.piEE, pyLIMA_parameters.piEN)
+            delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
+                                                                                pyLIMA_parameters.piEE)
 
-            Deltax = shifts[0] + source_trajectory_x * pyLIMA_parameters.theta_E
-            Deltax -= Deltax[0]
+            position_ra, position_dec = astrometric_positions.source_position(telescope, pyLIMA_parameters,
+                                                                              shifts=(delta_ra, delta_dec))
 
-            Deltay = shifts[1] + source_trajectory_y * pyLIMA_parameters.theta_E
-            Deltay -= Deltay[0]
-
-            Delta_dec = Deltax*np.cos(angle)-np.sin(angle)*Deltay
-            Delta_ra = Deltax*np.sin(angle)+np.cos(angle)*Deltay
-
-            #import pdb;
-            #pdb.set_trace()
-
-            astro_shifts = np.array([Delta_ra, Delta_dec])
+            astro_shifts = np.array([position_ra, position_dec])
 
         else:
 
