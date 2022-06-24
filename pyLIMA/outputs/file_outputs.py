@@ -59,13 +59,13 @@ def latex_output(array_parameters, parameters_name, filename='parameters', outpu
 
     t.write('Chi2&' + str(-2 * mcmc_chains[best_model_index, -1]) + '&0\\\\\n')
 
-    else:
-        t.write('Parameters&Value&Errors')
-        t.write('\\hline\n')
 
-        for index, key in enumerate(fit.model.model_dictionnary):
-            t.write(key + '&' + str(fit.fit_results[index]) + '&' + str(
-                fit.fit_covariance.diagonal()[index] ** 0.5) + '\\\\\n')
+    t.write('Parameters&Value&Errors')
+    t.write('\\hline\n')
+
+    for index, key in enumerate(fit.model.model_dictionnary):
+        t.write(key + '&' + str(fit.fit_results[index]) + '&' + str(
+        fit.fit_covariance.diagonal()[index] ** 0.5) + '\\\\\n')
 
         t.write('Chi2&' + str(fit.fit_results[-1]) + '&0\\\\\n')
 

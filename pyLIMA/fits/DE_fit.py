@@ -107,10 +107,6 @@ class DEfit(MLfit):
                                                                                   recombination=0.5, polish=True, init='latinhypercube',
                                                                                   disp=True, workers=worker)
 
-
-        # paczynski_parameters are all parameter0s to compute the model, excepted the telescopes fluxes.
-        paczynski_parameters = differential_evolution_estimation['x'].tolist()
-
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
         print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
 

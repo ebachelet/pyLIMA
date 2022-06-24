@@ -20,14 +20,14 @@ import pyLIMA.fits.objective_functions
 class DEMCfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000):
+                 telescopes_fluxes_method='polyfit', DEMC_population_size=10, max_iteration=10000):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
 
         self.population = [] # to be recognize by all process during parallelization
-        self.DE_population_size = DE_population_size #Times number of dimensions!
+        self.DEMC_population_size = DE_population_size #Times number of dimensions!
         self.max_iteration = max_iteration
 
     def fit_type(self):
@@ -113,9 +113,9 @@ class DEMCfit(MLfit):
 
         gamma = 2.38/(2*len(indexes[::2])*len(parent1[:-1][mutate]))**0.5
 
-        jumping_modes = np.random.randint(0, 10)
+        jumping_nodes = np.random.randint(0, 10)
 
-        if jumping_modes == 9:
+        if jumping_nodes == 9:
 
             #mutation = np.ones(len(parent1[:-1]))
             gamma = 1
@@ -265,16 +265,16 @@ class DEMCfit(MLfit):
 
 
         self.population = np.array(all_population)
-        DE_population = np.copy(self.population)
+        DEMC_population = np.copy(self.population)
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
-        best_model_index = np.where(DE_population[:, :, -1] == DE_population[:, :, -1].argmin())
-        fit_results = DE_population[best_model_index, :-1]
-        fit_log_likelihood = DE_population[best_model_index, -1]
+        best_model_index = np.where(DEMC_population[:, :, -1] == DEMC_population[:, :, -1].argmin())
+        fit_results = DEMC_population[best_model_index, :-1]
+        fit_log_likelihood = DEMC_population[best_model_index, -1]
 
         print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
 
         self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
-                            'DE_population': DE_population, 'fit_time': computation_time}
+                            'DE_population': DEMC_population, 'fit_time': computation_time}
