@@ -88,6 +88,7 @@ class MLfit(object):
         self.rescale_astrometry = rescale_astrometry
         self.telescopes_fluxes_method = telescopes_fluxes_method
         self.fit_parameters = []
+        self.fit_results = {}
 
         self.model_parameters_guess = []
         self.rescale_photometry_parameters_guess = []

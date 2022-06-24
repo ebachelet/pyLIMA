@@ -8,17 +8,16 @@ import pyLIMA.fits.objective_functions
 
 class MCMCfit(MLfit):
 
-    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit', MCMC_walkers=2, MCMC_links = 5000):
+    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
+                 telescopes_fluxes_method='fit', MCMC_walkers=2, MCMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.MCMC_walkers = MCMC_walkers #times number of dimension!
         self.MCMC_links = MCMC_links
         self.MCMC_chains = []
-        self.telescopes_fluxes_method = telescopes_fluxes_method
-        self.fit_time = 0 #s
 
     def fit_type(self):
         return "Monte Carlo Markov Chain (Affine Invariant)"
@@ -67,7 +66,7 @@ class MCMCfit(MLfit):
 
     def fit(self, computational_pool=False):
 
-        start = python_time.time()
+        start_time = python_time.time()
 
         best_solution = self.initial_guess()
 
@@ -112,12 +111,23 @@ class MCMCfit(MLfit):
 
             sampler.run_mcmc(population, nlinks, progress=True)
 
+        computation_time = python_time.time() - start_time
+
         mcmc_shape = list(sampler.get_chain().shape)
         mcmc_shape[-1] += 1
         MCMC_chains = np.zeros(mcmc_shape)
-        MCMC_chains[:,:,:-1] = sampler.get_chain()
-        MCMC_chains[:,:,-1] = sampler.get_log_prob()
+        MCMC_chains[:, :, :-1] = sampler.get_chain()
+        MCMC_chains[:, :, -1] = sampler.get_log_prob()
 
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
         self.MCMC_chains = MCMC_chains
+
+        best_model_index = np.where(MCMC_chains[:, :, -1] == MCMC_chains[:, :, -1].argmin())
+        fit_results = MCMC_chains[best_model_index, :-1]
+        fit_log_likelihood = MCMC_chains[best_model_index, -1]
+
+        print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
+
+        self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
+                            'MCMC_chains': MCMC_chains, 'fit_time': computation_time}
 

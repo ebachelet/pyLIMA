@@ -14,9 +14,6 @@ class LMfit(MLfit):
         super().__init__(model, fancy_parameters=fancy_parameters, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.guess = []
-        self.fit_results = []
-        self.fit_covariance_matrix = []
-        self.fit_time = 0 #s
 
     def fit_type(self):
         return "Levenberg-Marquardt"
@@ -52,7 +49,7 @@ class LMfit(MLfit):
 
     def fit(self):
 
-        starting_time = python_time.time()
+        start_time = python_time.time()
 
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
@@ -70,12 +67,8 @@ class LMfit(MLfit):
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',  max_nfev=50000,
                                               xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
 
-
-
-
-        fit_result = lm_fit['x'].tolist()
-        fit_result.append(lm_fit['cost'])
-
+        fit_results = lm_fit['x'].tolist()
+        fit_chi2 = lm_fit['cost']
 
         try:
             # Try to extract the covariance matrix from the levenberg-marquard_fit output
@@ -87,14 +80,14 @@ class LMfit(MLfit):
                                           len(self.model.model_dictionnary)))
 
 
-        covariance_matrix *= fit_result[-1]/(n_data-len(self.model.model_dictionnary))
-        computation_time = python_time.time() - starting_time
+        covariance_matrix *= fit_chi2[-1]/(n_data-len(self.model.model_dictionnary))
+        computation_time = python_time.time() - start_time
 
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
-        print(fit_result)
-        self.fit_results = fit_result
-        self.fit_covariance_matrix = covariance_matrix
-        self.fit_time = computation_time
+        print('best_model:', fit_results, ' chi2:', fit_chi2)
+
+        self.fit_results = {'best_model': fit_results, 'chi2' : fit_chi2, 'fit_time': computation_time,
+                            'covariance_matrix': covariance_matrix}
 
     def jacobian(self, fit_process_parameters):
         """Return the analytical Jacobian matrix, if requested by method LM.

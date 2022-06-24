@@ -42,7 +42,7 @@ def plot_lightcurves(microlensing_model, model_parameters):
     plot_residuals(figure_axes[1], microlensing_model, model_parameters, plot_unit='Mag')
     figure_axes[0].invert_yaxis()
     figure_axes[1].invert_yaxis()
-    legend = figure_axes[0].legend(shadow=True, fontsize='x-large',bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+    legend = figure_axes[0].legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3)
 
 def initialize_light_curves_plot(plot_unit='Mag', event_name='A microlensing event'):

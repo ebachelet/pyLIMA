@@ -32,8 +32,8 @@ class TRFfit(LMfit):
                                               bounds=(bounds_min, bounds_max),  max_nfev=50000, xtol=10**-10,
                                               ftol=10**-10, gtol=10 ** -10)
 
-        fit_result = lm_fit['x'].tolist()
-        fit_result.append(lm_fit['cost']*2)  # chi2
+        fit_results = lm_fit['x'].tolist()
+        fit_chi2 = lm_fit['cost']*2  # chi2
 
         try:
             # Try to extract the covariance matrix from the levenberg-marquard_fit output
@@ -44,13 +44,12 @@ class TRFfit(LMfit):
             covariance_matrix = np.zeros((len(self.fit_parameters),
                                           len(self.fit_parameters)))
 
-        covariance_matrix *= fit_result[-1]/(n_data-len(self.model.model_dictionnary))
+        covariance_matrix *= fit_chi2/(n_data-len(self.model.model_dictionnary))
         computation_time = python_time.time() - starting_time
 
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
-        print(fit_result)
-        self.fit_results = fit_result
-        self.fit_covariance_matrix = covariance_matrix
-        self.fit_time = computation_time
+        print('best_model:', fit_results, ' chi2:', fit_chi2)
 
+        self.fit_results = {'best_model': fit_results, 'chi2': fit_chi2, 'fit_time': computation_time,
+                            'covariance_matrix': covariance_matrix}
 

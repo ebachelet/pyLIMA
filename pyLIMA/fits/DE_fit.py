@@ -20,7 +20,7 @@ class DEfit(MLfit):
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
 
-        self.DE_population = Manager().list() # to be recognize by all process during parallelization
+        self.population = Manager().list() # to be recognize by all process during parallelization
         self.DE_population_size = DE_population_size #Times number of dimensions!
         self.fit_boundaries = []
         self.max_iteration = max_iteration
@@ -81,13 +81,13 @@ class DEfit(MLfit):
 
             likelihood += astrometric_likelihood
 
-        self.DE_population.append(fit_process_parameters.tolist() + [likelihood])
+        self.population.append(fit_process_parameters.tolist() + [likelihood])
 
         return likelihood
 
     def fit(self, computational_pool=None):
 
-        starting_time = python_time.time()
+        start_time = python_time.time()
 
         if computational_pool:
 
@@ -114,11 +114,15 @@ class DEfit(MLfit):
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
         print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
 
-        fit_results = np.hstack((differential_evolution_estimation['x'], differential_evolution_estimation['fun']))
+        fit_results = differential_evolution_estimation['x']
+        fit_log_likelihood = differential_evolution_estimation['fun']
 
-        computation_time = python_time.time() - starting_time
+        computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
-        self.DE_population = np.array(self.DE_population)
-        self.fit_results = fit_results
-        self.fit_time = computation_time
+        DE_population = np.array(self.population)
+
+        print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
+
+        self.fit_results = {'best_model': fit_results, '-(ln_likelihood)' : fit_log_likelihood, 'fit_time': computation_time,
+                            'DE_population': DE_population, 'fit_time' : computation_time}
