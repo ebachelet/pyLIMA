@@ -80,7 +80,7 @@ class LMfit(MLfit):
                                           len(self.model.model_dictionnary)))
 
 
-        covariance_matrix *= fit_chi2[-1]/(n_data-len(self.model.model_dictionnary))
+        covariance_matrix *= fit_chi2/(n_data-len(self.model.model_dictionnary))
         computation_time = python_time.time() - start_time
 
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
