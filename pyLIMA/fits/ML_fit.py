@@ -2,37 +2,11 @@ import sys
 import numpy as np
 from collections import OrderedDict, namedtuple
 
+from pyLIMA.fits import fancy_parameters
 from pyLIMA.priors import parameters_boundaries
 
 ### Standard fancy parameters functions
 
-def logt0(x): return np.log10(x.t0)
-
-
-def t0(x): return 10 ** x.logt0
-
-
-def logtE(x): return np.log10(x.tE)
-
-
-def tE(x): return 10 ** x.logtE
-
-
-def logrho(x): return np.log10(x.rho)
-
-
-def rho(x): return 10 ** x.logrho
-
-def logs(x): return np.log10(x.separation)
-
-
-def separation(x): return 10 ** x.logs
-
-
-def logq(x): return np.log10(x.mass_ratio)
-
-
-def mass_ratio(x): return 10 ** x.logq
 
 
 class FitException(Exception):
@@ -104,22 +78,29 @@ class MLfit(object):
 
     def define_fancy_parameters(self):
 
-        import pickle
-
-        standard_fancy = {'logtE': 'tE', 'logrho': 'rho', 'logs': 'separation', 'logq': 'mass_ratio'}
-
         if self.fancy_parameters:
 
-            for key in standard_fancy.keys():
+            import pickle
 
-                parameter = standard_fancy[key]
+            try:
+
+                fancy_parameters_dictionnary = fancy_parameters.fancy_parameters_dictionnary
+
+            except:
+
+                print('Loading the default fancy parameters!')
+                fancy_parameters_dictionnary = fancy_parameters.standard_fancy_parameters
+
+            for key in fancy_parameters_dictionnary.keys():
+
+                parameter = fancy_parameters_dictionnary[key]
 
                 if parameter in self.model.model_dictionnary.keys():
 
                     self.model.fancy_to_pyLIMA_dictionnary[key] = parameter
 
-                    self.model.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval(key)))
-                    self.model.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval(parameter)))
+                    self.model.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval('fancy_parameters.'+key)))
+                    self.model.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval('fancy_parameters.'+parameter)))
 
         self.model.define_model_parameters()
 
@@ -159,7 +140,6 @@ class MLfit(object):
             sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
         fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
-
 
         #t_0 limit fix
         mins_time = []
@@ -467,7 +447,7 @@ class MLfit(object):
                 f_source = ml_model['f_source']
                 f_blending = ml_model['f_blending']
                 # Prior here
-                if f_source < 0:
+                if (f_source < 0) | (f_source+f_blending < 0) :
 
                     telescopes_fluxes.append(np.min(flux))
                     telescopes_fluxes.append(0.0)

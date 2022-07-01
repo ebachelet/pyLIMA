@@ -24,10 +24,10 @@ class DEMCfit(MLfit):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.population = [] # to be recognize by all process during parallelization
-        self.DEMC_population_size = DE_population_size #Times number of dimensions!
+        self.DEMC_population_size = DEMC_population_size #Times number of dimensions!
         self.max_iteration = max_iteration
 
     def fit_type(self):
@@ -93,6 +93,7 @@ class DEMCfit(MLfit):
         number_of_parents = np.random.randint(1, 3) * 2
 
         indexes = np.random.choice(len(pop), number_of_parents, replace=False)
+
         #crossover_index = np.random.choice(len(self.crossover), 1, p=self.prob_crossover)
         #crossover = self.crossover[crossover_index]
         crossover = np.random.uniform(0.0, 1.0, len(parent1[:-1]))
@@ -111,7 +112,7 @@ class DEMCfit(MLfit):
         mutation = np.random.uniform(1-eps1, 1+eps1, len(parent1[:-1]))
         shifts = np.random.normal(0, eps2, len(parent1[:-1]))#*self.scale
 
-        gamma = 2.38/(2*len(indexes[::2])*len(parent1[:-1][mutate]))**0.5
+        gamma = 2.38/(2*len(indexes[::2])*len(parent1[:-1][mutate]))**0.5#*self.scale
 
         jumping_nodes = np.random.randint(0, 10)
 
@@ -133,9 +134,10 @@ class DEMCfit(MLfit):
         child[:-1][mutate] += progress[mutate]
         child[:-1] += shifts
 
-        #jump = np.zeros(len(self.crossover))
-        #nid = np.zeros(len(self.crossover))
+       # jump = np.zeros(len(self.crossover))
+       # nid = np.zeros(len(self.crossover))
         #nid[crossover_index] += 1
+        accepted = np.zeros(len(parent1[:-1]))
 
         for ind, param in enumerate(self.fit_parameters.keys()):
 
@@ -143,12 +145,11 @@ class DEMCfit(MLfit):
 
                 #progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
                 #child[ind] = parent1[ind]+progress[ind]
-                #child[ind] = parent1[ind]
-                #progress[ind] = 0
-                return parent1, 0#, jump, nid
+                child[ind] = parent1[ind]
+                progress[ind] = 0
+                #return parent1, accepted#, jump, nid
 
         objective = self.objective_function(child[:-1])
-
 
         casino = np.random.uniform(0, 1)
         probability = np.exp((-objective + parent1[-1]))
@@ -157,28 +158,29 @@ class DEMCfit(MLfit):
 
             child[-1] = objective
             #jump[crossover_index] += np.sum(progress[mutate]**2/var_pop[:-1][mutate])
+            accepted[mutate] += 1
 
-            return child, 1#, jump, nid
+            return child, accepted#, jump, nid
 
         else:
 
-            return parent1, 0#, jump, nid
+            return parent1, accepted#, jump, nid
 
     def fit(self, computational_pool=None):
 
         start_time = python_time.time()
 
-        n_crossover = len(self.fit_parameters.keys())
-        n_crossover = int(n_crossover/3)
-        #self.crossover = np.arange(1,n_crossover+1)/n_crossover
-        #self.prob_crossover = np.ones(n_crossover)/n_crossover
-
+        #n_crossover = len(self.fit_parameters.keys())
+        n_crossover = 3
+        self.crossover = np.arange(1,n_crossover+1)/n_crossover
+        self.prob_crossover = np.ones(n_crossover)/n_crossover
+        #self.scale = np.ones(len(self.fit_parameters.keys()))
 
         initial_population = []
         import scipy.stats as ss
         sampler = ss.qmc.LatinHypercube(d=len(self.fit_parameters))
 
-        for i in range(int(self.DE_population_size*len(self.fit_parameters))):
+        for i in range(int(self.DEMC_population_size*len(self.fit_parameters))):
 
             individual = sampler.random(n=1)[0]
 
@@ -195,12 +197,13 @@ class DEMCfit(MLfit):
 
         all_population = []
         all_population.append(initial_population)
+        all_acceptance = []
 
         loop_population = np.copy(initial_population)
 
         #Jumps = np.ones(len(self.crossover))
 
-        #N_id = np.ones(len(self.crossover))
+       # N_id = np.ones(len(self.crossover))
 
         for loop in tqdm(range(self.max_iteration)):
 
@@ -211,14 +214,14 @@ class DEMCfit(MLfit):
                 new_step = np.array(computational_pool.starmap(self.new_individual, indexes))
 
                 loop_population = np.vstack(new_step[:,0])
-                #acceptance = new_step[:, 1]
+                acceptance = np.vstack(new_step[:, 1])
                 #jumps = new_step[:,2]
-                #n_id = new_step[:,3]
+               # n_id = new_step[:,3]
 
             else:
                 var_pop = np.var(loop_population, axis=0)
                 loop_population = []
-                #acceptance = []
+                acceptance = []
                 #jumps = []
                 #n_id = []
 
@@ -226,13 +229,15 @@ class DEMCfit(MLfit):
 
                     new_step = self.new_individual(ind[0], ind[1],var_pop)
                     loop_population.append(new_step[0])
-                    #acceptance.append(new_step[1])
+                    acceptance.append(new_step[1])
                     #jumps.append(new_step[2])
                     #n_id.append(new_step[3])
 
                 loop_population = np.array(loop_population)
-                #jumps = np.array(jumps)
-                #n_id = np.array(n_id)
+                acceptance = np.array(acceptance)
+
+                jumps = np.array(jumps)
+                n_id = np.array(n_id)
 
             #if loop<0.1*self.max_iteration:
 
@@ -250,31 +255,29 @@ class DEMCfit(MLfit):
             #    self.prob_crossover = pCR/np.sum(pCR)
 
             all_population.append(loop_population)
-            #accepted = np.sum(acceptance)/len(loop_population)
+            all_acceptance.append(acceptance)
             #print(accepted,np.min(loop_population[:,-1]))
+            #import pdb;
+            #pdb.set_trace()
 
+            #mask = accepted<0.1
+            #self.scale[mask] /=2
 
-
-            #if accepted<0.10:
-
-            #   self.scale /= 2
-
-            #if accepted>0.40:
-
-            #    self.scale *= 2
-
+            #mask = accepted > 0.4
+            #self.scale[mask] *= 2
 
         self.population = np.array(all_population)
+        self.acceptance = np.array(all_acceptance)
         DEMC_population = np.copy(self.population)
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
-        best_model_index = np.where(DEMC_population[:, :, -1] == DEMC_population[:, :, -1].argmin())
-        fit_results = DEMC_population[best_model_index, :-1]
-        fit_log_likelihood = DEMC_population[best_model_index, -1]
+        best_model_index = np.where(DEMC_population[:, :, -1] == DEMC_population[:, :, -1].min())
+        fit_results = DEMC_population[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], :-1]
+        fit_log_likelihood = DEMC_population[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0],-1]
 
         print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
 
         self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
-                            'DE_population': DEMC_population, 'fit_time': computation_time}
+                            'DEMC_population': DEMC_population, 'fit_time': computation_time}

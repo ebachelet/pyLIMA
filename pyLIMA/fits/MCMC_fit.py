@@ -120,14 +120,13 @@ class MCMCfit(MLfit):
         MCMC_chains[:, :, -1] = sampler.get_log_prob()
 
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
-        self.MCMC_chains = MCMC_chains
 
-        best_model_index = np.where(MCMC_chains[:, :, -1] == MCMC_chains[:, :, -1].argmin())
-        fit_results = MCMC_chains[best_model_index, :-1]
-        fit_log_likelihood = MCMC_chains[best_model_index, -1]
+        best_model_index = np.where(MCMC_chains[:, :, -1] == MCMC_chains[:, :, -1].max())
+        fit_results = MCMC_chains[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], :-1]
+        fit_log_likelihood = MCMC_chains[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], -1]
 
-        print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
+        print('best_model:', fit_results, 'ln(likelihood)', fit_log_likelihood)
 
-        self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
+        self.fit_results = {'best_model': fit_results, 'ln(likelihood)': fit_log_likelihood,
                             'MCMC_chains': MCMC_chains, 'fit_time': computation_time}
 

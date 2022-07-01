@@ -133,8 +133,9 @@ class MLParallaxes(object):
 
                     if (self.parallax_model == 'Annual'):
 
-                        telescope_positions, earth_positions = self.annual_parallax(time)
+                        telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
                         telescope.Earth_positions = earth_positions
+                        telescope.Earth_speeds = earth_speed
 
                         delta_North = np.append(delta_North, telescope_positions[0])
                         delta_East = np.append(delta_East, telescope_positions[1])
@@ -152,8 +153,9 @@ class MLParallaxes(object):
 
                     if (self.parallax_model == 'Full'):
 
-                        telescope_positions, earth_positions = self.annual_parallax(time)
+                        telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
                         telescope.Earth_positions = earth_positions
+                        telescope.Earth_speeds = earth_speed
 
                         delta_North = np.append(delta_North, telescope_positions[0])
                         delta_East = np.append(delta_East, telescope_positions[1])
@@ -169,8 +171,9 @@ class MLParallaxes(object):
 
                 if location == 'Space':
 
-                    telescope_positions, earth_positions = self.annual_parallax(time)
+                    telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
                     telescope.Earth_positions = earth_positions
+                    telescope.Earth_speeds = earth_speed
 
                     delta_North = np.append(delta_North, telescope_positions[0])
                     delta_East = np.append(delta_East, telescope_positions[1])
@@ -215,7 +218,10 @@ class MLParallaxes(object):
             Sun_speed_time_reference = -Earth_position_time_reference[1]
 
             Earth_position = astropy_ephemerides.Earth_ephemerides(time_to_treat)
-            Earth_projected = np.array([np.dot(Earth_position[0].xyz.value.T, self.North), np.dot(Earth_position[0].xyz.value.T, self.East)])
+            Earth_projected = np.array([np.dot(Earth_position[0].xyz.value.T, self.North),
+                                        np.dot(Earth_position[0].xyz.value.T, self.East)])
+            Earth_projected_speed = np.array([np.dot(Earth_position[1].xyz.value.T, self.North),
+                                              np.dot(Earth_position[1].xyz.value.T, self.East)])
 
             Sun_position = -Earth_position[0]
 
@@ -224,7 +230,7 @@ class MLParallaxes(object):
 
             delta_Sun_projected = np.array([np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
 
-            return delta_Sun_projected, Earth_projected
+            return delta_Sun_projected, Earth_projected, Earth_projected_speed
 
     def terrestrial_parallax(self, time_to_treat, altitude, longitude, latitude):
         """ Compute the position shift due to the distance of the obervatories from the Earth

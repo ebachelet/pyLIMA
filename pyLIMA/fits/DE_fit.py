@@ -72,7 +72,7 @@ class DEfit(MLfit):
 
             else:
 
-                residus, errors= pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                residus, errors = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
                                                                                                    pyLIMA_parameters,
                                                                                                    norm=True,
                                                                                                    rescaling_astrometry_parameters=None)

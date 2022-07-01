@@ -46,8 +46,9 @@ class PSPLmodel(MLmodel):
             delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
                                                                                 pyLIMA_parameters.piEE)
 
-            position_ra, position_dec = astrometric_positions.source_position(telescope, pyLIMA_parameters,
-                                                                              shifts=(delta_ra, delta_dec))
+            position_ra, position_dec = astrometric_positions.source_astrometric_position(telescope, pyLIMA_parameters,
+                                                                              shifts=(delta_ra, delta_dec),
+                                                                              time_ref=self.parallax_model[1])
 
             astro_shifts = np.array([position_ra, position_dec])
 

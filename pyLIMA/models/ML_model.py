@@ -233,11 +233,6 @@ class MLmodel(object):
 
         return model_dictionnary
 
-
-
-
-
-        return model_dictionnary
     def define_model_parameters(self):
         """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
          if you have some fancy parameters request.
@@ -327,6 +322,7 @@ class MLmodel(object):
         :returns:  the source and the blending flux
         :rtype: tuple
         """
+
         try:
             # Fluxes parameters are fitted
             f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
@@ -363,9 +359,12 @@ class MLmodel(object):
         fluxes = []
         for telescope in self.event.telescopes:
 
-            model = self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
-            fluxes.append(model['f_source'])
-            fluxes.append(model['f_blending'])
+            if telescope.lightcurve_flux is not None:
+
+                model = self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+
+                fluxes.append(model['f_source'])
+                fluxes.append(model['f_blending'])
 
         return fluxes
 
