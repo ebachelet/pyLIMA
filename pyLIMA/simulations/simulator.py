@@ -195,7 +195,7 @@ def simulate_microlensing_model_parameters(model):
 
     fake_parameters = []
 
-    for ind,key in enumerate(model.model_dictionnary.keys()):
+    for ind, key in enumerate(model.model_dictionnary.keys()):
 
         try:
 
@@ -204,6 +204,22 @@ def simulate_microlensing_model_parameters(model):
         except:
 
             pass
+
+        # t_0 limit fix
+        mins_time = []
+        maxs_time = []
+
+        for telescope in model.event.telescopes:
+
+            if telescope.lightcurve_flux is not None:
+                mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
+                maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
+
+            if telescope.astrometry is not None:
+                mins_time.append(np.min(telescope.astrometry['time'].value))
+                maxs_time.append(np.max(telescope.astrometry['time'].value))
+
+        fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
 
     return fake_parameters
 
