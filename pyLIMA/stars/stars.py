@@ -100,8 +100,6 @@ class Star(object):
 
         good_table = self.filter_claret_table[filter]
 
-
-
         linear_limb_darkening_coefficient = good_table(self.log_g, self.T_eff, self.metallicity, self.turbulent_velocity)
 
         gamma = 2 * linear_limb_darkening_coefficient / (3 - linear_limb_darkening_coefficient)

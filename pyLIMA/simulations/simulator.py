@@ -108,16 +108,23 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
     if astrometry:
 
-        astrometry = np.ones((len(time_of_observations), 5)) * 42
-        astrometry[:,0] = time_of_observations
+        astrometry = False
+        #astrometry = np.ones((len(time_of_observations), 5)) * 42
+        #astrometry[:,0] = time_of_observations
+
+    #telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve=lightcurveflux,
+    #                                 light_curve_names=['time','flux','err_flux'], light_curve_units=['JD','w/m^2','w/m^2'],
+    #                                 clean_the_light_curve=False,
+    #                                 astrometry=astrometry, astrometry_names=['time','delta_ra','err_delta_ra', 'delta_dec','err_delta_dec'],
+    #                                 astrometry_units=['JD','mas','mas','mas','mas'],
+    #                                 location=location, spacecraft_name=spacecraft_name)
 
     telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve=lightcurveflux,
-                                     light_curve_names=['time','flux','err_flux'], light_curve_units=['JD','w/m^2','w/m^2'],
+                                     light_curve_names=['time', 'flux', 'err_flux'],
+                                     light_curve_units=['JD', 'w/m^2', 'w/m^2'],
                                      clean_the_light_curve=False,
-                                     astrometry=astrometry, astrometry_names=['time','delta_ra','err_delta_ra', 'delta_dec','err_delta_dec'],
-                                     astrometry_units=['JD','mas','mas','mas','mas'],
+                                     astrometry=astrometry,
                                      location=location, spacecraft_name=spacecraft_name)
-
     return telescope
 
 def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
