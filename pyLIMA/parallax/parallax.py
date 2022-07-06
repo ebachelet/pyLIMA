@@ -134,8 +134,8 @@ class MLParallaxes(object):
                     if (self.parallax_model == 'Annual'):
 
                         telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
-                        telescope.Earth_positions = earth_positions
-                        telescope.Earth_speeds = earth_speed
+                        telescope.Earth_positions[data_type] = earth_positions
+                        telescope.Earth_speeds[data_type] = earth_speed
 
                         delta_North = np.append(delta_North, telescope_positions[0])
                         delta_East = np.append(delta_East, telescope_positions[1])
@@ -154,8 +154,8 @@ class MLParallaxes(object):
                     if (self.parallax_model == 'Full'):
 
                         telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
-                        telescope.Earth_positions = earth_positions
-                        telescope.Earth_speeds = earth_speed
+                        telescope.Earth_positions[data_type] = earth_positions
+                        telescope.Earth_speeds[data_type] = earth_speed
 
                         delta_North = np.append(delta_North, telescope_positions[0])
                         delta_East = np.append(delta_East, telescope_positions[1])
@@ -172,8 +172,8 @@ class MLParallaxes(object):
                 if location == 'Space':
 
                     telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
-                    telescope.Earth_positions = earth_positions
-                    telescope.Earth_speeds = earth_speed
+                    telescope.Earth_positions[data_type] = earth_positions
+                    telescope.Earth_speeds[data_type] = earth_speed
 
                     delta_North = np.append(delta_North, telescope_positions[0])
                     delta_East = np.append(delta_East, telescope_positions[1])

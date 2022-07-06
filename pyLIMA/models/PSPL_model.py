@@ -43,6 +43,14 @@ class PSPLmodel(MLmodel):
 
             shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
 
+            # Blended centroid shifts....
+            #magnification = self.model_magnification(telescope, pyLIMA_parameters)
+            #fsource, fblending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
+            #g_blend = fblending/fsource
+            #shifts = astrometric_shifts.PSPL_shifts_with_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E,g_blend)
+            #angle = np.arctan2(source_trajectory_y,source_trajectory_x)
+            #shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
+
             delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
                                                                                 pyLIMA_parameters.piEE)
 

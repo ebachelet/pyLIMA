@@ -1,15 +1,10 @@
 import numpy as np
-import sys
 import pkg_resources
 from scipy import interpolate, misc
 
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_FSPL
 
-thismodule = sys.modules[__name__]
-
-
-resource_package = __name__
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
 template = pkg_resources.resource_filename('pyLIMA', resource_path)
 

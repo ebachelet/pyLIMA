@@ -191,7 +191,7 @@ def simulate_microlensing_model_parameters(model):
     """
 
     model.define_model_parameters()
-    boundaries = parameters_boundaries.parameters_boundaries(event, model.model_dictionnary)
+    boundaries = parameters_boundaries.parameters_boundaries(model.event, model.model_dictionnary)
 
     fake_parameters = []
 
@@ -204,6 +204,7 @@ def simulate_microlensing_model_parameters(model):
         except:
 
             pass
+
     return fake_parameters
 
 def simulate_fluxes_parameters(list_of_telescopes,source_magnitude = [10,20], blend_magnitude = [10,20]):
