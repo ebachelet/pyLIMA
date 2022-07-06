@@ -72,17 +72,17 @@ class MLfit(object):
         self.rescale_photometry_parameters_index = []
         self.rescale_astrometry_parameters_index = []
 
-        self.model.define_model_parameters()
         self.define_fancy_parameters()
         self.define_fit_parameters()
 
     def define_fancy_parameters(self):
 
-        #self.model.model_dictionnary = {}
-        #self.model.pyLIMA_standards_dictionnary = {}
-        #self.model.fancy_to_pyLIMA_dictionnary = {}
-        #self.model.pyLIMA_to_fancy = {}
-        #self.model.fancy_to_pyLIMA = {}
+        self.model.pyLIMA_to_fancy = {}
+        self.model.fancy_to_pyLIMA = {}
+        self.model.fancy_to_pyLIMA_dictionnary = {}
+        self.model.model_dictionnary = {}
+        self.model.define_model_parameters()
+
 
         if self.fancy_parameters:
 
@@ -172,22 +172,19 @@ class MLfit(object):
         if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
 
             list_of_keys = [i for i in self.fit_parameters.keys()]
+            bounds = namedtuple('parameters', list_of_keys)
+
+            for key in list_of_keys:
+
+                setattr(bounds, key, np.array(self.fit_parameters[key][1]))
 
             for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
-                new_bounds = []
+
                 index = np.where(self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(list_of_keys))[0][0]
-
                 parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
-                bounds = self.fit_parameters[parameter][1]
-                x = namedtuple('parameters', parameter)
-
-                setattr(x, parameter, bounds[0])
-                new_bounds.append(self.model.pyLIMA_to_fancy[key](x))
-                setattr(x, parameter, bounds[1])
-                new_bounds.append(self.model.pyLIMA_to_fancy[key](x))
+                new_bounds = self.model.pyLIMA_to_fancy[key](bounds)
 
                 self.fit_parameters.pop(parameter)
-
                 self.fit_parameters[key] = [index, new_bounds]
 
         self.fit_parameters = OrderedDict(

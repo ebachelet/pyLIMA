@@ -72,6 +72,7 @@ from pyLIMA.outputs import pyLIMA_plots
 pyLIMA_plots.plot_lightcurves(fspl, my_fit.fit_results['best_model'])
 plt.show()
 
+
 ### All right, looks fine, as before. 
 
 ### Now let's say you dislike the rho parameter and you want to change it to use log(rho) instead. 
@@ -120,6 +121,10 @@ guess_parameters3 = [79.9, 0.008, 10.1 * 0.023, np.log10(0.023)]
 my_fit3 = TRF_fit.TRFfit(fspl, fancy_parameters=True)
 my_fit3.model_parameters_guess = guess_parameters3
 my_fit3.fit()
+
+
+import pdb;
+pdb.set_trace()
 
 # This means we change rho by log(rho) and tE by tstar in the fitting process.
 
