@@ -108,7 +108,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
     if astrometry:
 
-        astrometry = False
+        astrometry = None
         #astrometry = np.ones((len(time_of_observations), 5)) * 42
         #astrometry[:,0] = time_of_observations
 
