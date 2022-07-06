@@ -1,5 +1,6 @@
 '''
 Welcome to pyLIMA (v2) tutorial 4!
+
 In this tutorial you will learn how to code your own objective function to be optimised, instead of using the standard pyLIMA routines. For example, you might want to use SIMPLEX chi^2 minimization, instead of LM.
 In scipy.optimize the SIMPLEX method is called 'Nelder-Mead'.
 We will use the same example light curves as in tutorial 1.
@@ -53,9 +54,9 @@ your_event.telescopes[0].gamma = 0.5
 your_event.telescopes[1].gamma = 0.5
 
 ### Next, construct the MODEL you want to fit and link it to the EVENT you prepared. 
-### Let's go with a basic PSPL, without second order effects:
-from pyLIMA.models import PSPL_model
-pspl = PSPL_model.PSPLmodel(your_event)
+### Let's go with a basic FSPL, without second order effects:
+from pyLIMA.models import FSPL_model
+fspl = FSPL_model.FSPLmodel(your_event)
 
 ### Now we want to define the OBJECTIVE FUNCTION to use for the MODEL you prepared.
 ### Here we take a simple chi^2, and fit in flux units:
@@ -77,18 +78,31 @@ def chisq(fit_process_parameters, your_model):
 ### Let's assume it is scipy.optimize.minimize
 import scipy.optimize as so
 
-### You need a starting guess ....
-your_guess = [79.963, -0.01, 9.6, 0.00027]
+### You need a reasonable starting guess ...
+your_guess = [79.963, 0.01, 9.6, 0.04]
 
 ### This next command is done automatically in pyLIMA for the default optimizers but 
-### since we defined our own OBJECTIVE FUNCTION here, we need to call it explicitly
-### to initialize the parameters in the modelL
-pspl.define_model_parameters()
+### since we defined our own OBJECTIVE FUNCTION here we need to call it explicitly
+### to initialize the parameters in the model.
+fspl.define_model_parameters()
 
 ### Now run the optimization using your chisq function:
-result = so.minimize(chisq, your_guess, args=(pspl), method='Nelder-Mead')
-
+result = so.minimize(chisq, your_guess, args=(fspl), method='Nelder-Mead')
 print (result)
 
+### Let's look at the optimized parameters and the chi^2 of the fit.
+### In this particular case, the function we defined uses scipy.optimize, 
+### where the optimized parameters are stored in result.x and the chi^2 in result.fun.
+print ("Optimized parameters:", result.x)
+print ("chi^2:", result.fun)
 
+### In case you have forgotten, the order and names of the parameters can be obtained from:
+fspl.model_dictionnary
+
+### Finally, let's look at the plot of the fit. Import the pyLIMA plotting tools:
+from pyLIMA.outputs import pyLIMA_plots
+pyLIMA_plots.plot_lightcurves(fspl, result.x)
+plt.show()
+
+### This concludes tutorial 4.
 

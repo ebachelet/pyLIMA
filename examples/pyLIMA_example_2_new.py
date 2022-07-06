@@ -72,7 +72,6 @@ from pyLIMA.outputs import pyLIMA_plots
 pyLIMA_plots.plot_lightcurves(fspl, my_fit.fit_results['best_model'])
 plt.show()
 
-
 ### All right, looks fine, as before. 
 
 ### Now let's say you dislike the rho parameter and you want to change it to use log(rho) instead. 
@@ -112,87 +111,24 @@ def tE(x):
 
 setattr(fancy_parameters, 'tE', tE)
 
-
+### Update the parameter dictionary with the new definitions
 fancy_parameters.fancy_parameters_dictionnary = {'log_rho':'rho', 't_star':'tE'}
 
 ### t_star = rho * tE so in our example that is 10.1 * 0.023 (see guess_parameters2 above):
 guess_parameters3 = [79.9, 0.008, 10.1 * 0.023, np.log10(0.023)]
 
+### Do the fit using the new parameter definitions:
 my_fit3 = TRF_fit.TRFfit(fspl, fancy_parameters=True)
 my_fit3.model_parameters_guess = guess_parameters3
 my_fit3.fit()
 
+### Let's look at the optimized parameters and the chi^2 of the fit:
+my_fit3.fit_results['best_model']
+my_fit3.fit_results['chi2']
 
-import pdb;
-pdb.set_trace()
+### If you have forgotten the order of the parameters, do:
+my_fit3.fit_parameters.keys()
 
-# This means we change rho by log(rho) and tE by tstar in the fitting process.
+### Note that the results now are displayed with our newly defined parameters.
 
-### We need now to explain the mathematical transformation :
-def logrho(x): return np.log10(x.rho)
-def rho(x): return 10**x.logrho
-
-def tstar(x): return x.rho*x.tE
-def tE(x): return x.tstar/10**x.logrho
-
-model_1.pyLIMA_to_fancy = {'logrho':pickle.loads(pickle.dumps(logrho)),'tstar':pickle.loads(pickle.dumps(tstar))}
-
-### We also need to explain the inverse mathematical transformation :
-
-model_1.fancy_to_pyLIMA = {'rho': pickle.loads(pickle.dumps(rho)),'tE': pickle.loads(pickle.dumps(tE))}
-
-### Change tE boundaries to tstar boundaries (i.e [log10(rhomin)*tEmin, log10(rhomax)*tEmax]) :
-model_1.parameters_boundaries[2] = [10**-5, 300 ]
-
-### Change rho boundaries to logrho boundaries (i.e [log10(rhomin), log10(rhomax)]) :
-model_1.parameters_boundaries[3] = [-5, -1]
-
-### Give some guess for LM
-model_1.parameters_guess = [79.93092292215124, 0.008144793661913143, 0.22, -1.6459136264565297]
-
-### That's it, let's fit!
-your_event.fit(model_1,'LM')
-
-your_event.fits[-1].produce_outputs()
-print('Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi)
-print('tstar : ',your_event.fits[-1].outputs.fit_parameters.tstar)
-print('Corresponding tE: ',your_event.fits[-1].outputs.fit_parameters.tstar/10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-print('Log rho : ',your_event.fits[-1].outputs.fit_parameters.logrho)
-print('Corresponding rho : ',10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-plt.show()
-
-### And what about the DE method? ### Let's try it!:
-your_event.fit(model_1,'DE')
-
-
-your_event.fits[-1].produce_outputs()
-
-print('Chi2_DE :',your_event.fits[-1].outputs.fit_parameters.chichi)
-
-print('tstar : ',your_event.fits[-1].outputs.fit_parameters.tstar)
-
-print('Corresponding tE: ',your_event.fits[-1].outputs.fit_parameters.tstar/10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-
-
-print('Log rho : ',your_event.fits[-1].outputs.fit_parameters.logrho)
-
-print('Corresponding rho : ',10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-
-plt.show()
-
-# Bonus Track #
-### Let's win some times by injecting some previous results
-
-model_1.parameters_guess = [79.9, 0.008, 0.22849, -1.6459]
-
-### Fit again, but using MCMC now. TAKE A WHILE....Wait until figures pop up.
-your_event.fit(model_1,'MCMC',flux_estimation_MCMC='MCMC')
-print('The fitting process is finished now, let produce some outputs....')
-
-your_event.fits[-1].produce_outputs()
-
-plt.show()
+### This concludes tutorial 2.
