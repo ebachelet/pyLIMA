@@ -652,10 +652,6 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
             index_color = np.where(name == telescopes_names)[0][0]
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][index_color]
 
-            if tel.location == 'Earth':
-
-                name = tel.location
-
             figure_axe.plot(astrometric_model[0], astrometric_model[1], c=color)
 
             if Earth is True:

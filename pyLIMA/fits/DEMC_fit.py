@@ -35,10 +35,11 @@ class DEMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = 0
         model_parameters = fit_process_parameters[self.model_parameters_index]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        likelihood = 0
 
         if self.model.photometry:
 
@@ -65,20 +66,23 @@ class DEMCfit(MLfit):
 
             if self.rescale_astrometry:
 
+                rescaling_astrometry_parameters = 10 ** (
+                fit_process_parameters[self.rescale_astrometry_parameters_index])
 
-                rescaling_astrometry_parameters = 10**(fit_process_parameters[self.rescale_astrometry_parameters_index])
-
-                residus, errors = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                      pyLIMA_parameters,
-                                                                                                      norm=True,
-                                                                                                      rescaling_astrometry_parameters= rescaling_astrometry_parameters)
+                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                                                                                                pyLIMA_parameters,
+                                                                                                norm=True,
+                                                                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
 
             else:
 
-                residus, errors= pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                   pyLIMA_parameters,
-                                                                                                   norm=True,
-                                                                                                   rescaling_astrometry_parameters=None)
+                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                                                                                                pyLIMA_parameters,
+                                                                                                norm=True,
+                                                                                                rescaling_astrometry_parameters=None)
+
+            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
+            errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
 
             astrometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errors**2)))
 
@@ -143,10 +147,12 @@ class DEMCfit(MLfit):
 
             if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
 
-                #progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
-                #child[ind] = parent1[ind]+progress[ind]
-                child[ind] = parent1[ind]
-                progress[ind] = 0
+                progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
+                child[ind] = parent1[ind]+progress[ind]
+
+                #child[ind] = parent1[ind]
+                #progress[ind] = 0
+
                 #return parent1, accepted#, jump, nid
 
         objective = self.objective_function(child[:-1])
@@ -236,8 +242,8 @@ class DEMCfit(MLfit):
                 loop_population = np.array(loop_population)
                 acceptance = np.array(acceptance)
 
-                jumps = np.array(jumps)
-                n_id = np.array(n_id)
+                #jumps = np.array(jumps)
+                #n_id = np.array(n_id)
 
             #if loop<0.1*self.max_iteration:
 

@@ -78,6 +78,12 @@ class MLfit(object):
 
     def define_fancy_parameters(self):
 
+        #self.model.model_dictionnary = {}
+        #self.model.pyLIMA_standards_dictionnary = {}
+        #self.model.fancy_to_pyLIMA_dictionnary = {}
+        #self.model.pyLIMA_to_fancy = {}
+        #self.model.fancy_to_pyLIMA = {}
+
         if self.fancy_parameters:
 
             import pickle

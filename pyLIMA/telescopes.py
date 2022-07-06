@@ -83,7 +83,7 @@ class Telescope(object):
 
     def __init__(self, name='NDG', camera_filter='I', light_curve=None,
                  light_curve_names=None, light_curve_units=None, clean_the_light_curve=False,
-                 location = 'Earth', spacecraft_name=None,
+                 location='Earth', spacecraft_name=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None):
         """Initialization of the attributes described above."""
 

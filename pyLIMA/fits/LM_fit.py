@@ -38,11 +38,11 @@ class LMfit(MLfit):
 
         if self.model.astrometry:
 
-            residus, errors = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+            residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
                                                                                                   pyLIMA_parameters,
                                                                                                   norm=True,
                                                                                                   rescaling_astrometry_parameters=None)
-
+            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
             likelihood = np.append(likelihood, residus)
 
         return likelihood

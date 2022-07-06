@@ -52,10 +52,26 @@ class MCMCfit(MLfit):
             likelihood += photometric_likelihood
 
         if self.model.astrometry:
-            residus, errors = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                  pyLIMA_parameters,
-                                                                                                  norm=True,
-                                                                                                  rescaling_astrometry_parameters=None)
+
+            if self.rescale_astrometry:
+
+                rescaling_astrometry_parameters = 10 ** (
+                fit_process_parameters[self.rescale_astrometry_parameters_index])
+
+                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                                                                                                pyLIMA_parameters,
+                                                                                                norm=True,
+                                                                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+
+            else:
+
+                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                                                                                                pyLIMA_parameters,
+                                                                                                norm=True,
+                                                                                                rescaling_astrometry_parameters=None)
+
+            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
+            errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
 
             astrometric_likelihood = 0.5 * (np.sum(residus ** 2 + np.log(2 * np.pi * errors ** 2)))
 

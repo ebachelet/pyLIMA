@@ -38,7 +38,7 @@ def separation(x):
     return 10 ** x.log_separation
 
 
-def log_mass_ration(x):
+def log_mass_ratio(x):
 
     return np.log10(x.mass_ratio)
 

@@ -149,17 +149,29 @@ class NGSA2fit(MLfit):
 
         if self.model.astrometry:
 
-            residus, errors = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                  pyLIMA_parameters,
-                                                                                                  norm=True,
-                                                                                                  rescaling_astrometry_parameters=None)
+            if self.rescale_astrometry:
+
+                rescaling_astrometry_parameters = 10 ** (
+                fit_process_parameters[self.rescale_astrometry_parameters_index])
+
+                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                                                                                                pyLIMA_parameters,
+                                                                                                norm=True,
+                                                                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+
+            else:
+
+                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
+                                                                                                pyLIMA_parameters,
+                                                                                                norm=True,
+                                                                                                rescaling_astrometry_parameters=None)
+
+            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
+            errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
 
             astrometric_likelihood = 0.5 * (np.sum(residus ** 2 + np.log(2 * np.pi * errors ** 2)))
 
-            likelihood = astrometric_likelihood
-
-
-        return likelihood
+        return astrometric_likelihood
 
 
     def fit(self):
@@ -172,8 +184,8 @@ class NGSA2fit(MLfit):
         number_of_parameters = len(self.fit_parameters.keys())
 
         algorithm = NSGA2(
-            pop_size=2*number_of_parameters,
-            n_offsprings=int(0.5*number_of_parameters),
+            pop_size=4*number_of_parameters,
+            n_offsprings=number_of_parameters,
             sampling=get_sampling("real_random"),
             crossover=get_crossover("real_sbx", prob=0.9, eta=15),
             mutation=get_mutation("real_pm", eta=20),
@@ -181,7 +193,7 @@ class NGSA2fit(MLfit):
 
         from pymoo.factory import get_termination
 
-        termination = get_termination('default',n_max_gen=10000,)
+        termination = get_termination('default',f_tol = 10**-8,  n_max_gen=10000,)
 
         if self.model.astrometry:
 
