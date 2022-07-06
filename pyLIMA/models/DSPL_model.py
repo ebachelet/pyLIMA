@@ -21,7 +21,7 @@ class DSPLmodel(MLmodel):
         :returns: a dictionnary containing the pyLIMA standards
         :rtype: dict
         """
-        model_dictionary = {'t0': 0, 'u0': 1,'delta_t0': 0, 'delta_u0': 1, 'tE': 4}
+        model_dictionary = {'t0': 0, 'u0': 1,'delta_t0': 2, 'delta_u0': 3, 'tE': 4}
 
         filters = [telescope.filter for telescope in self.event.telescopes]
 
