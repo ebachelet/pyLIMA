@@ -245,10 +245,10 @@ def simulate_fluxes_parameters(list_of_telescopes,source_magnitude = [10,20], bl
     for telescope in list_of_telescopes:
 
         magnitude_source = np.random.uniform(source_magnitude[0], source_magnitude[1])
-        flux_source = toolbox.brightness_transformation.magnitude_to_flux(magnitude_source)
+        flux_source = brightness_transformation.magnitude_to_flux(magnitude_source)
 
-        magnitude_blend = magnitude_source = np.random.uniform(blend_magnitude[0], blend_magnitude[1])
-        flux_blend = toolbox.brightness_transformation.magnitude_to_flux(magnitude_blend)
+        magnitude_blend = np.random.uniform(blend_magnitude[0], blend_magnitude[1])
+        flux_blend = brightness_transformation.magnitude_to_flux(magnitude_blend)
 
 
         fake_fluxes_parameters.append(flux_source)

@@ -10,15 +10,14 @@ import pyLIMA.fits.objective_functions
 class GRIDfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DEMC_population_size=10, max_iteration=10000,
-                 fix_parameters = [], grid_resolution = 50):
+                 telescopes_fluxes_method='polyfit', DE_population_size=2, max_iteration=1000,
+                 fix_parameters = [], grid_resolution = 10):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
-        self.population = [] # to be recognize by all process during parallelization
-        self.DEMC_population_size = DEMC_population_size #Times number of dimensions!
+        self.DE_population_size = DE_population_size
         self.max_iteration = max_iteration
         self.fix_parameters = fix_parameters
         self.grid_resolution = grid_resolution
@@ -49,13 +48,24 @@ class GRIDfit(MLfit):
 
         return np.array(fit_process_parameters)
 
-    def construct_the_hyper_grid(self, parameters):
+    def construct_the_hyper_grid(self):
         """Define the grid. ON CONSTRUCTION.
         """
-        params = map(np.asarray, parameters)
+
+        parameters_on_the_grid = []
+
+        for parameter_name in self.fix_parameters:
+
+            parameter_range = self.fit_parameters[parameter_name][1]
+
+            parameters_on_the_grid.append(np.linspace(parameter_range[0], parameter_range[1],
+                                                      self.grid_resolution))
+
+        parameters_on_the_grid = np.array(parameters_on_the_grid)
+        params = map(np.asarray, parameters_on_the_grid)
         grid = np.broadcast_arrays(*[x[(slice(None),) + (None,) * i] for i, x in enumerate(params)])
 
-        reformate_grid = np.vstack(grid).reshape(len(parameters), -1).T
+        reformate_grid = np.vstack(grid).reshape(len(parameters_on_the_grid), -1).T
 
         return reformate_grid
 
@@ -123,17 +133,14 @@ class GRIDfit(MLfit):
         differential_evolution_estimation = so.differential_evolution(self.objective_function,
                                                                                   bounds=self.bounds,
                                                                                   mutation=(0.5, 1.5),
-                                                                                  popsize=2,
+                                                                                  popsize=self.DE_population_size,
                                                                                   args=([fixed_parameters]),
-                                                                                  maxiter=1000, tol=0.00,
+                                                                                  maxiter=self.max_iteration, tol=0.00,
                                                                                   atol=1.0, strategy='rand1bin',
                                                                                   recombination=0.5, polish=True,
                                                                                   init='latinhypercube',
                                                                                   disp=False)
 
-
-
-        print(fixed_parameters, differential_evolution_estimation['fun'])
         fitted_parameters = differential_evolution_estimation['x']
         best_model = self.reconstruct_fit_process_parameters(fitted_parameters, fixed_parameters)
         best_model = np.append(best_model, differential_evolution_estimation['fun'])
@@ -142,33 +149,34 @@ class GRIDfit(MLfit):
 
     def fit(self, computational_pool=None):
 
-        parameters_on_the_grid = []
-
-        for parameter_name in self.fix_parameters:
-
-            parameter_range = self.model.parameters_boundaries[self.model.model_dictionnary[parameter_name]]
-
-            parameters_on_the_grid.append(np.linspace(parameter_range[0], parameter_range[1],
-                            self.grid_resolution))
-
-        hyper_grid = self.construct_the_hyper_grid(parameters_on_the_grid)
+        hyper_grid = self.construct_the_hyper_grid()
 
         start_time = python_time.time()
 
         self.bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys() if key not in self.fix_parameters]
 
+
+
         if computational_pool is not None:
 
-            new_step = np.array(computational_pool.starmap(self.fit_on_grid_pixel, hyper_grid))
+            with computational_pool as p, tqdm(total=len(hyper_grid)) as pbar:
+
+                res = [p.apply_async(self.fit_on_grid_pixel, args=(hyper_grid[i],),
+                                    callback=lambda _: pbar.update(1)) for i in range(len(hyper_grid))]
+
+                population = np.array([r.get() for r in res])
 
         else:
+            population = []
 
-            for j, ind in enumerate(hyper_grid):
+            for j in tqdm(range(self.max_iteration)):
 
                 new_step = self.fit_on_grid_pixel([hyper_grid[j]])
+                population.append(new_step)
 
-                import pdb;
-                pdb.set_trace()
+            population = np.array(population)
+        import pdb;
+        pdb.set_trace()
 
         #grid_results = list(
         #    computational_map(emcee.ensemble._function_wrapper(self.optimization_on_grid_pixel, args=[], kwargs={}),
