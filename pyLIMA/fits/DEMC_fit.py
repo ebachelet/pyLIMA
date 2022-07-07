@@ -1,16 +1,8 @@
 from tqdm import tqdm
 import time as python_time
-import numpy as np
 import sys
-from multiprocessing import Manager
-import multiprocessing
 import numpy as np
-import os
-import scipy.linalg
-from pydream.parameters import FlatParam, SampledParam
-from pydream.core import run_dream
-from pydream.convergence import Gelman_Rubin
-import scipy.stats as ss
+
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
