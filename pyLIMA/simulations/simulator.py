@@ -208,29 +208,36 @@ def simulate_microlensing_model_parameters(model):
 
             fake_parameters.append(np.random.uniform(boundaries[ind][0],boundaries[ind][1]))
 
+            if 'fsource' in key:
+
+                break
+
         except:
 
             pass
 
-        # t_0 limit fix
-        mins_time = []
-        maxs_time = []
+    fake_fluxes_parameters = simulate_fluxes_parameters(model.event.telescope)
+    fake_parameters += fake_fluxes_parameters
+    
+    # t_0 limit fix
+    mins_time = []
+    maxs_time = []
 
-        for telescope in model.event.telescopes:
+    for telescope in model.event.telescopes:
 
-            if telescope.lightcurve_flux is not None:
-                mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
-                maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
+        if telescope.lightcurve_flux is not None:
+            mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
+            maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
 
-            if telescope.astrometry is not None:
-                mins_time.append(np.min(telescope.astrometry['time'].value))
-                maxs_time.append(np.max(telescope.astrometry['time'].value))
+        if telescope.astrometry is not None:
+            mins_time.append(np.min(telescope.astrometry['time'].value))
+            maxs_time.append(np.max(telescope.astrometry['time'].value))
 
-        fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
+    fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
 
     return fake_parameters
 
-def simulate_fluxes_parameters(list_of_telescopes,source_magnitude = [10,20], blend_magnitude = [10,20]):
+def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], blend_magnitude = [10,20]):
     """ Simulate flux parameters (magnitude_source , g) for the telescopes. More details in microlmodels module
 
     :param list list_of_telescopes: a list of telescopes object
