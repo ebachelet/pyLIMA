@@ -281,7 +281,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters):
 
         theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['photometry']
 
-        observed_flux,err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
+        observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
 
         telescope.lightcurve_flux['flux'] = observed_flux
         telescope.lightcurve_flux['err_flux'] = err_observed_flux

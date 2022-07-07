@@ -84,9 +84,10 @@ class DSPLmodel(MLmodel):
         source1_trajectory_x, source1_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                data_type='photometry')
 
-        pyLIMA_parameters_2 = copy.deepcopy(pyLIMA_parameters)
-        setattr(pyLIMA_parameters_2, 't0',  pyLIMA_parameters_2.t0 + pyLIMA_parameters_2.delta_t0)
-        setattr(pyLIMA_parameters_2, 'u0', pyLIMA_parameters_2.u0 + pyLIMA_parameters_2.delta_u0)
+        parameters = [getattr(pyLIMA_parameters,i) for i in pyLIMA_parameters._fields]
+        pyLIMA_parameters_2 = self.compute_pyLIMA_parameters(parameters)
+        pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0+pyLIMA_parameters_2.delta_t0
+        pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0+pyLIMA_parameters_2.delta_u0
 
         source2_trajectory_x, source2_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters_2,
                                                                                data_type='photometry')
