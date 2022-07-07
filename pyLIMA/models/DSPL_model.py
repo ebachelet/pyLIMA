@@ -85,7 +85,9 @@ class DSPLmodel(MLmodel):
                                                                                data_type='photometry')
 
         parameters = [getattr(pyLIMA_parameters,i) for i in pyLIMA_parameters._fields]
+
         pyLIMA_parameters_2 = self.compute_pyLIMA_parameters(parameters)
+
         pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0+pyLIMA_parameters_2.delta_t0
         pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0+pyLIMA_parameters_2.delta_u0
 

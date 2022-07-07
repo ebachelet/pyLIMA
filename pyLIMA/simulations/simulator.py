@@ -216,7 +216,8 @@ def simulate_microlensing_model_parameters(model):
 
             pass
 
-    fake_fluxes_parameters = simulate_fluxes_parameters(model.event.telescopes)
+    fake_fluxes_parameters = simulate_fluxes_parameters(model.event.telescopes, source_magnitude=[10, 20],
+                                                        blend_magnitude=[19, 22])
     fake_parameters += fake_fluxes_parameters
 
     # t_0 limit fix
