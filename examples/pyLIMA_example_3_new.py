@@ -1,7 +1,9 @@
 '''
 Welcome to pyLIMA (v2) tutorial 3!
+
 In this tutorial you will learn how you can use pyLIMA to simulate a microlensing light curve.
-We will cover how to read in data files, call different fitting routines and how to make plots.
+We will cover how to call the pyLIMA microlensing simulator and generate a simple PSPL event.
+We will also fit these events and see if we can recover the input parameters.
 Please take some time to familiarize yourself with the pyLIMA documentation.
 '''
 
@@ -13,76 +15,71 @@ import os, sys
 from pyLIMA import event
 from pyLIMA import telescopes
 
+### Import the simulator to be used for generating the simulated light curve
+from pyLIMA.simulations import simulator
+
 ### Create a new EVENT object and give it a name.
+### You can also set the coordinates for an event.
+### In the context of the simulation, the coordinates will be used to check whether the
+### target is observable from a specific observatory.
 your_event = event.Event()
-your_event.name = 'My event name'
-
-# Welcome to pyLIMA tutorial! #
-
-#Let's simulate, and fit back :), some events.
-
-#Do not forget, if not made already. To obtain working link to the documentation, you need to :
-
-#make html
-
-#in the doc directory.
+your_event.name = 'My simulated double source event'
+your_event.ra = 270
+your_event.dec = -30
 
 
-### Create your event. This function create an event class, more details here [pyLIMA documentation](file/../../doc/build/html/pyLIMA.event.html)
+### Create some telescope to observe the event from. The function we will use will create
+### a generic telescope class (see pyLIMA documentation for details). We will need to create
+### a new telescope for each observatory, telescope, filter combination. 
+### For example, in this case, we will use SAAO_I, SAAO_V to simulate observations from SAAO 
+### (South Africa) in the I and V bands and from CTIO (Chile) in the I ban. 
+### Please refer to the documentation to see the full meaning of the input parameters.
 
-# First import the required libraries
+### For example, to generate the SAAO_I data set:
+### Name = SAAO_I,your_event, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
+### sampling(hours) = 2, location='Earth', filter = 'I', uniform_sampling=False, altitude = 400 m, 
+### longitude = 20.659279, latitude = -32.3959, bad_weather_percentage = 20%, 
+### moon_windows_avoidance (degree)=15, minimum_alt=15)
+SAAO_I = simulator.simulate_a_telescope('SAAO_I', your_event, 2457585.5, 2457615.5, 2, 'Earth','I',
+                                        uniform_sampling=False, altitude=400, longitude = 20.659279, 
+                                        latitude = -32.3959, bad_weather_percentage=20.0 / 100, 
+                                        moon_windows_avoidance=20, minimum_alt=15)
 
-import numpy as np
-import matplotlib.pyplot as plt
-import os, sys
+SAAO_V = simulator.simulate_a_telescope('SAAO_V', your_event, 2457585.5, 2457615.5, 2, 'Earth','V',
+                                        uniform_sampling=False, altitude=400, longitude = 20.659279, 
+                                        latitude = -32.3959, bad_weather_percentage=20.0 / 100, 
+                                        moon_windows_avoidance=20, minimum_alt=15)
 
+CTIO_I = simulator.simulate_a_telescope('CTIO_I', your_event, 2457365.5,2457965.5, 4, 'Earth', 'I',
+                                        uniform_sampling=False, altitude=1000, longitude = -109.285399, 
+                                        latitude = -27.130, bad_weather_percentage=10.0 / 100, 
+                                        moon_windows_avoidance=30, minimum_alt=30)
 
-from pyLIMA import microlsimulator
+### Similar to tutorial 1, we need to associate these telescopes with the event we created:
+your_event.telescopes.append(SAAO_I)
+your_event.telescopes.append(SAAO_V)
+your_event.telescopes.append(CTIO_I)
 
+### Define which data set to align all data to:
+your_event.find_survey('CTIO_I')
 
-### Event : Name = A spectacular double source point lens', RA = 270, DEC = -30
+### Now construct the MODEL you want to deploy to construct the light curves and 
+### link it to the EVENT you prepared.
+### We will use the double-source point-lens (DSPL) model in this example.
+from pyLIMA.models import DSPL_model
+dspl = DSPL_model.DSPLmodel(your_event)
 
-my_own_creation = microlsimulator.simulate_a_microlensing_event(name ='A spectacular double source point lens', 
-                                                                ra=270, dec=-30)
+### Now that the MODEL is there, we need to set the relevant parameters.
+### The parameters are drawn uniformly from the bounds defined but you can 
+### also set them manually. Please consult the documentation for more 
+### details on the parameters of the MODEL you want to use.
+dspl_parameters = simulator.simulate_microlensing_model_parameters(dspl)
+print (dspl_parameters)
 
+### To see the order and names of the paramaters use:
+dspl.model_dictionnary
 
-#Create some telescopes. This function create a telescope class, more details here [pyLIMA documentation](file/../../doc/build/html/pyLIMA.telescopes.html)
-#You need to create a telescope class for each filter with a different name. For example here, SAAO_I and SAAO_V.
-#We need to build telescopes before the model that we gonna simulate because models need informations about filters and how many telescopes did observe your simulation.
-
-# Create some telescopes
-
-# Name = survey,your_event, location = 'Earth', start_obs =2457465.500000, end_obs = 2457665.500000,
-# sampling(hours) = 4, location='Earth', uniform_sampling=False, filter = 'I', altitude = 1000 m, longitude = -109.285399, 
-# latitude = -27.130814, bad_weather_percentage = 10%, moon_windows_avoidance (degree)=30, 
-# minimum_alt=30)
-my_survey = microlsimulator.simulate_a_telescope('survey',my_own_creation, 2457365.500000,2457965.500000,4, 'Earth','I',
-                                                  uniform_sampling=False, altitude=1000, longitude = -109.285399, latitude = -27.130, 
-                                                  bad_weather_percentage=10.0 / 100, moon_windows_avoidance=30, 
-                                                  minimum_alt=30)
-
-
-# Name = SAAO_I,your_event, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
-# sampling(hours) = 2, location='Earth', uniform_sampling=False, filter = 'I', altitude = 400 m, longitude = 20.659279, 
-# latitude = -32.3959, bad_weather_percentage = 20%, mmoon_windows_avoidance (degree)=15, 
-# minimum_alt=15)
-my_own_telescope_1 = microlsimulator.simulate_a_telescope('SAAO_I',my_own_creation,  2457585.5, 2457615.5,2, 'Earth','I',
-                                                          uniform_sampling=False, altitude=400, longitude = 20.659279, latitude = -32.3959, 
-                                                          bad_weather_percentage=20.0 / 100, moon_windows_avoidance=20, 
-                                                          minimum_alt=15)
-# Name = SAAO_V,your_event, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
-# sampling(hours) = 12, location='Earth', uniform_sampling=False, filter = 'V', altitude = 400 m, longitude = 20.659279, 
-# latitude = -32.3959, bad_weather_percentage = 20%, mmoon_windows_avoidance (degree)=15, 
-# minimum_alt=15)
-my_own_telescope_2 = microlsimulator.simulate_a_telescope('SAAO_V',my_own_creation,  2457585.5, 2457615.5,2, 'Earth','V',
-                                                          uniform_sampling=False, altitude=400, longitude = 20.659279, latitude = -32.3959, 
-                                                          bad_weather_percentage=20.0 / 100, moon_windows_avoidance=20, 
-                                                          minimum_alt=15)
-
-# Add them to your event
-my_own_creation.telescopes.append(my_survey)
-my_own_creation.telescopes.append(my_own_telescope_1)
-my_own_creation.telescopes.append(my_own_telescope_2)
+### Now we need to define the magnitudes
 
 
 ### If you want to simulate a event from space, you can use :
@@ -175,4 +172,6 @@ print(my_own_creation.fits[0].model.model_type,'Chi2_LM :',my_own_creation.fits[
 print(my_own_creation.fits[1].model.model_type,'Chi2_LM :',my_own_creation.fits[1].outputs.fit_parameters.chichi)
 
 plt.show()
+
+### This concludes tutorial 3.
 

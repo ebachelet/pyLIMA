@@ -1,5 +1,6 @@
 '''
 Welcome to pyLIMA (v2) tutorial 1!
+
 In this tutorial you will learn how pyLIMA works by fitting a simulated data set.
 We will cover how to read in data files, call different fitting routines and how to make plots.
 Please take some time to familiarize yourself with the pyLIMA documentation.
