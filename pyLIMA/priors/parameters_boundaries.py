@@ -152,6 +152,10 @@ def parameters_boundaries(event, model_dictionnary):
 
             function_name = key + '_boundaries()'
 
+            if ('q_flux' in key):
+
+                function_name = 'q_flux_boundaries()'
+
             if ('fsource_' in key):
 
                 telescope_ind = np.where(key.split('fsource_')[1]==np.array(telescopes_names))[0][0]
