@@ -99,7 +99,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
         time_of_observations = np.arange(time_start, time_end, sampling / (24.0))
 
-    if photometry:
+    if (photometry) & (len(time_of_observations)>0):
 
         lightcurveflux = np.ones((len(time_of_observations), 3)) * 42
         lightcurveflux[:, 0] = time_of_observations
