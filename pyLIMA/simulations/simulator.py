@@ -143,7 +143,7 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
     """
 
-    time_initial = np.linspace(time_start, time_end, sampling / 24.)
+    time_initial = np.arange(time_start, time_end, sampling / 24.)
     total_number_of_days = int(time_end - time_start)
 
     time_observed = []
