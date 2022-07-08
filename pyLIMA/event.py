@@ -123,6 +123,13 @@ class Event(object):
         Then check if you have any telescopes ingested.
         Finally check if your telescopes have a lightcurve attributes different from None.
         """
+        for telescope in self.telescopes:
+
+            if (telescope.lightcurve_flux is None) & (telescope.lightcurve_magnitude is None) & (telescope.astrometry is None):
+                raise EventException('ERROR : The telescope ' +telescope.name+ 'is empty (no lightcurves or astrometry,'
+                                                                               ', it is useless, so I deleted it')
+
+                self.telescopes.remove(telescope)
 
         if not isinstance(self.name, str):
             raise EventException('ERROR : The event name (' + str(
