@@ -6,6 +6,7 @@ Created on Thu Aug 27 16:39:32 2015
 """
 
 from __future__ import division
+import warnings
 
 import sys
 import numpy as np
@@ -126,8 +127,8 @@ class Event(object):
         for telescope in self.telescopes:
 
             if (telescope.lightcurve_flux is None) & (telescope.lightcurve_magnitude is None) & (telescope.astrometry is None):
-                raise EventException('ERROR : The telescope ' +telescope.name+ 'is empty (no lightcurves or astrometry,'
-                                                                               ', it is useless, so I deleted it')
+                raise warnings.warn('WARNING : The telescope ' +telescope.name+ 'is empty (no lightcurves or astrometry,'
+                                                                               ', it is useless, so I deleted it)')
 
                 self.telescopes.remove(telescope)
 
@@ -158,7 +159,7 @@ class Event(object):
                     raise EventException('There is no lightcurve associated to the  telescope ' + str(
                         telescope.name) + ', no fit possible!')
 
-        print(sys._getframe().f_code.co_name, ' : Everything looks fine, this event can be fitted')
+        print(sys._getframe().f_code.co_name, ' : Everything looks fine...')
 
     def find_survey(self, choice=None):
         """Function to find the survey telescope in the telescopes list,
