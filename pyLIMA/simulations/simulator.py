@@ -71,6 +71,8 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
         target = SkyCoord(event.ra, event.dec, unit='deg')
 
         minimum_sampling = min(4.0, sampling)
+        minimum_sampling = sampling
+        
         ratio_sampling = np.round(sampling / minimum_sampling)
 
         time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
