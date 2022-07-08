@@ -72,7 +72,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
         minimum_sampling = min(4.0, sampling)
         minimum_sampling = sampling
-        
+
         ratio_sampling = np.round(sampling / minimum_sampling)
 
         time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
@@ -143,28 +143,53 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
     """
 
+    time_initial = np.linspace(time_start, time_end, sampling / 24.)
     total_number_of_days = int(time_end - time_start)
-    time_step_observations = sampling / 24.0
-    number_of_day_exposure = int(np.floor(
-        1.0 / time_step_observations))  # less than expected total, more likely in a telescope :)
-    night_begin = time_start
 
     time_observed = []
+    night_begin = time_start
+
     for i in range(total_number_of_days):
 
         good_weather = np.random.uniform(0, 1)
 
         if good_weather > bad_weather_percentage:
-            random_begin_of_the_night = 0
-            night_end = night_begin + 1
-            time_observed += np.linspace(night_begin + time_step_observations + random_begin_of_the_night, night_end,
-                                         number_of_day_exposure).tolist()
+
+            mask = (time_initial >= night_begin) & (time_initial<night_begin+1)
+            time_observed = np.append(time_observed, time_initial[mask])
+
+        else:
+
+            pass
 
         night_begin += 1
 
     time_of_observations = np.array(time_observed)
 
     return time_of_observations
+
+    #total_number_of_days = int(time_end - time_start)
+    #time_step_observations = sampling / 24.0
+    #number_of_day_exposure = int(np.floor(
+    #    1.0 / time_step_observations))  # less than expected total, more likely in a telescope :)
+    #night_begin = time_start
+
+    #time_observed = []
+    #for i in range(total_number_of_days):
+
+    #    good_weather = np.random.uniform(0, 1)
+
+    #    if good_weather > bad_weather_percentage:
+    #        random_begin_of_the_night = 0
+    #        night_end = night_begin + 1
+    #        time_observed += np.linspace(night_begin + time_step_observations + random_begin_of_the_night, night_end,
+    #                                     number_of_day_exposure).tolist()
+
+    #    night_begin += 1
+
+    #time_of_observations = np.array(time_observed)
+
+    #return time_of_observations
 
 def moon_illumination(sun, moon):
     """The moon illumination expressed as a percentage.
