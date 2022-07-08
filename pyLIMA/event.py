@@ -6,7 +6,6 @@ Created on Thu Aug 27 16:39:32 2015
 """
 
 from __future__ import division
-import warnings
 
 import sys
 import numpy as np
@@ -127,7 +126,7 @@ class Event(object):
         for telescope in self.telescopes:
 
             if (telescope.lightcurve_flux is None) & (telescope.lightcurve_magnitude is None) & (telescope.astrometry is None):
-                warnings.warn('WARNING : The telescope ' +telescope.name+ ' is empty (no lightcurves or astrometry,'
+                print('WARNING : The telescope ' +telescope.name+ ' is empty (no lightcurves or astrometry,'
                                                                                ', it is useless, so I deleted it)')
 
                 self.telescopes.remove(telescope)
