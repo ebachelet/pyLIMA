@@ -127,7 +127,7 @@ class Event(object):
         for telescope in self.telescopes:
 
             if (telescope.lightcurve_flux is None) & (telescope.lightcurve_magnitude is None) & (telescope.astrometry is None):
-                raise warnings.warn('WARNING : The telescope ' +telescope.name+ 'is empty (no lightcurves or astrometry,'
+                warnings.warn('WARNING : The telescope ' +telescope.name+ ' is empty (no lightcurves or astrometry,'
                                                                                ', it is useless, so I deleted it)')
 
                 self.telescopes.remove(telescope)
