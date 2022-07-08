@@ -206,11 +206,11 @@ def simulate_microlensing_model_parameters(model):
 
         try:
 
-            fake_parameters.append(np.random.uniform(boundaries[ind][0],boundaries[ind][1]))
-
             if 'fsource' in key:
 
                 break
+
+            fake_parameters.append(np.random.uniform(boundaries[ind][0],boundaries[ind][1]))
 
         except:
 
