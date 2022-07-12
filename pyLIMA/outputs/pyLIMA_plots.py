@@ -249,6 +249,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_uni
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
     #plot aligned data
+    index = 0
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
         if tel.lightcurve_flux is not None:
@@ -265,10 +266,11 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_uni
 
             else:
 
-                if ind == 0:
+                if index == 0:
+
                     ref_source = f_source
                     ref_blend = f_blend
-
+                    index += 1
                 magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT-2.5*np.log10(ref_source*model_magnification+ref_blend)
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]

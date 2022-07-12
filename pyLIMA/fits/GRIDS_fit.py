@@ -10,7 +10,7 @@ import pyLIMA.fits.objective_functions
 class GRIDfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DE_population_size=2, max_iteration=1000,
+                 telescopes_fluxes_method='polyfit', DE_population_size=2, max_iteration=2000,
                  fix_parameters = [], grid_resolution = 10):
         """The fit class has to be intialized with an event object."""
 
@@ -159,9 +159,9 @@ class GRIDfit(MLfit):
 
         if computational_pool is not None:
 
-            with computational_pool as p, tqdm(total=len(hyper_grid)) as pbar:
+            with computational_pool as pool, tqdm(total=len(hyper_grid)) as pbar:
 
-                res = [p.apply_async(self.fit_on_grid_pixel, args=(hyper_grid[i],),
+                res = [pool.apply_async(self.fit_on_grid_pixel, args=(hyper_grid[i],),
                                     callback=lambda _: pbar.update(1)) for i in range(len(hyper_grid))]
 
                 population = np.array([r.get() for r in res])

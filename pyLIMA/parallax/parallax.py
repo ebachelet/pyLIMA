@@ -180,10 +180,6 @@ class MLParallaxes(object):
                     name = telescope.spacecraft_name
 
                     telescope_positions = -self.space_parallax(time, name, telescope)
-                    # import pdb;
-                    # pdb.set_trace()
-                    # delta_North = np.append(delta_North, telescope_positions[0])
-                    # delta_East = np.append(delta_East, telescope_positions[1])
 
                     delta_North += telescope_positions[0]
                     delta_East += telescope_positions[1]
@@ -195,8 +191,8 @@ class MLParallaxes(object):
 
             except:
 
-                pass
-
+                import pdb;
+                pdb.set_trace()
     def annual_parallax(self, time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"

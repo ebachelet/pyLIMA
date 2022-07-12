@@ -45,7 +45,7 @@ class PSBLmodel(USBLmodel):
             separation = source_trajectoire[2] + pyLIMA_parameters.separation
 
             magnification_PSBL = \
-              magnification_VBB.magnification_PSBL(separation,mass_ratio,
+              magnification_VBB.magnification_PSBL(separation,pyLIMA_parameters.mass_ratio,
                                                                     source_trajectoire[0], source_trajectoire[1])
 
         else:
@@ -53,5 +53,5 @@ class PSBLmodel(USBLmodel):
             magnification_PSBL = None
 
 
-        return magnification_pSBL
+        return magnification_PSBL
 

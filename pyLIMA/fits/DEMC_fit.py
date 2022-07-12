@@ -3,7 +3,6 @@ import time as python_time
 import sys
 import numpy as np
 
-
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
 
@@ -139,18 +138,19 @@ class DEMCfit(MLfit):
 
             if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
 
-                progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
-                child[ind] = parent1[ind]+progress[ind]
+                #progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
+                #child[ind] = parent1[ind]+progress[ind]
 
-                #child[ind] = parent1[ind]
+                child[ind] = parent1[ind]
                 #progress[ind] = 0
+                #mutate[ind] = False
 
                 #return parent1, accepted#, jump, nid
 
         objective = self.objective_function(child[:-1])
 
         casino = np.random.uniform(0, 1)
-        probability = np.exp((-objective + parent1[-1]))
+        probability = np.exp((-objective*self.betas[ind1] + parent1[-1]*self.betas[ind1]))
 
         if probability > casino:
 
@@ -164,6 +164,50 @@ class DEMCfit(MLfit):
 
             return parent1, accepted#, jump, nid
 
+    def swap_temperatures(self, population):
+
+        pop = np.copy(population)
+        number_of_swap = int(len(population)/5)
+
+        if (number_of_swap % 2) == 0:
+
+            pass
+
+        else:
+
+            number_of_swap += 1
+
+        choices = np.random.choice(len(population),number_of_swap, replace=False)
+
+        for ind in np.arange(0, number_of_swap, 2):
+
+            index = choices[ind]
+            index2 = choices[ind+1]
+
+            MH_temp = population[index2,-1]*self.betas[index]+population[index,-1]*self.betas[index2]
+            MH_temp -= population[index,-1]*self.betas[index]+population[index2,-1]*self.betas[index2]
+
+            casino = np.random.uniform(0, 1)
+            probability = np.exp((-MH_temp))
+
+            if probability > casino:
+
+                child1 = np.copy(population[index2])
+                child2 = np.copy(population[index])
+
+                self.swap[index] += 1
+                self.swap[index2] += 1
+
+            else:
+
+                child1 = np.copy(population[index])
+                child2 = np.copy(population[index2])
+
+            pop[index] = child1
+            pop[index2] = child2
+
+        return np.array(pop)
+
     def fit(self, computational_pool=None):
 
         start_time = python_time.time()
@@ -175,10 +219,14 @@ class DEMCfit(MLfit):
         #self.scale = np.ones(len(self.fit_parameters.keys()))
 
         initial_population = []
+        number_of_walkers = int(self.DEMC_population_size*len(self.fit_parameters))
         import scipy.stats as ss
         sampler = ss.qmc.LatinHypercube(d=len(self.fit_parameters))
+        self.betas = np.logspace(-3, 0, number_of_walkers)
+        #self.betas = np.linspace(0,1, number_of_walkers)
+        self.swap = np.zeros(number_of_walkers)
 
-        for i in range(int(self.DEMC_population_size*len(self.fit_parameters))):
+        for i in range(number_of_walkers):
 
             individual = sampler.random(n=1)[0]
 
@@ -187,6 +235,8 @@ class DEMCfit(MLfit):
                 individual[ind] = individual[ind]*(self.fit_parameters[j][1][1]-self.fit_parameters[j][1][0])+self.fit_parameters[j][1][0]
 
             individual = np.array(individual)
+            individual = np.r_[individual]
+
             objective = self.objective_function(individual)
             individual = np.r_[individual,objective]
             initial_population.append(individual)
@@ -215,8 +265,10 @@ class DEMCfit(MLfit):
                 acceptance = np.vstack(new_step[:, 1])
                 #jumps = new_step[:,2]
                # n_id = new_step[:,3]
+                loop_population = self.swap_temperatures(loop_population)
 
             else:
+
                 var_pop = np.var(loop_population, axis=0)
                 loop_population = []
                 acceptance = []
@@ -233,6 +285,7 @@ class DEMCfit(MLfit):
 
                 loop_population = np.array(loop_population)
                 acceptance = np.array(acceptance)
+                loop_population = self.swap_temperatures(loop_population)
 
                 #jumps = np.array(jumps)
                 #n_id = np.array(n_id)
@@ -254,6 +307,7 @@ class DEMCfit(MLfit):
 
             all_population.append(loop_population)
             all_acceptance.append(acceptance)
+
             #print(accepted,np.min(loop_population[:,-1]))
             #import pdb;
             #pdb.set_trace()
@@ -268,6 +322,7 @@ class DEMCfit(MLfit):
         self.acceptance = np.array(all_acceptance)
         DEMC_population = np.copy(self.population)
 
+        print(self.swap/self.max_iteration)
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
