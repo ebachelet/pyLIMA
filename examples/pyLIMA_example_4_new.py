@@ -105,4 +105,3 @@ pyLIMA_plots.plot_lightcurves(fspl, result.x)
 plt.show()
 
 ### This concludes tutorial 4.
-
