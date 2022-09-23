@@ -87,7 +87,7 @@ def r_s_boundaries():
 
 def a_s_boundaries():
 
-    return (1.0,2)
+    return (0.1,10)
 
 def rE_boundaries():
 
@@ -127,7 +127,7 @@ def mu_source_E_boundaries():
 
 def position_pixel_boundaries():
 
-    return (0,4096) #pix
+    return (-4096,4096) #pix
 
 def position_mas_boundaries():
 
@@ -176,7 +176,7 @@ def parameters_boundaries(event, model_dictionnary):
 
                 function_name = 'rescale_astrometry_boundaries()'
 
-            if 'position' in key:
+            if 'position_source' in key:
 
                 try:
 
@@ -185,6 +185,24 @@ def parameters_boundaries(event, model_dictionnary):
                 except:
 
                     telescope_ind = np.where(key.split('position_source_E_')[1] == np.array(telescopes_names))[0][0]
+
+                if event.telescopes[telescope_ind].astrometry['delta_ra'].unit == 'mas':
+
+                    function_name = 'position_mas_boundaries()'
+
+                else:
+
+                    function_name = 'position_pixel_boundaries()'
+
+            if 'position_blend' in key:
+
+                try:
+
+                    telescope_ind = np.where(key.split('position_blend_N_')[1] == np.array(telescopes_names))[0][0]
+
+                except:
+
+                    telescope_ind = np.where(key.split('position_blend_E_')[1] == np.array(telescopes_names))[0][0]
 
                 if event.telescopes[telescope_ind].astrometry['delta_ra'].unit == 'mas':
 

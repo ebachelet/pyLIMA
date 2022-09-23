@@ -173,7 +173,8 @@ class MLmodel(object):
 
                 model_dictionnary['position_source_N_'+telescope.name] = len(model_dictionnary)
                 model_dictionnary['position_source_E_'+telescope.name] = len(model_dictionnary)
-
+                #model_dictionnary['position_blend_N_' + telescope.name] = len(model_dictionnary)
+                #model_dictionnary['position_blend_E_' + telescope.name] = len(model_dictionnary)
 
         return model_dictionnary
 
@@ -278,7 +279,7 @@ class MLmodel(object):
     def _default_microlensing_model(self, telescope, pyLIMA_parameters):
         """ Compute the default microlens model according the injected parameters:
 
-        flux(t) = f_source*magnification(t)+f_blending
+        flux(t) = f_source*magnification(t)+f_blend
 
         and the astrometric shifts if need be.
 
@@ -292,34 +293,33 @@ class MLmodel(object):
         photometric_model = None
         astrometric_model = None
         f_source = None
-        f_blending = None
+        f_blend = None
 
         if telescope.lightcurve_flux is not None:
 
             magnification = self.model_magnification(telescope, pyLIMA_parameters)
 
-            f_source, f_blending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
-
-            photometric_model = f_source * magnification + f_blending
+            f_source, f_blend = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
+            photometric_model = f_source * magnification + f_blend
 
         if telescope.astrometry is not None:
 
             astrometric_model = self.model_astrometry(telescope, pyLIMA_parameters)
 
         microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model, 'f_source': f_source,
-                              'f_blending': f_blending}
+                              'f_blend': f_blend}
 
         return microlensing_model
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, magnification):
         """
-        Compute the source/blending flux
+        Compute the source/blend flux
 
         :param object telescope: a telescope object. More details in telescope module.
         :param object pyLIMA_parameters: a namedtuple which contain the parameters
         :param array_like magnification: an array containing the magnification
 
-        :returns:  the source and the blending flux
+        :returns:  the source and the blend flux
         :rtype: tuple
         """
 
@@ -329,12 +329,12 @@ class MLmodel(object):
 
             if self.blend_flux_parameter == 'fblend':
 
-                f_blending = 2 * getattr(pyLIMA_parameters, 'fblend_' + telescope.name) / 2
+                f_blend = 2 * getattr(pyLIMA_parameters, 'fblend_' + telescope.name) / 2
 
             if self.blend_flux_parameter == 'gblend':
 
-                g_blending = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
-                f_blending = f_source * g_blending
+                g_blend = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
+                f_blend = f_source * g_blend
 
         except TypeError:
 
@@ -343,13 +343,14 @@ class MLmodel(object):
             flux = lightcurve['flux'].value
 
             try:
-                f_source, f_blending = np.polyfit(magnification, flux, 1)
+                f_source, f_blend = np.polyfit(magnification, flux, 1)
+
             except:
 
                 f_source = 0.0
-                f_blending = 0.0
+                f_blend = 0.0
 
-        return f_source, f_blending
+        return f_source, f_blend
 
 
     def find_telescopes_fluxes(self, fancy_parameters):
@@ -364,7 +365,7 @@ class MLmodel(object):
                 model = self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
                 fluxes.append(model['f_source'])
-                fluxes.append(model['f_blending'])
+                fluxes.append(model['f_blend'])
 
         return fluxes
 
@@ -478,6 +479,7 @@ class MLmodel(object):
         if 'piEN' in pyLIMA_parameters._fields:
 
             try:
+
                 piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
                 parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(piE, delta_positions)
 

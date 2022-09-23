@@ -32,7 +32,7 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
     position_E = mu_E / 365.25 * (time - time_ref) + ref_E
 
     Earth_projected = earth_vector*parallax_source #mas
-
+   
     if telescope.astrometry['delta_ra'].unit == 'mas':
 
         position_dec = position_N - Earth_projected[0]
@@ -51,18 +51,18 @@ def source_astrometric_position(telescope, pyLIMA_parameters, shifts=None, time_
     if shifts is None:
 
         shifts = np.zeros(2)
-        
-    position_E, position_N = astrometric_position(telescope, pyLIMA_parameters,time_ref)
+
+    position_E, position_N = astrometric_position(telescope, pyLIMA_parameters, time_ref)
 
     if telescope.astrometry['delta_ra'].unit == 'mas':
 
-        position_dec = shifts[1] + position_N
         position_ra = shifts[0] + position_E
+        position_dec = shifts[1] + position_N
 
     else:
 
-        position_dec = shifts[1] / telescope.pixel_scale + position_N
         position_ra = shifts[0] / telescope.pixel_scale + position_E
+        position_dec = shifts[1] / telescope.pixel_scale + position_N
 
     return position_ra, position_dec
 

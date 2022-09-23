@@ -33,7 +33,11 @@ def plot_astrometry(microlensing_model, model_parameters):
 
     figure = plt.figure()
     figure_ax = plt.axes()
+    if len(model_parameters) != len(microlensing_model.model_dictionnary):
 
+        telescopes_fluxes = microlensing_model.find_telescopes_fluxes(model_parameters)
+
+        model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
     plot_astrometric_models(figure_ax, microlensing_model, model_parameters)
     plot_astrometric_data(figure_ax, microlensing_model)
@@ -642,7 +646,6 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
     for tel in list_of_telescopes:
 
         if tel.astrometry is not None:
-
 
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 

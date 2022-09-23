@@ -66,6 +66,7 @@ class MLfit(object):
 
         self.model_parameters_guess = []
         self.rescale_photometry_parameters_guess = []
+        self.rescale_astrometry_parameters_guess = []
         self.telescopes_fluxes_parameters_guess = []
 
         self.model_parameters_index = []
@@ -139,9 +140,11 @@ class MLfit(object):
 
                 if telescope.astrometry is not None:
 
-                    fit_parameters_dictionnary_updated['logk_astrometry_' + telescope.name] = \
+                    fit_parameters_dictionnary_updated['logk_astrometry_ra_' + telescope.name] = \
                         len(fit_parameters_dictionnary_updated)
 
+                    fit_parameters_dictionnary_updated['logk_astrometry_dec_' + telescope.name] = \
+            len(fit_parameters_dictionnary_updated)
         self.fit_parameters = OrderedDict(
             sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
@@ -164,7 +167,7 @@ class MLfit(object):
                 maxs_time.append(np.max(telescope.astrometry['time'].value))
 
         fit_parameters_boundaries[0] = [np.min(mins_time),np.max(maxs_time)]
-
+        
         for ind, key in enumerate(self.fit_parameters.keys()):
 
             self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
@@ -313,6 +316,7 @@ class MLfit(object):
                                    'Please provide some in self.model_parameters_guess or run a DE fit.')
         else:
 
+
             self.model_parameters_guess = [float(i) for i in self.model_parameters_guess]
 
     def telescopes_fluxes_guess(self):
@@ -322,6 +326,7 @@ class MLfit(object):
             if self.telescopes_fluxes_parameters_guess == []:
 
                 telescopes_fluxes = self.find_fluxes(self.model_parameters_guess)
+
 
                 self.telescopes_fluxes_parameters_guess = telescopes_fluxes
 
@@ -343,7 +348,7 @@ class MLfit(object):
 
                     if telescope.lightcurve_flux is not None:
 
-                        rescale_photometry_guess.append(0.1)
+                        rescale_photometry_guess.append(-4)
 
                 self.rescale_photometry_parameters_guess = rescale_photometry_guess
 
@@ -353,14 +358,37 @@ class MLfit(object):
 
             self.rescale_photometry_parameters_guess = []
 
+    def rescale_astrometry_guess(self):
 
+        if self.rescale_astrometry:
+
+            if self.rescale_astrometry_parameters_guess == []:
+
+                rescale_astrometry_guess = []
+
+                for telescope in self.model.event.telescopes:
+
+                    if telescope.astrometry is not None:
+
+                        rescale_astrometry_guess.append(-4)
+                        rescale_astrometry_guess.append(-4)
+
+                self.rescale_astrometry_parameters_guess = rescale_astrometry_guess
+
+            self.rescale_astrometry_parameters_guess = [float(i) for i in self.rescale_astrometry_parameters_guess]
+
+        else:
+
+            self.rescale_astrometry_parameters_guess = []
     def initial_guess(self):
 
         self.model_guess()
         self.telescopes_fluxes_guess()
         self.rescale_photometry_guess()
+        self.rescale_astrometry_guess()
 
-        fit_parameters_guess = self.model_parameters_guess+self.telescopes_fluxes_parameters_guess+self.rescale_photometry_parameters_guess
+        fit_parameters_guess = self.model_parameters_guess+self.telescopes_fluxes_parameters_guess+\
+                               self.rescale_photometry_parameters_guess+self.rescale_astrometry_parameters_guess
         fit_parameters_guess = [float(i) for i in fit_parameters_guess]
 
         if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
@@ -370,6 +398,7 @@ class MLfit(object):
             for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
 
                 try:
+
                     index = np.where(self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(list_of_keys))[0][0]
 
                     parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
@@ -382,6 +411,16 @@ class MLfit(object):
                 except:
 
                     pass
+
+        for ind,param in enumerate(self.fit_parameters.keys()):
+
+            if (fit_parameters_guess[ind]<self.fit_parameters[param][1][0]):
+
+               fit_parameters_guess[ind] = self.fit_parameters[param][1][0]
+
+            if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
+
+                fit_parameters_guess[ind] = self.fit_parameters[param][1][1]
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
         print('Using guess: ',fit_parameters_guess)
@@ -403,7 +442,6 @@ class MLfit(object):
         outputs = microloutputs.fit_outputs(self)
 
         self.outputs = outputs
-
     def produce_fit_statistics(self):
         """ Produce the standard outputs for a fit.
         More details in microloutputs module.
@@ -448,15 +486,18 @@ class MLfit(object):
                 ml_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
                 f_source = ml_model['f_source']
-                f_blending = ml_model['f_blending']
+                f_blend = ml_model['f_blend']
                 # Prior here
-                if (f_source < 0) | (f_source+f_blending < 0) :
+                #if (f_source < 0) | (f_source+f_blend < 0) :
 
-                    telescopes_fluxes.append(np.min(flux))
-                    telescopes_fluxes.append(0.0)
-                else:
-                    telescopes_fluxes.append(f_source)
-                    telescopes_fluxes.append(f_blending)
+                #    telescopes_fluxes.append(np.min(flux))
+                #    telescopes_fluxes.append(0.0)
+                #else:
+                #    telescopes_fluxes.append(f_source)
+                #    telescopes_fluxes.append(f_blend)
+                telescopes_fluxes.append(f_source)
+                telescopes_fluxes.append(f_blend)
+
         return telescopes_fluxes
 
 

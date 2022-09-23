@@ -190,9 +190,9 @@ class MLParallaxes(object):
                 telescope.deltas_positions[data_type] = deltas_position
 
             except:
-
-                import pdb;
-                pdb.set_trace()
+                pass
+                #import pdb;
+                #pdb.set_trace()
     def annual_parallax(self, time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"

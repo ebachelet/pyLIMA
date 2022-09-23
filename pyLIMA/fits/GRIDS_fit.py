@@ -82,20 +82,18 @@ class GRIDfit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10 ** (
+                    fit_process_parameters[self.rescale_photometry_parameters_index])
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=rescaling_photometry_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters,
+                    rescaling_photometry_parameters=rescaling_photometry_parameters)
             else:
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=None)
-
-            photometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errflux**2)))
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters)
 
             likelihood += photometric_likelihood
 
@@ -103,27 +101,29 @@ class GRIDfit(MLfit):
 
             if self.rescale_astrometry:
 
-                rescaling_astrometry_parameters = 10 ** (
-                fit_process_parameters[self.rescale_astrometry_parameters_index])
+
+                rescaling_astrometry_parameters = 10**(fit_process_parameters[self.rescale_astrometry_parameters_index])
 
                 residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                pyLIMA_parameters,
-                                                                                                norm=True,
-                                                                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+                                                                                                      pyLIMA_parameters,
+                                                                                                      norm=True,
+                                                                                                      rescaling_astrometry_parameters= rescaling_astrometry_parameters)
 
             else:
 
                 residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                pyLIMA_parameters,
-                                                                                                norm=True,
-                                                                                                rescaling_astrometry_parameters=None)
+                                                                                                   pyLIMA_parameters,
+                                                                                                   norm=True,
+                                                                                                   rescaling_astrometry_parameters=None)
 
-            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
-            errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
+            residus = np.r_[residuals[:,0],residuals[:,2]] #res_ra,res_dec
+            errors = np.r_[residuals[:,1],residuals[:,3]] #err_res_ra,err_res_dec
 
-            astrometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errors**2)))
+
+            astrometric_likelihood = 0.5*np.sum(residus ** 2 + 2*np.log(errors)+np.log(2*np.pi))
 
             likelihood += astrometric_likelihood
+
 
         return likelihood
 

@@ -36,20 +36,18 @@ class DEMCfit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10 ** (
+                    fit_process_parameters[self.rescale_photometry_parameters_index])
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=rescaling_photometry_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters,
+                    rescaling_photometry_parameters=rescaling_photometry_parameters)
             else:
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=None)
-
-            photometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errflux**2)))
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters)
 
             likelihood += photometric_likelihood
 
@@ -75,26 +73,40 @@ class DEMCfit(MLfit):
             residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
             errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
 
-            astrometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errors**2)))
+            astrometric_likelihood = 0.5*np.sum(residus ** 2 + 2*np.log(errors)+np.log(2*np.pi))
 
             likelihood += astrometric_likelihood
 
+        #Priors
+        if np.isnan(likelihood):
+
+            return np.inf
+
         return likelihood
 
-    def new_individual(self, ind1, pop, var_pop):
+    def new_individual(self, ind1, pop):
+
 
         parent1 = pop[ind1]
 
         number_of_parents = np.random.randint(1, 3) * 2
 
         indexes = np.random.choice(len(pop), number_of_parents, replace=False)
+        #try:
 
+        #    index1 = np.random.choice(len(pop), number_of_parents, replace=False)
+
+        #except:
+
+        #    index1 = np.random.choice(len(pop), number_of_parents)
+
+        #index2 = np.random.choice(len(pop[0]), number_of_parents, replace=False)
         #crossover_index = np.random.choice(len(self.crossover), 1, p=self.prob_crossover)
         #crossover = self.crossover[crossover_index]
-        crossover = np.random.uniform(0.0, 1.0, len(parent1[:-1]))
+        crossover = np.random.uniform(0.0, 1.0/len(parent1[:-1])**0.5, len(parent1[:-1]))
 
         mutate = np.random.uniform(0, 1, len(parent1[:-1])) < crossover
-
+        #mutate = np.random.uniform(0, 1, len(parent1[:-1])) < -1
         if np.all(mutate == False):
 
             rand = np.random.randint(0, len(mutate))
@@ -108,10 +120,10 @@ class DEMCfit(MLfit):
         shifts = np.random.normal(0, eps2, len(parent1[:-1]))#*self.scale
 
         gamma = 2.38/(2*len(indexes[::2])*len(parent1[:-1][mutate]))**0.5#*self.scale
-
+        #gamma = 2.38 / (2 * len(index1[::2]) * len(parent1[:-1][mutate])) ** 0.5
         jumping_nodes = np.random.randint(0, 10)
 
-        if jumping_nodes == 9:
+        if jumping_nodes == 5:
 
             #mutation = np.ones(len(parent1[:-1]))
             gamma = 1
@@ -120,6 +132,8 @@ class DEMCfit(MLfit):
 
         progress1 = np.sum([pop[i] for i in indexes[::2]], axis=0)
         progress2 = np.sum([pop[i] for i in indexes[1::2]], axis=0)
+        #progress1 = np.sum([pop[i][j] for i in index1[::2] for j in index2[::2]], axis=0)
+        #progress2 = np.sum([pop[i][j] for i in index1[1::2] for j in index2[1::2]], axis=0)
         progress = (progress1[:-1] - progress2[:-1]) * mutation
 
         #print(gamma,progress)
@@ -138,10 +152,10 @@ class DEMCfit(MLfit):
 
             if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
 
-                #progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
-                #child[ind] = parent1[ind]+progress[ind]
+                progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
+                child[ind] = parent1[ind]+progress[ind]
 
-                child[ind] = parent1[ind]
+                #child[ind] = parent1[ind]
                 #progress[ind] = 0
                 #mutate[ind] = False
 
@@ -150,7 +164,7 @@ class DEMCfit(MLfit):
         objective = self.objective_function(child[:-1])
 
         casino = np.random.uniform(0, 1)
-        probability = np.exp((-objective*self.betas[ind1] + parent1[-1]*self.betas[ind1]))
+        probability = np.exp((-objective + parent1[-1]))
 
         if probability > casino:
 
@@ -208,7 +222,7 @@ class DEMCfit(MLfit):
 
         return np.array(pop)
 
-    def fit(self, computational_pool=None):
+    def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
 
@@ -217,29 +231,35 @@ class DEMCfit(MLfit):
         self.crossover = np.arange(1,n_crossover+1)/n_crossover
         self.prob_crossover = np.ones(n_crossover)/n_crossover
         #self.scale = np.ones(len(self.fit_parameters.keys()))
-
-        initial_population = []
         number_of_walkers = int(self.DEMC_population_size*len(self.fit_parameters))
-        import scipy.stats as ss
-        sampler = ss.qmc.LatinHypercube(d=len(self.fit_parameters))
-        self.betas = np.logspace(-3, 0, number_of_walkers)
-        #self.betas = np.linspace(0,1, number_of_walkers)
         self.swap = np.zeros(number_of_walkers)
 
-        for i in range(number_of_walkers):
+        if initial_population == []:
 
-            individual = sampler.random(n=1)[0]
+            import scipy.stats as ss
+            sampler = ss.qmc.LatinHypercube(d=len(self.fit_parameters))
+            #self.betas = np.logspace(-3, 0, number_of_walkers)
+            #self.betas = np.linspace(0,1, number_of_walkers)
 
-            for ind,j in enumerate(self.fit_parameters.keys()):
+            for i in range(number_of_walkers):
 
-                individual[ind] = individual[ind]*(self.fit_parameters[j][1][1]-self.fit_parameters[j][1][0])+self.fit_parameters[j][1][0]
+                individual = sampler.random(n=1)[0]
 
-            individual = np.array(individual)
-            individual = np.r_[individual]
+                for ind,j in enumerate(self.fit_parameters.keys()):
 
-            objective = self.objective_function(individual)
-            individual = np.r_[individual,objective]
-            initial_population.append(individual)
+                    individual[ind] = individual[ind]*(self.fit_parameters[j][1][1]-self.fit_parameters[j][1][0])+self.fit_parameters[j][1][0]
+
+                individual = np.array(individual)
+                individual = np.r_[individual]
+
+                objective = self.objective_function(individual)
+                individual = np.r_[individual,objective]
+                initial_population.append(individual)
+
+
+        else:
+
+            pass
 
         initial_population = np.array(initial_population)
 
@@ -255,7 +275,7 @@ class DEMCfit(MLfit):
 
         for loop in tqdm(range(self.max_iteration)):
 
-            indexes = [(i, loop_population,np.var(loop_population, axis=0)) for i in range(len(loop_population))]
+            indexes = [(i, loop_population) for i in range(len(loop_population))]
 
             if computational_pool is not None:
 
@@ -265,11 +285,11 @@ class DEMCfit(MLfit):
                 acceptance = np.vstack(new_step[:, 1])
                 #jumps = new_step[:,2]
                # n_id = new_step[:,3]
-                loop_population = self.swap_temperatures(loop_population)
+                #loop_population = self.swap_temperatures(loop_population)
 
             else:
 
-                var_pop = np.var(loop_population, axis=0)
+                #var_pop = np.var(loop_population, axis=0)
                 loop_population = []
                 acceptance = []
                 #jumps = []
@@ -277,7 +297,7 @@ class DEMCfit(MLfit):
 
                 for j, ind in enumerate(indexes):
 
-                    new_step = self.new_individual(ind[0], ind[1],var_pop)
+                    new_step = self.new_individual(ind[0], ind[1])
                     loop_population.append(new_step[0])
                     acceptance.append(new_step[1])
                     #jumps.append(new_step[2])
@@ -285,7 +305,7 @@ class DEMCfit(MLfit):
 
                 loop_population = np.array(loop_population)
                 acceptance = np.array(acceptance)
-                loop_population = self.swap_temperatures(loop_population)
+                #loop_population = self.swap_temperatures(loop_population)
 
                 #jumps = np.array(jumps)
                 #n_id = np.array(n_id)

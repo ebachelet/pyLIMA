@@ -38,25 +38,50 @@ class PSPLmodel(MLmodel):
 
         if telescope.astrometry is not None:
 
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
-                                                                                 data_type='astrometry')
+            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
 
-            shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E)
+
 
             # Blended centroid shifts....
             #magnification = self.model_magnification(telescope, pyLIMA_parameters)
-            #fsource, fblending = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
-            #g_blend = fblending/fsource
-            #shifts = astrometric_shifts.PSPL_shifts_with_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E,g_blend)
-            #angle = np.arctan2(source_trajectory_y,source_trajectory_x)
-            #shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
+            #try:
+            #    g_blend = f_blending/f_source
+            #    shifts = astrometric_shifts.PSPL_shifts_with_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E,g_blend)
+            #    angle = np.arctan2(source_trajectory_y,source_trajectory_x)
+            #    shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
+
+            #except:
+
+            shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y,
+                                                                 pyLIMA_parameters.theta_E)
 
             delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
                                                                                 pyLIMA_parameters.piEE)
 
             position_ra, position_dec = astrometric_positions.source_astrometric_position(telescope, pyLIMA_parameters,
-                                                                              shifts=(delta_ra, delta_dec),
-                                                                              time_ref=self.parallax_model[1])
+                                                                                          shifts=(delta_ra, delta_dec),
+                                                                                          time_ref=self.parallax_model[
+                                                                                              1])
+            #magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x, source_trajectory_y)
+
+            #delta_ra, delta_dec = shifts
+
+            #time = telescope.astrometry['time'].value
+            #g = f_blend/f_source
+            #ref_source_N = getattr(pyLIMA_parameters, 'position_source_N_' + telescope.name)
+            #ref_source_E = getattr(pyLIMA_parameters, 'position_source_E_' + telescope.name)
+            #ref_blend_N = getattr(pyLIMA_parameters, 'position_blend_N_' + telescope.name)
+            #ref_blend_E = getattr(pyLIMA_parameters, 'position_blend_E_' + telescope.name)
+            #earth_vector = telescope.Earth_positions['astrometry']
+            #Earth_projected = earth_vector * pyLIMA_parameters.parallax_source
+
+            #position_ra = (magnification*(delta_ra/telescope.pixel_scale+ ref_source_E)+g*ref_blend_E)/(magnification+g)\
+            #              +pyLIMA_parameters.mu_source_E*(time-self.parallax_model[1])/ 365.25
+            #position_dec = (magnification*(delta_dec/telescope.pixel_scale+ ref_source_N)+g*ref_blend_N)/(magnification+g)\
+            #               +pyLIMA_parameters.mu_source_N*(time-self.parallax_model[1])/ 365.25
+
+            #position_ra -=  Earth_projected[1]/telescope.pixel_scale
+            #position_dec -=  Earth_projected[0]/telescope.pixel_scale
 
             astro_shifts = np.array([position_ra, position_dec])
 

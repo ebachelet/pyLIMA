@@ -18,7 +18,7 @@ class DEfit(MLfit):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method='polyfit')
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.population = Manager().list() # to be recognize by all process during parallelization
         self.DE_population_size = DE_population_size #Times number of dimensions!
@@ -41,20 +41,18 @@ class DEfit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10 ** (
+                    fit_process_parameters[self.rescale_photometry_parameters_index])
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=rescaling_photometry_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters,
+                    rescaling_photometry_parameters=rescaling_photometry_parameters)
             else:
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=None)
-
-            photometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errflux**2)))
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters)
 
             likelihood += photometric_likelihood
 
@@ -81,9 +79,13 @@ class DEfit(MLfit):
             errors = np.r_[residuals[:,1],residuals[:,3]] #err_res_ra,err_res_dec
 
 
-            astrometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errors**2)))
+            astrometric_likelihood = 0.5 * (np.sum(residus ** 2 + np.log(2 * np.pi * errors ** 2)))
 
             likelihood += astrometric_likelihood
+
+        #Priors
+        #if np.isnan(likelihood):
+        #    likelihood = np.inf
 
         self.population.append(fit_process_parameters.tolist() + [likelihood])
 

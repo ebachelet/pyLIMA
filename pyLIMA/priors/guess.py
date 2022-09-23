@@ -4,7 +4,7 @@ import scipy.signal as ss
 
 def initial_guess_PSPL(event):
     """Function to find initial PSPL guess for Levenberg-Marquardt solver (method=='LM').
-       This assumes no blending.
+       This assumes no blend.
 
     :param object event: the event object on which you perform the fit on. More details on the
                             event module.
@@ -209,7 +209,7 @@ def initial_guess_PSPL(event):
 
 def initial_guess_FSPL(event):
     """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
-       This assumes no blending.
+       This assumes no blend.
 
     :param object event: the event object on which you perform the fit on. More details on the
                             event module.
@@ -230,7 +230,7 @@ def initial_guess_FSPL(event):
 
 def initial_guess_DSPL(event):
     """Function to find initial DSPL guess for Levenberg-Marquardt solver (method=='LM').
-       This assumes no blending.
+       This assumes no blend.
 
        :param object event: the event object on which you perform the fit on. More details on the
                             event module.

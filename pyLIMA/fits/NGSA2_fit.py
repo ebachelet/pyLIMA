@@ -122,24 +122,23 @@ class NGSA2fit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10 ** (
+                    fit_process_parameters[self.rescale_photometry_parameters_index])
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=rescaling_photometry_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters,
+                    rescaling_photometry_parameters=rescaling_photometry_parameters)
             else:
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=None)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
+                    self.model,
+                    pyLIMA_parameters)
 
-            photometric_likelihood = 0.5*(np.sum(residus ** 2 + np.log(2*np.pi*errflux**2)))
 
             likelihood = photometric_likelihood
 
-            return likelihood
+        return likelihood
 
     def likelihood_astrometry(self, fit_process_parameters):
 
@@ -184,8 +183,8 @@ class NGSA2fit(MLfit):
         number_of_parameters = len(self.fit_parameters.keys())
 
         algorithm = NSGA2(
-            pop_size=4*number_of_parameters,
-            n_offsprings=number_of_parameters,
+            pop_size=40,
+            n_offsprings=10,
             sampling=get_sampling("real_random"),
             crossover=get_crossover("real_sbx", prob=0.9, eta=15),
             mutation=get_mutation("real_pm", eta=20),
@@ -193,7 +192,7 @@ class NGSA2fit(MLfit):
 
         from pymoo.factory import get_termination
 
-        termination = get_termination('default',f_tol = 10**-8,  n_max_gen=10000,)
+        termination = get_termination('default',f_tol = 10**-8,  n_max_gen=5000,)
 
         if self.model.astrometry:
 

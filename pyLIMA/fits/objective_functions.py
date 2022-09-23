@@ -27,6 +27,11 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
     ind = 0
 
+    if rescaling_astrometry_parameters is not None:
+
+        rescaling_astrometry_parameters_ra = rescaling_astrometry_parameters[::2]
+        rescaling_astrometry_parameters_dec = rescaling_astrometry_parameters[1::2]
+
     for telescope in model.event.telescopes:
 
         if telescope.astrometry is not None:
@@ -43,8 +48,8 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
             if rescaling_astrometry_parameters is not None:
 
-                err_ra = astrometry['err_delta_ra'].value+rescaling_astrometry_parameters[ind]
-                err_dec = astrometry['err_delta_dec'].value+rescaling_astrometry_parameters[ind]
+                err_ra = astrometry['err_delta_ra'].value+rescaling_astrometry_parameters_ra[ind]
+                err_dec = astrometry['err_delta_dec'].value+rescaling_astrometry_parameters_dec[ind]
 
             else:
 
@@ -128,7 +133,7 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
             errfluxes = np.append(errfluxes, err_flux)
 
             ind += 1
-
+       
     return residuals, errfluxes
 
 
@@ -146,9 +151,9 @@ def all_telescope_photometric_likelihood(model, pyLIMA_parameters, rescaling_pho
     residus, errflux = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,
                                                   rescaling_photometry_parameters=rescaling_photometry_parameters)
 
-    chi2 = np.sum(residus**2)+2*np.sum(np.log(errflux))+len(errflux)*np.log(2*np.pi)
+    ln_likelihood = 0.5 * np.sum(residus ** 2 + 2 * np.log(errflux) + np.log(2 * np.pi))
 
-    return chi2
+    return ln_likelihood
 
 
 def photometric_residuals_in_magnitude(telescope, model, pyLIMA_parameters):

@@ -3,6 +3,7 @@ import numpy as np
 def PSPL_shifts_no_blend(source_x, source_y, theta_E):
     """ See https: // arxiv.org / pdf / 1705.01767.pdf
     """
+
     shifts = (source_x,source_y)/(source_x**2+source_y**2+2)*theta_E
 
     return shifts

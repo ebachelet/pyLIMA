@@ -9,7 +9,7 @@ import pyLIMA.fits.objective_functions
 class MCMCfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='fit', MCMC_walkers=2, MCMC_links = 5000):
+                 telescopes_fluxes_method='polyfit', MCMC_walkers=2, MCMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
@@ -26,6 +26,12 @@ class MCMCfit(MLfit):
 
         likelihood = 0
 
+        for ind, parameter in enumerate(self.fit_parameters.keys()):
+
+            if (fit_process_parameters[ind]<self.fit_parameters[parameter][1][0]) | (fit_process_parameters[ind]>self.fit_parameters[parameter][1][1]):
+
+                return -np.inf
+
         model_parameters = fit_process_parameters[self.model_parameters_index]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
@@ -34,20 +40,16 @@ class MCMCfit(MLfit):
 
             if self.rescale_photometry:
 
-                rescaling_photometry_parameters = 10**(fit_process_parameters[self.rescale_photometry_parameters_index])
+                rescaling_photometry_parameters = 10 ** (
+                fit_process_parameters[self.rescale_photometry_parameters_index])
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=rescaling_photometry_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(self.model,
+                                                                                                              pyLIMA_parameters,
+                                                                                                              rescaling_photometry_parameters= rescaling_photometry_parameters)
             else:
 
-                residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=None)
-
-            photometric_likelihood = 0.5 * (np.sum(residus ** 2 + np.log(2 * np.pi * errflux ** 2)))
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(self.model,
+                                                                                                              pyLIMA_parameters)
 
             likelihood += photometric_likelihood
 
@@ -73,26 +75,40 @@ class MCMCfit(MLfit):
             residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
             errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
 
-            astrometric_likelihood = 0.5 * (np.sum(residus ** 2 + np.log(2 * np.pi * errors ** 2)))
+            astrometric_likelihood = 0.5 * np.sum(residus ** 2 + 2 * np.log(errors) + np.log(2 * np.pi))
 
             likelihood += astrometric_likelihood
+
+        # Priors
+        if np.isnan(likelihood):
+            return -np.inf
 
         return -likelihood
 
 
-    def fit(self, computational_pool=False):
+    def fit(self, initial_population=[], computational_pool=False):
 
         start_time = python_time.time()
 
-        best_solution = self.initial_guess()
+        if initial_population == []:
 
-        number_of_parameters = len(best_solution)
-        nwalkers = self.MCMC_walkers * number_of_parameters
+            best_solution = self.initial_guess()
+
+            number_of_parameters = len(best_solution)
+            nwalkers = self.MCMC_walkers * number_of_parameters
+            nlinks = self.MCMC_links
+
+            # Initialize the population of MCMC
+            population = best_solution*np.random.uniform(0.999999, 1.000001, (nwalkers,number_of_parameters))+np.random.uniform(-1, 1,(nwalkers,number_of_parameters))*10**-4
+
+        else:
+
+            population = initial_population[:,:-1]
+            number_of_parameters = population.shape[1]
+
+            nwalkers = self.MCMC_walkers * number_of_parameters
+
         nlinks = self.MCMC_links
-
-        # Initialize the population of MCMC
-        population = best_solution*np.random.uniform(0.999999, 1.000001, (nwalkers,number_of_parameters))+np.random.uniform(-1, 1,(nwalkers,number_of_parameters))*10**-4
-
 
         if computational_pool:
 
