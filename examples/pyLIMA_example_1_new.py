@@ -158,10 +158,6 @@ print ('t_0:', '        79.9309 ',str(np.median(MCMC_results[1000:,:,0]))[:7],''
 print ('u_0:', '        0.00826 ',str(np.median(MCMC_results[1000:,:,1]))[:7],'',str(np.std(MCMC_results[1000:,:,1]))[:7])
 print ('t_E:', '        10.1171 ',str(np.median(MCMC_results[1000:,:,2]))[:7],'',str(np.std(MCMC_results[1000:,:,2]))[:7])
 print ('rho:', '        0.02268 ',str(np.median(MCMC_results[1000:,:,3]))[:7],'',str(np.std(MCMC_results[1000:,:,3]))[:7])
-print ('fsource_OGLE:', '    2915.76 ',str(np.median(MCMC_results[1000:,:,4]))[:7],'',str(np.std(MCMC_results[1000:,:,4]))[:7])
-print ('fblend_OGLE:', '     209.789 ',str(np.median(MCMC_results[1000:,:,5]))[:7],'',str(np.std(MCMC_results[1000:,:,5]))[:7])
-print ('fsource_LCO:', '   92936.7 ',str(np.median(MCMC_results[1000:,:,6]))[:7],'',str(np.std(MCMC_results[1000:,:,6]))[:7])
-print ('fblend_LCO:', '    48754.6 ',str(np.median(MCMC_results[1000:,:,7]))[:7],'',str(np.std(MCMC_results[1000:,:,7]))[:7])
 
 ### You can now plot the correlation between any two parameters.
 ### Import the relevant libraries:
