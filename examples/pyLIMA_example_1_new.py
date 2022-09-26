@@ -96,7 +96,7 @@ pyLIMA_plots.plot_lightcurves(pspl, my_fit2.fit_results['best_model'])
 plt.show()
 
 ### You can use the Zoom-in function to look at the peak.
-### There is strong evidence of finite source effects in this event, so let's to fit this.
+### There is strong evidence of finite source effects in this event, so let's try to fit this.
 ### You will need to import the FSPL MODEL to do this:
 from pyLIMA.models import FSPL_model
 fspl = FSPL_model.FSPLmodel(your_event)
@@ -144,7 +144,7 @@ my_fit5.fit()
 plt.plot(my_fit5.fit_results['MCMC_chains'][:,:,1])
 plt.show()
 
-### The first part in the slice [:,:,1] represent the iteration number, the second the chain number 
+### The first part in the slice [:,:,1] represents the iteration number, the second the chain number 
 ### and the last represents the parameter number (in addition to the likelihood at the end).
 ### The parameters are in the same order as in my_fit5.fit_parameters.keys()
 
@@ -158,10 +158,6 @@ print ('t_0:', '        79.9309 ',str(np.median(MCMC_results[1000:,:,0]))[:7],''
 print ('u_0:', '        0.00826 ',str(np.median(MCMC_results[1000:,:,1]))[:7],'',str(np.std(MCMC_results[1000:,:,1]))[:7])
 print ('t_E:', '        10.1171 ',str(np.median(MCMC_results[1000:,:,2]))[:7],'',str(np.std(MCMC_results[1000:,:,2]))[:7])
 print ('rho:', '        0.02268 ',str(np.median(MCMC_results[1000:,:,3]))[:7],'',str(np.std(MCMC_results[1000:,:,3]))[:7])
-print ('fsource_OGLE:', '    2915.76 ',str(np.median(MCMC_results[1000:,:,4]))[:7],'',str(np.std(MCMC_results[1000:,:,4]))[:7])
-print ('fblend_OGLE:', '     209.789 ',str(np.median(MCMC_results[1000:,:,5]))[:7],'',str(np.std(MCMC_results[1000:,:,5]))[:7])
-print ('fsource_LCO:', '   92936.7 ',str(np.median(MCMC_results[1000:,:,6]))[:7],'',str(np.std(MCMC_results[1000:,:,6]))[:7])
-print ('fblend_LCO:', '    48754.6 ',str(np.median(MCMC_results[1000:,:,7]))[:7],'',str(np.std(MCMC_results[1000:,:,7]))[:7])
 
 ### You can now plot the correlation between any two parameters.
 ### Import the relevant libraries:
