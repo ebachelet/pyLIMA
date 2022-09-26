@@ -13,3 +13,4 @@ bokeh
 PyAstronomy
 Cython
 VBBinaryLensing
+tqdm
