@@ -208,7 +208,7 @@ magblend_CTIO_V = 21.22
 ### Now we need to convert these to fluxes. Set up an empty array to hold the values:
 fluxes = []
 
-### Import the magnitude to flux coversion function from pyLIMA
+### Import the magnitude to flux coversion function from pyLIMA and populate the array
 from pyLIMA.toolbox import brightness_transformation
 for mag in [magsource_CTIO_I, magblend_CTIO_I, magsource_SAAO_I, magblend_SAAO_I,
             magsource_SSO_I, magblend_SSO_I, magsource_CTIO_V, magblend_CTIO_V]:

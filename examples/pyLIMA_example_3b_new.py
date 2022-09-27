@@ -27,7 +27,7 @@ your_event.ra = 270
 your_event.dec = -30
 
 ### Create some telescope(s) to observe the event from. See tutorial 3 for more details.
-### We will use CTIO_I (from Earth) and Gaia_G (from Space):
+### We will use CTIO_I (from Earth), Gaia_G and Spitzer_H (from Space):
 CTIO_I = simulator.simulate_a_telescope('CTIO_I', your_event, 2458365.5, 2458965.5, 4, 'Earth', 'I',
                                         uniform_sampling=False, altitude=1000, longitude = -109.285399, 
                                         latitude = -27.130, bad_weather_percentage=10.0 / 100, 
@@ -50,7 +50,7 @@ your_event.check_event()
 
 ### Now construct the MODEL you want to deploy:
 ### We will use a simple point-lens point-source (PSPL) model but we will also add parallax.
-### This involves invoking the parralax= option when setting up our MODEL.
+### This involves invoking the parallax= option when setting up our MODEL.
 ### Note that here we want to give a raference date to evalueate the parallax from, and this needs
 ### to be close to t0.
 from pyLIMA.models import PSPL_model
