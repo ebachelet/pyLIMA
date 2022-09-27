@@ -95,7 +95,7 @@ def rE_boundaries():
 
 def fsource_boundaries(flux):
 
-    return (0,np.max(flux))
+    return (0.0,np.max(flux))
 
 def fblend_boundaries(flux):
 
