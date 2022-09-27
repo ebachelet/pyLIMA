@@ -18,7 +18,7 @@ def plot_light_curve_magnitude(time, mag, mag_error=None, figure_axe=None, color
 
     else:
 
-        figure_axe.errorbar(time, mag, mag_error, fmt='.', color=color, marker=marker, label=name)
+        figure_axe.errorbar(time, mag, mag_error, color=color, marker=marker, label=name,  linestyle='')
 
 
 def plot_light_curve_flux(time, flux, flux_error=None, figure_axe=None):

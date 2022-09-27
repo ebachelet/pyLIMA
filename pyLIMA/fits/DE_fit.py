@@ -14,7 +14,7 @@ import pyLIMA.fits.objective_functions
 class DEfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000):
+                 telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000, display_progress = False):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
@@ -25,6 +25,7 @@ class DEfit(MLfit):
         self.fit_boundaries = []
         self.max_iteration = max_iteration
         self.fit_time = 0 #s
+        self.display_progress = display_progress
 
     def fit_type(self):
         return "Differential Evolution"
@@ -111,7 +112,7 @@ class DEfit(MLfit):
                                                                                   maxiter=self.max_iteration, tol=0.00,
                                                                                   atol=1.0, strategy='rand1bin',
                                                                                   recombination=0.5, polish=True, init='latinhypercube',
-                                                                                  disp=True, workers=worker)
+                                                                                  disp=self.display_progress, workers=worker)
 
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
         print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))

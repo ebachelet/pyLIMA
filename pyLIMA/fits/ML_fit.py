@@ -488,15 +488,16 @@ class MLfit(object):
                 f_source = ml_model['f_source']
                 f_blend = ml_model['f_blend']
                 # Prior here
-                #if (f_source < 0) | (f_source+f_blend < 0) :
+                if (f_source < 0) | (f_source+f_blend < 0) :
 
-                #    telescopes_fluxes.append(np.min(flux))
-                #    telescopes_fluxes.append(0.0)
-                #else:
-                #    telescopes_fluxes.append(f_source)
-                #    telescopes_fluxes.append(f_blend)
-                telescopes_fluxes.append(f_source)
-                telescopes_fluxes.append(f_blend)
+                    telescopes_fluxes.append(np.min(flux))
+                    telescopes_fluxes.append(0.0)
+
+                else:
+
+                    telescopes_fluxes.append(f_source)
+                    telescopes_fluxes.append(f_blend)
+
 
         return telescopes_fluxes
 
