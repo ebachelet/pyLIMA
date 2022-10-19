@@ -70,7 +70,7 @@ class LMfit(MLfit):
                                               xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
 
         fit_results = lm_fit['x'].tolist()
-        fit_chi2 = lm_fit['cost']
+        fit_chi2 = lm_fit['cost']*2 #chi2
 
         try:
             # Try to extract the covariance matrix from the levenberg-marquard_fit output

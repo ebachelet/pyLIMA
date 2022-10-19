@@ -83,7 +83,7 @@ def theta_E_boundaries():
 
 def r_s_boundaries():
 
-    return (-2,2.0)
+    return (10**-2,10**2.0)
 
 def a_s_boundaries():
 

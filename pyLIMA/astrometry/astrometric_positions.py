@@ -22,8 +22,7 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
 
         time_ref = pyLIMA_parameters.t0
 
-    earth_vector = telescope.Earth_positions['astrometry']
-    parallax_source = pyLIMA_parameters.parallax_source
+
     ref_N = getattr(pyLIMA_parameters, 'position_source_N_' + telescope.name)
     ref_E = getattr(pyLIMA_parameters, 'position_source_E_' + telescope.name)
     mu_N = pyLIMA_parameters.mu_source_N
@@ -31,6 +30,8 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
     position_N = mu_N / 365.25 * (time - time_ref) + ref_N
     position_E = mu_E / 365.25 * (time - time_ref) + ref_E
 
+    earth_vector = telescope.Earth_positions['astrometry']
+    parallax_source = pyLIMA_parameters.parallax_source
     Earth_projected = earth_vector*parallax_source #mas
 
     if telescope.astrometry['delta_ra'].unit == 'mas':

@@ -8,6 +8,7 @@ numpy>=1.17.0
 matplotlib>=3.0
 astropy>=2.0.0
 emcee>=3.0
+astroquery
 numba
 bokeh
 PyAstronomy

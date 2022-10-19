@@ -231,7 +231,8 @@ class DEMCfit(MLfit):
         self.crossover = np.arange(1,n_crossover+1)/n_crossover
         self.prob_crossover = np.ones(n_crossover)/n_crossover
         #self.scale = np.ones(len(self.fit_parameters.keys()))
-        number_of_walkers = int(self.DEMC_population_size*len(self.fit_parameters))
+        number_of_walkers = int(np.round(self.DEMC_population_size*len(self.fit_parameters)))
+
         self.swap = np.zeros(number_of_walkers)
 
         if initial_population == []:
