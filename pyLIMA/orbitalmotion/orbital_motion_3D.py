@@ -58,12 +58,12 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
 
         h_0 = np.cross(r_0, v_0)
 
-        #GMass = rE**3*separation_0**3*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
+        #GMass = rE**3*separation_0**2*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
         GMass = v_norm**2/2*(-1.0/2/a_true+1/r_norm)**(-1)
 
         if GMass<0:
 
-            print('Parabolic trajectory....')
+            #print('Parabolic trajectory....')
             return  np.array([separation_0]*len(time)), np.array([0]*len(time))
 
         orbital_velocity = (GMass / a_true ** 3) ** 0.5
