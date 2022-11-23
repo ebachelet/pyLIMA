@@ -14,7 +14,8 @@ import pyLIMA.fits.objective_functions
 class DEfit(MLfit):
 
     def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000, display_progress = False):
+                 telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000,
+                 display_progress=False):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
@@ -92,7 +93,7 @@ class DEfit(MLfit):
 
         return likelihood
 
-    def fit(self, computational_pool=None):
+    def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
 
@@ -104,6 +105,15 @@ class DEfit(MLfit):
 
             worker = 1
 
+
+        if initial_population == []:
+
+            init = 'latinhypercube'
+
+        else:
+
+            init = initial_population
+
         bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys()]
 
         differential_evolution_estimation = scipy.optimize.differential_evolution(self.objective_function,
@@ -111,7 +121,7 @@ class DEfit(MLfit):
                                                                                   mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
                                                                                   maxiter=self.max_iteration, tol=0.00,
                                                                                   atol=1.0, strategy='rand1bin',
-                                                                                  recombination=0.5, polish=True, init='latinhypercube',
+                                                                                  recombination=0.5, polish=False, init=init,
                                                                                   disp=self.display_progress, workers=worker)
 
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))

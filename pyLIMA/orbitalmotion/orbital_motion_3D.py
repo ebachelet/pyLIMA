@@ -4,9 +4,7 @@ from PyAstronomy import pyasl
 def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radial, r_s=None, a_s=None, rE=None):
     """" https: // arxiv.org / pdf / 2011.04780.pdf"""
 
-    v_para /= 365.25
-    v_perp /= 365.25
-    v_radial /= 365.25
+
 
     if (rE is None): #Circular
 
@@ -25,7 +23,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
         longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity = \
             orbital_parameters_from_position_and_velocities(separation_0,r_s,a_s, v_para, v_perp, v_radial)
 
-        theta = orbital_velocity * (time - to_om)+omega_peri
+        theta = orbital_velocity * (time - to_om)/365.25 + omega_peri
 
         r_prime = a_true*np.c_[np.cos(theta), np.sin(theta), [0] * len(theta)]
 
@@ -61,7 +59,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
         #GMass = rE**3*separation_0**2*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
         GMass = v_norm**2/2*(-1.0/2/a_true+1/r_norm)**(-1)
 
-        if GMass<0:
+        if (GMass<0) or np.isinf(GMass):
 
             #print('Parabolic trajectory....')
             return  np.array([separation_0]*len(time)), np.array([0]*len(time))
@@ -98,11 +96,11 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
 
             eccentric_anomaly *= -1
 
-        t_periastron = to_om - (eccentric_anomaly - eccentricity * np.sin(eccentric_anomaly)) / orbital_velocity
+        t_periastron = to_om - (eccentric_anomaly - eccentricity * np.sin(eccentric_anomaly)) / orbital_velocity*365.25
 
         Rmatrix = np.c_[x_0, y_0, z_0]
 
-        eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity)
+        eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity/365.25)
         r_prime = np.array( [np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 *
                              np.sin(eccentric_anomaly), [0] * len(eccentric_anomaly)]) * a_true
 
