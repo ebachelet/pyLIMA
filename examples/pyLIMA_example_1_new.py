@@ -22,14 +22,14 @@ your_event.name = 'My event name'
 ### For this example, you will use simulated I-band data sets from two telescopes, OGLE and LCO.
 ### The data sets are pre-formatted: column 1 is the date, column 2 the magnitude and column 3 
 ### the uncertainty in the magnitude.
-data_1 = np.loadtxt('./Survey_1.dat')
+data_1 = np.loadtxt('./data/Survey_1.dat')
 telescope_1 = telescopes.Telescope(name = 'OGLE', 
                                    camera_filter = 'I',
                                    light_curve = data_1.astype(float),
                                    light_curve_names = ['time','mag','err_mag'],
                                    light_curve_units = ['JD','mag','mag'])
 
-data_2 = np.loadtxt('./Followup_1.dat')
+data_2 = np.loadtxt('./data/Followup_1.dat')
 telescope_2 = telescopes.Telescope(name = 'LCO', 
                                    camera_filter = 'I',
                                    light_curve = data_2.astype(float),
