@@ -10,6 +10,7 @@ Authors : Etienne Bachelet, etibachelet@gmail.com
 	  Rachel Street, rstreet@lcogt.net
 	  Valerio Bozza, valboz@sa.infn.it
 	  Martin Norbury, mnorbury@lcogt.net
+	  Yiannis Tsapras,
 	  and friends!	
 
 pyLIMA is an open source for modeling microlensing events.
