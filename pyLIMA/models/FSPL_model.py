@@ -3,7 +3,7 @@ import pkg_resources
 from scipy import interpolate, misc
 
 from pyLIMA.models.ML_model import MLmodel
-from pyLIMA.magnification import magnification_FSPL
+from pyLIMA.magnification import magnification_FSPL, magnification_Jacobian
 
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
 template = pkg_resources.resource_filename('pyLIMA', resource_path)
@@ -62,6 +62,7 @@ class FSPLmodel(MLmodel):
         :rtype: dict
         """
         model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3}
+        self.Jacobian_flag='Analytical'
 
         return model_dictionary
 
@@ -93,7 +94,7 @@ class FSPLmodel(MLmodel):
 
         return magnification
 
-    def magnification_Jacobian(self, telescope, pyLIMA_parameters):
+    def model_magnification_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a FSPL model
 
         :param object telescope: a telescope object. More details in telescope module.
@@ -101,71 +102,18 @@ class FSPLmodel(MLmodel):
         :return: jacobi
         :rtype: array_like
         """
-        # Derivatives of the residuals_LM objective function, FSPL version
-        from pyLIMA.models import PSPL_model
-        fake_model = PSPL_model.PSPLmodel(self.event)
-        fake_model.define_model_parameters()
-        lightcurve = telescope.lightcurve_flux
-        time = lightcurve['time'].value
-        errflux = lightcurve['err_flux']
-        gamma = telescope.gamma
 
-        # Derivative of A = Yoo et al (2004) method.
+        if self.Jacobian_flag == 'Analytical':
 
-        Amplification_PSPL = fake_model.model_magnification(telescope, pyLIMA_parameters, return_impact_parameter=True)
+            magnification_jacobian= magnification_Jacobian.magnification_FSPL_Jacobian(self, telescope,pyLIMA_parameters)
 
-        dAmplification_PSPLdU = (-8) / (Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
+        else:
 
-        # z_yoo=U/rho
-        z_yoo = Amplification_PSPL[1] / pyLIMA_parameters.rho
+            magnification_jacobian = magnification_Jacobian.magnification_numerical_Jacobian(self, telescope,
+                                                                                             pyLIMA_parameters)
+        amplification = self.model_magnification(telescope, pyLIMA_parameters, return_impact_parameter=True)
 
-        dadu = np.zeros(len(Amplification_PSPL[0]))
-        dadrho = np.zeros(len(Amplification_PSPL[0]))
-
-        # Far from the lens (z_yoo>>1), then PSPL.
-        ind = np.where((z_yoo > self.yoo_table[0][-1]))[0]
-        dadu[ind] = dAmplification_PSPLdU[ind]
-        dadrho[ind] = -0.0
-
-        # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
-        ind = np.where((z_yoo < self.yoo_table[0][0]))[0]
-        dadu[ind] = dAmplification_PSPLdU[ind] * (2 * z_yoo[ind] - gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
-
-        dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / pyLIMA_parameters.rho ** 2 * \
-                      (2 - gamma * (2 - 3 * np.pi / 4))
-
-        # FSPL regime (z_yoo~1), then Yoo et al derivatives
-        ind = np.where((z_yoo <= self.yoo_table[0][-1]) & (z_yoo >= self.yoo_table[0][0]))[0]
-
-        dadu[ind] = dAmplification_PSPLdU[ind] * (self.yoo_table[1](z_yoo[ind]) - \
-                                                  gamma * self.yoo_table[2](z_yoo[ind])) + \
-                    Amplification_PSPL[0][ind] * \
-                    (self.yoo_table[3](z_yoo[ind]) - \
-                     gamma * self.yoo_table[4](z_yoo[ind])) * 1 / pyLIMA_parameters.rho
-
-        dadrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][ind] / pyLIMA_parameters.rho ** 2 * \
-                      (self.yoo_table[3](z_yoo[ind]) - gamma * self.yoo_table[4](z_yoo[ind]))
-
-        dUdt0 = -(time - pyLIMA_parameters.to) / (pyLIMA_parameters.tE ** 2 * Amplification_PSPL[1])
-
-        dUdu0 = pyLIMA_parameters.uo / Amplification_PSPL[1]
-
-        dUdtE = -(time - pyLIMA_parameters.to) ** 2 / (pyLIMA_parameters.tE ** 3 * Amplification_PSPL[1])
-
-        Amplification_FSPL = self.model_magnification(telescope, pyLIMA_parameters)
-
-        dAdt0 = dadu * dUdt0
-        dAdu0 = dadu * dUdu0
-        dAdtE = dadu * dUdtE
-        dAdrho = dadrho
-
-        fsource_Jacobian = Amplification_FSPL[0]
-        fblend_Jacobian = [1] * len(Amplification_FSPL[0])
-
-        jacobi = np.array([dAdt0, dAdu0, dAdtE, dAdrho, fsource_Jacobian, fblend_Jacobian])
-
-        return jacobi
-
+        return magnification_jacobian, amplification
     def astrometry_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model lightcurve
 

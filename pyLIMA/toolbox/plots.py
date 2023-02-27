@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 
-def plot_light_curve_magnitude(time, mag, mag_error=None, figure_axe=None, color=None, marker=None, name=None):
+def plot_light_curve_magnitude(time, mag, mag_error=None, figure_axe=None, color=None, linestyle='-', marker=None, name=None):
 
     if figure_axe:
 
@@ -14,7 +14,7 @@ def plot_light_curve_magnitude(time, mag, mag_error=None, figure_axe=None, color
 
     if mag_error is None:
 
-        figure_axe.plot(time, mag, c=color, label=name)
+        figure_axe.plot(time, mag, c=color, label=name, linestyle=linestyle)
 
     else:
 

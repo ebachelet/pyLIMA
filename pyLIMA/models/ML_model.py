@@ -6,7 +6,7 @@ from collections import OrderedDict
 import pyLIMA.priors.parameters_boundaries
 import pyLIMA.parallax.parallax
 from pyLIMA.orbitalmotion import orbital_motion
-
+from pyLIMA.magnification import magnification_Jacobian
 
 class MLmodel(object):
     """
@@ -126,6 +126,34 @@ class MLmodel(object):
     def model_magnification(self, telescope, pyLIMA_parameters):
         return
 
+    @abc.abstractmethod
+    def model_magnification_Jacobian(self, telescope, pyLIMA_parameters):
+
+        magnification_jacobian = magnification_Jacobian.magnification_numerical_Jacobian(self, telescope, pyLIMA_parameters)
+        amplification = self.model_magnification(telescope,pyLIMA_parameters, return_impact_parameter=True)
+
+        return magnification_jacobian,amplification
+
+    @abc.abstractmethod
+    def photometric_model_Jacobian(self, telescope, pyLIMA_parameters):
+
+        magnification_jacobian, amplification = self.model_magnification_Jacobian(telescope, pyLIMA_parameters)
+        fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
+        magnification_jacobian *= fsource
+
+        if self.blend_flux_parameter == 'gblend':
+
+            dfluxdfs = (amplification[0] +fblend)
+            dfluxdg = [getattr(pyLIMA_parameters, 'fsource_' + telescope.name)]*len(amplification[0])
+
+        else:
+
+            dfluxdfs = (amplification[0])
+            dfluxdg = [1]*len(amplification[0])
+        #breakpoint()
+        jacobi = np.c_[magnification_jacobian,dfluxdfs,dfluxdg].T
+        return jacobi
+
     def check_data_in_event(self):
 
         for telescope in self.event.telescopes:
@@ -182,7 +210,7 @@ class MLmodel(object):
 
         if self.parallax_model[0] != 'None':
 
-            self.Jacobian_flag = 'No way'
+            self.Jacobian_flag = 'Numerical'
             model_dictionnary['piEN'] = len(model_dictionnary)
             model_dictionnary['piEE'] = len(model_dictionnary)
 
@@ -190,13 +218,13 @@ class MLmodel(object):
 
         if self.orbital_motion_model[0] == '2D':
 
-            self.Jacobian_flag = 'No way'
+            self.Jacobian_flag = 'Numerical'
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == 'Circular':
 
-            self.Jacobian_flag = 'No way'
+            self.Jacobian_flag = 'Numerical'
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
             model_dictionnary['v_radial'] = len(model_dictionnary)
@@ -204,7 +232,7 @@ class MLmodel(object):
 
         if self.orbital_motion_model[0] == 'Keplerian':
 
-            self.Jacobian_flag = 'No way'
+            self.Jacobian_flag = 'Numerical'
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
             model_dictionnary['v_radial'] = len(model_dictionnary)

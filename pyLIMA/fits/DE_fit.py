@@ -8,7 +8,7 @@ from multiprocessing import Manager
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
-
+from pyLIMA.outputs import pyLIMA_plots
 
 
 class DEfit(MLfit):
@@ -34,7 +34,7 @@ class DEfit(MLfit):
     def objective_function(self, fit_process_parameters):
 
         likelihood = 0
-        
+        #print(fit_process_parameters)
         model_parameters = fit_process_parameters[self.model_parameters_index]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
@@ -139,3 +139,14 @@ class DEfit(MLfit):
 
         self.fit_results = {'best_model': fit_results, '-(ln_likelihood)' : fit_log_likelihood, 'fit_time': computation_time,
                             'DE_population': DE_population, 'fit_time' : computation_time}
+
+    def fit_outputs(self):
+
+        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
+        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
+
+        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
+
+
+        samples_to_plot = self.fit_results['DE_population'][:,:len(parameters)]
+        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )

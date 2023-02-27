@@ -27,17 +27,25 @@ class TRFfit(LMfit):
 
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
-        # No Jacobian now
-        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='trf',
-                                              bounds=(bounds_min, bounds_max),  max_nfev=50000, xtol=10**-10,
-                                              ftol=10**-10, gtol=10 ** -10)
 
-        fit_results = lm_fit['x'].tolist()
-        fit_chi2 = lm_fit['cost']*2  # chi2
+        if self.model.Jacobian_flag != 'No Way':
+
+            jacobian_function = self.residuals_Jacobian
+
+        else:
+
+            jacobian_function = '2-point'
+
+        trf_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='trf',
+                                              bounds=(bounds_min, bounds_max),  max_nfev=50000, jac=jacobian_function,
+                                              xtol=10**-10,ftol=10**-10, gtol=10 ** -10)
+
+        fit_results = trf_fit['x'].tolist()
+        fit_chi2 = trf_fit['cost']*2  # chi2
 
         try:
             # Try to extract the covariance matrix from the levenberg-marquard_fit output
-            covariance_matrix = np.linalg.pinv(np.dot(lm_fit['jac'].T, lm_fit['jac']))
+            covariance_matrix = np.linalg.pinv(np.dot(trf_fit['jac'].T, trf_fit['jac']))
 
         except:
 

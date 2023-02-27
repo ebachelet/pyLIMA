@@ -6,21 +6,11 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
 
 
 
-    if (rE is None): #Circular
+    if (a_s ==1) & ( r_s == -v_para / v_radial) |  (r_s == 0): #Circular
 
-        try:
 
-            r_s = -v_para/v_radial
 
-        except:
-
-            #v_radial = v_para = 0
-
-            r_s = 0
-
-        a_s = 1
-
-        longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity = \
+        longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity, eccentricity = \
             orbital_parameters_from_position_and_velocities(separation_0,r_s,a_s, v_para, v_perp, v_radial)
 
         theta = orbital_velocity * (time - to_om)/365.25 + omega_peri
@@ -46,7 +36,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
     else: #Keplerian
 
         separation_z = r_s * separation_0
-        r_0 = np.array([separation_0, 0, separation_z]) * rE
+        r_0 = np.array([separation_0, 0, separation_z])# * rE
         v_0 = r_0[0] * np.array([v_para, v_perp, v_radial])
 
         r_norm = np.sum(r_0 ** 2) ** 0.5
@@ -55,21 +45,28 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
         a_true = a_s * r_norm
 
         h_0 = np.cross(r_0, v_0)
+        #breakpoint()
 
+
+        #longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity, eccentricity = \
+        #orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_para, v_perp, v_radial)
+        #breakpoint()
         #GMass = rE**3*separation_0**2*a_s*(1+r_s**2)**0.5/(2*a_s-1)*v_norm**2
         GMass = v_norm**2/2*(-1.0/2/a_true+1/r_norm)**(-1)
 
         if (GMass<0) or np.isinf(GMass):
 
-            #print('Parabolic trajectory....')
+            print('Parabolic trajectory....')
             return  np.array([separation_0]*len(time)), np.array([0]*len(time))
 
         orbital_velocity = (GMass / a_true ** 3) ** 0.5
-
-        e_0 = np.cross(v_0, h_0)/GMass-r_0/r_norm #Laplace_Runge_Lenz
+    #    orbital_velocity = (v_para ** 2 + v_perp ** 2 + v_radial ** 2) ** 0.5 / a_s * 1 / ((-1 + 2 * a_s) * (1 + r_s ** 2)) ** 0.5
+        #GMass = separation_0**3*a_s*(1+r_s**2)**0.5*(v_para ** 2 + v_perp ** 2 + v_radial ** 2) ** 0.5/(2*a_s-1)
+        e_0 = np.cross(v_0, h_0)/GMass-r_0/r_norm #normed Laplace_Runge_Lenz
+        #e_0 = np.cross(v_0/np.sum(v_0**2)**0.5, h_0/np.sum(h_0**2)**0.5)-r_0/np.sum(r_0**2)**0.5
+        #breakpoint()
         eccentricity = np.sum(e_0 ** 2) ** 0.5
-        h_0 /= np.sum(h_0 ** 2) ** 0.5
-
+    #    h_0 /= np.sum(h_0 ** 2) ** 0.5
         #eccentricity = (1-np.sum(h_0**2)**0.5/(Gmass*a_true))**0.5
         x_0 = e_0 / eccentricity
         z_0 = h_0/np.sum(h_0**2)**0.5
@@ -104,7 +101,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
         r_prime = np.array( [np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 *
                              np.sin(eccentric_anomaly), [0] * len(eccentric_anomaly)]) * a_true
 
-        r_microlens = np.dot(Rmatrix, r_prime)/rE
+        r_microlens = np.dot(Rmatrix, r_prime)#/rE
 
     sep = (r_microlens[0] ** 2 + r_microlens[1] ** 2) ** 0.5
     angle = np.arctan2(r_microlens[1], r_microlens[0])
@@ -112,19 +109,31 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
     separation0 = separation_0
     angle_0 = 0
 
+    #import pdb;
+    #pdb.set_trace()
     return sep - separation0, (angle - angle_0)
 
 
 def eccentric_anomaly_function(time, ellipticity, t_periastron, speed):
 
     ks = pyasl.MarkleyKESolver()
+    import kepler
+    #import time as TIME
+
 
     eccentricities = []
     for t in time:
 
         phase = speed * (t - t_periastron)
         phase = phase%(2*np.pi)
-        ecc = ks.getE(phase, ellipticity)
+        #start = TIME.time()
+        #ecc2 = ks.getE(phase, ellipticity)
+        #end1 = TIME.time()
+        ecc = kepler.solve(phase, ellipticity)
+        #end2 = TIME.time()
+        #print(end1-start,end2-end1,ecc2-ecc)
+        #import pdb;
+        #pdb.set_trace()
 
         eccentricities.append(ecc)
 
@@ -141,7 +150,11 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
     a_true = a_s * r_norm
 
     h_0 = np.cross(r_0, v_0)
+    e_0 = np.cross(r_0,v_0)/a_s*(2*a_s-1)-r_0/r_norm
+    eccentricity = np.sum(e_0 ** 2) ** 0.5
     h_0 /= np.sum(h_0 ** 2) ** 0.5
+
+
 
     longitude_ascending_node = np.arctan2(-h_0[0], h_0[1])
 
@@ -167,5 +180,5 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
         orbital_velocity = v_0[2] / a_true / np.sin(inclination) / np.cos(2 * omega_peri)
 
 
-    return longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity
+    return longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity,eccentricity
 

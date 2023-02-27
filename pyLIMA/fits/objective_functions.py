@@ -143,9 +143,12 @@ def photometric_chi2(telescope, model, pyLIMA_parameters):
 
 def all_telescope_photometric_chi2(model, pyLIMA_parameters,rescaling_parameters=None):
 
-    pass
+    residuals,errfluxes = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,
+                                                    rescaling_photometry_parameters=rescaling_parameters)
 
+    chi2 = np.sum(residuals**2)
 
+    return chi2
 def all_telescope_photometric_likelihood(model, pyLIMA_parameters, rescaling_photometry_parameters=None):
 
     residus, errflux = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,

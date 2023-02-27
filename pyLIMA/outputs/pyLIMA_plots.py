@@ -4,11 +4,16 @@ from matplotlib.ticker import MaxNLocator
 import cycler
 import matplotlib
 from bokeh.models import Arrow, OpenHead
+import pygtc
+
 
 from pyLIMA.toolbox import fake_telescopes, plots
 import pyLIMA.fits.objective_functions
 from pyLIMA.parallax import parallax
 from pyLIMA.astrometry import astrometric_positions
+
+
+
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.21
@@ -54,7 +59,12 @@ def plot_geometry(microlensing_model, model_parameters):
             if telescope.location == 'Space':
 
                 platform = telescope.name
+                linestyle = '--'
 
+            else:
+
+                linestyle = '-'
+                
             reference_telescope = telescope
 
             telescope_index = [i for i in range(len(microlensing_model.event.telescopes)) if
@@ -66,7 +76,7 @@ def plot_geometry(microlensing_model, model_parameters):
 
             figure_axes.plot(trajectory_x, trajectory_y,
                              c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
-                             label=platform)
+                             label=platform,linestyle=linestyle)
 
             for index in [-1, 0, 1]:
 
@@ -337,7 +347,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_telescope.spacecraft_name = tel.spacecraft_name
                     model_telescope.spacecraft_positions = tel.spacecraft_positions
 
-                    if microlensing_model.parallax_model != 'None':
+                    if microlensing_model.parallax_model[0] != 'None':
 
                         import pyLIMA.parallax.parallax
 
@@ -392,7 +402,8 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_telescope.spacecraft_name = tel.spacecraft_name
                     model_telescope.spacecraft_positions = tel.spacecraft_positions
 
-                    if microlensing_model.parallax_model != 'None':
+                    if microlensing_model.parallax_model[0] != 'None':
+
                         import pyLIMA.parallax.parallax
 
                         parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
@@ -426,6 +437,8 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters, pl
     telescopes_names = np.array([i.name for i in microlensing_model.event.telescopes])
 
     #plot models
+    index = 0
+
     for tel in list_of_telescopes:
 
         if tel.lightcurve_flux is not None:
@@ -433,6 +446,17 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters, pl
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT-2.5*np.log10(model['photometry'])
+            f_source = model['f_source']
+            f_blend = model['f_blend']
+
+            if index == 0:
+
+                ref_source = f_source
+                ref_blend = f_blend
+                index += 1
+
+            delta_mag = -2.5 * np.log10(f_source + f_blend) + 2.5 * np.log10(ref_source + ref_blend)
+            magnitude -= delta_mag
 
             name = tel.name
 
@@ -442,9 +466,14 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters, pl
             if tel.location == 'Earth':
 
                 name = tel.location
+                linestyle = '-'
+
+            else:
+
+                linestyle='--'
 
             plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,
-                                             magnitude, figure_axe=figure_axe, name=name, color=color)
+                                             magnitude, figure_axe=figure_axe, name=name, color=color,linestyle=linestyle)
 
 def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_unit='Mag'):
 
@@ -452,6 +481,8 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_uni
 
     #plot aligned data
     index = 0
+    index_Earth = 0
+
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
         if tel.lightcurve_flux is not None:
@@ -461,19 +492,33 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_uni
             model_magnification = microlensing_model.model_magnification(tel, pyLIMA_parameters)
             f_source, f_blend = microlensing_model.derive_telescope_flux(tel, pyLIMA_parameters, model_magnification)
 
+            if index == 0:
+
+                ref_source = f_source
+                ref_blend = f_blend
+                index += 1
+
             if tel.location == 'Space':
 
                 magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * np.log10(
                     f_source * model_magnification + f_blend)
 
+                delta_mag = -2.5*np.log10(f_source+f_blend)+2.5*np.log10(ref_source+ref_blend)
+                magnitude -= delta_mag
+
             else:
 
-                if index == 0:
+                if index_Earth == 0:
 
-                    ref_source = f_source
-                    ref_blend = f_blend
-                    index += 1
-                magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT-2.5*np.log10(ref_source*model_magnification+ref_blend)
+                    ref_source_Earth = f_source
+                    ref_blend_Earth = f_blend
+                    index_Earth += 1
+
+                magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT-2.5*np.log10(ref_source_Earth*model_magnification+ref_blend_Earth)
+
+                delta_mag = -2.5*np.log10(ref_source_Earth+ref_blend_Earth)+2.5*np.log10(ref_source+ref_blend)
+                magnitude -= delta_mag
+
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
@@ -726,3 +771,14 @@ def plot_astrometric_data(figure_ax, microlensing_model):
 
             figure_ax.errorbar(delta_ra,delta_dec,xerr=err_ra,yerr=err_dec,fmt='.',ecolor=color,color=color,
                                label=tel.name )
+
+
+
+def plot_distribution(samples,parameters_names=None):
+
+    GTC = pygtc.plotGTC(chains=[samples], sigmaContourLevels=True, paramNames=parameters_names,
+                        customLabelFont={'family': 'serif', 'size': 14},
+                        customLegendFont={'family': 'serif', 'size': 14},
+                        customTickFont={'family': 'serif', 'size': 7}, figureSize=7,nContourLevels=3)
+
+    GTC.tight_layout(pad=0.2,w_pad=0.2,h_pad=0.2)

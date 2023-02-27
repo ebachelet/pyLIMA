@@ -5,6 +5,7 @@ import sys
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
+from pyLIMA.outputs import pyLIMA_plots
 
 class LMfit(MLfit):
 
@@ -63,11 +64,17 @@ class LMfit(MLfit):
             n_data = n_data + telescope.n_data('flux')
 
 
-        #if self.model.Jacobian_flag == 'OK':
 
-        # No Jacobian now
+        if self.model.Jacobian_flag != 'No Way':
+
+            jacobian_function = self.residuals_Jacobian
+
+        else:
+
+            jacobian_function = '2-point'
+
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',  max_nfev=50000,
-                                              xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
+                                              jac=jacobian_function, xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
 
         fit_results = lm_fit['x'].tolist()
         fit_chi2 = lm_fit['cost']*2 #chi2
@@ -91,51 +98,13 @@ class LMfit(MLfit):
         self.fit_results = {'best_model': fit_results, 'chi2' : fit_chi2, 'fit_time': computation_time,
                             'covariance_matrix': covariance_matrix}
 
-    def jacobian(self, fit_process_parameters):
-        """Return the analytical Jacobian matrix, if requested by method LM.
-        Available only for PSPL and FSPL without second_order.
+    def fit_outputs(self):
 
-        :param list fit_process_parameters: the model parameters ingested by the correpsonding
-                                            fitting routine.
-        :return: a numpy array which represents the jacobian matrix
-        :rtype: array_like
-        """
+        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
+        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
 
-        count = 0
-        # import pdb;
-        # pdb.set_trace()
-        for telescope in self.model.event.telescopes:
-
-            if count == 0:
-
-                _jacobi = self.model.model_Jacobian(telescope, pyLIMA_parameters)
-
-            else:
-
-                _jacobi = np.c_[_jacobi, self.model.model_Jacobian(telescope, pyLIMA_parameters)]
-
-            count += 1
-
-        # The objective function is : (data-model)/errors
-
-        _jacobi = -_jacobi
-        jacobi = _jacobi[:-2]
-        # Split the fs and g derivatives in several columns correpsonding to
-        # each observatories
-        start_index = 0
-        dresdfs = _jacobi[-2]
-        dresdg = _jacobi[-1]
-
-        for telescope in self.model.event.telescopes:
-            derivative_fs = np.zeros((len(dresdfs)))
-            derivative_g = np.zeros((len(dresdg)))
-            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux['time'].value))
-            derivative_fs[index] = dresdfs[index]
-            derivative_g[index] = dresdg[index]
-            jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
-
-            start_index = index[-1] + 1
-
-        return jacobi.T
+        samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],10000)
+        samples_to_plot = samples[:,:len(parameters)]
+        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )

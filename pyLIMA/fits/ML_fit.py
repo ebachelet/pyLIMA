@@ -4,6 +4,10 @@ from collections import OrderedDict, namedtuple
 
 from pyLIMA.fits import fancy_parameters
 from pyLIMA.priors import parameters_boundaries
+from pyLIMA.outputs import pyLIMA_plots
+
+
+
 
 ### Standard fancy parameters functions
 
@@ -434,6 +438,59 @@ class MLfit(object):
         import pyLIMA.fits.residuals
         return 0
 
+    def residuals_Jacobian(self, fit_process_parameters):
+
+        photometric_jacobian = self.photometric_residuals_Jacobian(fit_process_parameters)
+
+        #No Astrometry Yet
+
+        return photometric_jacobian
+    def photometric_residuals_Jacobian(self, fit_process_parameters):
+        """Return the analytical Jacobian matrix, if requested by method LM.
+        Available only for PSPL and FSPL without second_order.
+        :param list fit_process_parameters: the model parameters ingested by the correpsonding
+                                            fitting routine.
+        :return: a numpy array which represents the jacobian matrix
+        :rtype: array_like
+        """
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+
+        count = 0
+        for telescope in self.model.event.telescopes:
+
+            if count == 0:
+
+                _jacobi = self.model.photometric_model_Jacobian(telescope, pyLIMA_parameters)/telescope.lightcurve_flux['err_flux'].value
+
+            else:
+
+                _jacobi = np.c_[_jacobi, self.model.photometric_model_Jacobian(telescope, pyLIMA_parameters)/telescope.lightcurve_flux['err_flux'].value]
+
+            count += 1
+
+        # The objective function is : (data-model)/errors
+
+        _jacobi = -_jacobi
+        jacobi = _jacobi[:-2]
+        # Split the fs and g derivatives in several columns correpsonding to
+        # each observatories
+        start_index = 0
+        dresdfs = _jacobi[-2]
+        dresdg = _jacobi[-1]
+
+        for telescope in self.model.event.telescopes:
+            derivative_fs = np.zeros((len(dresdfs)))
+            derivative_g = np.zeros((len(dresdg)))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux))
+            derivative_fs[index] = dresdfs[index]
+            derivative_g[index] = dresdg[index]
+            jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
+
+            start_index = index[-1] + 1
+
+        return jacobi.T
+
     def produce_outputs(self):
         """ Produce the standard outputs for a fit.
         More details in microloutputs module.
@@ -501,52 +558,9 @@ class MLfit(object):
 
         return telescopes_fluxes
 
+    def fit_outputs(self):
 
-    def objective_function_Jacobian(self, fit_process_parameters):
+        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
+        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
-        count = 0
-
-        for telescope in self.event.telescopes:
-
-            jack = self.model.magnification_Jacobian(telescope, pyLIMA_parameters)/telescope.lightcurve_flux['err_flux']
-
-            if self.model.blend_flux_parameter == 'gblend':
-
-                f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
-                g_blending = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
-
-                jack[:,3] += g_blending/telescope.lightcurve_flux['err_flux']
-                jack[:,4] *= f_source
-
-            if count == 0:
-
-                _jacobi = jack
-
-            else:
-
-                _jacobi = np.c_[_jacobi, jack]
-
-            count += 1
-
-        # The objective function is : (data-model)/errors
-        _jacobi = -_jacobi
-        jacobi = _jacobi[:-2]
-        # Split the fs and g derivatives in several columns correpsonding to
-        # each observatories
-        start_index = 0
-        dresdfs = _jacobi[-2]
-        dresdg = _jacobi[-1]
-
-        for telescope in self.event.telescopes:
-            derivative_fs = np.zeros((len(dresdfs)))
-            derivative_g = np.zeros((len(dresdg)))
-            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux['time'].value))
-            derivative_fs[index] = dresdfs[index]
-            derivative_g[index] = dresdg[index]
-            jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
-
-            start_index = index[-1] + 1
-
-        return jacobi.T

@@ -31,7 +31,7 @@ class USBLmodel(MLmodel):
         """
         model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3, 'separation': 4, 'mass_ratio': 5, 'alpha': 6}
 
-        self.Jacobian_flag = 'No way'
+        self.Jacobian_flag = 'Numerical'
 
         return model_dictionary
 
@@ -61,13 +61,15 @@ class USBLmodel(MLmodel):
                magnification_VBB.magnification_USBL(separation, pyLIMA_parameters.mass_ratio,
                                                                           source_trajectoire[0], source_trajectoire[1],
                                                                           pyLIMA_parameters.rho)
-
         else:
 
             magnification_USBL = None
 
+        if return_impact_parameter:
 
-        return magnification_USBL
+            return magnification_USBL,None
+        else:
+            return magnification_USBL
 
     def find_origin(self, pyLIMA_parameters):
 

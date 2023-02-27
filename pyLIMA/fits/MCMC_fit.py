@@ -5,6 +5,7 @@ import emcee
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
+from pyLIMA.outputs import pyLIMA_plots
 
 class MCMCfit(MLfit):
 
@@ -99,7 +100,12 @@ class MCMCfit(MLfit):
             nlinks = self.MCMC_links
 
             # Initialize the population of MCMC
-            population = best_solution*np.random.uniform(0.999999, 1.000001, (nwalkers,number_of_parameters))+np.random.uniform(-1, 1,(nwalkers,number_of_parameters))*10**-4
+            eps = 10**-2
+            floors = np.floor(best_solution)
+            initial = best_solution-floors
+            deltas = initial*np.random.uniform(-eps,eps,(nwalkers,number_of_parameters))
+
+            population = best_solution+deltas
 
         else:
 
@@ -162,3 +168,15 @@ class MCMCfit(MLfit):
         self.fit_results = {'best_model': fit_results, 'ln(likelihood)': fit_log_likelihood,
                             'MCMC_chains': MCMC_chains, 'fit_time': computation_time}
 
+
+    def fit_outputs(self):
+
+        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
+        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
+
+        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
+
+        chains = self.fit_results['MCMC_chains']
+        samples = chains.reshape(-1,chains.shape[2])
+        samples_to_plot = samples[:,:len(parameters)]
+        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )

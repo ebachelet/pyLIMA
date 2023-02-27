@@ -5,6 +5,7 @@ import numpy as np
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
+from pyLIMA.outputs import pyLIMA_plots
 
 
 
@@ -355,3 +356,15 @@ class DEMCfit(MLfit):
 
         self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
                             'DEMC_population': DEMC_population, 'fit_time': computation_time}
+
+    def fit_outputs(self):
+
+        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
+        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
+
+        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
+
+        chains = self.fit_results['DEMC_population']
+        samples = chains.reshape(-1,chains.shape[2])
+        samples_to_plot = samples[:,:len(parameters)]
+        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
