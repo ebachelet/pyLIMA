@@ -1,5 +1,4 @@
 import numpy as np
-from jacobi import jacobi
 from scipy.optimize._numdiff import approx_derivative
 
 
@@ -97,7 +96,7 @@ def magnification_numerical_Jacobian(microlensing_model, telescope, pyLIMA_param
     #floors[0] = np.floor(x[0])
     #x -= floors
     #magnification_jacobian_numerical = jacobi(model_magnification_numerical, x, microlensing_model,telescope, floors)[0]
-    magnification_jacobian_numerical =  approx_derivative(model_magnification_numerical,x, method='2-point', args=(microlensing_model,telescope,floors))
+    magnification_jacobian_numerical = approx_derivative(model_magnification_numerical, x, method='2-point', args=(microlensing_model,telescope,floors))
 
     #breakpoint()
 

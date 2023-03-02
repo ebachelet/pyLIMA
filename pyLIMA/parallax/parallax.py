@@ -190,6 +190,7 @@ class MLParallaxes(object):
                 telescope.deltas_positions[data_type] = deltas_position
 
             except:
+
                 pass
                 #import pdb;
                 #pdb.set_trace()
