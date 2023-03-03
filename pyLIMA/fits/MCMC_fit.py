@@ -100,11 +100,11 @@ class MCMCfit(MLfit):
             nlinks = self.MCMC_links
 
             # Initialize the population of MCMC
-            eps = 10**-2
+            eps = 10**-4
             floors = np.floor(np.round(best_solution))
             initial = best_solution-floors
             deltas = initial*np.random.uniform(-eps,eps,(nwalkers,number_of_parameters))
-
+            breakpoint()
             population = best_solution+deltas
 
         else:
