@@ -103,8 +103,10 @@ class MCMCfit(MLfit):
             eps = 10**-4
             floors = np.floor(np.round(best_solution))
             initial = best_solution-floors
+            mask = initial==0
+            initial[mask] = eps
+
             deltas = initial*np.random.uniform(-eps,eps,(nwalkers,number_of_parameters))
-            breakpoint()
             population = best_solution+deltas
 
         else:
@@ -178,5 +180,5 @@ class MCMCfit(MLfit):
 
         chains = self.fit_results['MCMC_chains']
         samples = chains.reshape(-1,chains.shape[2])
-        samples_to_plot = samples[:,:len(parameters)]
+        samples_to_plot = samples[int(len(samples)/2):,:len(parameters)]
         pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
