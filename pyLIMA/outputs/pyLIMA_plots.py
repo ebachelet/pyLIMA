@@ -313,6 +313,9 @@ def initialize_light_curves_plot(plot_unit='Mag', event_name='A microlensing eve
 
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
+    #recreate for bug fixing
+    #list_of_fake_telescopes = []
+
     if len(list_of_fake_telescopes) == 0:
 
         Earth = True
@@ -326,11 +329,26 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_time = np.arange(np.min(tel.lightcurve_magnitude['time'].value),
                                               np.max(tel.lightcurve_magnitude['time'].value),
                                              0.01)
-                else:
+
+
+                    model_time = np.r_[model_time, tel.lightcurve_magnitude['time'].value]
+
+                    model_time.sort()
+
+                if Earth and tel.location == 'Earth':
 
                     model_time = np.arange(np.min((np.min(tel.lightcurve_magnitude['time'].value),pyLIMA_parameters.t0 - 5 * pyLIMA_parameters.tE)),
                                            np.max((np.max(tel.lightcurve_magnitude['time'].value),pyLIMA_parameters.t0 + 5 * pyLIMA_parameters.tE)),
                                            0.01)
+
+
+                    for telescope in microlensing_model.event.telescopes:
+
+                        if telescope.location =='Earth':
+
+                            model_time = np.r_[model_time, telescope.lightcurve_magnitude['time'].value]
+
+                            model_time.sort()
 
                 model_lightcurve = np.c_[model_time, [0] * len(model_time), [0.1] * len(model_time)]
                 model_telescope = fake_telescopes.create_a_fake_telescope(light_curve = model_lightcurve)
@@ -387,6 +405,10 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_time = np.arange(np.min((np.min(tel.astrometry['time'].value),pyLIMA_parameters.t0 - 5 * pyLIMA_parameters.tE)),
                                            np.max((np.max(tel.astrometry['time'].value),pyLIMA_parameters.t0 + 5 * pyLIMA_parameters.tE)),
                                            0.01)
+
+                    for telescope in microlensing_model.event.telescopes:
+                        model_time = np.r_[model_time, telescope.lightcurve_magnitude['time'].value]
+
 
                 model_astrometry = np.c_[model_time, [0] * len(model_time), [0] * len(model_time),[0] * len(model_time), [0] * len(model_time)]
                 model_telescope = fake_telescopes.create_a_fake_telescope(astrometry_curve = model_astrometry)
@@ -483,42 +505,57 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_uni
     index = 0
     index_Earth = 0
 
+    list_of_telescopes = create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters)
+
+    ref_names = []
+    ref_locations = []
+    ref_magnification = []
+    ref_fluxes = []
+
+    for ref_tel in list_of_telescopes:
+
+        model_magnification = microlensing_model.model_magnification(ref_tel, pyLIMA_parameters)
+        f_source, f_blend = microlensing_model.derive_telescope_flux(ref_tel, pyLIMA_parameters, model_magnification)
+
+
+        ref_names.append(ref_tel.name)
+        ref_locations.append(ref_tel.location)
+        ref_magnification.append(model_magnification)
+        ref_fluxes.append([f_source,f_blend])
+
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
         if tel.lightcurve_flux is not None:
 
-            residus_in_mag = pyLIMA.fits.objective_functions.photometric_residuals_in_magnitude(tel, microlensing_model, pyLIMA_parameters)
+            if tel.location == 'Earth':
 
-            model_magnification = microlensing_model.model_magnification(tel, pyLIMA_parameters)
-            f_source, f_blend = microlensing_model.derive_telescope_flux(tel, pyLIMA_parameters, model_magnification)
-
-            if index == 0:
-
-                ref_source = f_source
-                ref_blend = f_blend
-                index += 1
-
-            if tel.location == 'Space':
-
-                magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * np.log10(
-                    f_source * model_magnification + f_blend)
-
-                delta_mag = -2.5*np.log10(f_source+f_blend)+2.5*np.log10(ref_source+ref_blend)
-                magnitude -= delta_mag
+                ref_index = np.where(np.array(ref_locations) == 'Earth')[0][0]
 
             else:
 
-                if index_Earth == 0:
+                ref_index = np.where(np.array(ref_names) == tel.name)[0][0]
 
-                    ref_source_Earth = f_source
-                    ref_blend_Earth = f_blend
-                    index_Earth += 1
+            residus_in_mag = pyLIMA.fits.objective_functions.photometric_residuals_in_magnitude(tel, microlensing_model,
+                                                                                                pyLIMA_parameters)
 
-                magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT-2.5*np.log10(ref_source_Earth*model_magnification+ref_blend_Earth)
+            if ind == 0:
 
-                delta_mag = -2.5*np.log10(ref_source_Earth+ref_blend_Earth)+2.5*np.log10(ref_source+ref_blend)
-                magnitude -= delta_mag
+                reference_source = ref_fluxes[ind][0]
+                reference_blend = ref_fluxes[ind][1]
+                index += 1
 
+            time_mask = [False for i in range(len(ref_magnification[ref_index]))]
+
+            for time in tel.lightcurve_flux['time'].value:
+
+                time_index = np.where(list_of_telescopes[ref_index].lightcurve_flux['time'].value == time)[0][0]
+                time_mask[time_index] = True
+
+            model_flux = ref_fluxes[ref_index][0]*ref_magnification[ref_index][time_mask]+ref_fluxes[ref_index][1]
+            magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * np.log10(model_flux)
+
+            delta_mag = -2.5*np.log10( reference_source + reference_blend)+2.5*np.log10(ref_fluxes[ref_index][0] + ref_fluxes[ref_index][1])
+            magnitude += delta_mag
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
@@ -563,7 +600,6 @@ def bokeh_plot_geometry(microlensing_model, model_parameters):
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
     fake_telescopes = create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters)
-
 
     for telescope in fake_telescopes:
 

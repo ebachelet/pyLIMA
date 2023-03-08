@@ -61,7 +61,7 @@ class DSPLmodel(MLmodel):
         if telescope.lightcurve_flux is not None:
 
             source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, source2_trajectory_y = \
-                self.sources_trajectories(telescope, pyLIMA_parameters)
+                self.sources_trajectory(telescope, pyLIMA_parameters)
 
             source1_magnification = magnification_PSPL.magnification_PSPL(source1_trajectory_x, source1_trajectory_y)
 
@@ -79,7 +79,7 @@ class DSPLmodel(MLmodel):
 
         return magnification
 
-    def sources_trajectories(self, telescope, pyLIMA_parameters):
+    def sources_trajectory(self, telescope, pyLIMA_parameters):
 
         source1_trajectory_x, source1_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                data_type='photometry')
