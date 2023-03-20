@@ -67,6 +67,7 @@ class MLfit(object):
         self.telescopes_fluxes_method = telescopes_fluxes_method
         self.fit_parameters = []
         self.fit_results = {}
+        self.priors = None
 
         self.model_parameters_guess = []
         self.rescale_photometry_parameters_guess = []
@@ -261,6 +262,25 @@ class MLfit(object):
         covariance = basic_covariance_matrix
 
         return covariance
+
+
+    def get_priors(self):
+
+        if self.priors is not None:
+
+            priors = []
+
+            for prior in self.priors:
+
+                priors.append(prior)
+
+        if self.priors is None:
+
+            priors = [None]*len(self.fit_parameters)
+
+        return priors
+
+
 
     def model_guess(self):
         """Try to estimate the microlensing parameters. Only use for PSPL and FSPL

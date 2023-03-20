@@ -55,15 +55,15 @@ def mass_ratio_boundaries():
 
 def alpha_boundaries():
 
-    return (-np.pi,np.pi)
+    return (0,2*np.pi)
 
 def piEN_boundaries():
 
-    return (-1.0,1.0)
+    return (-5.0,5.0)
 
 def piEE_boundaries():
 
-    return (-1.0,1.0)
+    return (-5.0,5.0)
 
 def v_para_boundaries():
 

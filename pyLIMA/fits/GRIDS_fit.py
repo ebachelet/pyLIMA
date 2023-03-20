@@ -124,7 +124,22 @@ class GRIDfit(MLfit):
 
             likelihood += astrometric_likelihood
 
+        # Priors
+        priors = self.get_priors()
 
+        for ind, prior_pdf in enumerate(priors):
+
+            if prior_pdf is not None:
+
+                pdf = prior_pdf(fit_process_parameters[ind])
+
+                if pdf > 0:
+
+                    likelihood += -np.log(pdf)
+
+                else:
+
+                    likelihood = np.inf
         return likelihood
 
     def fit_on_grid_pixel(self, *fixed_parameters):

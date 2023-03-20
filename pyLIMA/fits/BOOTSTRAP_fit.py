@@ -95,35 +95,17 @@ class BOOTSTRAPfit(MLfit):
         updated_model = self.generate_new_model()
         trf = TRF_fit.TRFfit(updated_model)
         trf.model_parameters_guess = self.model_parameters_guess
+
+        for key in self.fit_parameters.keys():
+
+            trf.fit_parameters[key][1] = self.fit_parameters[key][1]
+
+
         trf.fit()
 
         return trf.fit_results['best_model']
 
     def fit(self,number_of_samples=100, computational_pool = None ):
-
-        #original_datasets = {}
-
-        #for telescope in self.model.event.telescopes:
-
-        #    try:
-
-        #        photometry = telescope.lightcurve_flux
-
-        #    except:
-
-        #        photometry = []
-
-        #    try:
-
-        #        astrometry = telescope.astrometry
-
-        #    except:
-
-        #        astrometry = []
-
-
-        #    original_datasets['telescope.name']['photometry'] = photometry
-        #    original_datasets['telescope.name']['astrometry'] = astrometry
 
 
         samples = []
@@ -136,17 +118,21 @@ class BOOTSTRAPfit(MLfit):
 
             number_of_loop = number_of_samples
 
+
         for step in tqdm(range(number_of_loop)):
 
-            iterable = [(i,i) for i in range(number_of_samples)]
+
             if computational_pool is not None:
 
-                new_step = computational_pool.starmap(self.new_step,iterable)
+                iterable = [(i, i) for i in range(number_of_samples)]
+
+                new_step = computational_pool.starmap(self.new_step, iterable)
                 for samp in new_step:
 
                     samples.append(samp)
             else:
-                new_step = self.new_step()
+
+                new_step = self.new_step(step,step)
 
                 samples.append(new_step)
            

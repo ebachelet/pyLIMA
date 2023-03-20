@@ -83,6 +83,22 @@ class DEMCfit(MLfit):
 
             return np.inf
 
+        priors = self.get_priors()
+
+        for ind, prior_pdf in enumerate(priors):
+
+            if prior_pdf is not None:
+
+                pdf = prior_pdf(fit_process_parameters[ind])
+
+                if pdf > 0:
+
+                    likelihood += -np.log(pdf)
+
+                else:
+
+                    likelihood = np.inf
+
         return likelihood
 
     def new_individual(self, ind1, pop):
