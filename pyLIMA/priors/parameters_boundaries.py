@@ -115,7 +115,7 @@ def rescale_astrometry_boundaries():
 
 def parallax_source_boundaries():
 
-    return (0,10) #as
+    return (0.01,10) #mas
 
 def mu_source_N_boundaries():
 
@@ -129,10 +129,13 @@ def position_pixel_boundaries():
 
     return (-4096,4096) #pix
 
-def position_mas_boundaries():
+def position_ra_boundaries():
 
-    return (0, 12960000000) #(0,360) degree in mas
+    return (0, 360) #(0,360) degree
 
+def position_dec_boundaries():
+
+    return (-90, 90) #(-90,90) degree
 
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.
@@ -186,9 +189,17 @@ def parameters_boundaries(event, model_dictionnary):
 
                     telescope_ind = np.where(key.split('position_source_E_')[1] == np.array(telescopes_names))[0][0]
 
-                if event.telescopes[telescope_ind].astrometry['delta_ra'].unit == 'mas':
+                if event.telescopes[telescope_ind].astrometry['ra'].unit == 'deg':
 
-                    function_name = 'position_mas_boundaries()'
+
+                    if 'position_source_E' in key:
+
+                        function_name = 'position_ra_boundaries()'
+
+                    else:
+
+                        function_name = 'position_dec_boundaries()'
+
 
                 else:
 
@@ -204,9 +215,15 @@ def parameters_boundaries(event, model_dictionnary):
 
                     telescope_ind = np.where(key.split('position_blend_E_')[1] == np.array(telescopes_names))[0][0]
 
-                if event.telescopes[telescope_ind].astrometry['delta_ra'].unit == 'mas':
+                if event.telescopes[telescope_ind].astrometry['ra'].unit == 'deg':
 
-                    function_name = 'position_mas_boundaries()'
+                    if 'position_source_E' in key:
+
+                        function_name = 'position_ra_boundaries()'
+
+                    else:
+
+                        function_name = 'position_dec_boundaries()'
 
                 else:
 

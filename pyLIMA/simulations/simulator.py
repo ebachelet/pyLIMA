@@ -31,7 +31,7 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 def simulate_a_telescope(name, event, time_start, time_end, sampling, location, filter, uniform_sampling=False,
                          altitude=0, longitude=0, latitude=0, spacecraft_name=None, bad_weather_percentage=0.0,
                          minimum_alt=20, moon_windows_avoidance=20, maximum_moon_illumination=100.0, photometry=True,
-                         astrometry=True):
+                         astrometry=True,pixel_scale = 1):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
         full time windows, then limitation are applied :
             - Sun has to be below horizon : Sun< -18
@@ -70,10 +70,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
         target = SkyCoord(event.ra, event.dec, unit='deg')
 
-        minimum_sampling = min(4.0, sampling)
         minimum_sampling = sampling
-
-        ratio_sampling = np.round(sampling / minimum_sampling)
 
         time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
                                                bad_weather_percentage)
@@ -110,22 +107,24 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
     if astrometry:
 
+        time_of_observations = np.arange(time_start, time_end, sampling / (24.0))
+
+        astrometry = np.ones((len(time_of_observations), 5)) * 42
+        astrometry[:, 0] = time_of_observations
+
+    else:
+
         astrometry = None
-        #astrometry = np.ones((len(time_of_observations), 5)) * 42
-        #astrometry[:,0] = time_of_observations
 
-    #telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve=lightcurveflux,
-    #                                 light_curve_names=['time','flux','err_flux'], light_curve_units=['JD','w/m^2','w/m^2'],
-    #                                 clean_the_light_curve=False,
-    #                                 astrometry=astrometry, astrometry_names=['time','delta_ra','err_delta_ra', 'delta_dec','err_delta_dec'],
-    #                                 astrometry_units=['JD','mas','mas','mas','mas'],
-    #                                 location=location, spacecraft_name=spacecraft_name)
-
-    telescope = telescopes.Telescope(name=name, camera_filter=filter, light_curve=lightcurveflux,
+    telescope = telescopes.Telescope(name=name, camera_filter=filter, pixel_scale=pixel_scale,
+                                     light_curve=lightcurveflux,
                                      light_curve_names=['time', 'flux', 'err_flux'],
                                      light_curve_units=['JD', 'w/m^2', 'w/m^2'],
                                      clean_the_light_curve=False,
                                      astrometry=astrometry,
+                                     astrometry_names=['time', 'ra', 'err_ra', 'dec',
+                                                       'err_dec'],
+                                     astrometry_units=['JD','deg','deg','deg','deg'],
                                      location=location, spacecraft_name=spacecraft_name)
     return telescope
 
@@ -168,28 +167,6 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
     return time_of_observations
 
-    #total_number_of_days = int(time_end - time_start)
-    #time_step_observations = sampling / 24.0
-    #number_of_day_exposure = int(np.floor(
-    #    1.0 / time_step_observations))  # less than expected total, more likely in a telescope :)
-    #night_begin = time_start
-
-    #time_observed = []
-    #for i in range(total_number_of_days):
-
-    #    good_weather = np.random.uniform(0, 1)
-
-    #    if good_weather > bad_weather_percentage:
-    #        random_begin_of_the_night = 0
-    #        night_end = night_begin + 1
-    #        time_observed += np.linspace(night_begin + time_step_observations + random_begin_of_the_night, night_end,
-    #                                     number_of_day_exposure).tolist()
-
-    #    night_begin += 1
-
-    #time_of_observations = np.array(time_observed)
-
-    #return time_of_observations
 
 def moon_illumination(sun, moon):
     """The moon illumination expressed as a percentage.
@@ -293,7 +270,7 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], b
 
 
 
-def simulate_lightcurve_flux(model, pyLIMA_parameters):
+def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise = True):
     """ Simulate the flux of telescopes given a model and a set of parameters.
     It updates straight the telescopes object inside the given model.
 
@@ -303,18 +280,64 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters):
 
     """
 
-    count = 0
+    for telescope in model.event.telescopes:
+
+        if telescope.lightcurve_flux is not None:
+
+            theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['photometry']
+
+            if add_noise:
+
+                observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
+
+            else:
+
+                observed_flux = theoritical_flux
+                err_observed_flux = [0]*len(theoritical_flux)
+
+            telescope.lightcurve_flux['flux'] = observed_flux
+            telescope.lightcurve_flux['err_flux'] = err_observed_flux
+
+            telescope.lightcurve_magnitude = telescope.lightcurve_in_magnitude()
+
+
+def simulate_astrometry(model, pyLIMA_parameters, add_noise = True):
+    """
+    """
 
     for telescope in model.event.telescopes:
 
-        theoritical_flux = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['photometry']
+        if telescope.astrometry is not None:
 
-        observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
+            theoritical_model = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-        telescope.lightcurve_flux['flux'] = observed_flux
-        telescope.lightcurve_flux['err_flux'] = err_observed_flux
+            theoritical_flux = theoritical_model['photometry']
+            theoritical_astrometry = theoritical_model['astrometry']
 
-        telescope.lightcurve_magnitude = telescope.lightcurve_in_magnitude()
 
-        count += 1
+            if add_noise:
+
+                observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
+
+                SNR =  observed_flux/err_observed_flux
+
+
+                err_ra = 1/SNR/3600. #assuming FWHM=1 as
+                err_dec = 1/SNR/3600.
+
+                obs_ra = np.random.normal(theoritical_astrometry[0], err_ra)
+                obs_dec = np.random.normal(theoritical_astrometry[1], err_dec)
+
+            else:
+
+                obs_ra = theoritical_astrometry[0]
+                err_ra = [0]*len(obs_ra)
+                obs_dec = theoritical_astrometry[1]
+                err_dec = err_ra
+
+            telescope.astrometry['ra'] = obs_ra
+            telescope.astrometry['err_ra'] = err_ra
+            telescope.astrometry['dec'] = obs_dec
+            telescope.astrometry['err_dec'] = err_dec
+
 

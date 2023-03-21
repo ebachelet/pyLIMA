@@ -27,14 +27,14 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
     ref_E = getattr(pyLIMA_parameters, 'position_source_E_' + telescope.name)
     mu_N = pyLIMA_parameters.mu_source_N
     mu_E = pyLIMA_parameters.mu_source_E
-    position_N = mu_N / 365.25 * (time - time_ref) + ref_N
-    position_E = mu_E / 365.25 * (time - time_ref) + ref_E
+    position_N = mu_N / 365.25 * (time - time_ref)/3600/1000. + ref_N
+    position_E = mu_E / 365.25 * (time - time_ref)/3600/1000. + ref_E
 
     earth_vector = telescope.Earth_positions['astrometry']
     parallax_source = pyLIMA_parameters.parallax_source
-    Earth_projected = earth_vector*parallax_source #mas
+    Earth_projected = earth_vector*parallax_source/3600/1000 #mas
 
-    if telescope.astrometry['delta_ra'].unit == 'mas':
+    if telescope.astrometry['ra'].unit == 'deg':
 
         position_dec = position_N - Earth_projected[0]
         position_ra = position_E - Earth_projected[1]
@@ -55,10 +55,10 @@ def source_astrometric_position(telescope, pyLIMA_parameters, shifts=None, time_
 
     position_E, position_N = astrometric_position(telescope, pyLIMA_parameters, time_ref)
 
-    if telescope.astrometry['delta_ra'].unit == 'mas':
+    if telescope.astrometry['ra'].unit == 'deg':
 
-        position_ra = shifts[0] + position_E
-        position_dec = shifts[1] + position_N
+        position_ra = shifts[0]/3600./1000 + position_E
+        position_dec = shifts[1]/3600./1000 + position_N
 
     else:
 
@@ -79,7 +79,7 @@ def lens_astrometric_position(model, telescope, pyLIMA_parameters, shifts=None):
 
     lens_NE = np.array(source_relative_to_lens_NE)*pyLIMA_parameters.theta_E
 
-    if telescope.astrometry['delta_ra'].unit == 'mas':
+    if telescope.astrometry['ra'].unit == 'deg':
 
         lens_NE = source_NE-lens_NE
 

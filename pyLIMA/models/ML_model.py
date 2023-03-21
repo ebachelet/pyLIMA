@@ -190,6 +190,11 @@ class MLmodel(object):
 
             if (telescope.astrometry is not None) & (parameter == 0):
 
+                if self.parallax_model[0] == 'None':
+
+                    print('Defining a default parallax model since we have astrometric data....')
+                    self.parallax_model = ['Full', np.mean(telescope.lightcurve_flux['time'].value)]
+
                 model_dictionnary['theta_E'] = len(model_dictionnary)
                 model_dictionnary['parallax_source'] = len(model_dictionnary)
                 model_dictionnary['mu_source_N'] = len(model_dictionnary)
