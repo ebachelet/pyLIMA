@@ -39,8 +39,8 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
             # Find the residuals of telescope observation regarding the parameters and model
             astrometry = telescope.astrometry
 
-            astro_ra = astrometry['delta_ra'].value
-            astro_dec = astrometry['delta_dec'].value
+            astro_ra = astrometry['ra'].value
+            astro_dec = astrometry['dec'].value
             microlensing_model = model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
             residus_ra = astrometric_residuals(astro_ra, microlensing_model['astrometry'][0])
@@ -48,13 +48,13 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
             if rescaling_astrometry_parameters is not None:
 
-                err_ra = astrometry['err_delta_ra'].value+rescaling_astrometry_parameters_ra[ind]
-                err_dec = astrometry['err_delta_dec'].value+rescaling_astrometry_parameters_dec[ind]
+                err_ra = astrometry['err_ra'].value+rescaling_astrometry_parameters_ra[ind]
+                err_dec = astrometry['err_dec'].value+rescaling_astrometry_parameters_dec[ind]
 
             else:
 
-                err_ra = astrometry['err_delta_ra'].value
-                err_dec = astrometry['err_delta_dec'].value
+                err_ra = astrometry['err_ra'].value
+                err_dec = astrometry['err_dec'].value
 
             if norm:
 

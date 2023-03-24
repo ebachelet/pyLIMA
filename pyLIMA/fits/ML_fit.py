@@ -436,15 +436,32 @@ class MLfit(object):
 
                     pass
 
+
+        if self.priors is not None:
+
+            for ind,prior in enumerate(self.priors):
+
+                probability = prior.pdf( fit_parameters_guess[ind])
+                if probability<10**-10:
+
+                    samples = prior.rvs(1000)
+
+                    fit_parameters_guess[ind] = np.median(samples)
+
         for ind,param in enumerate(self.fit_parameters.keys()):
 
-            if (fit_parameters_guess[ind]<self.fit_parameters[param][1][0]):
+            if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):
 
                fit_parameters_guess[ind] = self.fit_parameters[param][1][0]
 
             if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
 
                 fit_parameters_guess[ind] = self.fit_parameters[param][1][1]
+
+
+
+
+
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
         print('Using guess: ',fit_parameters_guess)
@@ -511,34 +528,6 @@ class MLfit(object):
 
         return jacobi.T
 
-    def produce_outputs(self):
-        """ Produce the standard outputs for a fit.
-        More details in microloutputs module.
-        """
-
-        outputs = microloutputs.fit_outputs(self)
-
-        self.outputs = outputs
-    def produce_fit_statistics(self):
-        """ Produce the standard outputs for a fit.
-        More details in microloutputs module.
-        """
-
-        stats_outputs = microloutputs.statistical_outputs(self)
-
-        self.stats_outputs = stats_outputs
-
-    def produce_pdf(self, output_directory='./'):
-        """ ON CONSTRUCTION
-        """
-        microloutputs.pdf_output(self, output_directory)
-
-    def produce_latex_table_results(self, output_directory='./'):
-        """ ON CONSTRUCTION
-        """
-        microloutputs.latex_output(self, output_directory)
-
-
     def find_fluxes(self, fit_process_parameters):
         """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM
         method.
@@ -564,8 +553,13 @@ class MLfit(object):
 
                 f_source = ml_model['f_source']
                 f_blend = ml_model['f_blend']
+
                 # Prior here
-                if (f_source < 0) | (f_source+f_blend < 0) :
+                if (f_source <= self.fit_parameters['fsource_'+telescope.name][1][0]) | \
+                   (f_source > self.fit_parameters['fsource_'+telescope.name][1][1]) |\
+                   (f_blend <= self.fit_parameters['fblend_' + telescope.name][1][0]) |\
+                   (f_blend > self.fit_parameters['fblend_' + telescope.name][1][1]) |\
+                   (f_source + f_blend <= 0):
 
                     telescopes_fluxes.append(np.min(flux))
                     telescopes_fluxes.append(0.0)

@@ -33,8 +33,9 @@ def initial_guess_PSPL(event):
                                                     max(0.1, mean_error_magnitude)))[0]
                 lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
 
-                lightcurve_bis = lightcurve_bis[lightcurve_bis['time'].value.argsort(), :]
-
+                lightcurve_bis['time'] = lightcurve_bis['time'][lightcurve_bis['time'].value.argsort()]
+                lightcurve_bis['mag'] = lightcurve_bis['mag'][lightcurve_bis['time'].value.argsort()]
+                lightcurve_bis['err_mag'] = lightcurve_bis['err_mag'][lightcurve_bis['time'].value.argsort()]
                 mag = lightcurve_bis['mag'].value
                 flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
 
@@ -83,7 +84,6 @@ def initial_guess_PSPL(event):
                 maximum_flux_estimations.append(max_flux)
 
                 errors_magnitude.append(mean_error_magnitude)
-
     to_guess = sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) / sum(
         1 / np.array(errors_magnitude) ** 2)
     survey = event.telescopes[0]

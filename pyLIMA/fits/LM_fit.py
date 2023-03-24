@@ -108,3 +108,4 @@ class LMfit(MLfit):
         samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],10000)
         samples_to_plot = samples[:,:len(parameters)]
         pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
+

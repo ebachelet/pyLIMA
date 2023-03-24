@@ -85,18 +85,18 @@ class DEfit(MLfit):
 
             likelihood += astrometric_likelihood
 
-        #Priors
+        # Priors
         priors = self.get_priors()
 
         for ind, prior_pdf in enumerate(priors):
 
             if prior_pdf is not None:
 
-                pdf = prior_pdf(fit_process_parameters[ind])
+                probability = prior_pdf.pdf(fit_process_parameters[ind])
 
-                if pdf > 0:
+                if probability > 0:
 
-                    likelihood += -np.log(pdf)
+                    likelihood += -np.log(probability)
 
                 else:
 

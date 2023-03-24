@@ -15,6 +15,6 @@ def parameters_priors(fit_parameters):
     for key in fit_parameters.keys():
 
             bounds = fit_parameters[key][1]
-            priors.append(ss.uniform(loc=bounds[0], scale=bounds[1]-bounds[0]).pdf)
+            priors.append(ss.uniform(loc=bounds[0], scale=bounds[1]-bounds[0]))
 
     return priors
