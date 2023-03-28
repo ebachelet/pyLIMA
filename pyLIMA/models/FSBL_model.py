@@ -44,26 +44,6 @@ class FSBLmodel(USBLmodel):
             :return: magnification,
             :rtype: array_like,
         """
-        if telescope.lightcurve_flux is not None:
-
-            self.u0_t0_from_uc_tc(pyLIMA_parameters)
-
-            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
-
-            separation = source_trajectoire[2] + pyLIMA_parameters.separation
-            magnification_USBL = \
-               magnification_VBB.magnification_USBL(separation, pyLIMA_parameters.mass_ratio,
-                                                                          source_trajectoire[0], source_trajectoire[1],
-                                                                          pyLIMA_parameters.rho)
-        else:
-
-            magnification_USBL = None
-
-        if return_impact_parameter:
-
-            return magnification_USBL,None
-        else:
-            return magnification_USBL
 
         if telescope.lightcurve_flux is not None:
 
