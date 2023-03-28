@@ -29,7 +29,7 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
         eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity/365.25)
 
         r_prime = np.array([np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 *
-                             np.sin(eccentric_anomaly), [0] * len(eccentric_anomaly)]) * a_true
+                             np.sin(eccentric_anomaly)]) * a_true
 
         r_microlens = np.dot(Rmatrix, r_prime)#/rE
 
