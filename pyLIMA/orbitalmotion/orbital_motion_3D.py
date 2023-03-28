@@ -15,23 +15,19 @@ def orbital_motion_keplerian(time, to_om,  separation_0, v_para, v_perp, v_radia
 
         r_prime = a_true*np.r_[np.cos(theta), np.sin(theta)]
 
-        r_microlens = np.dot(Rmatrix, r_prime)
-
     else: #Keplerian
 
-        eccentric_anomaly = np.sign(np.sin(true_anomaly))*(np.cos(true_anomaly)+eccentricity)/(1+eccentricity*np.cos(true_anomaly))
-
+        eccentric_anomaly = np.sign(np.sin(true_anomaly))*(np.cos(true_anomaly)+eccentricity)/\
+                            (1+eccentricity*np.cos(true_anomaly))
 
         t_periastron = to_om - (eccentric_anomaly - eccentricity * np.sin(eccentric_anomaly)) / orbital_velocity*365.25
-
-
 
         eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity/365.25)
 
         r_prime = np.array([np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 *
                              np.sin(eccentric_anomaly)]) * a_true
 
-        r_microlens = np.dot(Rmatrix, r_prime)#/rE
+    r_microlens = np.dot(Rmatrix, r_prime)#/rE
 
     sep = (r_microlens[0] ** 2 + r_microlens[1] ** 2) ** 0.5
     angle = np.arctan2(r_microlens[1], r_microlens[0])

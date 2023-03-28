@@ -58,8 +58,6 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
         dseparation, dalpha = orbital_motion_3D.orbital_motion_keplerian(time, orbital_motion_model[1], separation,
                                                                          v_para, v_perp, v_radial, r_s, a_s, rE)
 
-        dalpha = -dalpha
-
 
     return dseparation, dalpha
 
