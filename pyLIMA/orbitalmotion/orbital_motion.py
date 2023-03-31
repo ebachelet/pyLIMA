@@ -42,7 +42,7 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
         a_s = 1
         dseparation, dalpha = orbital_motion_3D.orbital_motion_keplerian(time, orbital_motion_model[1], separation,
                                                                          v_para, v_perp, v_radial,  r_s, a_s,
-                                                                         rE=None)
+                                                                         )
 
     if orbital_motion_model[0] == 'Keplerian':
 
@@ -50,13 +50,12 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
         v_perp = pyLIMA_parameters.v_perp
         v_radial = pyLIMA_parameters.v_radial
         separation = pyLIMA_parameters.separation
-        rE = pyLIMA_parameters.rE
 
         r_s = pyLIMA_parameters.r_s
         a_s = pyLIMA_parameters.a_s
 
         dseparation, dalpha = orbital_motion_3D.orbital_motion_keplerian(time, orbital_motion_model[1], separation,
-                                                                         v_para, v_perp, v_radial, r_s, a_s, rE)
+                                                                         v_para, v_perp, v_radial, r_s, a_s)
 
 
     return dseparation, dalpha
