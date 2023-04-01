@@ -2,6 +2,7 @@ import scipy
 import time as python_time
 import numpy as np
 import sys
+from bokeh.io import output_file, show
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
@@ -98,14 +99,8 @@ class LMfit(MLfit):
         self.fit_results = {'best_model': fit_results, 'chi2' : fit_chi2, 'fit_time': computation_time,
                             'covariance_matrix': covariance_matrix}
 
-    def fit_outputs(self):
+    def samples_to_plot(self):
 
-        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
-        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
-
-        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
-
-        samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],10000)
-        samples_to_plot = samples[:,:len(parameters)]
-        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
-
+        samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],
+                                                10000)
+        return samples

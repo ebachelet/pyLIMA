@@ -17,18 +17,17 @@ class FSPLargemodel(FSPLmodel):
                                                                              data_type='astrometry')
 
         rho = pyLIMA_parameters.rho
+        linear_limb_darkening = telescope.ld_a1
 
         try:
 
-            linear_limb_darkening = telescope.gamma * 6 / (4 + 2 * telescope.gamma + telescope.sigma)
-            sqrt_limb_darkening = telescope.sigma * 5 / (4 + 2 * telescope.gamma + telescope.sigma)
+            sqrt_limb_darkening = telescope.ld_a2
 
             return magnification_VBB.magnification_FSPL(source_trajectory_x, source_trajectory_y,
                                                                              rho, linear_limb_darkening,
                                                                              sqrt_limb_darkening)
         except:
 
-            linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
 
             return magnification_VBB.magnification_FSPL(source_trajectory_x, source_trajectory_y,
                                                                              rho, linear_limb_darkening)

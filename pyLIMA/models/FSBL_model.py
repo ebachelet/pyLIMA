@@ -51,7 +51,7 @@ class FSBLmodel(USBLmodel):
 
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
 
-            linear_limb_darkening = telescope.gamma * 3 / (2 + telescope.gamma)
+            linear_limb_darkening = telescope.ld_a1
 
             separation = source_trajectoire[2] +  pyLIMA_parameters.separation
 
@@ -60,7 +60,6 @@ class FSBLmodel(USBLmodel):
                                                    source_trajectoire[0], source_trajectoire[1],
                                                    pyLIMA_parameters.rho, linear_limb_darkening)
 
-
         else:
 
             magnification_FSBL = None
@@ -68,6 +67,8 @@ class FSBLmodel(USBLmodel):
         if return_impact_parameter:
 
             return magnification_FSBL, None
+
         else:
+
             return magnification_FSBL
 

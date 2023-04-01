@@ -82,7 +82,7 @@ class FSPLmodel(MLmodel):
             source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                  data_type='photometry')
             rho = pyLIMA_parameters.rho
-            gamma = telescope.gamma
+            gamma = telescope.ld_gamma
 
             magnification = magnification_FSPL.magnification_FSPL_Yoo(source_trajectory_x, source_trajectory_y,
                                                                               rho,
@@ -114,6 +114,7 @@ class FSPLmodel(MLmodel):
         amplification = self.model_magnification(telescope, pyLIMA_parameters, return_impact_parameter=True)
 
         return magnification_jacobian, amplification
+
     def astrometry_Jacobian(self, telescope, pyLIMA_parameters):
         """ The derivative of a PSPL model lightcurve
 

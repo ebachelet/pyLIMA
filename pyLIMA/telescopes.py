@@ -89,10 +89,29 @@ class Telescope(object):
 
         self.name = name
         self.filter = camera_filter
-        self.pixel_scale = pixel_scale# Claret2011 convention
+        self.pixel_scale = pixel_scale
         self.lightcurve_magnitude = None
         self.lightcurve_flux = None
         self.astrometry = None
+
+        self.location = location
+        self.altitude = 0.0  # meters
+        self.longitude = 0.57  # degrees
+        self.latitude = 49.49  # degrees
+        self.deltas_positions = {}
+        self.Earth_positions = {}
+        self.Earth_speeds = {}
+
+        self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
+        self.spacecraft_positions = [] #only for space base observatory, should be a list as
+                                       # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
+
+        #Microlensing LD coefficients
+        self.ld_gamma = 0
+        self.ld_sigma = 0
+        #Classical LD coefficients
+        self.ld_a1 = 0
+        self.ld_a2 = 0
 
         if light_curve is not None:
 
@@ -110,18 +129,6 @@ class Telescope(object):
 
             self.astrometry = construct_time_series(astrometry, astrometry_names, astrometry_units)
 
-        self.location = location
-        self.altitude = 0.0  # meters
-        self.longitude = 0.57  # degrees
-        self.latitude = 49.49  # degrees
-        self.gamma = 0.0  # This mean you will fit uniform source brightness
-        self.deltas_positions = {}
-        self.Earth_positions = {}
-        self.Earth_speeds = {}
-
-        self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
-        self.spacecraft_positions = [] #only for space base observatory, should be a list as
-                                       # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
         self.hidden()
 
     def n_data(self, choice='magnitude'):
@@ -289,3 +296,21 @@ class Telescope(object):
         except:
 
             pass
+
+    def define_limb_darkening_coefficients(self):
+
+        if self.ld_gamma == 0:
+
+            self.ld_gamma = 10*self.ld_a1/(15-5*self.ld_a1-3*self.ld_a2)
+
+        if self.ld_sigma == 0:
+
+            self.ld_sigma = 12*self.ld_a2/(15-5*self.ld_a1-3*self.ld_a2)
+
+        if self.ld_a1 == 0 :
+
+            self.ld_a1 = 6*self.ld_gamma/(4+2*self.ld_gamma+self.ld_sigma)
+
+        if self.ld_a2 == 0:
+
+            self.ld_a2 = 5 * self.ld_sigma / (4 + 2 * self.ld_gamma + self.ld_sigma)

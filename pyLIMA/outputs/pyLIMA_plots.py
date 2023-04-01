@@ -3,7 +3,18 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator
 import cycler
 import matplotlib
+
+from bokeh.io import output_file, show
+from bokeh.layouts import gridplot, grid, layout, row
+from bokeh.plotting import figure, curdoc
+from bokeh.transform import linear_cmap, log_cmap
+from bokeh.util.hex import hexbin
+from bokeh.models import BasicTickFormatter
+from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
+from bokeh.models import ColumnDataSource
 from bokeh.models import Arrow, OpenHead
+from bokeh.models import Circle
+
 import pygtc
 
 
@@ -24,7 +35,7 @@ list_of_fake_telescopes = []
 
 
 
-def plot_geometry(microlensing_model, model_parameters):
+def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     """Plot the lensing geometry (i.e source trajectory) and the table of best parameters.
     :param object fit: a fit object. See the microlfits for more details.
     :param list best_parameters: a list containing the model you want to plot the trajectory
@@ -51,6 +62,15 @@ def plot_geometry(microlensing_model, model_parameters):
     figure_axes = figure_trajectory.add_subplot(111, aspect=1)
     plt.subplots_adjust(top=0.9, bottom=0.1, wspace=0.1, hspace=0.1)
 
+    if bokeh_plot is not None:
+
+        bokeh_geometry = figure(width=350, height=350, x_range=(-3, 3), y_range=(-3, 3),
+                                x_axis_label='x [' + u'\u03B8\u2091'']', y_axis_label='y [' + u'\u03B8\u2091'']')
+
+    else:
+
+        bokeh_geometry =  None
+
     for telescope in faketelescopes:
 
         if telescope.lightcurve_flux is not None:
@@ -73,10 +93,14 @@ def plot_geometry(microlensing_model, model_parameters):
             trajectory_x, trajectory_y, dseparation = microlensing_model.source_trajectory(telescope,pyLIMA_parameters,
                                                                                                          data_type='photometry')
 
-
+            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index]
             figure_axes.plot(trajectory_x, trajectory_y,
-                             c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+                             c=color,
                              label=platform,linestyle=linestyle)
+
+            bokeh_geometry.line(trajectory_x, trajectory_y,
+                                color=color,
+                                legend_label=platform)
 
             for index in [-1, 0, 1]:
 
@@ -91,8 +115,14 @@ def plot_geometry(microlensing_model, model_parameters):
                                          xytext=(trajectory_x[index] - sign * 0.001,
                                                  trajectory_y[index] - sign * 0.001 * derivative),
                                          arrowprops=dict(arrowstyle="->", mutation_scale=35,
-                                                         color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
-                                                             telescope_index]))
+                                                         color=color))
+                    oh = OpenHead(line_color=color, line_width=1)
+
+                    bokeh_geometry.add_layout(Arrow(end=oh,
+                                                    x_start=trajectory_x[index], y_start=trajectory_y[index],
+                                                    x_end=trajectory_x[index] + sign * 0.001,
+                                                    y_end=trajectory_y[index] + sign * 0.001 * derivative))
+
 
                 except:
 
@@ -104,7 +134,11 @@ def plot_geometry(microlensing_model, model_parameters):
                                                                                                pyLIMA_parameters)
 
                 figure_axes.plot(trajectory_x, trajectory_y,
-                                 c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index], alpha=0.5)
+                                 c=color, alpha=0.5)
+
+
+                bokeh_geometry.line(trajectory_x, trajectory_y,
+                                color=color, alpha=0.5)
 
         if 'BL' in microlensing_model.model_type:
 
@@ -124,6 +158,10 @@ def plot_geometry(microlensing_model, model_parameters):
                 try:
                     figure_axes.plot(caustic.real, caustic.imag, lw=3, c='r')
                     figure_axes.plot(cc[count].real, cc[count].imag, '--k')
+                    bokeh_geometry.line(caustic.real, caustic.imag,
+                                        color='red', line_width=3)
+                    bokeh_geometry.line(cc[count].real, cc[count].imag, line_dash='dashed',
+                                        color='black')
 
                 except AttributeError:
 
@@ -132,9 +170,11 @@ def plot_geometry(microlensing_model, model_parameters):
         else:
 
             figure_axes.scatter(0, 0, s=10, c='r')
+            bokeh_geometry.scatter(0, 0, color='red')
 
             einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
             figure_axes.add_artist(einstein_ring)
+            bokeh_geometry.circle(0, 0, radius=1, line_dash='dashed', line_color='black', fill_color=None)
 
     for telescope_index, telescope in enumerate(microlensing_model.event.telescopes):
 
@@ -150,17 +190,24 @@ def plot_geometry(microlensing_model, model_parameters):
 
             else:
 
-                rho = 10 ** -3
+                rho = 10 ** -5
 
-            patches = [plt.Circle((x, y), rho, color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+
+            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index]
+
+            patches = [plt.Circle((x, y), rho, color=color,
                                   alpha=0.2) for x, y in zip(trajectory_x, trajectory_y)]
             coll = matplotlib.collections.PatchCollection(patches, match_original=True)
 
             figure_axes.scatter(trajectory_x, trajectory_y,
-                                c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+                                c=color,
                                 alpha=0.5, label=telescope.name, s=0.1)
 
             figure_axes.add_collection(coll)
+
+            bokeh_geometry.circle(trajectory_x, trajectory_y, radius=rho,
+                                  color=color,
+                                  radius_dimension='max', fill_alpha=0.5)
 
         if microlensing_model.parallax_model[0] != 'None':
 
@@ -186,21 +233,31 @@ def plot_geometry(microlensing_model, model_parameters):
             east = np.dot(rota_mat, east)
             north = np.dot(rota_mat, north)
 
-            figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k', transform=plt.gca().transAxes)
+            figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
+            bokeh_geometry.line([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], line_dash='dashed',color='black')
+
             Ecoords = [0, 0.15]
             Ecoords = np.dot(rota_mat, Ecoords)
-            figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', c='k', transform=plt.gca().transAxes, size=25)
+            figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', c='k', transform=plt.gca().transAxes,
+                             size=25)
 
             figure_axes.plot([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]], 'k', transform=plt.gca().transAxes)
+            bokeh_geometry.line([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]],  color='black')
+
             Ncoords = [0.15, 0.0]
             Ncoords = np.dot(rota_mat, Ncoords)
             figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
 
     legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
+
     for handle in legend.legendHandles:
+
         try:
+
             handle.set_sizes([100])
+
         except:
+
             pass
 
     figure_axes.xaxis.set_major_locator(MaxNLocator(5))
@@ -219,7 +276,7 @@ def plot_geometry(microlensing_model, model_parameters):
     title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
     figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
-    return figure_trajectory
+    return figure_trajectory, bokeh_geometry
 
 
 
@@ -237,22 +294,22 @@ def plot_astrometry(microlensing_model, model_parameters):
 
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
-    figure = plt.figure()
-    figure_ax = plt.axes()
+    mat_figure = plt.figure()
+    mat_figure_ax = plt.axes()
     if len(model_parameters) != len(microlensing_model.model_dictionnary):
 
         telescopes_fluxes = microlensing_model.find_telescopes_fluxes(model_parameters)
 
         model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
-    plot_astrometric_models(figure_ax, microlensing_model, model_parameters)
-    plot_astrometric_data(figure_ax, microlensing_model)
+    plot_astrometric_models(mat_figure_ax, microlensing_model, model_parameters)
+    plot_astrometric_data(mat_figure_ax, microlensing_model)
 
-    legend = figure_ax.legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+    legend = mat_figure_ax.legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3)
 
 
-def plot_lightcurves(microlensing_model, model_parameters):
+def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     list_of_fake_telescopes = []
 
@@ -266,7 +323,30 @@ def plot_lightcurves(microlensing_model, model_parameters):
 
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
-    figure, figure_axes = initialize_light_curves_plot(event_name=microlensing_model.event.name)
+    mat_figure, mat_figure_axes = initialize_light_curves_plot(event_name=microlensing_model.event.name)
+
+    if bokeh_plot is not None:
+
+        bokeh_lightcurves = figure(width=800, height=600,toolbar_location=None,  y_axis_label='m [mag]')
+        bokeh_residuals = figure(width=bokeh_lightcurves.width, height=200, x_range=bokeh_lightcurves.x_range,
+                                 y_range=(0.18, -0.18), toolbar_location=None,
+                                 x_axis_label='JD', y_axis_label=u'\u0394m [mag]')
+
+        bokeh_lightcurves.xaxis.minor_tick_line_color = None
+        bokeh_lightcurves.xaxis.major_tick_line_color = None
+        bokeh_lightcurves.xaxis.major_label_text_font_size = '0pt'
+        bokeh_lightcurves.y_range.flipped = True
+        bokeh_lightcurves.xaxis.formatter = BasicTickFormatter(use_scientific=False)
+
+
+        bokeh_residuals.xaxis.formatter = BasicTickFormatter(use_scientific=False)
+        bokeh_residuals.xaxis.major_label_orientation = np.pi / 4
+        bokeh_residuals.xaxis.minor_tick_line_color = None
+
+    else:
+
+        bokeh_lightcurves = None
+        bokeh_residuals = None
 
     if len(model_parameters) != len(microlensing_model.model_dictionnary):
 
@@ -274,42 +354,55 @@ def plot_lightcurves(microlensing_model, model_parameters):
 
         model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
-    plot_photometric_models(figure_axes[0], microlensing_model, model_parameters, plot_unit='Mag')
-    plot_aligned_data(figure_axes[0], microlensing_model, model_parameters, plot_unit='Mag')
-    plot_residuals(figure_axes[1], microlensing_model, model_parameters, plot_unit='Mag')
-    figure_axes[0].invert_yaxis()
-    figure_axes[1].invert_yaxis()
-    legend = figure_axes[0].legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+    plot_photometric_models(mat_figure_axes[0], microlensing_model, model_parameters, plot_unit='Mag',
+                            bokeh_plot=bokeh_lightcurves)
+
+    plot_aligned_data(mat_figure_axes[0], microlensing_model, model_parameters, plot_unit='Mag',
+                      bokeh_plot=bokeh_lightcurves)
+
+    plot_residuals(mat_figure_axes[1], microlensing_model, model_parameters, plot_unit='Mag',
+                   bokeh_plot=bokeh_residuals)
+
+    mat_figure_axes[0].invert_yaxis()
+    mat_figure_axes[1].invert_yaxis()
+    legend = mat_figure_axes[0].legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3)
+
+    bokeh_lightcurves.legend.click_policy = "mute"
+    legend = bokeh_lightcurves.legend[0]
+
+    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]],toolbar_location='above')
+
+    return mat_figure, figure_bokeh
 
 def initialize_light_curves_plot(plot_unit='Mag', event_name='A microlensing event'):
 
 
     fig_size = [10, 10]
-    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
+    mat_figure, mat_figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
                                        figsize=(fig_size[0], fig_size[1]), dpi=75)
     plt.subplots_adjust(top=0.84, bottom=0.15, left=0.20, right=0.99, wspace=0.2, hspace=0.1)
-    figure_axes[0].grid()
-    figure_axes[1].grid()
-    figure.suptitle(event_name, fontsize=30 * fig_size[0] / len(event_name))
+    mat_figure_axes[0].grid()
+    mat_figure_axes[1].grid()
+    mat_figure.suptitle(event_name, fontsize=30 * fig_size[0] / len(event_name))
 
-    figure_axes[0].set_ylabel(plot_unit, fontsize=5 * fig_size[1] * 3 / 4.0)
-    figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
-    figure_axes[0].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
+    mat_figure_axes[0].set_ylabel(plot_unit, fontsize=5 * fig_size[1] * 3 / 4.0)
+    mat_figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
+    mat_figure_axes[0].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
-    figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
-                        transform=figure_axes[0].transAxes)
+    mat_figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
+                        transform=mat_figure_axes[0].transAxes)
 
-    figure_axes[1].set_xlabel('JD', fontsize=5 * fig_size[0] * 3 / 4.0)
-    figure_axes[1].xaxis.set_major_locator(MaxNLocator(3))
-    figure_axes[1].yaxis.set_major_locator(MaxNLocator(4, min_n_ticks=3))
+    mat_figure_axes[1].set_xlabel('JD', fontsize=5 * fig_size[0] * 3 / 4.0)
+    mat_figure_axes[1].xaxis.set_major_locator(MaxNLocator(3))
+    mat_figure_axes[1].yaxis.set_major_locator(MaxNLocator(4, min_n_ticks=3))
 
-    figure_axes[1].ticklabel_format(useOffset=False, style='plain')
-    figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 2 / 4.0)
-    figure_axes[1].tick_params(axis='x', labelsize=3.5 * fig_size[0] * 3 / 4.0)
-    figure_axes[1].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
+    mat_figure_axes[1].ticklabel_format(useOffset=False, style='plain')
+    mat_figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 2 / 4.0)
+    mat_figure_axes[1].tick_params(axis='x', labelsize=3.5 * fig_size[0] * 3 / 4.0)
+    mat_figure_axes[1].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
-    return figure, figure_axes
+    return mat_figure, mat_figure_axes
 
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
@@ -356,7 +449,12 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                 model_telescope.name = tel.name
                 model_telescope.filter = tel.filter
                 model_telescope.location = tel.location
-                model_telescope.gamma = tel.gamma
+                model_telescope.ld_gamma = tel.ld_gamma
+                model_telescope.ld_sigma = tel.ld_sigma
+                model_telescope.ld_a1 = tel.ld_a1
+                model_telescope.ld_a2 = tel.ld_a2
+
+
                 model_telescope.location = tel.location
                 model_telescope.spacecraft_name = tel.spacecraft_name
 
@@ -451,7 +549,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
     return list_of_fake_telescopes
 
-def plot_photometric_models(figure_axe, microlensing_model, model_parameters, plot_unit='Mag'):
+def plot_photometric_models(figure_axe, microlensing_model, model_parameters, bokeh_plot = None, plot_unit='Mag'):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
@@ -497,7 +595,12 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters, pl
             plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,
                                              magnitude, figure_axe=figure_axe, name=name, color=color,linestyle=linestyle)
 
-def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_unit='Mag'):
+            if bokeh_plot is not None:
+
+                bokeh_plot.line(tel.lightcurve_magnitude['time'].value, magnitude, legend_label=name, color=color)
+
+
+def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_plot=None, plot_unit='Mag'):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
@@ -565,7 +668,29 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, plot_uni
                                              tel.lightcurve_magnitude['err_mag'].value,
                                              figure_axe=figure_axe, color=color, marker=marker, name=tel.name)
 
-def plot_residuals(figure_axe, microlensing_model, model_parameters, plot_unit='Mag'):
+            if bokeh_plot is not None:
+
+                bokeh_plot.scatter(tel.lightcurve_magnitude['time'].value,
+                                   magnitude+residus_in_mag,
+                                   color=color,
+                                   size=5, legend_label=tel.name,
+                                   muted_color=color,
+                                   muted_alpha=0.2)
+
+                err_xs = []
+                err_ys = []
+
+                for x, y, yerr in zip(tel.lightcurve_magnitude['time'].value, magnitude+residus_in_mag,
+                                      tel.lightcurve_magnitude['err_mag'].value):
+                    err_xs.append((x, x))
+                    err_ys.append((y - yerr, y + yerr))
+
+                bokeh_plot.multi_line(err_xs, err_ys, color=color,
+                                      legend_label=tel.name,
+                                      muted_color=color,
+                                      muted_alpha=0.2)
+
+def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=None, plot_unit='Mag'):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
@@ -584,143 +709,29 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, plot_unit='
                                              residus_in_mag,tel.lightcurve_magnitude['err_mag'].value,
                                              figure_axe=figure_axe, color=color, marker=marker, name=tel.name)
 
+        if bokeh_plot is not None:
+
+            bokeh_plot.scatter(tel.lightcurve_magnitude['time'].value,
+                               residus_in_mag,
+                               color=color,
+                               size=5, legend_label=tel.name,
+                               muted_color=color,
+                               muted_alpha=0.2)
+
+            err_xs = []
+            err_ys = []
+
+            for x, y, yerr in zip(tel.lightcurve_magnitude['time'].value,  residus_in_mag,
+                                  tel.lightcurve_magnitude['err_mag'].value):
+                err_xs.append((x, x))
+                err_ys.append((y - yerr, y + yerr))
+
+            bokeh_plot.multi_line(err_xs, err_ys, color=color,
+                                  legend_label=tel.name,
+                                  muted_color=color,
+                                  muted_alpha=0.2)
+
     figure_axe.set_ylim([-0.1, 0.1])
-
-
-def bokeh_plot_geometry(microlensing_model, model_parameters):
-    """Plot the lensing geometry (i.e source trajectory) and the table of best parameters.
-    :param object fit: a fit object. See the microlfits for more details.
-    :param list best_parameters: a list containing the model you want to plot the trajectory
-    """
-
-    bokeh_geometry = plt.figure(width=350, height=350, x_range=(-3, 3), y_range=(-3, 3), toolbar_location=None,
-                                x_axis_label='x [' + u'\u03B8\u2091'']', y_axis_label='y [' + u'\u03B8\u2091'']'
-                                )
-
-    pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
-
-    fake_telescopes = create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters)
-
-    for telescope in fake_telescopes:
-
-        platform = 'Earth'
-
-        if telescope.location == 'Space':
-            platform = telescope.name
-
-        reference_telescope = telescope
-
-        telescope_index = [i for i in range(len(microlensing_model.event.telescopes)) if
-                           microlensing_model.event.telescopes[i].name == telescope.name][0]
-
-        trajectory_x, trajectory_y, dseparation = microlensing_model.source_trajectory(telescope,
-                                                                                       pyLIMA_parameters,
-                                                                                       data_type='photometry')
-        bokeh_geometry.line(trajectory_x, trajectory_y,
-                            color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
-                            legend=platform)
-
-        for index in [-1, 0, 1]:
-
-            try:
-                index = np.argmin(np.abs(telescope.lightcurve_magnitude['time'].value -
-                                         (pyLIMA_parameters.t0 + index * pyLIMA_parameters.tE)))
-                sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
-                derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
-                        trajectory_x[index - 1] - trajectory_x[index + 1])
-
-
-                bokeh_geometry.add_layout(Arrow(end=OpenHead(line_color=
-                                                             plt.rcParams["axes.prop_cycle"].by_key()["color"][
-                                                                 telescope_index]),
-                                                x_start=trajectory_x[index], y_start=trajectory_y[index],
-                                                x_end=trajectory_x[index] + sign * 0.001,
-                                                y_end=trajectory_y[index] + sign * 0.001 * derivative
-                                                ))
-            except:
-                pass
-
-        if microlensing_model.model_type == 'DSPL':
-            _, _, trajectory_x, trajectory_y = microlensing_model.sources_trajectory(reference_telescope,
-                                                                                     pyLIMA_parameters)
-
-            bokeh_geometry.line(trajectory_x, trajectory_y,
-                                color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index], alpha=0.5,
-                                legend=platform)
-
-    if 'BL' in microlensing_model.model_type:
-
-        from pyLIMA.caustics import binary_caustics
-
-        regime, caustics, cc = binary_caustics.find_2_lenses_caustics_and_critical_curves(
-            pyLIMA_parameters.separation,
-            pyLIMA_parameters.mass_ratio,
-            resolution=5000)
-
-        for count, caustic in enumerate(caustics):
-
-            try:
-
-                bokeh_geometry.line(caustic.real, caustic.imag,
-                                    color='red', line_width=3)
-                bokeh_geometry.line(cc[count].real, cc[count].imag, line_dash='dashed',
-                                    color='black')
-            except AttributeError:
-
-                pass
-
-    else:
-
-        bokeh_geometry.scatter(0, 0, color='red')
-
-        einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
-
-        bokeh_geometry.circle(0, 0, radius=1, line_dash='dashed', line_color='black', fill_color=None)
-
-    for telescope_index, telescope in enumerate(microlensing_model.event.telescopes):
-
-        trajectory_x, trajectory_y, separation = microlensing_model.source_trajectory(telescope,
-                                                                                      pyLIMA_parameters)
-
-        if 'rho' in pyLIMA_parameters._fields:
-
-            rho = pyLIMA_parameters.rho
-
-        else:
-
-            rho = 10 ** -3
-
-
-        bokeh_geometry.circle(trajectory_x, trajectory_y, radius=rho,
-                              color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
-                              radius_dimension='max', fill_alpha=0.5)
-
-    if microlensing_model.parallax_model[0] != 'None':
-
-        piEN = pyLIMA_parameters.piEN
-        piEE = pyLIMA_parameters.piEE
-
-        EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
-
-        plot_angle = -(EN_trajectory_angle)
-
-        try:
-
-            plot_angle += pyLIMA_parameters.alpha
-
-        except:
-
-            pass
-
-        north = [0.1, 0]
-        east = [0, 0.1]
-
-        rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)], [np.sin(plot_angle), np.cos(plot_angle)]])
-        east = np.dot(rota_mat, east)
-        north = np.dot(rota_mat, north)
-
-    return bokeh_geometry
-
 
 def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
 

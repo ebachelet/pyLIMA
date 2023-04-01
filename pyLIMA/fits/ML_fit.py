@@ -1,10 +1,13 @@
 import sys
 import numpy as np
 from collections import OrderedDict, namedtuple
+from bokeh.io import output_file, show
 
 from pyLIMA.fits import fancy_parameters
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.outputs import pyLIMA_plots
+
+from bokeh.layouts import gridplot, row
 
 
 
@@ -572,9 +575,21 @@ class MLfit(object):
 
         return telescopes_fluxes
 
-    def fit_outputs(self):
+    def fit_outputs(self, bokeh_plot=None):
 
-        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
-        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
+        matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
+        matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
 
+        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
+
+        samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],10000)
+        samples_to_plot = samples[:,:len(parameters)]
+
+        matplotlib_distribution = pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
+
+        bokeh_figure = gridplot([[row(bokeh_lightcurves, gridplot([[bokeh_geometry]],toolbar_location='above'))]],toolbar_location=None)
+
+        show(bokeh_figure)
+
+        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_distribution
 

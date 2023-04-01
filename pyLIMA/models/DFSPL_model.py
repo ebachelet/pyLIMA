@@ -71,12 +71,12 @@ class DSPLmodel(MLmodel):
 
 
             source1_magnification = magnification_FSPL.magnification_FSPL_Yoo(source1_trajectory_x, source1_trajectory_y,
-                                                                              pyLIMA_parameters.rho_1,telescope.gamma1,self.yoo_table,
+                                                                              pyLIMA_parameters.rho_1,telescope.ld_gamma1,self.yoo_table,
                                                                               return_impact_parameter)
 
             source2_magnification = magnification_FSPL.magnification_FSPL_Yoo(source2_trajectory_x,
                                                                               source2_trajectory_y,
-                                                                              pyLIMA_parameters.rho_2, telescope.gamma2,
+                                                                              pyLIMA_parameters.rho_2, telescope.ld_gamma2,
                                                                               self.yoo_table,
                                                                               return_impact_parameter)
 
