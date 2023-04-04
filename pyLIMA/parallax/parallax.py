@@ -222,8 +222,7 @@ class MLParallaxes(object):
 
             Sun_position = -Earth_position[0]
 
-            delta_Sun = Sun_position.xyz.value.T - np.c_[
-                time_to_treat - self.to_par] * Sun_speed_time_reference.xyz.value - Sun_position_time_reference.xyz.value
+            delta_Sun = Sun_position.xyz.value.T - np.c_[time_to_treat - self.to_par] * Sun_speed_time_reference.xyz.value - Sun_position_time_reference.xyz.value
 
             delta_Sun_projected = np.array([np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
 

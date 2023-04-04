@@ -16,47 +16,15 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
 
     if orbital_motion_model[0] == '2D':
 
-        ds_dt = pyLIMA_parameters.v_para*pyLIMA_parameters.separation
+        ds_dt = pyLIMA_parameters.v_para
         dseparation = orbital_motion_2D.orbital_motion_2D_separation_shift(time, orbital_motion_model[1], ds_dt)
 
         dalpha_dt = pyLIMA_parameters.v_perp
         dalpha = orbital_motion_2D.orbital_motion_2D_trajectory_shift(time, orbital_motion_model[1], dalpha_dt)
 
-    if orbital_motion_model[0] == 'Circular':
+    else:
 
-        v_para = pyLIMA_parameters.v_para
-        v_perp = pyLIMA_parameters.v_perp
-        v_radial = pyLIMA_parameters.v_radial
-        separation = pyLIMA_parameters.separation
-
-        try:
-
-            r_s = -v_para / v_radial
-
-        except:
-
-            # v_radial = v_para = 0
-
-            r_s = 0
-
-        a_s = 1
-        dseparation, dalpha = orbital_motion_3D.orbital_motion_keplerian(time, orbital_motion_model[1], separation,
-                                                                         v_para, v_perp, v_radial,  r_s, a_s,
-                                                                         )
-
-    if orbital_motion_model[0] == 'Keplerian':
-
-        v_para = pyLIMA_parameters.v_para
-        v_perp = pyLIMA_parameters.v_perp
-        v_radial = pyLIMA_parameters.v_radial
-        separation = pyLIMA_parameters.separation
-
-        r_s = pyLIMA_parameters.r_s
-        a_s = pyLIMA_parameters.a_s
-
-        dseparation, dalpha = orbital_motion_3D.orbital_motion_keplerian(time, orbital_motion_model[1], separation,
-                                                                         v_para, v_perp, v_radial, r_s, a_s)
-
+        dseparation, dalpha = orbital_motion_3D.orbital_motion_keplerian(time, pyLIMA_parameters, orbital_motion_model)
 
     return dseparation, dalpha
 

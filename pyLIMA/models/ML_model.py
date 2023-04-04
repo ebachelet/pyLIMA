@@ -7,6 +7,7 @@ import pyLIMA.priors.parameters_boundaries
 import pyLIMA.parallax.parallax
 from pyLIMA.orbitalmotion import orbital_motion
 from pyLIMA.magnification import magnification_Jacobian
+from pyLIMA.orbitalmotion import orbital_motion_3D
 
 class MLmodel(object):
     """
@@ -112,7 +113,7 @@ class MLmodel(object):
 
         self.check_data_in_event()
         self.define_pyLIMA_standard_parameters()
-
+        self.define_model_parameters()
 
     @abc.abstractmethod
     def model_type(self):
@@ -425,6 +426,44 @@ class MLmodel(object):
 
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
 
+        if 'v_perp' in self.model_dictionnary.keys():
+
+            v_para = pyLIMA_parameters.v_para
+            v_perp = pyLIMA_parameters.v_perp
+            v_radial = pyLIMA_parameters.v_radial
+            separation = pyLIMA_parameters.separation
+
+            if self.orbital_motion_model[0] == 'Circular':
+
+                try:
+
+                    r_s = -v_para / v_radial
+
+                except:
+
+                    v_radial = np.sign(v_radial)*10**-20
+
+                    r_s = -v_para/v_radial
+
+                a_s = 1
+
+            else:
+
+                r_s = pyLIMA_parameters.r_s
+                a_s = pyLIMA_parameters.a_s
+
+            longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity, eccentricity, true_anomaly, t_periastron, x, y, z = \
+                    orbital_motion_3D.orbital_parameters_from_position_and_velocities(separation, r_s, a_s, v_para, v_perp, v_radial,
+                                                                    self.orbital_motion_model[1])
+
+            Rmatrix = np.c_[x[:2], y[:2]]
+
+            setattr(pyLIMA_parameters, 'Rmatrix', Rmatrix)
+            setattr(pyLIMA_parameters, 'a_true', a_true)
+            setattr(pyLIMA_parameters, 'eccentricity', eccentricity)
+            setattr(pyLIMA_parameters, 'orbital_velocity', orbital_velocity)
+            setattr(pyLIMA_parameters, 't_periastron', t_periastron)
+
         return pyLIMA_parameters
 
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
@@ -436,6 +475,7 @@ class MLmodel(object):
         :return: the pyLIMA standards are added to the fancy parameters
         :rtype: object
         """
+
         if len(self.fancy_to_pyLIMA) != 0:
 
             for key_parameter in self.fancy_to_pyLIMA.keys():

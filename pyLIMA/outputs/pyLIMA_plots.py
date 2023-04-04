@@ -41,8 +41,6 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     :param list best_parameters: a list containing the model you want to plot the trajectory
     """
 
-    list_of_fake_telescopes = []
-
     # Change matplotlib default colors
     n_telescopes = len(microlensing_model.event.telescopes)
     color = plt.cm.jet(np.linspace(0.01, 0.99, n_telescopes))  # This returns RGBA; convert:
@@ -69,11 +67,12 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     else:
 
-        bokeh_geometry =  None
+        bokeh_geometry = None
 
     for telescope in faketelescopes:
 
         if telescope.lightcurve_flux is not None:
+
             platform = 'Earth'
 
             if telescope.location == 'Space':
@@ -140,41 +139,42 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                 bokeh_geometry.line(trajectory_x, trajectory_y,
                                 color=color, alpha=0.5)
 
-        if 'BL' in microlensing_model.model_type:
+    if 'BL' in microlensing_model.model_type:
 
-            from pyLIMA.caustics import binary_caustics
+        from pyLIMA.caustics import binary_caustics
 
-            regime, caustics, cc = binary_caustics.find_2_lenses_caustics_and_critical_curves(
-                pyLIMA_parameters.separation,
-                pyLIMA_parameters.mass_ratio,
-                resolution=5000)
+        regime, caustics, cc = binary_caustics.find_2_lenses_caustics_and_critical_curves(
+            pyLIMA_parameters.separation,
+            pyLIMA_parameters.mass_ratio,
+            resolution=5000)
 
-            center_of_mass = pyLIMA_parameters.separation*pyLIMA_parameters.mass_ratio/(1+pyLIMA_parameters.mass_ratio)
-            plt.scatter(-center_of_mass,0,s=10,c='k')
-            plt.scatter(-center_of_mass+pyLIMA_parameters.separation, 0, s=10, c='k')
+        center_of_mass = pyLIMA_parameters.separation*pyLIMA_parameters.mass_ratio/(1+pyLIMA_parameters.mass_ratio)
+        plt.scatter(-center_of_mass,0,s=10,c='k')
+        plt.scatter(-center_of_mass+pyLIMA_parameters.separation, 0, s=10, c='k')
 
-            for count, caustic in enumerate(caustics):
+        for count, caustic in enumerate(caustics):
 
-                try:
-                    figure_axes.plot(caustic.real, caustic.imag, lw=3, c='r')
-                    figure_axes.plot(cc[count].real, cc[count].imag, '--k')
-                    bokeh_geometry.line(caustic.real, caustic.imag,
-                                        color='red', line_width=3)
-                    bokeh_geometry.line(cc[count].real, cc[count].imag, line_dash='dashed',
-                                        color='black')
+            try:
+                figure_axes.plot(caustic.real, caustic.imag, lw=3, c='r')
+                figure_axes.plot(cc[count].real, cc[count].imag, '--k')
+                bokeh_geometry.line(caustic.real, caustic.imag,
+                                    color='red', line_width=3)
+                bokeh_geometry.line(cc[count].real, cc[count].imag, line_dash='dashed',
+                                    color='black')
 
-                except AttributeError:
+            except AttributeError:
 
-                    pass
+                pass
 
-        else:
+    else:
 
-            figure_axes.scatter(0, 0, s=10, c='r')
-            bokeh_geometry.scatter(0, 0, color='red')
+        figure_axes.scatter(0, 0, s=10, c='r')
+        bokeh_geometry.scatter(0, 0, color='red')
 
-            einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
-            figure_axes.add_artist(einstein_ring)
-            bokeh_geometry.circle(0, 0, radius=1, line_dash='dashed', line_color='black', fill_color=None)
+        einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
+        figure_axes.add_artist(einstein_ring)
+        bokeh_geometry.circle(0, 0, radius=1, line_dash='dashed', line_color='black', fill_color=None)
+
 
     for telescope_index, telescope in enumerate(microlensing_model.event.telescopes):
 
@@ -184,7 +184,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                                                                           pyLIMA_parameters,
                                                                                           data_type='photometry')
 
-            if 'rho' in pyLIMA_parameters._fields:
+            if 'rho' in  microlensing_model.pyLIMA_standards_dictionnary.keys():
 
                 rho = pyLIMA_parameters.rho
 
@@ -209,44 +209,44 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                   color=color,
                                   radius_dimension='max', fill_alpha=0.5)
 
-        if microlensing_model.parallax_model[0] != 'None':
+    if microlensing_model.parallax_model[0] != 'None':
 
-            piEN = pyLIMA_parameters.piEN
-            piEE = pyLIMA_parameters.piEE
+        piEN = pyLIMA_parameters.piEN
+        piEE = pyLIMA_parameters.piEE
 
-            EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
+        EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
 
-            plot_angle = -(EN_trajectory_angle)
+        plot_angle = -(EN_trajectory_angle)
 
-            try:
+        try:
 
-                plot_angle += pyLIMA_parameters.alpha
+            plot_angle += pyLIMA_parameters.alpha
 
-            except:
+        except:
 
-                pass
+            pass
 
-            north = [0.1, 0]
-            east = [0, 0.1]
+        north = [0.1, 0]
+        east = [0, 0.1]
 
-            rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)], [np.sin(plot_angle), np.cos(plot_angle)]])
-            east = np.dot(rota_mat, east)
-            north = np.dot(rota_mat, north)
+        rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)], [np.sin(plot_angle), np.cos(plot_angle)]])
+        east = np.dot(rota_mat, east)
+        north = np.dot(rota_mat, north)
 
-            figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
-            bokeh_geometry.line([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], line_dash='dashed',color='black')
+        figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
+        bokeh_geometry.line([0.8, 0.8 + 2*east[0]], [0.8, 0.8 + 2*east[1]], line_dash='dashed',color='black')
 
-            Ecoords = [0, 0.15]
-            Ecoords = np.dot(rota_mat, Ecoords)
-            figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', c='k', transform=plt.gca().transAxes,
-                             size=25)
+        Ecoords = [0, 0.15]
+        Ecoords = np.dot(rota_mat, Ecoords)
+        figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', c='k', transform=plt.gca().transAxes,
+                         size=25)
 
-            figure_axes.plot([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]], 'k', transform=plt.gca().transAxes)
-            bokeh_geometry.line([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]],  color='black')
+        figure_axes.plot([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]], 'k', transform=plt.gca().transAxes)
+        bokeh_geometry.line([0.8, 0.8 + 2*north[0]], [0.8, 0.8 + 2*north[1]],  color='black')
 
-            Ncoords = [0.15, 0.0]
-            Ncoords = np.dot(rota_mat, Ncoords)
-            figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
+        Ncoords = [0.15, 0.0]
+        Ncoords = np.dot(rota_mat, Ncoords)
+        figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
 
     legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
 
@@ -444,7 +444,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                             model_time.sort()
 
                 model_lightcurve = np.c_[model_time, [0] * len(model_time), [0.1] * len(model_time)]
-                model_telescope = fake_telescopes.create_a_fake_telescope(light_curve = model_lightcurve)
+                model_telescope = fake_telescopes.create_a_fake_telescope(light_curve=model_lightcurve)
 
                 model_telescope.name = tel.name
                 model_telescope.filter = tel.filter
@@ -456,7 +456,6 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
 
                 model_telescope.location = tel.location
-                model_telescope.spacecraft_name = tel.spacecraft_name
 
                 if tel.location == 'Space':
 
@@ -727,7 +726,6 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
                 err_ys.append((y - yerr, y + yerr))
 
             bokeh_plot.multi_line(err_xs, err_ys, color=color,
-                                  legend_label=tel.name,
                                   muted_color=color,
                                   muted_alpha=0.2)
 

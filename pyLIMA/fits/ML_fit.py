@@ -89,9 +89,6 @@ class MLfit(object):
         self.model.pyLIMA_to_fancy = {}
         self.model.fancy_to_pyLIMA = {}
         self.model.fancy_to_pyLIMA_dictionnary = {}
-        self.model.model_dictionnary = {}
-        self.model.define_model_parameters()
-
 
         if self.fancy_parameters:
 
@@ -110,7 +107,7 @@ class MLfit(object):
 
                 parameter = fancy_parameters_dictionnary[key]
 
-                if parameter in self.model.model_dictionnary.keys():
+                if parameter in self.model.pyLIMA_standards_dictionnary.keys():
 
                     self.model.fancy_to_pyLIMA_dictionnary[key] = parameter
 
@@ -119,19 +116,17 @@ class MLfit(object):
 
         self.model.define_model_parameters()
 
+
     def define_fit_parameters(self):
 
-        fit_parameters_dictionnary = self.model.paczynski_model_parameters()
+        fit_parameters_dictionnary_updated = self.model.model_dictionnary.copy()
 
-        fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
+        if self.telescopes_fluxes_method != 'fit':
 
-        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(
-            fit_parameters_dictionnary_updated)
+            for telescope in self.model.event.telescopes:
 
-        if self.telescopes_fluxes_method == 'fit':
-
-            fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
-                fit_parameters_dictionnary_updated)
+                fit_parameters_dictionnary_updated.popitem()
+                fit_parameters_dictionnary_updated.popitem()
 
         if self.rescale_photometry:
 
@@ -153,10 +148,11 @@ class MLfit(object):
 
                     fit_parameters_dictionnary_updated['logk_astrometry_dec_' + telescope.name] = \
             len(fit_parameters_dictionnary_updated)
+
         self.fit_parameters = OrderedDict(
             sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
-        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
+        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.model.pyLIMA_standards_dictionnary)
 
         #t_0 limit fix
         mins_time = []
@@ -175,27 +171,27 @@ class MLfit(object):
                 maxs_time.append(np.max(telescope.astrometry['time'].value))
 
         fit_parameters_boundaries[0] = [np.min(mins_time),np.max(maxs_time)]
-        
+
         for ind, key in enumerate(self.fit_parameters.keys()):
 
             self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
 
         if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
 
-            list_of_keys = [i for i in self.fit_parameters.keys()]
+            list_of_keys = [i for i in self.model.pyLIMA_standards_dictionnary]
             bounds = namedtuple('parameters', list_of_keys)
 
-            for key in list_of_keys:
+            for ind,key in enumerate(list_of_keys):
 
-                setattr(bounds, key, np.array(self.fit_parameters[key][1]))
+                setattr(bounds, key, fit_parameters_boundaries[ind])
 
             for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
 
-                index = np.where(self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(list_of_keys))[0][0]
                 parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
+                index = np.where(parameter == np.array(list_of_keys))[0][0]
                 new_bounds = self.model.pyLIMA_to_fancy[key](bounds)
 
-                self.fit_parameters.pop(parameter)
+                self.fit_parameters.pop(key)
                 self.fit_parameters[key] = [index, new_bounds]
 
         self.fit_parameters = OrderedDict(
@@ -210,40 +206,6 @@ class MLfit(object):
         self.rescale_astrometry_parameters_index = [self.fit_parameters[i][0] for i in self.fit_parameters.keys() if
                                                     'logk_astrometry' in i]
 
-    def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
-        """ Transform the fancy parameters to the pyLIMA standards. The output got all
-        the necessary standard attributes, example to, uo, tE...
-
-
-        :param object fancy_parameters: the fancy_parameters as namedtuple
-        :return: the pyLIMA standards are added to the fancy parameters
-        :rtype: object
-        """
-        # start_time = python_time.time()
-        if len(self.fancy_to_pyLIMA) != 0:
-            # import pdb;
-            # pdb.set_trace()
-            for key_parameter in self.fancy_to_pyLIMA.keys():
-                setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
-
-        # print 'fancy to PYLIMA', python_time.time() - start_time
-        return fancy_parameters
-
-    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
-        """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
-            the necessary fancy attributes.
-
-
-        :param object pyLIMA_parameters: the  standard pyLIMA parameters as namedtuple
-        :return: the fancy parameters are added to the fancy parameters
-        :rtype: object
-        """
-        if len(self.pyLIMA_to_fancy) != 0:
-
-            for key_parameter in self.pyLIMA_to_fancy.keys():
-                setattr(pyLIMA_parameters, key_parameter, self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
-
-        return pyLIMA_parameters
 
     def objective_function(self):
 
@@ -589,7 +551,5 @@ class MLfit(object):
 
         bokeh_figure = gridplot([[row(bokeh_lightcurves, gridplot([[bokeh_geometry]],toolbar_location='above'))]],toolbar_location=None)
 
-        show(bokeh_figure)
-
-        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_distribution
+        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_distribution, bokeh_figure
 

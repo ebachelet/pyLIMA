@@ -60,51 +60,6 @@ class Event(object):
         self.fits = []
         self.parallax_model = None
 
-    def fit(self, model, method, DE_population_size=10, flux_estimation_MCMC='MCMC', fix_parameters_dictionnary=None,
-            grid_resolution=10, computational_pool=None, binary_regime=None, error_estimate=None):
-        """Function to fit the event with a model and a method.
-
-
-        :param model: the model you want to fit. More details in the microlfits module
-
-        :param method: the fitting method you want to use. Has to be a string in the
-        available_methods parameter:
-
-            'LM' : Levenberg-Marquardt algorithm
-
-            'DE' : Differential Evolution algorithm
-
-            'MCMC' : Monte-Carlo Markov Chain algorithm
-
-            More details in the microlfits module
-
-        A microlfits object is added in the event.fits list. For example, if you request two fits,
-        you will obtain :
-
-        event.fits=[fit1,fit2]
-
-        More details in the microlfits module.
-
-        """
-        available_kind = ['Microlensing']
-        available_methods = ['LM', 'DE', 'MCMC', 'GRIDS', 'TRF']
-
-        if self.kind not in available_kind:
-            print('ERROR : No possible fit yet for a non microlensing event, sorry :(')
-            raise EventException('Can not fit this event kind')
-
-        if method not in available_methods:
-            print('ERROR : Wrong method request, has to be a string selected between ' + \
-                  ' or '.join(available_methods) + '')
-            raise EventException('Wrong fit method request')
-
-        fit = microlfits.MLFits(self)
-        fit.mlfit(model, method, DE_population_size=DE_population_size, flux_estimation_MCMC=flux_estimation_MCMC,
-                  fix_parameters_dictionnary=fix_parameters_dictionnary,
-                  grid_resolution=grid_resolution, computational_pool=computational_pool, binary_regime=binary_regime,error_estimate=error_estimate)
-
-        self.fits.append(fit)
-
     def telescopes_names(self):
         """Print the the telescope's names contain in the event.
         """
@@ -202,8 +157,8 @@ class Event(object):
 
         for telescope in self.telescopes:
 
-            if len(telescope.deltas_positions) == 0:
-                telescope.compute_parallax(self.parallax_model)
+        #    if len(telescope.deltas_positions) == 0:
+            telescope.compute_parallax(self.parallax_model)
 
     def total_number_of_data_points(self):
         """ Compute the parallax displacement for all the telescopes, if this is desired in
