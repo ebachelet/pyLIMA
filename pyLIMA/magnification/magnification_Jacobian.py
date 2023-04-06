@@ -31,6 +31,7 @@ def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
 
 
 def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):
+
     from pyLIMA.models import PSPL_model
 
     time = telescope.lightcurve_flux['time'].value

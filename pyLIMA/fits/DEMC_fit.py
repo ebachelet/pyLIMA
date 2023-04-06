@@ -11,11 +11,11 @@ from pyLIMA.outputs import pyLIMA_plots
 
 class DEMCfit(MLfit):
 
-    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
+    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DEMC_population_size=10, max_iteration=10000):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
+        super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.population = [] # to be recognize by all process during parallelization

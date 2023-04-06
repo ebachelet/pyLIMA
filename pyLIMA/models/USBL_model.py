@@ -7,12 +7,12 @@ class USBLmodel(MLmodel):
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
                  orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
-                 origin = 'center_of_mass'):
+                 origin = ['center_of_mass', [0,0]], fancy_parameters={}):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(event, parallax=parallax, xallarap=xallarap,
-                 orbital_motion=orbital_motion, blend_flux_parameter=blend_flux_parameter)
-        self.origin = origin
+        super().__init__(event, parallax=parallax, xallarap=xallarap, orbital_motion=orbital_motion,
+                         blend_flux_parameter=blend_flux_parameter, origin=origin, fancy_parameters=fancy_parameters)
+
 
     @property
     def model_type(self):
@@ -52,7 +52,7 @@ class USBLmodel(MLmodel):
 
         if telescope.lightcurve_flux is not None:
 
-            self.u0_t0_from_uc_tc(pyLIMA_parameters)
+            #self.u0_t0_from_uc_tc(pyLIMA_parameters)
 
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
 
@@ -71,54 +71,54 @@ class USBLmodel(MLmodel):
         else:
             return magnification_USBL
 
-    def find_origin(self, pyLIMA_parameters):
+#    def find_origin(self, pyLIMA_parameters):
 
-        if self.origin == 'center_of_mass':
+#        if self.origin == 'center_of_mass':
 
-            self.x_center = 0
+#            self.x_center = 0
 
-        if self.origin == 'primary':
+#        if self.origin == 'primary':
 
-            center_of_mass = -(pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio) / (
-                        1 + pyLIMA_parameters.mass_ratio)
+#            center_of_mass = -(pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio) / (
+#                        1 + pyLIMA_parameters.mass_ratio)
 
-            self.x_center = center_of_mass
+#            self.x_center = center_of_mass
 
-        if self.origin == 'companion':
+#        if self.origin == 'companion':
 
-            center_of_mass = -(pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio) / (
-                    1 + pyLIMA_parameters.mass_ratio)
+#            center_of_mass = -(pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio) / (
+#                    1 + pyLIMA_parameters.mass_ratio)
 
-            self.x_center = center_of_mass + pyLIMA_parameters.separation
+#            self.x_center = center_of_mass + pyLIMA_parameters.separation
 
-    def u0_t0_from_uc_tc(self,pyLIMA_parameters):
+#    def u0_t0_from_uc_tc(self,pyLIMA_parameters):
 
-        self.find_origin(pyLIMA_parameters)
+#        self.find_origin(pyLIMA_parameters)
 
-        new_origin_x = self.x_center
-        new_origin_y = self.y_center
+#        new_origin_x = self.x_center
+#        new_origin_y = self.y_center
 
-        t0 = pyLIMA_parameters.t0 - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
-                                                            new_origin_y * np.sin(pyLIMA_parameters.alpha))
+#        t0 = pyLIMA_parameters.t0 - pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+#                                                            new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
-        u0 = pyLIMA_parameters.u0 - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
-                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
+#        u0 = pyLIMA_parameters.u0 - (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+#                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
-        setattr(pyLIMA_parameters, 't0', t0)
-        setattr(pyLIMA_parameters, 'u0', u0)
+#        setattr(pyLIMA_parameters, 't0', t0)
+#        setattr(pyLIMA_parameters, 'u0', u0)
 
-    def uc_tc_from_u0_t0(self, pyLIMA_parameters):
+#    def uc_tc_from_u0_t0(self, pyLIMA_parameters):#
 
-        self.find_origin(pyLIMA_parameters)
+#        self.find_origin(pyLIMA_parameters)
 
-        new_origin_x = self.x_center
-        new_origin_y = self.y_center
+#        new_origin_x = self.x_center
+#        new_origin_y = self.y_center
 
-        tc = pyLIMA_parameters.t0 + pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
-                                              new_origin_y * np.sin(pyLIMA_parameters.alpha))
+#        tc = pyLIMA_parameters.t0 + pyLIMA_parameters.tE * (new_origin_x * np.cos(pyLIMA_parameters.alpha) +
+#                                              new_origin_y * np.sin(pyLIMA_parameters.alpha))
 
-        uc = pyLIMA_parameters.u0 + (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
-                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
+#        uc = pyLIMA_parameters.u0 + (new_origin_x * np.sin(pyLIMA_parameters.alpha) -
+#                                     new_origin_y * np.cos(pyLIMA_parameters.alpha))
 
-        setattr(pyLIMA_parameters, 't0', tc)
-        setattr(pyLIMA_parameters, 'u0', uc)
+#        setattr(pyLIMA_parameters, 't0', tc)
+#        setattr(pyLIMA_parameters, 'u0', uc)

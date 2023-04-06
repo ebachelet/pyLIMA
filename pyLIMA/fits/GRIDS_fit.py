@@ -9,12 +9,12 @@ import pyLIMA.fits.objective_functions
 
 class GRIDfit(MLfit):
 
-    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
+    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=2, max_iteration=2000,
                  fix_parameters = [], grid_resolution = 10):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
+        super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.DE_population_size = DE_population_size

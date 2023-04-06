@@ -8,6 +8,7 @@ import pyLIMA.parallax.parallax
 from pyLIMA.orbitalmotion import orbital_motion
 from pyLIMA.magnification import magnification_Jacobian
 from pyLIMA.orbitalmotion import orbital_motion_3D
+from pyLIMA.models import fancy_parameters
 
 class MLmodel(object):
     """
@@ -85,7 +86,8 @@ class MLmodel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
-                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend'):
+                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
+                 origin=['center_of_mass', [0.0,0.0]], fancy_parameters={}):
         """ Initialization of the attributes described above.
         """
 
@@ -100,7 +102,7 @@ class MLmodel(object):
 
         self.model_dictionnary = {}
         self.pyLIMA_standards_dictionnary = {}
-        self.fancy_to_pyLIMA_dictionnary = {}
+        self.fancy_to_pyLIMA_dictionnary = fancy_parameters
         self.pyLIMA_to_fancy = {}
         self.fancy_to_pyLIMA = {}
 
@@ -108,12 +110,12 @@ class MLmodel(object):
         self.Jacobian_flag = 'OK'
         self.parameters_boundaries = []
 
-        self.x_center = 0.0
-        self.y_center = 0.0
+        self.origin = origin
 
         self.check_data_in_event()
         self.define_pyLIMA_standard_parameters()
-        self.define_model_parameters()
+        self.define_fancy_parameters()
+
 
     @abc.abstractmethod
     def model_type(self):
@@ -155,6 +157,10 @@ class MLmodel(object):
         jacobi = np.c_[magnification_jacobian,dfluxdfs,dfluxdg].T
         return jacobi
 
+    @abc.abstractmethod
+    def update_origin(self):
+        pass
+
     def check_data_in_event(self):
 
         for telescope in self.event.telescopes:
@@ -184,6 +190,39 @@ class MLmodel(object):
         self.parameters_boundaries = pyLIMA.priors.parameters_boundaries.parameters_boundaries(self.event, self.pyLIMA_standards_dictionnary)
 
 
+
+    def define_fancy_parameters(self):
+
+        if self.origin[0] != 'center_of_mass':
+
+            self.fancy_to_pyLIMA_dictionnary['t_center'] = 't0'
+            self.fancy_to_pyLIMA_dictionnary['u_center'] = 'u0'
+
+
+        if len(self.fancy_to_pyLIMA_dictionnary) != 0:
+
+            import pickle
+
+            keys = self.fancy_to_pyLIMA_dictionnary.copy().keys()
+
+            for key in keys:
+
+                parameter = self.fancy_to_pyLIMA_dictionnary[key]
+
+                if parameter in self.pyLIMA_standards_dictionnary.keys():
+
+                    self.fancy_to_pyLIMA_dictionnary[key] = parameter
+
+                    self.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval('fancy_parameters.'+key)))
+                    self.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval('fancy_parameters.'+parameter)))
+
+                else:
+
+                    self.fancy_to_pyLIMA_dictionnary.pop(key)
+                    print('I skip the fancy parameter '+parameter+ ', as it is not part of model '+self.model_type)
+
+        self.define_model_parameters()
+
     def astrometric_model_parameters(self, model_dictionnary):
 
         parameter = 0
@@ -210,13 +249,17 @@ class MLmodel(object):
                 #model_dictionnary['position_blend_N_' + telescope.name] = len(model_dictionnary)
                 #model_dictionnary['position_blend_E_' + telescope.name] = len(model_dictionnary)
 
+            self.Jacobian_flag = 'No Way'
+
         return model_dictionnary
 
     def second_order_model_parameters(self, model_dictionnary):
 
+        jack = np.copy(self.Jacobian_flag)
+
         if self.parallax_model[0] != 'None':
 
-            self.Jacobian_flag = 'Numerical'
+            jack = 'Numerical'
             model_dictionnary['piEN'] = len(model_dictionnary)
             model_dictionnary['piEE'] = len(model_dictionnary)
 
@@ -224,27 +267,29 @@ class MLmodel(object):
 
         if self.orbital_motion_model[0] == '2D':
 
-            self.Jacobian_flag = 'Numerical'
+            jack = 'Numerical'
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == 'Circular':
 
-            self.Jacobian_flag = 'Numerical'
+            jack = 'Numerical'
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
             model_dictionnary['v_radial'] = len(model_dictionnary)
 
-
         if self.orbital_motion_model[0] == 'Keplerian':
 
-            self.Jacobian_flag = 'Numerical'
+            jack = 'Numerical'
             model_dictionnary['v_para'] = len(model_dictionnary)
             model_dictionnary['v_perp'] = len(model_dictionnary)
             model_dictionnary['v_radial'] = len(model_dictionnary)
             model_dictionnary['r_s'] = len(model_dictionnary)
             model_dictionnary['a_s'] = len(model_dictionnary)
 
+        if self.Jacobian_flag != 'No Way':
+
+            self.Jacobian_flag = jack
 
         return model_dictionnary
 
@@ -276,7 +321,7 @@ class MLmodel(object):
 
         if len(self.pyLIMA_to_fancy) != 0:
 
-            self.Jacobian_flag = 'No way'
+            self.Jacobian_flag = 'No Way'
 
             for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
 
@@ -411,6 +456,8 @@ class MLmodel(object):
         :rtype: object (namedtuple)
         """
 
+        self.update_origin()
+
         model_parameters = collections.namedtuple('parameters', self.model_dictionnary.keys())
 
         for key_parameter in self.model_dictionnary.keys():
@@ -480,7 +527,13 @@ class MLmodel(object):
 
             for key_parameter in self.fancy_to_pyLIMA.keys():
 
-                setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
+                try:
+
+                    setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
+
+                except:
+
+                    setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters, self.origin[1][0], self.origin[1][1]))
 
         return fancy_parameters
 
@@ -501,18 +554,6 @@ class MLmodel(object):
 
         return pyLIMA_parameters
 
-    def find_origin(self):
-
-        self.x_center = 0
-        self.y_center = 0
-
-    def uo_to_from_uc_tc(self, pyLIMA_parameters):
-
-        return pyLIMA_parameters.t0, pyLIMA_parameters.u0
-
-    def uc_tc_from_uo_to(self, pyLIMA_parameters):
-
-        return pyLIMA_parameters.t0, pyLIMA_parameters.u0
 
     def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None):
         """ Compute the microlensing source trajectory associated to a telescope for the given parameters.

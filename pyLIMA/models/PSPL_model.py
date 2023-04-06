@@ -42,8 +42,6 @@ class PSPLmodel(MLmodel):
 
             source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
 
-
-
             # Blended centroid shifts....
             #magnification = self.model_magnification(telescope, pyLIMA_parameters)
             #try:
@@ -53,7 +51,6 @@ class PSPLmodel(MLmodel):
             #    shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
 
             #except:
-
 
             shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y,
                                                                  pyLIMA_parameters.theta_E)

@@ -8,10 +8,10 @@ from pyLIMA import telescopes
 
 class BOOTSTRAPfit(MLfit):
 
-    def __init__(self, model, bootstrap_fitter = 'TRF', fancy_parameters=False,telescopes_fluxes_method='fit'):
+    def __init__(self, model, bootstrap_fitter = 'TRF', telescopes_fluxes_method='fit'):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, fancy_parameters=fancy_parameters, telescopes_fluxes_method=telescopes_fluxes_method)
+        super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method)
 
     def generate_new_model(self):
 

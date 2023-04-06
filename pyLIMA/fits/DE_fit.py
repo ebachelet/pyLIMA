@@ -13,17 +13,16 @@ from pyLIMA.outputs import pyLIMA_plots
 
 class DEfit(MLfit):
 
-    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False,
+    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000,
                  display_progress=False):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, fancy_parameters=fancy_parameters, rescale_photometry=rescale_photometry,
+        super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.population = Manager().list() # to be recognize by all process during parallelization
         self.DE_population_size = DE_population_size #Times number of dimensions!
-        self.fit_boundaries = []
         self.max_iteration = max_iteration
         self.fit_time = 0 #s
         self.display_progress = display_progress

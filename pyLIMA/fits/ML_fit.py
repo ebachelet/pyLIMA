@@ -3,12 +3,11 @@ import numpy as np
 from collections import OrderedDict, namedtuple
 from bokeh.io import output_file, show
 
-from pyLIMA.fits import fancy_parameters
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.outputs import pyLIMA_plots
 
 from bokeh.layouts import gridplot, row
-
+from bokeh.plotting import output_file, save
 
 
 
@@ -60,11 +59,10 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model, fancy_parameters=False, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit'):
+    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit'):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
-        self.fancy_parameters = fancy_parameters
         self.rescale_photometry = rescale_photometry
         self.rescale_astrometry = rescale_astrometry
         self.telescopes_fluxes_method = telescopes_fluxes_method
@@ -81,41 +79,7 @@ class MLfit(object):
         self.rescale_photometry_parameters_index = []
         self.rescale_astrometry_parameters_index = []
 
-        self.define_fancy_parameters()
         self.define_fit_parameters()
-
-    def define_fancy_parameters(self):
-
-        self.model.pyLIMA_to_fancy = {}
-        self.model.fancy_to_pyLIMA = {}
-        self.model.fancy_to_pyLIMA_dictionnary = {}
-
-        if self.fancy_parameters:
-
-            import pickle
-
-            try:
-
-                fancy_parameters_dictionnary = fancy_parameters.fancy_parameters_dictionnary
-
-            except:
-
-                print('Loading the default fancy parameters!')
-                fancy_parameters_dictionnary = fancy_parameters.standard_fancy_parameters
-
-            for key in fancy_parameters_dictionnary.keys():
-
-                parameter = fancy_parameters_dictionnary[key]
-
-                if parameter in self.model.pyLIMA_standards_dictionnary.keys():
-
-                    self.model.fancy_to_pyLIMA_dictionnary[key] = parameter
-
-                    self.model.pyLIMA_to_fancy[key] = pickle.loads(pickle.dumps(eval('fancy_parameters.'+key)))
-                    self.model.fancy_to_pyLIMA[parameter] = pickle.loads(pickle.dumps(eval('fancy_parameters.'+parameter)))
-
-        self.model.define_model_parameters()
-
 
     def define_fit_parameters(self):
 
@@ -183,14 +147,28 @@ class MLfit(object):
 
             for ind,key in enumerate(list_of_keys):
 
-                setattr(bounds, key, fit_parameters_boundaries[ind])
+                setattr(bounds, key, np.array(fit_parameters_boundaries[ind]))
 
             for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
 
                 parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
                 index = np.where(parameter == np.array(list_of_keys))[0][0]
-                new_bounds = self.model.pyLIMA_to_fancy[key](bounds)
 
+                if 'center' in key:
+
+                    if key == 't_center':
+
+                        new_bounds = fit_parameters_boundaries[0]
+
+                    else:
+
+                        new_bounds = parameters_boundaries.parameters_boundaries(self.model.event, {key:'0'})[0]
+
+                else:
+
+                    new_bounds = self.model.pyLIMA_to_fancy[key](bounds)
+
+                new_bounds = np.sort(new_bounds)
                 self.fit_parameters.pop(key)
                 self.fit_parameters[key] = [index, new_bounds]
 
@@ -505,7 +483,6 @@ class MLfit(object):
         :rtype: list
         """
 
-
         telescopes_fluxes = []
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
 
@@ -542,14 +519,16 @@ class MLfit(object):
         matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
         matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
 
-        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
+        parameters = [key for ind,key in enumerate(self.model.model_dictionnary.keys()) if ('fsource' not in key) and ('fblend' not in key) and ('gblend' not in key)]
 
         samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],10000)
-        samples_to_plot = samples[:,:len(parameters)]
+        samples_to_plot = samples[:, :len(parameters)]
 
-        matplotlib_distribution = pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
+        matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(samples_to_plot, parameters_names=parameters,bokeh_plot=bokeh_plot)
 
         bokeh_figure = gridplot([[row(bokeh_lightcurves, gridplot([[bokeh_geometry]],toolbar_location='above'))]],toolbar_location=None)
+        output_file(filename = self.model.event.name+'.html', title=self.model.event.name)
+        save(bokeh_figure)
 
         return matplotlib_lightcurves, matplotlib_geometry, matplotlib_distribution, bokeh_figure
 

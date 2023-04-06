@@ -5,6 +5,67 @@ import numpy as np
 TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
 JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
 
+JPL_HORIZONS_ID = {
+    'Geocentric': '500',
+    'Kepler': '-227',
+    'Spitzer': '-79',
+    'HST': '-48',
+    'Gaia': '-139479',
+    'New Horizons': '-98',
+    'L2': '32'
+
+}
+
+def horizons_obscodes(observatory):
+    """Transform observatory names to JPL horizon codes.
+    Write by Tim Lister, thanks :)
+
+    :param str observatory: the satellite name you would like to obtain ephemeris. As to be in the dictionnary
+           JPL_HORIZONS_ID (exact name matching!).
+
+    :return: the JPL ID of your satellite.
+    :rtype: int
+    """
+
+    # Check if we were passed the JPL site code directly
+    if (observatory in list(JPL_HORIZONS_ID.values())):
+
+        OBSERVATORY_ID = observatory
+
+    else:
+        # Lookup observatory name in map, use ELP's code as a default if not found
+        OBSERVATORY_ID = JPL_HORIZONS_ID.get(observatory, 'V37')
+
+    return OBSERVATORY_ID
+
+
+def horizons_API(body, start_time, end_time, observatory='ELP', step_size='60m'):
+
+    OBSERVATORY_ID = horizons_obscodes(observatory)
+    body = horizons_obscodes(body)
+
+    tstart = 'JD' + str(start_time)
+
+    tstop = 'JD' + str(end_time)
+
+    obj = Horizons(id=body, location=OBSERVATORY_ID, epochs={'start': tstart, 'stop': tstop, 'step': step_size})
+    ephemerides = obj.ephemerides()
+
+    dates = ephemerides['datetime_jd'].data.data
+    ra = ephemerides['RA'].data.data
+    dec = ephemerides['DEC'].data.data
+    distances = ephemerides['delta'].data.data
+
+    flag = 'Succes connection to JPL'
+    print('Successfully ephemeris from JPL!')
+
+    positions = np.c_[dates, ra, dec, distances]
+
+    return flag, positions
+
+
+### Depreciated
+
 
 def optcallback(socket, command, option):
     """Write by Tim Lister, thanks :)
@@ -21,38 +82,6 @@ def optcallback(socket, command, option):
         # width = struct.pack('H', MAX_WINDOW_WIDTH)
         # height = struct.pack('H', MAX_WINDOW_HEIGHT)
         # socket.send(telnetlib.IAC + telnetlib.SB + telnetlib.NAWS + width + height + telnetlib.IAC + telnetlib.SE)
-
-
-def horizons_obscodes(observatory):
-    """Transform observatory names to JPL horizon codes.
-    Write by Tim Lister, thanks :)
-
-    :param str observatory: the satellite name you would like to obtain ephemeris. As to be in the dictionnary
-           JPL_HORIZONS_ID (exact name matching!).
-
-    :return: the JPL ID of your satellite.
-    :rtype: int
-    """
-
-    JPL_HORIZONS_ID = {
-        'Geocentric': '500',
-        'Kepler': '-227',
-        'Spitzer': '-79',
-        'HST': '-48',
-        'Gaia': '-139479',
-        'New Horizons': '-98',
-        'L2': '32'
-
-    }
-
-    # Check if we were passed the JPL site code directly
-    if (observatory in list(JPL_HORIZONS_ID.values())):
-        OBSERVATORY_ID = observatory
-    else:
-        # Lookup observatory name in map, use ELP's code as a default if not found
-        OBSERVATORY_ID = JPL_HORIZONS_ID.get(observatory, 'V37')
-
-    return OBSERVATORY_ID
 
 
 def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_size='60m',
@@ -290,30 +319,3 @@ def produce_horizons_ephem(body, start_time, end_time, observatory='ELP', step_s
     print('Successfully ephemeris from JPL!')
 
     return flag, horemp
-
-
-
-def horizons_API(body, start_time, end_time, observatory='ELP', step_size='60m'):
-
-    OBSERVATORY_ID = horizons_obscodes(observatory)
-    body = horizons_obscodes(body)
-
-    tstart = 'JD' + str(start_time)
-
-    tstop = 'JD' + str(end_time)
-
-    obj = Horizons(id=body, location=OBSERVATORY_ID, epochs={'start': tstart, 'stop': tstop, 'step': step_size})
-    ephemerides = obj.ephemerides()
-
-
-    dates = ephemerides['datetime_jd'].data.data
-    ra = ephemerides['RA'].data.data
-    dec =ephemerides['DEC'].data.data
-    distances = ephemerides['delta'].data.data
-
-    flag = 'Succes connection to JPL'
-    print('Successfully ephemeris from JPL!')
-
-    positions = np.c_[dates,ra,dec,distances]
-
-    return flag, positions

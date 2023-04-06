@@ -129,7 +129,13 @@ class Telescope(object):
 
             self.astrometry = construct_time_series(astrometry, astrometry_names, astrometry_units)
 
+        self.check_for_duplicates()
+
         self.hidden()
+
+    def check_for_duplicates(self):
+        pass
+        #unique =
 
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.

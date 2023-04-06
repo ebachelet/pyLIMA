@@ -1,9 +1,7 @@
 import importlib
 
-
-
 def create_model(model_type,event, parallax=['None', 0.0], xallarap=['None'],
-                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend'):
+                 orbital_motion=['None', 0.0], origin = ['center_of_mass', [0,0]],  blend_flux_parameter='fblend'):
     """
     Load a model according to the supplied model_type. Models are expected to be named
     Model<model_type> e.g. ModelPSPL
@@ -23,4 +21,4 @@ def create_model(model_type,event, parallax=['None', 0.0], xallarap=['None'],
 
     new_model = getattr(model_module, '{}model'.format(model_type))
 
-    return new_model(event, parallax,xallarap,orbital_motion,blend_flux_parameter)
+    return new_model(event, parallax, xallarap, orbital_motion, origin, blend_flux_parameter)

@@ -137,6 +137,11 @@ def position_dec_boundaries():
 
     return (-90, 90) #(-90,90) degree
 
+def u_center_boundaries():
+
+    return (-0.2, 0.2)
+
+
 def parameters_boundaries(event, model_dictionnary):
     """ This function define the parameters boundaries for a specific model.
 
@@ -232,6 +237,7 @@ def parameters_boundaries(event, model_dictionnary):
             bounds.append(eval(function_name))
 
         except:
+            breakpoint()
 
             pass
 
