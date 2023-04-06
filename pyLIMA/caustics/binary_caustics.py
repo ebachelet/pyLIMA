@@ -6,9 +6,7 @@ Created on Thu Apr 20 11:19:38 2017
 from __future__ import division
 
 import numpy as np
-import time
 import scipy.spatial as ss
-import matplotlib.pyplot as plt
 
 
 def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolution=1000):
@@ -34,8 +32,6 @@ def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolutio
 
     caustics_points, critical_curve_points = compute_2_lenses_caustics_points(separation, mass_ratio,
                                                                               resolution=resolution)
-
-    critical_curve = critical_curve_points
 
     caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
 
@@ -428,4 +424,42 @@ def change_source_trajectory_center_to_caustics_center(separation, mass_ratio, c
             y_center = points[0].imag[ind]
 
     return x_center, y_center
+
+
+
+def poly_binary_eiphi_0(separation, mass_ratio):
+
+
+    s = separation
+    q = mass_ratio
+
+    polynomial_coefficients = [1.0, 2.0 * s * (q - 1) / (q + 1.0),
+                               (s ** 2 * (q ** 2 - 4 * q + 1) - q ** 2 - 2 * q - 1) / (q ** 2 + 2.0 * q + 1.0),
+                               2 * (-q ** 3 * s + (s ** 2 + 1) * q * s * (- q + 1) + s) / (q ** 3 + 3.0 * q ** 2 + 3.0 * q + 1.0),
+                               (-q ** 2 * s ** 2 * (q ** 2 + q - s ** 2) - s ** 2 * (1 + q)) / (q ** 4 + 4.0 * q ** 3 + 6.0 * q ** 2 + 4.0 * q + 1.0)]
+    return polynomial_coefficients
+
+
+def lens_equation(z,lenses_mass,lenses_pos):
+
+    zeta = np.array([j-np.sum(np.array([lenses_mass[i]/(np.conj(j)-np.conj(lenses_pos[i]))
+                                        for i in range(len(lenses_mass))])) for j in z])
+
+    return zeta
+
+def caustic_points_at_phi_0(separation, mass_ratio):
+
+    polynomial_coefficients = poly_binary_eiphi_0(separation, mass_ratio)
+    solutions = np.roots(polynomial_coefficients)
+
+    m_tot = 1+mass_ratio
+    m_1 = 1/m_tot
+    m_2 = mass_ratio*m_1
+
+    position_1 = -separation*m_2
+    position_2 = position_1+separation
+
+    caustic_points = lens_equation(solutions, [m_1, m_2], [position_1, position_2])
+
+    return caustic_points
 

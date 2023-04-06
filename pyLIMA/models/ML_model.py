@@ -158,8 +158,12 @@ class MLmodel(object):
         return jacobi
 
     @abc.abstractmethod
-    def update_origin(self):
-        pass
+    def change_origin(self, pyLIMA_parameters):
+
+        if self.origin[0] != 'center_of_mass':
+
+            setattr(pyLIMA_parameters, 'x_center', self.origin[1][0])
+            setattr(pyLIMA_parameters, 'y_center', self.origin[1][0])
 
     def check_data_in_event(self):
 
@@ -456,8 +460,6 @@ class MLmodel(object):
         :rtype: object (namedtuple)
         """
 
-        self.update_origin()
-
         model_parameters = collections.namedtuple('parameters', self.model_dictionnary.keys())
 
         for key_parameter in self.model_dictionnary.keys():
@@ -472,6 +474,10 @@ class MLmodel(object):
 
 
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
+
+        self.change_origin(pyLIMA_parameters)
+        #breakpoint()
+        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(pyLIMA_parameters)
 
         if 'v_perp' in self.model_dictionnary.keys():
 
@@ -533,7 +539,7 @@ class MLmodel(object):
 
                 except:
 
-                    setattr(fancy_parameters, key_parameter, self.fancy_to_pyLIMA[key_parameter](fancy_parameters, self.origin[1][0], self.origin[1][1]))
+                    pass
 
         return fancy_parameters
 

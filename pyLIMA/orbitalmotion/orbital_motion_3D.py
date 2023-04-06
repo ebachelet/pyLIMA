@@ -53,7 +53,7 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
     # From Skowron2011, Bozza2020
     # and https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 
-    eccentricity = np.sum(e_0**2)**0.5 #
+    eccentricity = np.sum(e_0**2)**0.5
     h_norm = np.sum(h_0**2)**0.5
     z_0 = h_0 / h_norm
 
@@ -62,12 +62,13 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
     N = np.cross([0, 0, 1], h_0)
     longitude_ascending_node = np.arctan2(N[1], N[0])
 
-    if np.dot(r_0, v_0) < 10**-10: #Circular
+    if np.abs(np.dot(r_0, v_0)) < 10**-10: #Circular
 
         eccentricity = 0
         cosw = separation_0 / a_true * np.cos(longitude_ascending_node)
         sinw = separation_z/np.sin(inclination)/a_true
-        omega_peri = np.arctan2(sinw,cosw)
+        omega_peri = np.arctan2(sinw, cosw)
+
         true_anomaly = 0
         t_periastron = 0
 
@@ -76,7 +77,7 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
         Rmatrix = Rotation.from_euler("ZXZ", [-omega_peri, -inclination, -longitude_ascending_node])
         x_0, y_0, z_0 = Rmatrix.as_matrix()
 
-    else:
+    else: #Keplerian
 
         x_0 = e_0 / eccentricity
         z_0 = h_0/h_norm
@@ -95,8 +96,8 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
         t_periastron = t0_om - \
                        (eccentric_anomaly - eccentricity * np.sin(eccentric_anomaly)) / orbital_velocity * 365.25
 
-
-    return longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity, eccentricity, true_anomaly,t_periastron, x_0,y_0,z_0
+    return longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity, eccentricity, true_anomaly,\
+           t_periastron, x_0, y_0, z_0
 
 
 

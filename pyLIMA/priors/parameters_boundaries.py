@@ -139,7 +139,7 @@ def position_dec_boundaries():
 
 def u_center_boundaries():
 
-    return (-0.2, 0.2)
+    return (-1, 1)
 
 
 def parameters_boundaries(event, model_dictionnary):

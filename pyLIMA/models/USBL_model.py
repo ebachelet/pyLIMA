@@ -2,6 +2,7 @@ import numpy as np
 
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_VBB
+from pyLIMA.caustics import binary_caustics
 
 class USBLmodel(MLmodel):
 
@@ -70,6 +71,49 @@ class USBLmodel(MLmodel):
             return magnification_USBL,None
         else:
             return magnification_USBL
+
+
+    def change_origin(self, pyLIMA_parameters):
+
+            if self.origin[0] != 'center_of_mass':
+
+                caustic_regime =  binary_caustics.find_2_lenses_caustic_regime(pyLIMA_parameters.separation,
+                                                                               pyLIMA_parameters.mass_ratio)
+
+                caustics = binary_caustics.caustic_points_at_phi_0(pyLIMA_parameters.separation,
+                                                                   pyLIMA_parameters.mass_ratio)
+
+                caustic = 0+0*1j
+
+                if caustic_regime == 'resonant':
+
+                    caustic = caustics[caustics.real.argmin()]
+
+                if (caustic_regime == 'wide') & (self.origin[0] == 'central'):
+
+                    caustic = caustics[caustics.real.argmin()]
+
+                if (caustic_regime == 'wide') & (self.origin[0] == 'second'):
+
+                    sorting = caustics.real.argsort()
+                    caustic = caustics[sorting[2]]
+
+                if (caustic_regime == 'close') & (self.origin[0] == 'central'):
+
+                    sorting = caustics.imag.argsort()
+                    caustic = caustics[np.where(caustics.real==caustics[sorting[1:3]].real.min())[0]]
+
+                if (caustic_regime == 'close') & (self.origin[0] == 'second'):
+
+                    caustic = caustics[caustics.imag.argmax()]
+
+                if (caustic_regime == 'close') & (self.origin[0] == 'third'):
+
+                    caustic = caustics[caustics.imag.argmin()]
+
+                setattr(pyLIMA_parameters, 'x_center', caustic.real)
+                setattr(pyLIMA_parameters, 'y_center', caustic.imag)
+
 
 #    def find_origin(self, pyLIMA_parameters):
 
