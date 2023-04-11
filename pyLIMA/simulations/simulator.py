@@ -61,8 +61,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
     :rtype: object
     """
 
-
-    if (uniform_sampling == False) & (location != 'Space'):
+    if (uniform_sampling is False) & (location != 'Space'):
 
         earth_location = EarthLocation(lon=longitude * astropy.units.deg,
                                        lat=latitude * astropy.units.deg,
@@ -94,9 +93,9 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
 
     else:
 
-        time_of_observations = np.arange(time_start, time_end, sampling / (24.0))
+        time_of_observations = np.arange(time_start, time_end, sampling / 24.0)
 
-    if (photometry) & (len(time_of_observations)>0):
+    if photometry & (len(time_of_observations)>0):
 
         lightcurveflux = np.ones((len(time_of_observations), 3)) * 42
         lightcurveflux[:, 0] = time_of_observations
@@ -120,7 +119,6 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
                                      light_curve=lightcurveflux,
                                      light_curve_names=['time', 'flux', 'err_flux'],
                                      light_curve_units=['JD', 'w/m^2', 'w/m^2'],
-                                     clean_the_light_curve=False,
                                      astrometry=astrometry,
                                      astrometry_names=['time', 'ra', 'err_ra', 'dec',
                                                        'err_dec'],
@@ -262,7 +260,6 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], b
         magnitude_blend = np.random.uniform(blend_magnitude[0], blend_magnitude[1])
         flux_blend = brightness_transformation.magnitude_to_flux(magnitude_blend)
 
-
         fake_fluxes_parameters.append(flux_source)
         fake_fluxes_parameters.append(flux_blend)
 
@@ -270,7 +267,7 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], b
 
 
 
-def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise = True):
+def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
     """ Simulate the flux of telescopes given a model and a set of parameters.
     It updates straight the telescopes object inside the given model.
 
@@ -301,9 +298,10 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise = True):
             telescope.lightcurve_magnitude = telescope.lightcurve_in_magnitude()
 
 
-def simulate_astrometry(model, pyLIMA_parameters, add_noise = True):
+def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
     """
     """
+    from astropy import units as unit
 
     for telescope in model.event.telescopes:
 
@@ -319,8 +317,7 @@ def simulate_astrometry(model, pyLIMA_parameters, add_noise = True):
 
                 observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
 
-                SNR =  observed_flux/err_observed_flux
-
+                SNR = observed_flux/err_observed_flux
 
                 err_ra = 1/SNR/3600. #assuming FWHM=1 as
                 err_dec = 1/SNR/3600.
@@ -335,9 +332,9 @@ def simulate_astrometry(model, pyLIMA_parameters, add_noise = True):
                 obs_dec = theoritical_astrometry[1]
                 err_dec = err_ra
 
-            telescope.astrometry['ra'] = obs_ra
-            telescope.astrometry['err_ra'] = err_ra
-            telescope.astrometry['dec'] = obs_dec
-            telescope.astrometry['err_dec'] = err_dec
+            telescope.astrometry['ra'] = obs_ra*unit.deg
+            telescope.astrometry['err_ra'] = err_ra*unit.deg
+            telescope.astrometry['dec'] = obs_dec*unit.deg
+            telescope.astrometry['err_dec'] = err_dec*unit.deg
 
 

@@ -7,7 +7,7 @@ Created on Thu Aug 27 16:39:32 2015
 from __future__ import division
 import numpy as np
 
-from pyLIMA.toolbox.time_series import construct_time_series
+from pyLIMA.toolbox.time_series import construct_time_series, clean_time_series
 
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected lightcurve format differs, please
 # indicate this in the correponding lightcurve_magnitude_dictionnary or lightcurve_flux_dictionnary, see below.
@@ -82,7 +82,7 @@ class Telescope(object):
     """
 
     def __init__(self, name='NDG', camera_filter='I', pixel_scale = 1, light_curve=None,
-                 light_curve_names=None, light_curve_units=None, clean_the_light_curve=False,
+                 light_curve_names=None, light_curve_units=None,
                  location='Earth', spacecraft_name=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None):
         """Initialization of the attributes described above."""
@@ -93,6 +93,7 @@ class Telescope(object):
         self.lightcurve_magnitude = None
         self.lightcurve_flux = None
         self.astrometry = None
+        self.bad_data = {}
 
         self.location = location
         self.altitude = 0.0  # meters
@@ -117,25 +118,59 @@ class Telescope(object):
 
             if 'mag' in light_curve_names:
 
-                self.lightcurve_magnitude = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                data = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
+
+                self.lightcurve_magnitude = data[good_lines]
                 self.lightcurve_flux = self.lightcurve_in_flux()
+
+                bad_data = {}
+                bad_data['non_finite_lines'] = non_finite_lines
+                bad_data['non_unique_lines'] = non_unique_lines
+
+                self.bad_data['photometry'] = bad_data
+
 
             if 'flux' in light_curve_names:
 
-                self.lightcurve_flux = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                data = construct_time_series(light_curve, light_curve_names, light_curve_units)
+                good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
+
+                self.lightcurve_flux = data[good_lines]
                 self.lightcurve_magnitude = self.lightcurve_in_magnitude()
+
+                lines = np.arange(0, len(data))
+                bad_data = {}
+                bad_data['non_finite_lines'] = non_finite_lines
+                bad_data['non_unique_lines'] = non_unique_lines
+
+                self.bad_data['photometry'] = bad_data
 
         if astrometry is not None:
 
-            self.astrometry = construct_time_series(astrometry, astrometry_names, astrometry_units)
+            data = construct_time_series(astrometry, astrometry_names, astrometry_units)
+            good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
 
-        self.check_for_duplicates()
+            self.astrometry = data[good_lines]
+
+            lines = np.arange(0, len(data))
+            bad_data = {}
+            bad_data['non_finite_lines'] = non_finite_lines
+            bad_data['non_unique_lines'] = non_unique_lines
+            self.bad_data['astrometry'] = bad_data
+
+        for data_type in self.bad_data:
+
+            for key in self.bad_data[data_type]:
+
+                if len(self.bad_data[data_type][key]) != 0:
+
+                    print('pyLIMA found (and eliminate) some bad_data for telescope '+self.name+', '
+                          'please check your_telescope.bad_data')
+
+                    break
 
         self.hidden()
-
-    def check_for_duplicates(self):
-        pass
-        #unique =
 
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.
@@ -154,6 +189,7 @@ class Telescope(object):
         except:
 
             return 0
+
     def find_gamma(self, star):
         """
         Set the associated :math:`\\Gamma` linear limb-darkening coefficient associated to the filter.
@@ -174,61 +210,6 @@ class Telescope(object):
 
         parallax_obj.parallax_combination(self)
         print('Parallax(' + parallax_obj.parallax_model + ') estimated for the telescope ' + self.name + ': SUCCESS')
-
-    def clean_data_magnitude(self):
-        """
-        Clean outliers of the telescope for the fits. Points are considered as outliers if they
-        are 10 mag brighter
-        or fainter than the lightcurve median or if nan appears in any columns or errobar higher
-        than a 1 mag.
-
-        :return: the cleaned magnitude lightcurve
-        :rtype: array_like
-        """
-
-        maximum_accepted_precision = 1.0
-
-        index = np.where((~np.isnan(self.lightcurve_magnitude).any(axis=1)) &
-                         (np.abs(self.lightcurve_magnitude[:, 2]) <= maximum_accepted_precision))[0]
-
-        lightcurve = self.lightcurve_magnitude[index]
-
-        index = np.where((np.isnan(self.lightcurve_magnitude).any(axis=1)) |
-                         (np.abs(self.lightcurve_magnitude[:, 2]) > maximum_accepted_precision))[0]
-        if len(index) != 0:
-            self.bad_points_magnitude = index
-            print('pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \
-                                                                                 'bad_points_magnitude attribute.')
-
-        return lightcurve
-
-    def clean_data_flux(self):
-        """
-        Clean outliers of the telescope for the fits. Points are considered as outliers if they
-        are 10 mag brighter
-        or fainter than the lightcurve median or if nan appears in any columns or errobar higher
-        than a 1 mag.
-
-        :return: the cleaned magnitude lightcurve
-        :rtype: array_like
-        """
-
-        maximum_accepted_precision = 1.0
-        flux = self.lightcurve_flux[:, 1]
-        error_flux = self.lightcurve_flux[:, 2]
-        index = np.where(
-            (~np.isnan(self.lightcurve_flux).any(axis=1)) & (np.abs(error_flux / flux) <= maximum_accepted_precision) & (flux>0))[
-            0]
-
-        lightcurve = self.lightcurve_flux[index]
-
-        index = np.where(
-            (np.isnan(self.lightcurve_flux).any(axis=1)) | (np.abs(error_flux / flux) > maximum_accepted_precision) | (flux<=0))[0]
-        if len(index) != 0:
-            self.bad_points_flux = index
-            print('pyLIMA found some bad points in the telescope ' + self.name + ', you can found these in the ' \
-                                                                                 'bad_points_flux attribute.')
-        return lightcurve
 
     def lightcurve_in_flux(self):
         """
@@ -284,24 +265,13 @@ class Telescope(object):
         import matplotlib.pyplot as plt
 
         if choice=='Mag':
+
             plots.plot_light_curve_magnitude(self.lightcurve_magnitude['time'].value,
                                              self.lightcurve_magnitude['mag'].value,
                                              self.lightcurve_magnitude['err_mag'].value,
                                              name=self.name)
 
             plt.gca().invert_yaxis()
-
-
-    def hidden(self):
-        try:
-            import webbrowser
-            controller = webbrowser.get()
-
-            if self.name =='Mexicola':
-                controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
-        except:
-
-            pass
 
     def define_limb_darkening_coefficients(self):
 
@@ -320,3 +290,14 @@ class Telescope(object):
         if self.ld_a2 == 0:
 
             self.ld_a2 = 5 * self.ld_sigma / (4 + 2 * self.ld_gamma + self.ld_sigma)
+
+    def hidden(self):
+        try:
+            import webbrowser
+            controller = webbrowser.get()
+
+            if self.name =='Mexicola':
+                controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
+        except:
+
+            pass

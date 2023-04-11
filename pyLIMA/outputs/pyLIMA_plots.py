@@ -103,17 +103,17 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                 color=color,
                                 legend_label=platform)
 
-            for index in [-1, 0, 1]:
+            for ind in [-1, 0, 1]:
 
                     index = np.argmin(np.abs(telescope.lightcurve_magnitude['time'].value -
-                                             (pyLIMA_parameters.t0 + index * pyLIMA_parameters.tE)))
+                                             (pyLIMA_parameters.t0 + ind * pyLIMA_parameters.tE)))
                     sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
                     derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
                             trajectory_x[index - 1] - trajectory_x[index + 1])
 
                     figure_axes.annotate('', xy=(trajectory_x[index], trajectory_y[index]),
-                                         xytext=(trajectory_x[index] - sign * 0.001,
-                                                 trajectory_y[index] - sign * 0.001 * derivative),
+                                         xytext=(trajectory_x[index] - (trajectory_x[index + 1] - trajectory_x[index]) * 0.001,
+                                                 trajectory_y[index] - (trajectory_x[index + 1] - trajectory_x[index]) * 0.001 * derivative),
                                          arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                          color=color))
 
@@ -125,6 +125,8 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                                         x_start=trajectory_x[index], y_start=trajectory_y[index],
                                                         x_end=trajectory_x[index] + sign * 0.001,
                                                         y_end=trajectory_y[index] + sign * 0.001 * derivative))
+
+
 
             if microlensing_model.model_type == 'DSPL':
 
@@ -219,12 +221,19 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     if microlensing_model.parallax_model[0] != 'None':
 
+
+        origin_t0par_index = np.argmin(np.abs(telescope.lightcurve_magnitude['time'].value -
+                                                  microlensing_model.parallax_model[1]))
+
+        origin_t0par = np.array((trajectory_x[origin_t0par_index], trajectory_y[origin_t0par_index]))
+        #origin_t0par += 0.1
+
         piEN = pyLIMA_parameters.piEN
         piEE = pyLIMA_parameters.piEE
 
         EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
 
-        plot_angle = -(EN_trajectory_angle)
+        plot_angle = -EN_trajectory_angle
 
         try:
 
@@ -241,26 +250,27 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         east = np.dot(rota_mat, east)
         north = np.dot(rota_mat, north)
 
-        figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
+        figure_axes.plot([origin_t0par[0],origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], 'k', lw=2)
+        figure_axes.plot([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], 'k', lw=2)
 
-        if bokeh_geometry is not None:
-
-            bokeh_geometry.line([0.8, 0.8 + 2*east[0]], [0.8, 0.8 + 2*east[1]], line_dash='dashed',color='black')
-
-        Ecoords = [0, 0.15]
-        Ecoords = np.dot(rota_mat, Ecoords)
-        figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', c='k', transform=plt.gca().transAxes,
-                         size=25)
-
-        figure_axes.plot([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]], 'k', transform=plt.gca().transAxes)
-
-        if bokeh_geometry is not None:
-
-            bokeh_geometry.line([0.8, 0.8 + 2*north[0]], [0.8, 0.8 + 2*north[1]],  color='black')
-
-        Ncoords = [0.15, 0.0]
+        Ncoords = [0.125, 0.0]
         Ncoords = np.dot(rota_mat, Ncoords)
-        figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
+        figure_axes.text(origin_t0par[0] + Ncoords[0], origin_t0par[1] + Ncoords[1], 'N', c='k', size=25)
+
+        Ecoords = [0, 0.125]
+        Ecoords = np.dot(rota_mat, Ecoords)
+        figure_axes.text(origin_t0par[0] + Ecoords[0], origin_t0par[1] + Ecoords[1], 'E', c='k',size=25)
+
+        #figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
+        #figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
+
+
+
+        if bokeh_geometry is not None:
+
+            bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], line_dash='dotted', color='black')
+            bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], line_dash='dotted', color='black')
+
 
     legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
 
@@ -316,13 +326,14 @@ def plot_astrometry(microlensing_model, model_parameters):
 
         model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
-    plot_astrometric_models(mat_figure_ax, microlensing_model, model_parameters)
     plot_astrometric_data(mat_figure_ax, microlensing_model)
+
+    plot_astrometric_models(mat_figure_ax, microlensing_model, model_parameters)
 
     legend = mat_figure_ax.legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3)
 
-
+    mat_figure_ax.invert_xaxis()
 def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     list_of_fake_telescopes = []
@@ -539,9 +550,8 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_time.sort()
 
                 model_time = np.unique(model_time)
-
-                model_astrometry = np.c_[model_time, [0] * len(model_time), [0] * len(model_time),[0] * len(model_time), [0] * len(model_time)]
-                model_telescope = fake_telescopes.create_a_fake_telescope(astrometry_curve = model_astrometry)
+                model_astrometry = np.c_[model_time, [0] * len(model_time), [0.1] * len(model_time),[0] * len(model_time), [0.1] * len(model_time)]
+                model_telescope = fake_telescopes.create_a_fake_telescope(astrometry_curve=model_astrometry, astrometry_unit=tel.astrometry['ra'].unit)
 
                 model_telescope.name = tel.name
                 model_telescope.filter = tel.filter
@@ -551,7 +561,6 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                 model_telescope.ld_a1 = tel.ld_a1
                 model_telescope.ld_a2 = tel.ld_a2
                 model_telescope.pixel_scale = tel.pixel_scale
-
                 if tel.location == 'Space':
 
                     model_telescope.spacecraft_name = tel.spacecraft_name
@@ -785,8 +794,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 
             astrometric_model = model['astrometry']
-            lens_E,lens_N = astrometric_positions.lens_astrometric_position(microlensing_model,
-                                                                            tel,pyLIMA_parameters)
+            lens_E,lens_N = astrometric_positions.lens_astrometric_position(microlensing_model, tel, pyLIMA_parameters)
             name = tel.name
 
             index_color = np.where(name == telescopes_names)[0][0]
@@ -805,27 +813,25 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
 
                         index_time = np.argmin(np.abs(tel.astrometry['time'].value -
                                                  (pyLIMA_parameters.t0 + index * pyLIMA_parameters.tE)))
-                        sign = np.sign(source_E[index_time + 1] - source_E[index_time])
                         derivative = (source_N[index_time - 1] - source_N[index_time + 1]) / (
                                 source_E[index_time - 1] - source_E[index_time + 1])
 
                         figure_axe.annotate('', xy=(source_E[index_time], source_N[index_time]),
-                                             xytext=(source_E[index_time] - sign * 0.001,
-                                                     source_N[index_time] - sign * 0.001 * derivative),
+                                             xytext=(source_E[index_time] - 0.001 * (source_E[index_time+1]-source_E[index_time]),
+                                                     source_N[index_time] - 0.001 * (source_E[index_time+1]-source_E[index_time])*derivative),
                                              arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                              color='k'))
 
-                for index in [-1, 1]:
+                for index in [-1, 0, 1]:
 
                         index_time = np.argmin(np.abs(tel.astrometry['time'].value -
                                                  (pyLIMA_parameters.t0 + index * pyLIMA_parameters.tE)))
-                        sign = np.sign(lens_E[index_time + 1] - lens_E[index_time])
                         derivative = (lens_N[index_time - 1] - lens_N[index_time + 1]) / (
                                 lens_E[index_time - 1] - lens_E[index_time + 1])
 
                         figure_axe.annotate('', xy=(lens_E[index_time], lens_N[index_time]),
-                                            xytext=(lens_E[index_time] - sign * 0.001,
-                                                    lens_N[index_time] - sign * 0.001 * derivative),
+                                            xytext=(lens_E[index_time] - 0.001 * (lens_E[index_time]-lens_E[index_time+1]),
+                                                    lens_N[index_time] - 0.001 * (lens_E[index_time]-lens_E[index_time+1])* derivative),
                                             arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                             color='k'))
 
@@ -841,18 +847,18 @@ def plot_astrometric_data(figure_ax, microlensing_model):
 
         if tel.astrometry is not None:
 
-            delta_ra = tel.astrometry['delta_ra'].value
-            err_ra = tel.astrometry['err_delta_ra'].value
+            delta_ra = tel.astrometry['ra'].value
+            err_ra = tel.astrometry['err_ra'].value
 
-            delta_dec = tel.astrometry['delta_dec'].value
-            err_dec = tel.astrometry['err_delta_dec'].value
+            delta_dec = tel.astrometry['dec'].value
+            err_dec = tel.astrometry['err_dec'].value
 
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
 
-            figure_ax.errorbar(delta_ra,delta_dec,xerr=err_ra,yerr=err_dec,fmt='.',ecolor=color,color=color,
-                               label=tel.name )
+            figure_ax.errorbar(delta_ra, delta_dec, xerr=err_ra, yerr=err_dec, fmt='.', ecolor=color, color=color,
+                               label=tel.name, alpha=0.5)
 
 
 
