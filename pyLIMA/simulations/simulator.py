@@ -238,6 +238,10 @@ def simulate_microlensing_model_parameters(model):
 
     fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
 
+    if model.parallax_model != []:
+
+        fake_parameters[0] = np.random.uniform(model.parallax_model[1]-1, model.parallax_model[1]+1)
+
     return fake_parameters
 
 def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], blend_magnitude = [10,20]):

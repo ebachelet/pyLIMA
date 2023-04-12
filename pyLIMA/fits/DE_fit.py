@@ -15,7 +15,7 @@ class DEfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000,
-                 display_progress=False):
+                 display_progress=False, strategy='best1bin'):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
@@ -26,6 +26,7 @@ class DEfit(MLfit):
         self.max_iteration = max_iteration
         self.fit_time = 0 #s
         self.display_progress = display_progress
+        self.strategy = strategy
 
     def fit_type(self):
         return "Differential Evolution"
@@ -132,7 +133,7 @@ class DEfit(MLfit):
                                                                                   bounds=bounds,
                                                                                   mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
                                                                                   maxiter=self.max_iteration, tol=0.00,
-                                                                                  atol=1.0, strategy='rand1bin',
+                                                                                  atol=1.0, strategy=self.strategy,
                                                                                   recombination=0.5, polish=False, init=init,
                                                                                   disp=self.display_progress, workers=worker)
 
