@@ -99,7 +99,6 @@ class DEMCfit(MLfit):
 
     def new_individual(self, ind1, pop):
 
-
         parent1 = pop[ind1]
 
         number_of_parents = np.random.randint(1, 3) * 2
@@ -286,17 +285,16 @@ class DEMCfit(MLfit):
         #Jumps = np.ones(len(self.crossover))
 
        # N_id = np.ones(len(self.crossover))
-
         for loop in tqdm(range(self.max_iteration)):
 
             indexes = [(i, loop_population) for i in range(len(loop_population))]
 
             if computational_pool is not None:
+                #breakpoint()
 
-                new_step = np.array(computational_pool.starmap(self.new_individual, indexes))
-
-                loop_population = np.vstack(new_step[:,0])
-                acceptance = np.vstack(new_step[:, 1])
+                new_step = computational_pool.starmap(self.new_individual, indexes)
+                loop_population = np.array([i[0] for i in new_step])
+                acceptance = np.array([i[1] for i in new_step])
                 #jumps = new_step[:,2]
                # n_id = new_step[:,3]
                 #loop_population = self.swap_temperatures(loop_population)

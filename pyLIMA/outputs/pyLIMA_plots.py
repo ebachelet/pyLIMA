@@ -262,6 +262,8 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
             for ind in [-1, 0, 1]:
 
+                try:
+
                     index = np.argmin(np.abs(telescope.lightcurve_magnitude['time'].value -
                                              (pyLIMA_parameters.t0 + ind * pyLIMA_parameters.tE)))
                     sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
@@ -283,6 +285,9 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                                         x_end=trajectory_x[index] + sign * 0.001,
                                                         y_end=trajectory_y[index] + sign * 0.001 * derivative))
 
+                except:
+
+                    pass
 
 
             if microlensing_model.model_type == 'DSPL':
@@ -407,16 +412,21 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         east = np.dot(rota_mat, east)
         north = np.dot(rota_mat, north)
 
-        figure_axes.plot([origin_t0par[0],origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], 'k', lw=2)
-        figure_axes.plot([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], 'k', lw=2)
-
-        Ncoords = [0.125, 0.0]
+        #figure_axes.plot([origin_t0par[0],origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], 'k', lw=2)
+        #figure_axes.plot([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], 'k', lw=2)
+        #figure_axes.quiver(origin_t0par[0],origin_t0par[1], north[0], north[1],  scale_units='xy', angles='xy', scale=1, color='k', lw=2)
+        #figure_axes.quiver(origin_t0par[0],origin_t0par[1], east[0], east[1],  scale_units='xy', angles='xy', scale=1, color='k', lw=2)
+        figure_axes.quiver(0.8, 0.8, north[0], north[1], scale_units='xy', angles='xy', scale=1,
+                           color='k', lw=2, transform=plt.gca().transAxes)
+        figure_axes.quiver(0.8, 0.8, east[0], east[1], scale_units='xy', angles='xy', scale=1,
+                           color='k', lw=2, transform=plt.gca().transAxes)
+        Ncoords = [0.1/2, -0.005]
         Ncoords = np.dot(rota_mat, Ncoords)
-        figure_axes.text(origin_t0par[0] + Ncoords[0], origin_t0par[1] + Ncoords[1], 'N', c='k', size=25)
+        figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k', size=25, transform=plt.gca().transAxes)
 
-        Ecoords = [0, 0.125]
+        Ecoords = [-0.005, 0.1/2]
         Ecoords = np.dot(rota_mat, Ecoords)
-        figure_axes.text(origin_t0par[0] + Ecoords[0], origin_t0par[1] + Ecoords[1], 'E', c='k',size=25)
+        figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k',size=25, transform=plt.gca().transAxes)
 
         #figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
         #figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
@@ -525,6 +535,9 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
 
                 for index in [-1, 0, 1]:
 
+
+                    try:
+
                         index_time = np.argmin(np.abs(tel.astrometry['time'].value -
                                                  (pyLIMA_parameters.t0 + index * pyLIMA_parameters.tE)))
                         derivative = (source_N[index_time - 1] - source_N[index_time + 1]) / (
@@ -536,7 +549,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
                                              arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                              color='k'))
 
-                for index in [-1, 0, 1]:
+
 
                         index_time = np.argmin(np.abs(tel.astrometry['time'].value -
                                                  (pyLIMA_parameters.t0 + index * pyLIMA_parameters.tE)))
@@ -549,6 +562,9 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
                                             arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                             color='k'))
 
+                    except:
+
+                        pass
 
                 Earth = False
 

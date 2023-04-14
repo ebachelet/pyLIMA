@@ -15,7 +15,7 @@ class DEfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000,
-                 display_progress=False, strategy='best1bin'):
+                 display_progress=False, strategy='rand1bin'):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
