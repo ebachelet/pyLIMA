@@ -1,54 +1,56 @@
-from tqdm import tqdm
 import time as python_time
-import sys
 import numpy as np
+import sys
+import emcee
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
 from pyLIMA.outputs import pyLIMA_plots
 
-
-
 class DEMCfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DEMC_population_size=10, max_iteration=10000):
+                 telescopes_fluxes_method='polyfit', DEMC_walkers=2, DEMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
-        self.population = [] # to be recognize by all process during parallelization
-        self.DEMC_population_size = DEMC_population_size #Times number of dimensions!
-        self.max_iteration = max_iteration
+        self.DEMC_walkers = DEMC_walkers #times number of dimension!
+        self.DEMC_links = DEMC_links
+        self.DEMC_chains = []
 
     def fit_type(self):
-        return "Differential Evolution Markov Chain"
+        return "Monte Carlo Markov Chain (Affine Invariant)"
 
     def objective_function(self, fit_process_parameters):
+
+        likelihood = 0
+
+        for ind, parameter in enumerate(self.fit_parameters.keys()):
+
+            if (fit_process_parameters[ind]<self.fit_parameters[parameter][1][0]) | (fit_process_parameters[ind]>self.fit_parameters[parameter][1][1]):
+
+                return -np.inf
 
         model_parameters = fit_process_parameters[self.model_parameters_index]
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
-
-        likelihood = 0
 
         if self.model.photometry:
 
             if self.rescale_photometry:
 
                 rescaling_photometry_parameters = 10 ** (
-                    fit_process_parameters[self.rescale_photometry_parameters_index])
+                fit_process_parameters[self.rescale_photometry_parameters_index])
 
-                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
-                    self.model,
-                    pyLIMA_parameters,
-                    rescaling_photometry_parameters=rescaling_photometry_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(self.model,
+                                                                                                              pyLIMA_parameters,
+                                                                                                              rescaling_photometry_parameters= rescaling_photometry_parameters)
             else:
 
-                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(
-                    self.model,
-                    pyLIMA_parameters)
+                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(self.model,
+                                                                                                              pyLIMA_parameters)
 
             likelihood += photometric_likelihood
 
@@ -74,11 +76,15 @@ class DEMCfit(MLfit):
             residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
             errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
 
-            astrometric_likelihood = 0.5*np.sum(residus ** 2 + 2*np.log(errors)+np.log(2*np.pi))
+            astrometric_likelihood = 0.5 * np.sum(residus ** 2 + 2 * np.log(errors) + np.log(2 * np.pi))
 
             likelihood += astrometric_likelihood
 
         # Priors
+        if np.isnan(likelihood):
+            return -np.inf
+
+
         priors = self.get_priors()
 
         for ind, prior_pdf in enumerate(priors):
@@ -95,277 +101,98 @@ class DEMCfit(MLfit):
 
                     likelihood = np.inf
 
-        return likelihood
+        return -likelihood
 
-    def new_individual(self, ind1, pop):
 
-        parent1 = pop[ind1]
-
-        number_of_parents = np.random.randint(1, 3) * 2
-
-        indexes = np.random.choice(len(pop), number_of_parents, replace=False)
-        #try:
-
-        #    index1 = np.random.choice(len(pop), number_of_parents, replace=False)
-
-        #except:
-
-        #    index1 = np.random.choice(len(pop), number_of_parents)
-
-        #index2 = np.random.choice(len(pop[0]), number_of_parents, replace=False)
-        #crossover_index = np.random.choice(len(self.crossover), 1, p=self.prob_crossover)
-        #crossover = self.crossover[crossover_index]
-        crossover = np.random.uniform(0.0, 1.0/len(parent1[:-1])**0.5, len(parent1[:-1]))
-
-        mutate = np.random.uniform(0, 1, len(parent1[:-1])) < crossover
-        #mutate = np.random.uniform(0, 1, len(parent1[:-1])) < -1
-        if np.all(mutate == False):
-
-            rand = np.random.randint(0, len(mutate))
-            mutate[rand] = True
-
-        #mutation = np.random.uniform(-2, 2, len(parent1[:-1]))
-        eps1 = 10**-3
-        eps2 = 10**-7
-
-        mutation = np.random.uniform(1-eps1, 1+eps1, len(parent1[:-1]))
-        shifts = np.random.normal(0, eps2, len(parent1[:-1]))#*self.scale
-
-        gamma = 2.38/(2*len(indexes[::2])*len(parent1[:-1][mutate]))**0.5#*self.scale
-        #gamma = 2.38 / (2 * len(index1[::2]) * len(parent1[:-1][mutate])) ** 0.5
-        jumping_nodes = np.random.randint(0, 10)
-
-        if jumping_nodes == 5:
-
-            #mutation = np.ones(len(parent1[:-1]))
-            gamma = 1
-
-        mutation *= gamma
-
-        progress1 = np.sum([pop[i] for i in indexes[::2]], axis=0)
-        progress2 = np.sum([pop[i] for i in indexes[1::2]], axis=0)
-        #progress1 = np.sum([pop[i][j] for i in index1[::2] for j in index2[::2]], axis=0)
-        #progress2 = np.sum([pop[i][j] for i in index1[1::2] for j in index2[1::2]], axis=0)
-        progress = (progress1[:-1] - progress2[:-1]) * mutation
-
-        #print(gamma,progress)
-
-        child = np.copy(parent1)
-
-        child[:-1][mutate] += progress[mutate]
-        child[:-1] += shifts
-
-       # jump = np.zeros(len(self.crossover))
-       # nid = np.zeros(len(self.crossover))
-        #nid[crossover_index] += 1
-        accepted = np.zeros(len(parent1[:-1]))
-
-        for ind, param in enumerate(self.fit_parameters.keys()):
-
-            if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
-
-                progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
-                child[ind] = parent1[ind]+progress[ind]
-
-                #child[ind] = parent1[ind]
-                #progress[ind] = 0
-                #mutate[ind] = False
-
-                #return parent1, accepted#, jump, nid
-
-        objective = self.objective_function(child[:-1])
-
-        casino = np.random.uniform(0, 1)
-        probability = np.exp((-objective + parent1[-1]))
-
-        if probability > casino:
-
-            child[-1] = objective
-            #jump[crossover_index] += np.sum(progress[mutate]**2/var_pop[:-1][mutate])
-            accepted[mutate] += 1
-
-            return child, accepted#, jump, nid
-
-        else:
-
-            return parent1, accepted#, jump, nid
-
-    def swap_temperatures(self, population):
-
-        pop = np.copy(population)
-        number_of_swap = int(len(population)/5)
-
-        if (number_of_swap % 2) == 0:
-
-            pass
-
-        else:
-
-            number_of_swap += 1
-
-        choices = np.random.choice(len(population),number_of_swap, replace=False)
-
-        for ind in np.arange(0, number_of_swap, 2):
-
-            index = choices[ind]
-            index2 = choices[ind+1]
-
-            MH_temp = population[index2,-1]*self.betas[index]+population[index,-1]*self.betas[index2]
-            MH_temp -= population[index,-1]*self.betas[index]+population[index2,-1]*self.betas[index2]
-
-            casino = np.random.uniform(0, 1)
-            probability = np.exp((-MH_temp))
-
-            if probability > casino:
-
-                child1 = np.copy(population[index2])
-                child2 = np.copy(population[index])
-
-                self.swap[index] += 1
-                self.swap[index2] += 1
-
-            else:
-
-                child1 = np.copy(population[index])
-                child2 = np.copy(population[index2])
-
-            pop[index] = child1
-            pop[index2] = child2
-
-        return np.array(pop)
-
-    def fit(self, initial_population=[], computational_pool=None):
+    def fit(self, initial_population=[], computational_pool=False):
 
         start_time = python_time.time()
 
-        #n_crossover = len(self.fit_parameters.keys())
-        n_crossover = 3
-        self.crossover = np.arange(1,n_crossover+1)/n_crossover
-        self.prob_crossover = np.ones(n_crossover)/n_crossover
-        #self.scale = np.ones(len(self.fit_parameters.keys()))
-        number_of_walkers = int(np.round(self.DEMC_population_size*len(self.fit_parameters)))
-
-        self.swap = np.zeros(number_of_walkers)
+        number_of_parameters = len(self.fit_parameters)
+        nwalkers = self.DEMC_walkers * number_of_parameters
 
         if initial_population == []:
 
             import scipy.stats as ss
             sampler = ss.qmc.LatinHypercube(d=len(self.fit_parameters))
-            #self.betas = np.logspace(-3, 0, number_of_walkers)
-            #self.betas = np.linspace(0,1, number_of_walkers)
+            # self.betas = np.logspace(-3, 0, number_of_walkers)
+            # self.betas = np.linspace(0,1, number_of_walkers)
 
-            for i in range(number_of_walkers):
+            for i in range(nwalkers):
 
                 individual = sampler.random(n=1)[0]
 
-                for ind,j in enumerate(self.fit_parameters.keys()):
-
-                    individual[ind] = individual[ind]*(self.fit_parameters[j][1][1]-self.fit_parameters[j][1][0])+self.fit_parameters[j][1][0]
+                for ind, j in enumerate(self.fit_parameters.keys()):
+                    individual[ind] = individual[ind] * (self.fit_parameters[j][1][1] - self.fit_parameters[j][1][0]) + \
+                                      self.fit_parameters[j][1][0]
 
                 individual = np.array(individual)
                 individual = np.r_[individual]
 
                 objective = self.objective_function(individual)
-                individual = np.r_[individual,objective]
+                individual = np.r_[individual, objective]
+
                 initial_population.append(individual)
 
+        population = np.array(initial_population)[:,:-1]
+
+
+
+        nlinks = self.DEMC_links
+
+        if computational_pool:
+
+            pool = computational_pool
 
         else:
+            pool = None
+
+        try:
+            # create a new MPI pool
+            from schwimmbad import MPIPool
+            pool = MPIPool()
+            if not pool.is_master():
+                pool.wait()
+                sys.exit(0)
+        except:
 
             pass
 
-        initial_population = np.array(initial_population)
+        if pool:
 
-        all_population = []
-        all_population.append(initial_population)
-        all_acceptance = []
+            with pool:
 
-        loop_population = np.copy(initial_population)
+                sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.objective_function,
+                                                a=2.0, moves=[(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)],
+                                                pool=pool)
 
-        #Jumps = np.ones(len(self.crossover))
+                sampler.run_mcmc(population, nlinks, progress=True)
+        else:
 
-       # N_id = np.ones(len(self.crossover))
-        for loop in tqdm(range(self.max_iteration)):
+            sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters, self.objective_function,
+                                            a=2.0, pool=pool)
 
-            indexes = [(i, loop_population) for i in range(len(loop_population))]
+            sampler.run_mcmc(population, nlinks, progress=True)
 
-            if computational_pool is not None:
-                #breakpoint()
-
-                new_step = computational_pool.starmap(self.new_individual, indexes)
-                loop_population = np.array([i[0] for i in new_step])
-                acceptance = np.array([i[1] for i in new_step])
-                #jumps = new_step[:,2]
-               # n_id = new_step[:,3]
-                #loop_population = self.swap_temperatures(loop_population)
-
-            else:
-
-                #var_pop = np.var(loop_population, axis=0)
-                loop_population = []
-                acceptance = []
-                #jumps = []
-                #n_id = []
-
-                for j, ind in enumerate(indexes):
-
-                    new_step = self.new_individual(ind[0], ind[1])
-                    loop_population.append(new_step[0])
-                    acceptance.append(new_step[1])
-                    #jumps.append(new_step[2])
-                    #n_id.append(new_step[3])
-
-                loop_population = np.array(loop_population)
-                acceptance = np.array(acceptance)
-                #loop_population = self.swap_temperatures(loop_population)
-
-                #jumps = np.array(jumps)
-                #n_id = np.array(n_id)
-
-            #if loop<0.1*self.max_iteration:
-
-            #    jumps = np.sum(jumps,axis=0)
-            #    mask = jumps == 0
-            #    jumps[mask] = np.max(jumps)
-            #    Jumps += jumps
-
-            #    n_id = np.sum(n_id, axis=0)
-            #    mask = n_id == 0
-            #    n_id[mask] = 1
-            #    N_id += n_id
-
-            #    pCR = Jumps/N_id
-            #    self.prob_crossover = pCR/np.sum(pCR)
-
-            all_population.append(loop_population)
-            all_acceptance.append(acceptance)
-
-            #print(accepted,np.min(loop_population[:,-1]))
-            #import pdb;
-            #pdb.set_trace()
-
-            #mask = accepted<0.1
-            #self.scale[mask] /=2
-
-            #mask = accepted > 0.4
-            #self.scale[mask] *= 2
-
-        self.population = np.array(all_population)
-        self.acceptance = np.array(all_acceptance)
-        DEMC_population = np.copy(self.population)
-
-        print(self.swap/self.max_iteration)
         computation_time = python_time.time() - start_time
+
+        mcmc_shape = list(sampler.get_chain().shape)
+        mcmc_shape[-1] += 1
+        DEMC_chains = np.zeros(mcmc_shape)
+        DEMC_chains[:, :, :-1] = sampler.get_chain()
+        DEMC_chains[:, :, -1] = sampler.get_log_prob()
+
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
-        best_model_index = np.where(DEMC_population[:, :, -1] == DEMC_population[:, :, -1].min())
-        fit_results = DEMC_population[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], :-1]
-        fit_log_likelihood = DEMC_population[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0],-1]
+        best_model_index = np.where(DEMC_chains[:, :, -1] == DEMC_chains[:, :, -1].max())
+        fit_results = DEMC_chains[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], :-1]
+        fit_log_likelihood = DEMC_chains[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], -1]
 
-        print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
+        print('best_model:', fit_results, 'ln(likelihood)', fit_log_likelihood)
 
-        self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
-                            'DEMC_population': DEMC_population, 'fit_time': computation_time}
+        self.fit_results = {'best_model': fit_results, 'ln(likelihood)': fit_log_likelihood,
+                            'DEMC_chains': DEMC_chains, 'fit_time': computation_time}
+
 
     def fit_outputs(self):
 
@@ -374,7 +201,7 @@ class DEMCfit(MLfit):
 
         parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
 
-        chains = self.fit_results['DEMC_population']
+        chains = self.fit_results['MCMC_chains']
         samples = chains.reshape(-1,chains.shape[2])
-        samples_to_plot = samples[:,:len(parameters)]
+        samples_to_plot = samples[int(len(samples)/2):,:len(parameters)]
         pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
