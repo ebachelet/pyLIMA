@@ -8,10 +8,11 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     Rmatrix = pyLIMA_parameters.Rmatrix
     orbital_velocity = pyLIMA_parameters.orbital_velocity
     a_true = pyLIMA_parameters.a_true
+    t_periastron = pyLIMA_parameters.t_periastron
 
-    if om_model[0]=='Circular': #Circular
+    if om_model[0] == 'Circular': #Circular
 
-        theta = orbital_velocity * (time - om_model[1])/365.25
+        theta = orbital_velocity * (time - t_periastron)/365.25
 
         r_prime = a_true*np.array([np.cos(theta), np.sin(theta)])
 
@@ -20,7 +21,6 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     else: #Keplerian/
 
         eccentricity = pyLIMA_parameters.eccentricity
-        t_periastron = pyLIMA_parameters.t_periastron
 
         eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity/365.25)
 
@@ -69,8 +69,8 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
         sinw = separation_z/np.sin(inclination)/a_true
         omega_peri = np.arctan2(sinw, cosw)
 
+        t_periastron = t0_om
         true_anomaly = 0
-        t_periastron = 0
 
         from scipy.spatial.transform import Rotation
 

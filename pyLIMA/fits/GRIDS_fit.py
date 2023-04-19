@@ -2,10 +2,11 @@ import numpy as np
 import time as python_time
 from tqdm import tqdm
 import scipy.optimize as so
+import sys
 
 from pyLIMA.fits.ML_fit import MLfit
 import pyLIMA.fits.objective_functions
-
+from pyLIMA.outputs import pyLIMA_plots
 
 class GRIDfit(MLfit):
 
@@ -189,14 +190,23 @@ class GRIDfit(MLfit):
                 new_step = self.fit_on_grid_pixel([hyper_grid[j]])
                 population.append(new_step)
 
-            population = np.array(population)
-        import pdb;
-        pdb.set_trace()
+            GRIDS_population = np.array(population)
 
-        #grid_results = list(
-        #    computational_map(emcee.ensemble._function_wrapper(self.optimization_on_grid_pixel, args=[], kwargs={}),
-        # #                     hyper_grid))
+            computation_time = python_time.time() - start_time
+            print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
 
-        #return np.array(grid_results)
+
+            best_model_index = GRIDS_population[:,-1].argmin()
+
+            print('best_model:', GRIDS_population[best_model_index,:-1], '-ln(likelihood)', GRIDS_population[best_model_index,-1])
+
+            self.fit_results = {'best_model': GRIDS_population[best_model_index,:-1], '-(ln_likelihood)': GRIDS_population[best_model_index,-1],
+                                'fit_time': computation_time,
+                                'GRIDS_population': GRIDS_population}
+
+    def fit_outputs(self):
+
+        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
+        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
 
 

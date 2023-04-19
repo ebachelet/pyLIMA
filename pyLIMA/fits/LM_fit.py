@@ -64,7 +64,6 @@ class LMfit(MLfit):
             n_data = n_data + telescope.n_data('flux')
 
 
-
         if self.model.Jacobian_flag != 'No Way':
 
             jacobian_function = self.residuals_Jacobian

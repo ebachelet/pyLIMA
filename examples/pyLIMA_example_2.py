@@ -50,8 +50,8 @@ your_event.find_survey('OGLE')
 your_event.check_event()
 
 ### Set the microlensing limb-darkening coefficients (gamma) for each telescope:
-your_event.telescopes[0].gamma = 0.5
-your_event.telescopes[1].gamma = 0.5
+your_event.telescopes[0].ld_gamma = 0.5
+your_event.telescopes[1].ld_gamma = 0.5
 
 ### Fit an FSPL model to the data using the Trust Region Reflective (TRF) algorithm:
 ### We can make this faster by using the results from tutorial 1.
@@ -80,8 +80,11 @@ plt.show()
 ### We need to specify within pyLIMA how the new parameter depends on the old parameter.
 ### In essence, we need to define a transformation function within pyLIMA.
 ### For this particular transformation, i.e. from rho to log(rho), pyLIMA already provides the necessary functions to convert back and forth: 
-from pyLIMA.fits import fancy_parameters
-fancy_parameters.fancy_parameters_dictionnary = {'log_rho':'rho'}
+
+fancy= {'log_rho':'rho'}
+fspl2 = FSPL_model.FSPLmodel(your_event,fancy_parameters=fancy)
+
+
 
 ### To see all available default options within pyLIMA, please look at the fancy_parameters module
 ### or type dir(fancy_parameters) in the Python prompt.
@@ -92,7 +95,7 @@ fancy_parameters.fancy_parameters_dictionnary = {'log_rho':'rho'}
 guess_parameters2 = [79.9, 0.008, 10.1, np.log10(0.023)]
 
 ### We need to tell the fit to use fancy_parameters, otherwise it will use the defaults.
-my_fit2 = TRF_fit.TRFfit(fspl, fancy_parameters=True)
+my_fit2 = TRF_fit.TRFfit(fspl2)
 my_fit2.model_parameters_guess = guess_parameters2
 my_fit2.fit()
 
@@ -101,6 +104,9 @@ my_fit2.fit()
 ### OK, try something more complicated now: define t_star = rho*tE and log_rho = log(rho).
 ### log_rho is already provided by pyLIMA, but t_star isn't. 
 ### So we need to tell pyLIMA what kind of change we want:
+
+from pyLIMA.models import fancy_parameters
+
 def t_star(x):
     return x.rho*x.tE
 
@@ -112,16 +118,19 @@ def tE(x):
 setattr(fancy_parameters, 'tE', tE)
 
 ### Update the parameter dictionary with the new definitions
-fancy_parameters.fancy_parameters_dictionnary = {'log_rho':'rho', 't_star':'tE'}
+fancy = {'log_rho':'rho', 't_star':'tE'}
+fspl3 = FSPL_model.FSPLmodel(your_event,fancy_parameters=fancy)
+
 
 ### t_star = rho * tE so in our example that is 10.1 * 0.023 (see guess_parameters2 above):
 guess_parameters3 = [79.9, 0.008, 10.1 * 0.023, np.log10(0.023)]
 
 ### Do the fit using the new parameter definitions:
-my_fit3 = TRF_fit.TRFfit(fspl, fancy_parameters=True)
+my_fit3 = TRF_fit.TRFfit(fspl3)
 my_fit3.model_parameters_guess = guess_parameters3
 my_fit3.fit()
-
+my_fit3.fit_outputs()
+plt.show()
 ### Let's look at the optimized parameters and the chi^2 of the fit:
 my_fit3.fit_results['best_model']
 my_fit3.fit_results['chi2']

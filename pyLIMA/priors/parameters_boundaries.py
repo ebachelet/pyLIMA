@@ -87,7 +87,7 @@ def r_s_boundaries():
 
 def a_s_boundaries():
 
-    return (0.5,10)
+    return (0.500001,10)
 
 def rE_boundaries():
 

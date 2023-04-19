@@ -19,7 +19,6 @@ class TRFfit(LMfit):
         # use the analytical Jacobian (faster) if no second order are present, else let the
         # algorithm find it.
         self.guess = self.initial_guess()
-
         bounds_min = [self.fit_parameters[key][1][0] for key in self.fit_parameters.keys()]
         bounds_max = [self.fit_parameters[key][1][1] for key in self.fit_parameters.keys()]
 

@@ -114,8 +114,8 @@ plt.show()
 ### Let's try to fit for it.
 
 ### Set the microlensing limb-darkening coefficients (gamma) for each telescope:
-your_event.telescopes[0].gamma = 0.5
-your_event.telescopes[1].gamma = 0.5
+your_event.telescopes[0].ld_gamma = 0.5
+your_event.telescopes[1].ld_gamma = 0.5
 
 ### Fit again:
 my_fit4 = DE_fit.DEfit(fspl)

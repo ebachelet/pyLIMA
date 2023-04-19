@@ -151,7 +151,7 @@ class DEfit(MLfit):
         print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
 
         self.fit_results = {'best_model': fit_results, '-(ln_likelihood)' : fit_log_likelihood, 'fit_time': computation_time,
-                            'DE_population': DE_population, 'fit_time' : computation_time}
+                            'DE_population': DE_population}
 
     def fit_outputs(self):
 

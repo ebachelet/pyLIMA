@@ -98,13 +98,13 @@ class DREAMfit(MLfit):
 
         return likelihood
 
-    def new_individual(self, parent1, pop):
+    def new_individual(self, parent0, parent1, parent2, parent3):
 
-        np.random.seed(random.randint(0, 100000))
+        #np.random.seed(random.randint(0, 100000))
 
-        number_of_parents = np.random.randint(5, 10) * 2
+        #number_of_parents = np.random.randint(5, 10) * 2
 
-        indexes = np.random.choice(len(pop), number_of_parents, replace=False)
+        #indexes = np.random.choice(len(pop), number_of_parents, replace=False)
         #print(parent1[-1],indexes)
         #try:
 
@@ -117,9 +117,10 @@ class DREAMfit(MLfit):
         #index2 = np.random.choice(len(pop[0]), number_of_parents, replace=False)
         #crossover_index = np.random.choice(len(self.crossover), 1, p=self.prob_crossover)
         #crossover = self.crossover[crossover_index]
-        crossover = np.random.uniform(0.0, 1.0, len(parent1[:-1]))
+        crossover = np.random.uniform(0.0,1.0, len(parent0[:-1]))
 
-        mutate = np.random.uniform(0, 1, len(parent1[:-1])) < crossover
+        mutate = np.random.uniform(0, 1, len(parent0[:-1])) < crossover
+        #breakpoint()
         #mutate = np.random.uniform(0, 1, len(parent1[:-1])) < -1
         if np.all(mutate == False):
 
@@ -130,10 +131,10 @@ class DREAMfit(MLfit):
         eps1 = 10**-3
         eps2 = 10**-7
 
-        mutation = np.random.uniform(1-eps1, 1+eps1, len(parent1[:-1]))
-        shifts = np.random.normal(0, eps2, len(parent1[:-1]))#*self.scale
+        mutation = np.random.uniform(1-eps1, 1+eps1, len(parent0[:-1]))
+        shifts = np.random.normal(0, eps2, len(parent0[:-1]))#*self.scale
 
-        gamma = 2.38/(2*number_of_parents*len(parent1[:-1][mutate]))**0.5#*self.scale
+        gamma = 2.38/(2*len(parent0[:-1][mutate]))**0.5#*self.scale
         #gamma = 2.38 / (2 * len(index1[::2]) * len(parent1[:-1][mutate])) ** 0.5
         jumping_nodes = np.random.randint(0, 10)
 
@@ -144,23 +145,27 @@ class DREAMfit(MLfit):
 
         mutation *= gamma
 
-        progress1 = np.sum([pop[i] for i in indexes[::2]], axis=0)
-        progress2 = np.sum([pop[i] for i in indexes[1::2]], axis=0)
+        #progress1 = np.sum([pop[i] for i in indexes[::2]], axis=0)
+        #progress2 = np.sum([pop[i] for i in indexes[1::2]], axis=0)
         #progress1 = np.sum([pop[i][j] for i in index1[::2] for j in index2[::2]], axis=0)
         #progress2 = np.sum([pop[i][j] for i in index1[1::2] for j in index2[1::2]], axis=0)
+
+        progress1 = parent1
+        progress2 = parent2
+
         progress = (progress1[:-1] - progress2[:-1]) * mutation
 
         if jumping_nodes == 9:
            #
             #snooker
-            z3 = pop[np.random.choice(len(pop), 1)]
-            dz = parent1-z3
-            progress = dz[0][:-1]
-            #zp1 = np.dot(progress1, dz.T)
-            #zp2 = np.dot(progress2, dz.T)
-            #progress = np.random.uniform(1.2, 2.2) * (zp1-zp2) * dz/np.dot(dz, dz.T)
-            #progress = progress[0][:-1]
-           # breakpoint()
+
+            dz = parent0-parent3
+            #progress = dz[:-1]
+            zp1 = np.dot(parent1, dz.T)
+            zp2 = np.dot(parent2, dz.T)
+            progress = np.random.uniform(1.2, 2.2) * (zp1-zp2) * dz/np.dot(dz, dz.T)
+            progress = progress[:-1]
+            #breakpoint()
 
         if np.all(np.isfinite(progress)):
 
@@ -168,10 +173,10 @@ class DREAMfit(MLfit):
 
         else:
 
-                progress = np.ones(len(parent1[:-1]))
+                progress = np.ones(len(parent0[:-1]))
         #print(gamma,progress)
 
-        child = np.copy(parent1)
+        child = np.copy(parent0)
 
         child[:-1][mutate] += progress[mutate]
         child[:-1] += shifts
@@ -179,37 +184,38 @@ class DREAMfit(MLfit):
        # jump = np.zeros(len(self.crossover))
        # nid = np.zeros(len(self.crossover))
         #nid[crossover_index] += 1
-        accepted = np.zeros(len(parent1[:-1]))
+        accepted = np.zeros(len(parent0[:-1]))
 
         for ind, param in enumerate(self.fit_parameters.keys()):
 
             if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
 
-                progress[ind] = (pop[indexes[0]][ind]-parent1[ind])/2
-                child[ind] = parent1[ind]+progress[ind]
+                progress[ind] = (parent1[ind]-parent0[ind])/2
+                child[ind] = parent0[ind]+progress[ind]
 
                 #child[ind] = parent1[ind]
                 #progress[ind] = 0
                 #mutate[ind] = False
 
-                #return parent1, accepted#, jump, nid
+                #return parent0, accepted#, jump, nid
 
         objective = self.objective_function(child[:-1])
         #breakpoint()
         casino = np.random.uniform(0, 1)
-        probability = np.exp((-objective + parent1[-1]))
+        probability = np.exp((-objective + parent0[-1]))
 
         if probability > casino:
 
             child[-1] = objective
             #jump[crossover_index] += np.sum(progress[mutate]**2/var_pop[:-1][mutate])
             accepted[mutate] += 1
-
+            #self.all.append(child)
             return child, accepted#, jump, nid
 
         else:
-
-            return parent1, accepted#, jump, nid
+            child[-1] = objective
+            #self.all.append(child)
+            return parent0, accepted#, jump, nid
 
     def swap_temperatures(self, population):
 
@@ -304,13 +310,18 @@ class DREAMfit(MLfit):
         all_acceptance = []
 
         loop_population = np.copy(initial_population)
-
+        self.all = Z.copy()
         #Jumps = np.ones(len(self.crossover))
         Z_prime = np.array(Z)
        # N_id = np.ones(len(self.crossover))
         for loop in tqdm(range(self.max_iteration)):
 
-            indexes = [(loop_population[i], Z_prime) for i in range(len(loop_population))]
+            parent_indexes = np.random.choice(len(Z_prime), 3*number_of_walkers, replace=False)
+            parents1 = Z_prime[parent_indexes[::2]]
+            parents2 = Z_prime[parent_indexes[1::2]]
+            parents3 = Z_prime[parent_indexes[2::2]]
+
+            indexes = [(loop_population[i], parents1[i], parents2[i],parents3[i]) for i in range(len(loop_population))]
 
             if computational_pool is not None:
                 #breakpoint()
@@ -332,7 +343,7 @@ class DREAMfit(MLfit):
 
                 for j, ind in enumerate(indexes):
 
-                    new_step = self.new_individual(ind[0], ind[1])
+                    new_step = self.new_individual(ind[0], ind[1],ind[2],ind[3])
                     loop_population.append(new_step[0])
                     acceptance.append(new_step[1])
                     #jumps.append(new_step[2])
@@ -359,14 +370,17 @@ class DREAMfit(MLfit):
 
             #    pCR = Jumps/N_id
             #    self.prob_crossover = pCR/np.sum(pCR)
+            #breakpoint()
 
             if loop%10==0:
 
-                Z+=loop_population.tolist()
+                Z += loop_population.tolist()
                 Z_prime = np.array(Z)
+
             all_population.append(loop_population)
             all_acceptance.append(acceptance)
 
+            print(loop,np.array(all_population)[:,:,-1].min())
             #print(accepted,np.min(loop_population[:,-1]))
             #import pdb;
             #pdb.set_trace()

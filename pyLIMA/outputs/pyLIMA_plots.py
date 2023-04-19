@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator
 import cycler
 import matplotlib
+import sys
 
 from bokeh.io import output_file, show
 from bokeh.layouts import gridplot, grid, layout, row
@@ -31,10 +32,24 @@ plot_residuals_windows = 0.21
 MAX_PLOT_TICKS = 2
 MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10])
 
-list_of_fake_telescopes = []
+# this is a pointer to the module object instance itself.
+thismodule = sys.modules[__name__]
+
+thismodule.list_of_fake_telescopes = []
+thismodule.saved_model = None
+
+
 
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
+
+    if microlensing_model == thismodule.saved_model:
+
+        list_of_fake_telescopes = thismodule.list_of_fake_telescopes
+
+    else:
+
+        list_of_fake_telescopes = []
 
     if len(list_of_fake_telescopes) == 0:
 
@@ -69,9 +84,14 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     for telescope in microlensing_model.event.telescopes:
 
-                        if telescope.location =='Earth':
+                        if telescope.location == 'Earth':
 
                             model_time = np.r_[model_time, telescope.lightcurve_magnitude['time'].value]
+
+                            symmetric = 2*pyLIMA_parameters.t0-telescope.lightcurve_magnitude['time'].value
+                            model_time = np.r_[model_time, symmetric]
+
+
 
                     model_time.sort()
 
@@ -143,7 +163,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_time = np.r_[model_time1, model_time2]
 
                     for telescope in microlensing_model.event.telescopes:
+
                         model_time = np.r_[model_time, telescope.lightcurve_magnitude['time'].value]
+
+                        symmetric = 2 * pyLIMA_parameters.t0 - telescope.lightcurve_magnitude['time'].value
+                        model_time = np.r_[model_time, symmetric]
 
                     model_time.sort()
 
@@ -188,6 +212,9 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                         model_telescope.compute_parallax(parallax)
 
                     list_of_fake_telescopes.append(model_telescope)
+
+        thismodule.saved_model = microlensing_model
+        thismodule.list_of_fake_telescopes = list_of_fake_telescopes
 
     return list_of_fake_telescopes
 

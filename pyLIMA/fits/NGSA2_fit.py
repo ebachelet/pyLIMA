@@ -10,7 +10,7 @@ from pyLIMA.priors import parameters_boundaries
 
 class MLProblem(ElementwiseProblem):
 
-    def __init__(self, bounds, objective_photometry=None, objective_astrometry=None):
+    def __init__(self, bounds, objective_photometry=None, objective_astrometry=None, **kwargs):
 
         n_var = len(bounds)
         n_obj = 0
@@ -38,7 +38,8 @@ class MLProblem(ElementwiseProblem):
                          n_obj=n_obj,
                          n_constr=0,
                          xl=np.array([i[0] for i in bounds]),
-                         xu=np.array([i[1] for i in bounds]))
+                         xu=np.array([i[1] for i in bounds]),
+                         **kwargs)
 
 
 
@@ -63,54 +64,7 @@ class NGSA2fit(MLfit):
     def fit_type(self):
         return "Non-dominated Sorting Genetic Algorithm"
 
-    def define_fit_parameters(self):
 
-        fit_parameters_dictionnary = self.model.paczynski_model_parameters()
-
-        fit_parameters_dictionnary_updated = self.model.astrometric_model_parameters(fit_parameters_dictionnary)
-
-        fit_parameters_dictionnary_updated = self.model.second_order_model_parameters(
-            fit_parameters_dictionnary_updated)
-
-        if self.telescopes_fluxes_method == 'NGSA2':
-
-            fit_parameters_dictionnary_updated = self.model.telescopes_fluxes_model_parameters(
-                fit_parameters_dictionnary_updated)
-
-        if self.rescale_photometry:
-
-            for telescope in self.model.event.telescopes:
-
-                if telescope.lightcurve_flux is not None:
-
-                    fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
-                        len(fit_parameters_dictionnary_updated)
-
-        if self.rescale_astrometry:
-
-            for telescope in self.model.event.telescopes:
-
-                if telescope.astrometry is not None:
-
-                    fit_parameters_dictionnary_updated['logk_astrometry_' + telescope.name] = \
-                        len(fit_parameters_dictionnary_updated)
-
-
-        self.fit_parameters = OrderedDict(
-            sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
-
-        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
-                                       i in self.fit_parameters.keys()]
-
-        self.rescale_photometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if
-                                                    'logk_photometry' in i]
-
-        self.rescale_astrometry_parameters_index = [self.fit_parameters[i] for i in self.fit_parameters.keys() if 'logk_astrometry' in i]
-
-        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
-
-        for ind, key in enumerate(self.fit_parameters.keys()):
-            self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
 
     def likelihood_photometry(self, fit_process_parameters):
 
@@ -173,7 +127,7 @@ class NGSA2fit(MLfit):
         return astrometric_likelihood
 
 
-    def fit(self):
+    def fit(self,computational_pool=None):
 
         starting_time = python_time.time()
 
@@ -184,15 +138,15 @@ class NGSA2fit(MLfit):
 
         algorithm = NSGA2(
             pop_size=40,
-            n_offsprings=10,
-            sampling=get_sampling("real_random"),
-            crossover=get_crossover("real_sbx", prob=0.9, eta=15),
-            mutation=get_mutation("real_pm", eta=20),
-            eliminate_duplicates=True)
+            n_offsprings=10,)
+            #sampling=get_sampling("real_random"),
+            #crossover=get_crossover("real_sbx", prob=0.9, eta=15),
+            #mutation=get_mutation("real_pm", eta=20),
+            #eliminate_duplicates=True)
 
         from pymoo.factory import get_termination
 
-        termination = get_termination('default',f_tol = 10**-8,  n_max_gen=5000,)
+        #termination = get_termination('default',f_tol = 10**-8,  n_max_gen=5000,)
 
         if self.model.astrometry:
 
@@ -212,10 +166,24 @@ class NGSA2fit(MLfit):
 
         bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys()]
 
-        problem = MLProblem(bounds, photometry, astrometry)
 
         from pymoo.optimize import minimize
+        from pymoo.algorithms.soo.nonconvex.pattern import PatternSearch
+        from pymoo.algorithms.soo.nonconvex.isres import ISRES
+        from pymoo.core.problem import StarmapParallelization
 
+        if computational_pool:
+            runner = StarmapParallelization(computational_pool.starmap)
+
+        problem = MLProblem(bounds, photometry, astrometry,elementwise_runner=runner)
+
+        breakpoint()
+
+        algorithm = ISRES(n_offsprings=len(self.fit_parameters)*10, rule=1.0 / 7.0, gamma=0.85, alpha=0.2)
+
+        res = minimize(problem, algorithm, ("n_gen", 1000),verbose=True, seed=1)
+
+        breakpoint()
         res = minimize(problem,
                        algorithm,
                        termination,
