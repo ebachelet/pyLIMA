@@ -61,17 +61,15 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
                 residus_ra /= err_ra
                 residus_dec /= err_dec
 
-            Residuals_ra = np.append(Residuals_ra, residus_ra)
-            Residuals_dec = np.append(Residuals_dec, residus_dec)
+            Residuals_ra.append(residus_ra)
+            Residuals_dec.append(residus_dec)
 
-            err_ra_astrometry = np.append(err_ra_astrometry, err_ra)
-            err_dec_astrometry = np.append(err_dec_astrometry, err_dec)
+            err_ra_astrometry.append(err_ra)
+            err_dec_astrometry.append(err_dec)
 
             ind += 1
 
-    residus = np.c_[Residuals_ra, err_ra_astrometry, Residuals_dec, err_dec_astrometry]
-
-    return residus
+    return Residuals_ra, Residuals_dec, err_ra_astrometry, err_dec_astrometry
 
 
 def photometric_residuals(flux, photometric_model):
@@ -129,8 +127,8 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
 
                 residus /= err_flux
 
-            residuals = np.append(residuals, residus)
-            errfluxes = np.append(errfluxes, err_flux)
+            residuals.append(residus)
+            errfluxes.append(err_flux)
 
             ind += 1
        
@@ -143,10 +141,10 @@ def photometric_chi2(telescope, model, pyLIMA_parameters):
 
 def all_telescope_photometric_chi2(model, pyLIMA_parameters,rescaling_parameters=None):
 
-    residuals,errfluxes = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,
+    residuals, errfluxes = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,
                                                     rescaling_photometry_parameters=rescaling_parameters)
 
-    chi2 = np.sum(residuals**2)
+    chi2 = np.sum(np.concatenate(residuals)**2)
 
     return chi2
 def all_telescope_photometric_likelihood(model, pyLIMA_parameters, rescaling_photometry_parameters=None):
@@ -154,7 +152,7 @@ def all_telescope_photometric_likelihood(model, pyLIMA_parameters, rescaling_pho
     residus, errflux = all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=True,
                                                   rescaling_photometry_parameters=rescaling_photometry_parameters)
 
-    ln_likelihood = 0.5 * np.sum(residus ** 2 + 2 * np.log(errflux) + np.log(2 * np.pi))
+    ln_likelihood = 0.5 * np.sum(np.concatenate(residus) ** 2 + 2 * np.log(np.concatenate(errflux)) + np.log(2 * np.pi))
 
     return ln_likelihood
 

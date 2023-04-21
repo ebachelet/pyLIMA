@@ -102,7 +102,7 @@ class MLmodel(object):
 
         self.model_dictionnary = {}
         self.pyLIMA_standards_dictionnary = {}
-        self.fancy_to_pyLIMA_dictionnary = fancy_parameters
+        self.fancy_to_pyLIMA_dictionnary = fancy_parameters.copy()
         self.pyLIMA_to_fancy = {}
         self.fancy_to_pyLIMA = {}
 

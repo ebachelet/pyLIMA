@@ -5,15 +5,10 @@ from bokeh.io import output_file, show
 
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.outputs import pyLIMA_plots
+import pyLIMA.fits.objective_functions as objective_functions
 
 from bokeh.layouts import gridplot, row
 from bokeh.plotting import output_file, save
-
-
-
-### Standard fancy parameters functions
-
-
 
 class FitException(Exception):
     pass
@@ -187,41 +182,29 @@ class MLfit(object):
 
     def objective_function(self):
 
-        likelihood_photometry = self.likelihood_photometry()
-        likelihood_astrometry = self.likelihood_astrometry()
+       pass
 
-        return likelihood_photometry+likelihood_astrometry
+    def get_priors(self, parameters):
 
-    def covariance_matrix(self, extra_parameters=None):
-
-        photometric_errors = np.hstack([i.lightcurve_flux['err_flux'].value for i in self.model.event.telescopes])
-
-        errors = photometric_errors
-        basic_covariance_matrix = np.zeros((len(errors),
-                                            len(errors)))
-
-        np.fill_diagonal(basic_covariance_matrix, errors**2)
-
-        covariance = basic_covariance_matrix
-
-        return covariance
-
-
-    def get_priors(self):
+        ln_likelihood = 0
 
         if self.priors is not None:
 
-            priors = []
+            for ind, prior_pdf in enumerate(self.priors):
 
-            for prior in self.priors:
+                if prior_pdf is not None:
 
-                priors.append(prior)
+                    probability = prior_pdf.pdf(parameters[ind])
 
-        if self.priors is None:
+                    if probability > 0:
 
-            priors = [None]*len(self.fit_parameters)
+                        ln_likelihood += -np.log(probability)
 
-        return priors
+                    else:
+
+                        ln_likelihood = np.inf
+
+        return ln_likelihood
 
 
 
@@ -396,27 +379,191 @@ class MLfit(object):
             if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):
 
                fit_parameters_guess[ind] = self.fit_parameters[param][1][0]
+               print( 'WARNING: Setting the '+param+' to the lower limit '+str(fit_parameters_guess[ind]))
 
             if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
 
                 fit_parameters_guess[ind] = self.fit_parameters[param][1][1]
-
-
-
-
-
+                print( 'WARNING: Setting the '+param+' to the upper limit '+str(fit_parameters_guess[ind]))
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
-        print('Using guess: ',fit_parameters_guess)
+        print('Using guess: ', fit_parameters_guess)
         return fit_parameters_guess
 
-    def likelihood_astrometry(self):
 
-        return 0
-    def likelihood_photometry(self):
+    def model_residuals(self, parameters):
 
-        import pyLIMA.fits.residuals
-        return 0
+        parameters = np.array(parameters)
+        residus = {'photometry':[],'astrometry':[]}
+        errors = residus.copy()
+
+        if self.model.photometry:
+
+            residuals_photometry, errors_flux = self.photometric_model_residuals(parameters)
+            residus['photometry'] = residuals_photometry
+            errors['photometry'] = errors_flux
+
+        if self.model.astrometry:
+
+            residuals_astrometry, errors_astrometry = self.photometric_model_residuals(parameters)
+            residus['astrometry'] = residuals_astrometry
+            errors['astrometry'] = errors_astrometry
+
+        return residus, errors
+
+    def photometric_model_residuals(self, parameters):
+
+        parameters = np.array(parameters)
+
+        model_parameters = parameters[self.model_parameters_index]
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        if self.rescale_photometry:
+
+            rescaling_photometry_parameters = 10 ** (parameters[self.rescale_photometry_parameters_index])
+
+        else:
+
+            rescaling_photometry_parameters = None
+
+
+        residus_photometry, errflux_photometry = objective_functions.all_telescope_photometric_residuals(
+            self.model, pyLIMA_parameters,
+            norm=False,
+            rescaling_photometry_parameters=rescaling_photometry_parameters)
+
+        return residus_photometry, errflux_photometry
+
+    def astrometric_model_residuals(self, parameters):
+
+        parameters = np.array(parameters)
+
+        model_parameters = parameters[self.model_parameters_index]
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        if self.rescale_astrometry:
+
+            rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
+
+        else:
+
+            rescaling_astrometry_parameters = None
+
+        residus_ra, residus_dec, err_ra, err_dec = objective_functions.all_telescope_astrometric_residuals(
+            self.model, pyLIMA_parameters,
+            norm=False,
+            rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+
+
+        return [residus_ra, residus_dec], [err_ra, err_dec]
+
+    def model_chi2(self, parameters):
+
+        parameters = np.array(parameters)
+
+        residus, err = self.model_residuals(parameters)
+
+        residuals = []
+        errors = []
+
+        for data_type in ['photometry','astrometry']:
+
+            try:
+
+                residuals.append(np.concatenate(residus[data_type])**2)
+                errors.append(np.concatenate(err[data_type])**2)
+
+            except:
+
+                pass
+
+        residuals = np.concatenate(residuals)
+        errors = np.concatenate(errors)
+
+        chi2 = np.sum(residuals / errors)
+
+        return chi2
+
+    def model_likelihood(self, parameters):
+
+        parameters = np.array(parameters)
+
+        residus, err = self.model_residuals(parameters)
+
+        residuals = []
+        errors = []
+
+        for data_type in ['photometry', 'astrometry']:
+
+            try:
+
+                residuals.append(np.concatenate(residus[data_type]) ** 2)
+                errors.append(np.concatenate(err[data_type]) ** 2)
+
+            except:
+
+                pass
+
+        residuals = np.concatenate(residuals)
+        errors = np.concatenate(errors)
+
+        ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+
+        return ln_likelihood
+
+    def chi2_photometry(self, parameters):
+
+        parameters = np.array(parameters)
+
+        residus, errors = self.photometric_model_residuals(parameters)
+        residuals = np.concatenate(residus) ** 2
+        errors = np.concatenate(errors) ** 2
+
+        chi2 = np.sum(residuals/errors)
+
+        return chi2
+
+    def likelihood_photometry(self, parameters):
+
+        parameters = np.array(parameters)
+
+        residus, errors = self.photometric_model_residuals(parameters)
+
+        residuals = np.concatenate(residus['photometry'])**2
+        errors = np.concatenate(errors['photometry'])**2
+
+        ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+
+        return ln_likelihood
+
+    def chi2_astrometry(self, parameters):
+
+        parameters = np.array(parameters)
+
+        residus, errors = self.astrometric_model_residuals(parameters)
+
+        residuals = np.concatenate(residus.T) ** 2
+        errors = np.concatenate(errors.T) ** 2
+
+        chi2 = np.sum(residuals/errors)
+
+        return chi2
+
+    def likelihood_photometry(self, parameters):
+
+        parameters = np.array(parameters)
+
+        residus, errors = self.astrometric_model_residuals(parameters)
+
+        residuals = np.concatenate(residus.T) ** 2
+        errors = np.concatenate(errors.T) ** 2
+
+        ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+
+        return ln_likelihood
+
 
     def residuals_Jacobian(self, fit_process_parameters):
 

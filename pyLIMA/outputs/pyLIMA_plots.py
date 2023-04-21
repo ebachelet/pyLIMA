@@ -242,6 +242,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     figure_trajectory = plt.figure(figsize=(fig_size[0], fig_size[1]), dpi=75)
 
     figure_axes = figure_trajectory.add_subplot(111, aspect=1)
+    figure_axes.set_aspect('equal', adjustable='box')
     plt.subplots_adjust(top=0.9, bottom=0.1, wspace=0.1, hspace=0.1)
 
     if bokeh_plot is not None:
@@ -435,30 +436,47 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         north = [0.1, 0]
         east = [0, 0.1]
 
+        North = [0.105, 0]
+        East = [0, 0.105]
+
         rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)], [np.sin(plot_angle), np.cos(plot_angle)]])
+
         east = np.dot(rota_mat, east)
         north = np.dot(rota_mat, north)
+        East = np.dot(rota_mat, East)
+        North = np.dot(rota_mat, North)
 
         #figure_axes.plot([origin_t0par[0],origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], 'k', lw=2)
         #figure_axes.plot([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], 'k', lw=2)
         #figure_axes.quiver(origin_t0par[0],origin_t0par[1], north[0], north[1],  scale_units='xy', angles='xy', scale=1, color='k', lw=2)
         #figure_axes.quiver(origin_t0par[0],origin_t0par[1], east[0], east[1],  scale_units='xy', angles='xy', scale=1, color='k', lw=2)
-        figure_axes.quiver(0.8, 0.8, north[0], north[1], scale_units='xy', angles='xy', scale=1,
-                           color='k', lw=2, transform=plt.gca().transAxes)
-        figure_axes.quiver(0.8, 0.8, east[0], east[1], scale_units='xy', angles='xy', scale=1,
-                           color='k', lw=2, transform=plt.gca().transAxes)
-        Ncoords = [0.1/2, -0.005]
-        Ncoords = np.dot(rota_mat, Ncoords)
-        figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k', size=25, transform=plt.gca().transAxes)
+       #figure_axes.quiver(0.8, 0.8, north[0], north[1], scale_units='xy', angles='xy', scale=1,
+       #                    color='k', lw=2, transform=plt.gca().transAxes)
+       # figure_axes.quiver(0.8, 0.8, east[0], east[1], scale_units='xy', angles='xy', scale=1,
+        #                   color='k', lw=2, transform=plt.gca().transAxes)
+       # Ncoords = [0.1/2, -0.005]
+       # Ncoords = np.dot(rota_mat, Ncoords)
+       # figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k', size=25, transform=plt.gca().transAxes)
 
-        Ecoords = [-0.005, 0.1/2]
-        Ecoords = np.dot(rota_mat, Ecoords)
-        figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k',size=25, transform=plt.gca().transAxes)
+       # Ecoords = [-0.005, 0.1/2]
+       # Ecoords = np.dot(rota_mat, Ecoords)
+       # figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k',size=25, transform=plt.gca().transAxes)
 
         #figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
         #figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
 
 
+        arrow = plt.annotate('', xy=(origin_t0par[0]+east[0],origin_t0par[1]+east[1]),xytext=(origin_t0par[0],origin_t0par[1]),
+                             arrowprops=dict( arrowstyle="->", lw=3,alpha=0.5))
+        E = plt.annotate('E', xy=(origin_t0par[0]+East[0],origin_t0par[1]+East[1]),
+                         xytext=(origin_t0par[0]+East[0],origin_t0par[1]+East[1]),
+                         weight='bold', alpha=0.5, ha='center',va='center',rotation=np.rad2deg(plot_angle))
+
+        arrow = plt.annotate('', xy=(origin_t0par[0]+north[0],origin_t0par[1]+north[1]),xytext=(origin_t0par[0],origin_t0par[1]),
+                             arrowprops=dict( arrowstyle="->" , lw=3,alpha=0.5))
+        N = plt.annotate('N', xy=(origin_t0par[0]+North[0],origin_t0par[1]+North[1]),
+                         xytext=(origin_t0par[0]+North[0],origin_t0par[1]+North[1]),
+                         weight='bold', alpha=0.5,ha='center',va='center',rotation=np.rad2deg(plot_angle))
 
         if bokeh_geometry is not None:
 
@@ -490,7 +508,8 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     figure_axes.tick_params(axis='x', labelsize=15)
     figure_axes.tick_params(axis='y', labelsize=15)
 
-    figure_axes.axis([-3, 3, -3, 3])
+    #figure_axes.axis([-3, 3, -3, 3])
+    figure_axes.axis('scaled')
     title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
     figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
@@ -805,19 +824,18 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
 
             residus_in_mag = pyLIMA.fits.objective_functions.photometric_residuals_in_magnitude(tel, microlensing_model,
                                                                                                 pyLIMA_parameters)
-
             if ind == 0:
 
                 reference_source = ref_fluxes[ind][0]
                 reference_blend = ref_fluxes[ind][1]
                 index += 1
 
-            time_mask = [False for i in range(len(ref_magnification[ref_index]))]
-
+            #time_mask = [False for i in range(len(ref_magnification[ref_index]))]
+            time_mask = []
             for time in tel.lightcurve_flux['time'].value:
 
                 time_index = np.where(list_of_telescopes[ref_index].lightcurve_flux['time'].value == time)[0][0]
-                time_mask[time_index] = True
+                time_mask.append(time_index)
 
             model_flux = ref_fluxes[ref_index][0]*ref_magnification[ref_index][time_mask]+ref_fluxes[ref_index][1]
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * np.log10(model_flux)

@@ -75,7 +75,7 @@ class USBLmodel(MLmodel):
 
     def change_origin(self, pyLIMA_parameters):
 
-            if self.origin[0] != 'center_of_mass':
+            if 'caustic' in self.origin[0]:
 
                 caustic_regime =  binary_caustics.find_2_lenses_caustic_regime(pyLIMA_parameters.separation,
                                                                                pyLIMA_parameters.mass_ratio)
@@ -113,6 +113,22 @@ class USBLmodel(MLmodel):
 
                 setattr(pyLIMA_parameters, 'x_center', caustic.real)
                 setattr(pyLIMA_parameters, 'y_center', caustic.imag)
+
+
+            if 'primary' in self.origin[0]:
+
+                primary_location = -pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio / (
+                                    1+pyLIMA_parameters.mass_ratio)
+
+                setattr(pyLIMA_parameters, 'x_center', primary_location)
+                setattr(pyLIMA_parameters, 'y_center', 0)
+
+            if 'secondary' in self.origin[0]:
+
+                secondary_location = pyLIMA_parameters.separation  / (
+                                      1 + pyLIMA_parameters.mass_ratio)
+                setattr(pyLIMA_parameters, 'x_center', secondary_location)
+                setattr(pyLIMA_parameters, 'y_center', 0)
 
 
 #    def find_origin(self, pyLIMA_parameters):

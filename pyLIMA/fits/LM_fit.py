@@ -22,33 +22,26 @@ class LMfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = []
+        residus, err = self.model_residuals(fit_process_parameters)
 
-        model_parameters = fit_process_parameters[self.model_parameters_index]
+        residuals = []
+        errors = []
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+        for data_type in ['photometry', 'astrometry']:
 
-        if self.model.photometry:
+            try:
 
-            residus, errflux = pyLIMA.fits.objective_functions.all_telescope_photometric_residuals(self.model,
-                                                                                                       pyLIMA_parameters,
-                                                                                                       norm=True,
-                                                                                                       rescaling_photometry_parameters=None)
+                residuals.append(np.concatenate(residus[data_type]))
+                errors.append(np.concatenate(err[data_type]))
 
-            likelihood = np.append(likelihood, residus)
+            except:
 
-        if self.model.astrometry:
+                pass
 
-            residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                  pyLIMA_parameters,
-                                                                                                  norm=True,
-                                                                                                  rescaling_astrometry_parameters=None)
-            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
-            likelihood = np.append(likelihood, residus)
+        residuals = np.concatenate(residuals)
+        errors = np.concatenate(errors)
 
-        return likelihood
-
-
+        return residuals/errors
 
     def fit(self):
 
