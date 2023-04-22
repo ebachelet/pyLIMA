@@ -25,83 +25,14 @@ class DEMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = 0
-
-        for ind, parameter in enumerate(self.fit_parameters.keys()):
-
-            if (fit_process_parameters[ind]<self.fit_parameters[parameter][1][0]) | (fit_process_parameters[ind]>self.fit_parameters[parameter][1][1]):
-
-                return -np.inf
-
-        model_parameters = fit_process_parameters[self.model_parameters_index]
-
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
-
-        if self.model.photometry:
-
-            if self.rescale_photometry:
-
-                rescaling_photometry_parameters = 10 ** (
-                fit_process_parameters[self.rescale_photometry_parameters_index])
-
-                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(self.model,
-                                                                                                              pyLIMA_parameters,
-                                                                                                              rescaling_photometry_parameters= rescaling_photometry_parameters)
-            else:
-
-                photometric_likelihood = pyLIMA.fits.objective_functions.all_telescope_photometric_likelihood(self.model,
-                                                                                                              pyLIMA_parameters)
-
-            likelihood += photometric_likelihood
-
-        if self.model.astrometry:
-
-            if self.rescale_astrometry:
-
-                rescaling_astrometry_parameters = 10 ** (
-                fit_process_parameters[self.rescale_astrometry_parameters_index])
-
-                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                pyLIMA_parameters,
-                                                                                                norm=True,
-                                                                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
-
-            else:
-
-                residuals = pyLIMA.fits.objective_functions.all_telescope_astrometric_residuals(self.model,
-                                                                                                pyLIMA_parameters,
-                                                                                                norm=True,
-                                                                                                rescaling_astrometry_parameters=None)
-
-            residus = np.r_[residuals[:, 0], residuals[:, 2]]  # res_ra,res_dec
-            errors = np.r_[residuals[:, 1], residuals[:, 3]]  # err_res_ra,err_res_dec
-
-            astrometric_likelihood = 0.5 * np.sum(residus ** 2 + 2 * np.log(errors) + np.log(2 * np.pi))
-
-            likelihood += astrometric_likelihood
+        likelihood = -self.model_likelihood(fit_process_parameters)
 
         # Priors
-        if np.isnan(likelihood):
-            return -np.inf
+        priors = self.get_priors(fit_process_parameters)
 
+        likelihood += -priors
 
-        priors = self.get_priors()
-
-        for ind, prior_pdf in enumerate(priors):
-
-            if prior_pdf is not None:
-
-                probability = prior_pdf.pdf(fit_process_parameters[ind])
-
-                if probability > 0:
-
-                    likelihood += -np.log(probability)
-
-                else:
-
-                    likelihood = np.inf
-
-        return -likelihood
+        return likelihood
 
 
     def fit(self, initial_population=[], computational_pool=False):

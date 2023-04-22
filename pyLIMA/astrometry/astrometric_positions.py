@@ -28,19 +28,22 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
     mu_N = pyLIMA_parameters.mu_source_N
     mu_E = pyLIMA_parameters.mu_source_E
 
-    position_N = mu_N / 365.25 * (time - time_ref)/3600/1000. + ref_N
-    position_E = mu_E / 365.25 * (time - time_ref)/3600/1000. + ref_E
-
     earth_vector = telescope.Earth_positions['astrometry']
     parallax_source = pyLIMA_parameters.parallax_source
-    Earth_projected = earth_vector*parallax_source/3600/1000 #mas
+    Earth_projected = earth_vector*parallax_source #mas
 
     if telescope.astrometry['ra'].unit == 'deg':
 
-        position_dec = position_N - Earth_projected[0]
-        position_ra = position_E - Earth_projected[1]
+        position_N = mu_N / 365.25 * (time - time_ref) / 3600 / 1000 + ref_N #deg
+        position_E = mu_E / 365.25 * (time - time_ref) / 3600 / 1000 + ref_E
+
+        position_dec = position_N - Earth_projected[0]/3600/1000
+        position_ra = position_E - Earth_projected[1]/3600/1000
 
     else:
+
+        position_N = mu_N / 365.25 * (time - time_ref) + ref_N #pix
+        position_E = mu_E / 365.25 * (time - time_ref) + ref_E
 
         position_dec = position_N-Earth_projected[0]/telescope.pixel_scale
         position_ra = position_E-Earth_projected[1]/telescope.pixel_scale
@@ -70,21 +73,21 @@ def source_astrometric_position(telescope, pyLIMA_parameters, shifts=None, time_
 
 def lens_astrometric_position(model, telescope, pyLIMA_parameters, shifts=None):
 
-    source_NE = source_astrometric_position(telescope, pyLIMA_parameters, shifts=shifts)
+    source_EN = source_astrometric_position(telescope, pyLIMA_parameters, shifts=shifts)
 
     source_relative_to_lens = model.source_trajectory(telescope, pyLIMA_parameters,data_type='astrometry')
 
-    source_relative_to_lens_NE = xy_shifts_to_NE_shifts((source_relative_to_lens[0],source_relative_to_lens[1])
-                                                         , pyLIMA_parameters.piEN, pyLIMA_parameters.piEE)
+    source_relative_to_lens_EN = xy_shifts_to_NE_shifts((source_relative_to_lens[0],source_relative_to_lens[1])
+                                                         ,pyLIMA_parameters.piEN, pyLIMA_parameters.piEE)
 
-    lens_NE = np.array(source_relative_to_lens_NE)*pyLIMA_parameters.theta_E
+    lens_EN = np.array(source_relative_to_lens_EN)*pyLIMA_parameters.theta_E
 
     if telescope.astrometry['ra'].unit == 'deg':
 
-        lens_NE =source_NE-lens_NE/3600./1000.
+        lens_EN = source_EN-lens_EN/3600./1000.
 
     else:
 
-        lens_NE = source_NE-lens_NE/telescope.pixel_scale
+        lens_EN = source_EN-lens_EN/telescope.pixel_scale
 
-    return lens_NE
+    return lens_EN

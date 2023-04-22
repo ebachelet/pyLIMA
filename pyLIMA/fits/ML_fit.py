@@ -405,9 +405,9 @@ class MLfit(object):
 
         if self.model.astrometry:
 
-            residuals_astrometry, errors_astrometry = self.photometric_model_residuals(parameters)
-            residus['astrometry'] = residuals_astrometry
-            errors['astrometry'] = errors_astrometry
+            residuals_astrometry, errors_astrometry = self.astrometric_model_residuals(parameters)
+            residus['astrometry'] = [np.concatenate((i[0],i[1])) for i in residuals_astrometry]
+            errors['astrometry'] = [np.concatenate((i[0],i[1])) for i in errors_astrometry]
 
         return residus, errors
 
@@ -505,7 +505,6 @@ class MLfit(object):
             except:
 
                 pass
-
         residuals = np.concatenate(residuals)
         errors = np.concatenate(errors)
 
@@ -544,8 +543,11 @@ class MLfit(object):
 
         residus, errors = self.astrometric_model_residuals(parameters)
 
-        residuals = np.concatenate(residus.T) ** 2
-        errors = np.concatenate(errors.T) ** 2
+        residus = [np.concatenate((i[0], i[1])) for i in residus]
+        errors = [np.concatenate((i[0],i[1])) for i in errors]
+
+        residuals = np.concatenate(residus) ** 2
+        errors = np.concatenate(errors) ** 2
 
         chi2 = np.sum(residuals/errors)
 
@@ -557,8 +559,11 @@ class MLfit(object):
 
         residus, errors = self.astrometric_model_residuals(parameters)
 
-        residuals = np.concatenate(residus.T) ** 2
-        errors = np.concatenate(errors.T) ** 2
+        residus = [np.concatenate((i[0], i[1])) for i in residus]
+        errors = [np.concatenate((i[0], i[1])) for i in errors]
+
+        residuals = np.concatenate(residus) ** 2
+        errors = np.concatenate(errors) ** 2
 
         ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
 
@@ -663,8 +668,20 @@ class MLfit(object):
 
     def fit_outputs(self, bokeh_plot=None):
 
-        matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
-        matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
+        matplotlib_lightcurves = None
+        matplotlib_geometry = None
+        matplotlib_astrometry = None
+        matplotlib_distribution = None
+        bokeh_figure = None
+
+        if self.model.photometry:
+
+            matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
+            matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
+
+        if self.model.photometry:
+
+            matplotlib_astrometry = pyLIMA_plots.plot_astrometry(self.model, self.fit_results['best_model'])
 
         parameters = [key for ind,key in enumerate(self.model.model_dictionnary.keys()) if ('fsource' not in key) and ('fblend' not in key) and ('gblend' not in key)]
 
@@ -677,5 +694,5 @@ class MLfit(object):
         output_file(filename = self.model.event.name+'.html', title=self.model.event.name)
         save(bokeh_figure)
 
-        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_distribution, bokeh_figure
+        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_astrometry, matplotlib_distribution, bokeh_figure
 

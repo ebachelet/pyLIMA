@@ -37,6 +37,8 @@ class DEfit(MLfit):
         # Priors
         priors = self.get_priors(fit_process_parameters)
 
+        likelihood += -priors
+
         self.population.append(fit_process_parameters.tolist() + [likelihood])
 
         return likelihood

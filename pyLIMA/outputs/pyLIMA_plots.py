@@ -78,7 +78,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time2 = np.arange(pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
                                             pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
-                                            0.1)
+                                            1)
 
                     model_time = np.r_[model_time1,model_time2]
 
@@ -95,51 +95,53 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time.sort()
 
-                model_time = np.unique(model_time)
+                if (tel.location == 'Space') | (Earth and tel.location == 'Earth'):
 
-                model_lightcurve = np.c_[model_time, [0] * len(model_time), [0.1] * len(model_time)]
-                model_telescope = fake_telescopes.create_a_fake_telescope(light_curve=model_lightcurve)
+                    model_time = np.unique(model_time)
 
-                model_telescope.name = tel.name
-                model_telescope.filter = tel.filter
-                model_telescope.location = tel.location
-                model_telescope.ld_gamma = tel.ld_gamma
-                model_telescope.ld_sigma = tel.ld_sigma
-                model_telescope.ld_a1 = tel.ld_a1
-                model_telescope.ld_a2 = tel.ld_a2
-                model_telescope.location = tel.location
+                    model_lightcurve = np.c_[model_time, [0] * len(model_time), [0.1] * len(model_time)]
+                    model_telescope = fake_telescopes.create_a_fake_telescope(light_curve=model_lightcurve)
 
-                if tel.location == 'Space':
+                    model_telescope.name = tel.name
+                    model_telescope.filter = tel.filter
+                    model_telescope.location = tel.location
+                    model_telescope.ld_gamma = tel.ld_gamma
+                    model_telescope.ld_sigma = tel.ld_sigma
+                    model_telescope.ld_a1 = tel.ld_a1
+                    model_telescope.ld_a2 = tel.ld_a2
+                    model_telescope.location = tel.location
 
-                    model_telescope.spacecraft_name = tel.spacecraft_name
-                    model_telescope.spacecraft_positions = tel.spacecraft_positions
+                    if tel.location == 'Space':
 
-                    if microlensing_model.parallax_model[0] != 'None':
+                        model_telescope.spacecraft_name = tel.spacecraft_name
+                        model_telescope.spacecraft_positions = tel.spacecraft_positions
 
-                        import pyLIMA.parallax.parallax
+                        if microlensing_model.parallax_model[0] != 'None':
 
-                        parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
-                                                                         microlensing_model.event.dec,
-                                                                         microlensing_model.parallax_model)
+                            import pyLIMA.parallax.parallax
 
-                        model_telescope.compute_parallax(parallax)
+                            parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
+                                                                             microlensing_model.event.dec,
+                                                                             microlensing_model.parallax_model)
 
-                    list_of_fake_telescopes.append(model_telescope)
+                            model_telescope.compute_parallax(parallax)
 
-                if tel.location == 'Earth' and Earth:
+                        list_of_fake_telescopes.append(model_telescope)
 
-                    if microlensing_model.parallax_model[0] != 'None':
+                    if tel.location == 'Earth' and Earth:
 
-                        import pyLIMA.parallax.parallax
+                        if microlensing_model.parallax_model[0] != 'None':
 
-                        parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
-                                                                         microlensing_model.event.dec,
-                                                                         microlensing_model.parallax_model)
+                            import pyLIMA.parallax.parallax
 
-                        model_telescope.compute_parallax(parallax)
+                            parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
+                                                                             microlensing_model.event.dec,
+                                                                             microlensing_model.parallax_model)
 
-                    list_of_fake_telescopes.append(model_telescope)
-                    Earth = False
+                            model_telescope.compute_parallax(parallax)
+
+                        list_of_fake_telescopes.append(model_telescope)
+                        Earth = False
 
             if tel.astrometry is not None:
 
@@ -162,13 +164,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time = np.r_[model_time1, model_time2]
 
-                    for telescope in microlensing_model.event.telescopes:
 
-                        model_time = np.r_[model_time, telescope.lightcurve_magnitude['time'].value]
+                    model_time = np.r_[model_time, telescope.astrometry['time'].value]
 
-                        symmetric = 2 * pyLIMA_parameters.t0 - telescope.lightcurve_magnitude['time'].value
-                        model_time = np.r_[model_time, symmetric]
-
+                    symmetric = 2 * pyLIMA_parameters.t0 - telescope.astrometry['time'].value
+                    model_time = np.r_[model_time, symmetric]
                     model_time.sort()
 
                 model_time = np.unique(model_time)
@@ -183,6 +183,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                 model_telescope.ld_a1 = tel.ld_a1
                 model_telescope.ld_a2 = tel.ld_a2
                 model_telescope.pixel_scale = tel.pixel_scale
+
                 if tel.location == 'Space':
 
                     model_telescope.spacecraft_name = tel.spacecraft_name
@@ -564,7 +565,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 
             astrometric_model = model['astrometry']
-            lens_E,lens_N = astrometric_positions.lens_astrometric_position(microlensing_model, tel, pyLIMA_parameters)
+            lens_E,  lens_N = astrometric_positions.lens_astrometric_position(microlensing_model, tel, pyLIMA_parameters)
             name = tel.name
 
             index_color = np.where(name == telescopes_names)[0][0]
@@ -575,12 +576,10 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
             if Earth is True:
 
                 source_E, source_N = astrometric_positions.astrometric_position(tel, pyLIMA_parameters)
-
                 figure_axe.plot(source_E, source_N, c='k',label='Source')
                 figure_axe.plot(lens_E, lens_N, c='k', linestyle='--',label='Lens')
 
                 for index in [-1, 0, 1]:
-
 
                     try:
 
@@ -603,8 +602,8 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
                                 lens_E[index_time - 1] - lens_E[index_time + 1])
 
                         figure_axe.annotate('', xy=(lens_E[index_time], lens_N[index_time]),
-                                            xytext=(lens_E[index_time] - 0.001 * (lens_E[index_time]-lens_E[index_time+1]),
-                                                    lens_N[index_time] - 0.001 * (lens_E[index_time]-lens_E[index_time+1])* derivative),
+                                            xytext=(lens_E[index_time] - 0.001 * (lens_E[index_time+1]-lens_E[index_time]),
+                                                    lens_N[index_time] - 0.001 * (lens_E[index_time+1]-lens_E[index_time])* derivative),
                                             arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                             color='k'))
 
