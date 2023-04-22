@@ -685,7 +685,7 @@ class MLfit(object):
 
         parameters = [key for ind,key in enumerate(self.model.model_dictionnary.keys()) if ('fsource' not in key) and ('fblend' not in key) and ('gblend' not in key)]
 
-        samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],10000)
+        samples = self.samples_to_plot()
         samples_to_plot = samples[:, :len(parameters)]
 
         matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(samples_to_plot, parameters_names=parameters,bokeh_plot=bokeh_plot)

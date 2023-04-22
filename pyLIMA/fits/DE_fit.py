@@ -90,13 +90,8 @@ class DEfit(MLfit):
         self.fit_results = {'best_model': fit_results, '-(ln_likelihood)' : fit_log_likelihood, 'fit_time': computation_time,
                             'DE_population': DE_population}
 
-    def fit_outputs(self):
+    def samples_to_plot(self):
 
-        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
-        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
+        samples = self.fit_results['DE_population']
 
-        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
-
-
-        samples_to_plot = self.fit_results['DE_population'][:,:len(parameters)]
-        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
+        return samples
