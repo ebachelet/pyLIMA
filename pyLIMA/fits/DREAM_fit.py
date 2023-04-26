@@ -37,6 +37,23 @@ class DREAMfit(MLfit):
 
         return likelihood
 
+    ### From scipy.DE
+    def unscale_parameters(self, trial):
+        """Scale from a number between 0 and 1 to parameters."""
+        # trial either has shape (N, ) or (L, N), where L is the number of
+        # solutions being scaled
+
+        unscaled = self.scale_arg1 + (trial - 0.5) * self.scale_arg2
+
+        return unscaled
+
+    def scale_parameters(self, parameters):
+        """Scale from parameters to a number between 0 and 1."""
+
+        scaled = (parameters - self.scale_arg1) / self.scale_arg2 + 0.5
+
+        return scaled
+
     def new_individual(self, parent0, parent1, parent2, parent3):
 
         #np.random.seed(random.randint(0, 100000))
@@ -127,7 +144,7 @@ class DREAMfit(MLfit):
 
         for ind, param in enumerate(self.fit_parameters.keys()):
 
-            if (child[ind] < self.fit_parameters[param][1][0]) | (child[ind] > self.fit_parameters[param][1][1]):
+            if (child[ind] < 0) | (child[ind] >1):
 
                 progress[ind] = (parent1[ind]-parent0[ind])/2
                 child[ind] = parent0[ind]+progress[ind]
@@ -138,7 +155,7 @@ class DREAMfit(MLfit):
 
                 #return parent0, accepted#, jump, nid
 
-        objective = self.objective_function(child[:-1])
+        objective = self.objective_function(self.unscale_parameters(child[:-1]))
         #breakpoint()
         casino = np.random.uniform(0, 1)
         probability = np.exp((-objective + parent0[-1]))
@@ -203,6 +220,11 @@ class DREAMfit(MLfit):
     def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
+        bounds_min = [self.fit_parameters[key][1][0] for key in self.fit_parameters.keys()]
+        bounds_max = [self.fit_parameters[key][1][1] for key in self.fit_parameters.keys()]
+
+        self.scale_arg1 = 0.5 * (np.array(bounds_min) + np.array(bounds_max))
+        self.scale_arg2 = np.fabs(np.array(bounds_min) - np.array(bounds_max))
 
         #n_crossover = len(self.fit_parameters.keys())
         n_crossover = 3
@@ -227,13 +249,14 @@ class DREAMfit(MLfit):
 
                     for ind,j in enumerate(self.fit_parameters.keys()):
 
-                        individual[ind] = individual[ind]*(self.fit_parameters[j][1][1]-self.fit_parameters[j][1][0])+self.fit_parameters[j][1][0]
+                        individual[ind] = individual[ind]*(self.fit_parameters[j][1][1]-self.fit_parameters[j][1][0])+\
+                                          self.fit_parameters[j][1][0]
 
                     individual = np.array(individual)
                     individual = np.r_[individual]
 
                     objective = self.objective_function(individual)
-                    individual = np.r_[individual,objective]
+                    individual = np.r_[self.scale_parameters(individual),objective]
                     Z.append(individual.tolist())
 
 

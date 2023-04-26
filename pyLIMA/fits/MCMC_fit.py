@@ -25,12 +25,12 @@ class MCMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = -self.model_likelihood(fit_process_parameters)
+        likelihood = self.model_likelihood(fit_process_parameters)
 
         # Priors
         priors = self.get_priors(fit_process_parameters)
 
-        likelihood += -priors
+        likelihood += priors
 
         return likelihood
 
@@ -118,14 +118,11 @@ class MCMCfit(MLfit):
                             'MCMC_chains': MCMC_chains, 'fit_time': computation_time}
 
 
-    def fit_outputs(self):
+    def samples_to_plot(self):
 
-        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
-        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
-
-        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
 
         chains = self.fit_results['MCMC_chains']
         samples = chains.reshape(-1,chains.shape[2])
-        samples_to_plot = samples[int(len(samples)/2):,:len(parameters)]
-        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
+        samples_to_plot = samples[int(len(samples)/2):]
+
+        return samples_to_plot
