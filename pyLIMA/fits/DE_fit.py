@@ -3,6 +3,7 @@ import time as python_time
 import numpy as np
 import sys
 from multiprocessing import Manager
+from tqdm import tqdm
 
 
 
@@ -66,6 +67,26 @@ class DEfit(MLfit):
 
         bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys()]
 
+        aa = scipy.optimize._differentialevolution.DifferentialEvolutionSolver(self.objective_function, bounds=bounds,
+                                                                               mutation=(0.5, 1.5),
+                                                                               popsize=int(self.DE_population_size),
+                                                                               maxiter=1, tol=0.00, atol=1.0,
+                                                                               strategy=self.strategy,
+                                                                               recombination=0.5, polish=False,
+                                                                               init=init, disp=self.display_progress,
+                                                                               workers=worker)
+        popo = []
+        popo_e = []
+        aa.init_population_random()
+        for loop in tqdm(range(self.max_iteration)):
+            aa.__next__()
+            popo.append(aa._scale_parameters(aa.population))
+            popo_e.append(aa.population_energies)
+
+        pop = np.array(popo)
+        pope = np.array(popo_e)
+
+        breakpoint()
         differential_evolution_estimation = scipy.optimize.differential_evolution(self.objective_function,
                                                                                   bounds=bounds,
                                                                                   mutation=(0.5, 1.5), popsize=int(self.DE_population_size),

@@ -9,6 +9,7 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     orbital_velocity = pyLIMA_parameters.orbital_velocity
     a_true = pyLIMA_parameters.a_true
     t_periastron = pyLIMA_parameters.t_periastron
+    #breakpoint()
 
     if om_model[0] == 'Circular': #Circular
 
@@ -24,10 +25,9 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
 
         eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron, orbital_velocity/365.25)
 
-        r_prime = np.array([np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 * np.sin(eccentric_anomaly)]) * a_true
+        r_prime = a_true*np.array([np.cos(eccentric_anomaly) - eccentricity, (1 - eccentricity ** 2) ** 0.5 * np.sin(eccentric_anomaly)])
 
         r_microlens = np.dot(Rmatrix, r_prime)
-
 
     sep = (r_microlens[0] ** 2 + r_microlens[1] ** 2) ** 0.5
     angle = np.arctan2(r_microlens[1], r_microlens[0])
@@ -35,13 +35,16 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     separation0 = pyLIMA_parameters.separation
     angle_0 = 0
     ### Just to check,
+   # to_om = om_model[1]
+    #eccentricity = pyLIMA_parameters.eccentricity
+
     #eccentric_anomaly_0 = eccentric_anomaly_function([to_om], eccentricity, t_periastron, orbital_velocity/365.25)
     #r_prime_0 = np.array([np.cos(eccentric_anomaly_0) - eccentricity, (1 - eccentricity ** 2) ** 0.5 *
-     #                     np.sin(eccentric_anomaly_0)]) * a_true / rE
-    # r_microlens_0 = np.dot(Rmatrix, r_prime_0)
+    #                      np.sin(eccentric_anomaly_0)]) * a_true# / rE
+    #r_microlens_0 = np.dot(Rmatrix, r_prime_0)
     #separation0 = (r_microlens_0[0] ** 2 + r_microlens_0[1] ** 2) ** 0.5
     #angle_0 = np.arctan2(r_microlens_0[1], r_microlens_0[0])
-
+    #breakpoint()
     return sep - separation0, -(angle - angle_0) # binary axes kept fixed
 
 
@@ -69,8 +72,8 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
         sinw = separation_z/np.sin(inclination)/a_true
         omega_peri = np.arctan2(sinw, cosw)
 
+        true_anomaly = omega_peri
         t_periastron = t0_om
-        true_anomaly = 0
 
         from scipy.spatial.transform import Rotation
 
