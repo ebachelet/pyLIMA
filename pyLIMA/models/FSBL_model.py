@@ -47,13 +47,12 @@ class FSBLmodel(USBLmodel):
 
         if telescope.lightcurve_flux is not None:
 
-            self.u0_t0_from_uc_tc(pyLIMA_parameters)
 
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')
 
             linear_limb_darkening = telescope.ld_a1
 
-            separation = source_trajectoire[2] +  pyLIMA_parameters.separation
+            separation = source_trajectoire[2] + pyLIMA_parameters.separation
 
             magnification_FSBL = \
                 magnification_VBB.magnification_FSBL(separation, pyLIMA_parameters.mass_ratio,

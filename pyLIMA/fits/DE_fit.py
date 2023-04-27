@@ -175,9 +175,16 @@ class DEfitnew(MLfit):
         for loop in tqdm(range(self.max_iteration)):
 
             solver.__next__()
-            pop.append(solver._scale_parameters(solver.population))
-            pop_energies.append(solver.population_energies)
-            solver.converged()
+
+            pop.append(np.copy(solver._scale_parameters(solver.population)))
+            pop_energies.append(np.copy(solver.population_energies))
+
+            converged = solver.converged()
+
+            if converged:
+
+                break
+
 
         pop = np.array(pop)
         pop_energies = np.array(pop_energies)
@@ -191,7 +198,8 @@ class DEfitnew(MLfit):
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
-        DE_population = np.zeros(pop.shape[0],pop.shape[1],pop.shape[2]+1)
+        DE_population = np.zeros((pop.shape[0],pop.shape[1],pop.shape[2]+1))
+        breakpoint()
 
         DE_population[:, :, :-1] = pop
         DE_population[:, :, -1] = pop_energies
