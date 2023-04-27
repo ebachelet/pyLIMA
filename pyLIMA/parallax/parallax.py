@@ -110,20 +110,23 @@ class MLParallaxes(object):
 
         for data_type in ['astrometry', 'photometry']:
 
-            try:
 
-                location = telescope.location
+            if data_type == 'photometry':
 
-                if data_type == 'photometry':
+                data = telescope.lightcurve_flux
 
-                    time = telescope.lightcurve_flux['time'].value
+            else:
 
-                else:
+                data = telescope.astrometry
 
-                    time = telescope.astrometry['time'].value
+            if data is not None:
+
+                time = data['time'].value
 
                 delta_North = np.array([])
                 delta_East = np.array([])
+
+                location = telescope.location
 
                 if location == 'NewHorizon':
 
@@ -189,11 +192,7 @@ class MLParallaxes(object):
                 # set the attributes deltas_positions for the telescope object
                 telescope.deltas_positions[data_type] = deltas_position
 
-            except:
 
-                pass
-                #import pdb;
-                #pdb.set_trace()
     def annual_parallax(self, time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
@@ -287,10 +286,14 @@ class MLParallaxes(object):
 
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
+
         if len(telescope.spacecraft_positions) != 0:
+
             # allow to pass the user to give his own ephemeris
             satellite_positions = np.array(telescope.spacecraft_positions)
+
         else:
+
             # call JPL!
             import pyLIMA.parallax.JPL_ephemerides
             #satellite_positions = pyLIMA.parallax.JPL_ephemerides.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
@@ -315,16 +318,11 @@ class MLParallaxes(object):
         dec_interpolated = interpolated_dec(time_to_treat)
         distance_interpolated = interpolated_distance(time_to_treat)
 
-        #delta_satellite = []
-        #for index_time in range(len(time_to_treat)):
-        #    delta_satellite.append(distance_interpolated[index_time] * slalib.sla_dcs2c(
-        #        ra_interpolated[index_time] * np.pi / 180,
-        #        dec_interpolated[index_time] * np.pi / 180))
 
         x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
                                          ra_interpolated * np.pi / 180)
         delta_satellite = np.c_[x.value, y.value, z.value]
-        #delta_satellite = np.array(delta_satellite)
+
         delta_satellite_projected = np.array(
             [np.dot(delta_satellite, self.North), np.dot(delta_satellite, self.East)])
 

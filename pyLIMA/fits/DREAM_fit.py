@@ -158,7 +158,7 @@ class DREAMfit(MLfit):
         objective = self.objective_function(self.unscale_parameters(child[:-1]))
         #breakpoint()
         casino = np.random.uniform(0, 1)
-        probability = np.exp((-objective + parent0[-1]))
+        probability = np.exp((-objective + parent0[-1])*self.scale)
 
         if probability > casino:
 
@@ -230,7 +230,7 @@ class DREAMfit(MLfit):
         n_crossover = 3
         self.crossover = np.arange(1,n_crossover+1)/n_crossover
         self.prob_crossover = np.ones(n_crossover)/n_crossover
-        #self.scale = np.ones(len(self.fit_parameters.keys()))
+        self.scale = 1
         number_of_walkers = int(np.round(self.DEMC_population_size*len(self.fit_parameters)))
         self.number_of_walkers = number_of_walkers
         self.swap = np.zeros(number_of_walkers)
@@ -334,26 +334,32 @@ class DREAMfit(MLfit):
             #    self.prob_crossover = pCR/np.sum(pCR)
             #breakpoint()
 
+            all_population.append(loop_population)
+            all_acceptance.append(acceptance)
+
             if loop%10==0:
 
                 Z += loop_population.tolist()
                 Z_prime = np.array(Z)
 
-            all_population.append(loop_population)
-            all_acceptance.append(acceptance)
+            if loop%1000==0:
+                accepted = np.mean([np.any(i==1,axis=1).sum() for i in all_acceptance[-1000:]])/len(loop_population)
 
-            print(loop,np.array(all_population)[:,:,-1].min())
-            #print(accepted,np.min(loop_population[:,-1]))
-            #import pdb;
-            #pdb.set_trace()
+                if (accepted>0.9):# and (self.scale<100):
 
-            #mask = accepted<0.1
-            #self.scale[mask] /=2
+                    self.scale *= 2
 
-            #mask = accepted > 0.4
-            #self.scale[mask] *= 2
+                if (accepted<0.1):# and (self.scale>0.01):
+
+                    self.scale /= 2
+               #breakpoint()
+
+            print(loop,self.scale,np.array(all_population)[:,:,-1].min())
+
+
 
         self.population = np.array(all_population)
+        self.population[:,:,:-1] = self.unscale_parameters(self.population[:,:,:-1])
         self.acceptance = np.array(all_acceptance)
         DEMC_population = np.copy(self.population)
         self.Z = Z_prime
@@ -371,14 +377,10 @@ class DREAMfit(MLfit):
         self.fit_results = {'best_model': fit_results, '-ln(likelihood)': fit_log_likelihood,
                             'DEMC_population': DEMC_population, 'fit_time': computation_time}
 
-    def fit_outputs(self):
-
-        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
-        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
-
-        parameters = [key for key in self.model.model_dictionnary.keys() if ('source' not in key) and ('blend' not in key)]
+    def samples_to_plot(self):
 
         chains = self.fit_results['DEMC_population']
-        samples = chains.reshape(-1,chains.shape[2])
-        samples_to_plot = samples[:,:len(parameters)]
-        pyLIMA_plots.plot_distribution(samples_to_plot,parameters_names = parameters )
+        samples = chains.reshape(-1, chains.shape[2])
+        samples_to_plot = samples[int(len(samples) / 2):]
+
+        return samples_to_plot
