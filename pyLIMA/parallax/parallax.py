@@ -107,7 +107,7 @@ class MLParallaxes(object):
        due to parallax.
 
        """
-        breakpoint()
+
         for data_type in ['astrometry', 'photometry']:
 
 

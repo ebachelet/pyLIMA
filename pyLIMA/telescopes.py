@@ -6,6 +6,7 @@ Created on Thu Aug 27 16:39:32 2015
 """
 from __future__ import division
 import numpy as np
+from astropy import constants as astronomical_constants
 
 from pyLIMA.toolbox.time_series import construct_time_series, clean_time_series
 
@@ -96,9 +97,9 @@ class Telescope(object):
         self.bad_data = {}
 
         self.location = location
-        self.altitude = 0.0  # meters
+        self.altitude = -astronomical_constants.R_earth.value  # default is Earth center
         self.longitude = 0.57  # degrees
-        self.latitude = 49.49  # degrees
+        self.latitude = 49.49  # degrees , default is somewhere...
         self.deltas_positions = {}
         self.Earth_positions = {}
         self.Earth_speeds = {}

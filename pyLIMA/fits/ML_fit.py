@@ -202,7 +202,7 @@ class MLfit(object):
 
                     else:
 
-                        ln_likelihood = np.inf
+                        ln_likelihood = -np.inf
 
         return ln_likelihood
 
