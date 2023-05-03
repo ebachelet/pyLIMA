@@ -179,6 +179,7 @@ class DEfitnew(MLfit):
             pop.append(np.copy(solver._scale_parameters(solver.population)))
             pop_energies.append(np.copy(solver.population_energies))
 
+            print('Best:',pop[-1][0],pop_energies[-1][0])
             converged = solver.converged()
 
             if converged:

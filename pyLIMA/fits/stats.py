@@ -37,7 +37,7 @@ def normal_Kolmogorov_Smirnov(sample):
     return KS_stat, KS_pvalue, KS_judgement
 
 def normal_Anderson_Darling(sample):
-    """Compute a Anderson-Darling test on the sample versus a normal distribution with mu = 0, sigma = 1
+    """Compute a Anderson-Darling tests on the sample versus a normal distribution with mu = 0, sigma = 1
 
             :param array_like sample: the sample you want to check the "Gaussianity"
             :returns: the Anderson-Darling statistic, the Anderson-Darling critical values associated to the significance
@@ -61,7 +61,7 @@ def normal_Anderson_Darling(sample):
     return  AD_stat, AD_critical_values[-1], AD_judgement
 
 def normal_Shapiro_Wilk(sample):
-    """Compute a Shapiro-Wilk test on the sample versus a normal distribution with mu = 0, sigma = 1
+    """Compute a Shapiro-Wilk tests on the sample versus a normal distribution with mu = 0, sigma = 1
 
             :param array_like sample: the sample you want to check the "Gaussianity"
             :returns: the Shapiro-Wilk statistic and its related p_value
@@ -73,7 +73,7 @@ def normal_Shapiro_Wilk(sample):
     # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if SW_stat -> 1
     # the null hypothesis can not be rejected ( i.e the distribution of sample come from a Gaussian) if SW_pvalue -> 1
 
-    # Judegement made on the STATISTIC because 'W test statistic is accurate but the p-value may not be" (see scipy doc)
+    # Judegement made on the STATISTIC because 'W tests statistic is accurate but the p-value may not be" (see scipy doc)
     SW_judgement = 0
 
     if SW_pvalue > 0.01:

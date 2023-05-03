@@ -158,7 +158,7 @@ class DREAMfit(MLfit):
         objective = self.objective_function(self.unscale_parameters(child[:-1]))
         #breakpoint()
         casino = np.random.uniform(0, 1)
-        probability = np.exp((-objective + parent0[-1])*self.scale)
+        probability = np.exp((-objective + parent0[-1]))
 
         if probability > casino:
 
@@ -336,22 +336,23 @@ class DREAMfit(MLfit):
 
             all_population.append(loop_population)
             all_acceptance.append(acceptance)
+            breakpoint()
 
             if loop%10==0:
 
                 Z += loop_population.tolist()
                 Z_prime = np.array(Z)
 
-            if loop%1000==0:
-                accepted = np.mean([np.any(i==1,axis=1).sum() for i in all_acceptance[-1000:]])/len(loop_population)
+            #if loop%1000==0:
+            #    accepted = np.mean([np.any(i==1,axis=1).sum() for i in all_acceptance[-1000:]])/len(loop_population)
 
-                if (accepted>0.9):# and (self.scale<100):
+            #    if (accepted>0.9):# and (self.scale<100):
 
-                    self.scale *= 2
+            #        self.scale *= 2
 
-                if (accepted<0.1):# and (self.scale>0.01):
+            #    if (accepted<0.1):# and (self.scale>0.01):
 
-                    self.scale /= 2
+            #        self.scale /= 2
                #breakpoint()
 
             print(loop,self.scale,np.array(all_population)[:,:,-1].min())
