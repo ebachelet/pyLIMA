@@ -565,7 +565,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 
             astrometric_model = model['astrometry']
-            lens_E,  lens_N = astrometric_positions.lens_astrometric_position(microlensing_model, tel, pyLIMA_parameters)
+            lens_E,  lens_N = astrometric_positions.lens_astrometric_positions(microlensing_model, tel, pyLIMA_parameters)
             name = tel.name
 
             index_color = np.where(name == telescopes_names)[0][0]
@@ -575,7 +575,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
 
             if Earth is True:
 
-                source_E, source_N = astrometric_positions.astrometric_position(tel, pyLIMA_parameters)
+                source_E, source_N = astrometric_positions.astrometric_positions_of_the_source(tel, pyLIMA_parameters)
                 figure_axe.plot(source_E, source_N, c='k',label='Source')
                 figure_axe.plot(lens_E, lens_N, c='k', linestyle='--',label='Lens')
 
