@@ -4,7 +4,7 @@ import collections
 
 from pyLIMA.astrometry import astrometric_positions, astrometric_shifts
 
-def test_astrometric_positions_xy_shifts_to_NE_shifts():
+def test_xy_shifts_to_NE_shifts():
 
     x = [0.285,1.56]
     y = [-0.85,9.8]
@@ -17,7 +17,7 @@ def test_astrometric_positions_xy_shifts_to_NE_shifts():
     assert np.allclose(delta_dec, np.array([0.61003357, -9.35187791]))
 
 
-def test_astrometric_positions_astrometric_position_of_the_source():
+def test_astrometric_position_of_the_source():
 
     #Without time_ref
     telescope = mock.MagicMock()
@@ -69,7 +69,7 @@ def test_astrometric_positions_astrometric_position_of_the_source():
     assert np.allclose(position_ra, np.array([12.06689281, 11.33070522]))
     assert np.allclose(position_dec, np.array([2.48459055, 4.97002628]))
 
-def test_astrometric_positions_source_astrometric_positions():
+def test_source_astrometric_positions():
 
     # Without shifts
     telescope = mock.MagicMock()
@@ -120,7 +120,7 @@ def test_astrometric_positions_source_astrometric_positions():
     assert np.allclose(position_dec, np.array([10.10999935, 10.10999763]))
 
 
-def test_astrometric_positions_lens_astrometric_positions():
+def test_lens_astrometric_positions():
 
     # Without shifts
     telescope = mock.MagicMock()
@@ -154,7 +154,7 @@ def test_astrometric_positions_lens_astrometric_positions():
     assert np.allclose(position_dec, np.array([10.10999935, 10.11000239]))
 
 
-def test_astrometric_shifts_PSPL_shifts_no_blend():
+def test_PSPL_shifts_no_blend():
 
     source_x = np.array([0.1,-0.8])
     source_y = np.array([2.1,-10.8])
@@ -165,7 +165,7 @@ def test_astrometric_shifts_PSPL_shifts_no_blend():
     assert np.allclose(shifts[0], np.array([ 0.79439252, -0.34205231]))
     assert np.allclose(shifts[1], np.array( [16.68224299,-4.61770624]))
 
-def test_astrometric_shifts_PSPL_shifts_no_blend():
+def test_PSPL_shifts_no_blend():
 
     source_x = np.array([0.1,-0.8])
     source_y = np.array([2.1,-10.8])

@@ -27,6 +27,7 @@ def PSPL_shifts_with_blend(source_x, source_y, theta_E, g_blend):
            :return: the astrometric shifts, in x and y
            :rtype: tuple, tuple of two array_like
     """
+
     u_square = source_x**2+source_y**2
     factor = (4+u_square)**0.5
 
@@ -34,7 +35,7 @@ def PSPL_shifts_with_blend(source_x, source_y, theta_E, g_blend):
     shifts = delta_s+g_blend/(1+g_blend)*u_square**0.5
     shifts *= theta_E
 
-    alpha = np.arctan2(source_y,source_x)
-    shifts = np.array([shifts*np.cos(alpha),shifts*np.sin(alpha)])
+    alpha = np.arctan2(source_y, source_x)
+    shifts = np.array([shifts*np.cos(alpha), shifts*np.sin(alpha)])
 
     return shifts
