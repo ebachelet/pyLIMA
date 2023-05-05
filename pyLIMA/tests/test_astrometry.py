@@ -128,9 +128,7 @@ def test_lens_astrometric_positions():
     telescope.astrometry['time'].value = np.array([2459857, 2459959])
     telescope.astrometry['ra'].unit = 'deg'
     dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
-    telescope.Earth_positions.__getitem__.side_effect = dico.__getitem__
-    telescope.Earth_positions.__iter__.side_effect = dico.__iter__
-
+    telescope.Earth_positions = dico
 
     model = mock.MagicMock()
     model.source_trajectory.return_value = [np.array([0.28,1.36]), np.array([-0.28,0.78])]

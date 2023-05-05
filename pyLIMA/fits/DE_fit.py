@@ -157,7 +157,7 @@ class DEfitnew(MLfit):
                                                                                popsize=int(self.DE_population_size),
                                                                                maxiter=1, tol=0.00, atol=1.0,
                                                                                strategy=self.strategy,
-                                                                               recombination=0.5, polish=False,
+                                                                               recombination=0.1, polish=False,
                                                                                init=init, disp=self.display_progress,
                                                                                workers=worker)
 

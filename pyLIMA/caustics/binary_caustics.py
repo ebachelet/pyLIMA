@@ -379,6 +379,7 @@ def caustic_points_at_phi_0(separation, mass_ratio):
           :return: caustic points
           :rtype: array
     """
+
     polynomial_coefficients = poly_binary_eiphi_0(separation, mass_ratio)
     solutions = np.roots(polynomial_coefficients)
 
@@ -405,6 +406,7 @@ def lens_equation(z,lenses_mass,lenses_pos):
           :return: zeta, the associated complex position in the source plane
           :rtype: array
     """
+
     zeta = np.array([j-np.sum(np.array([lenses_mass[i]/(np.conj(j)-np.conj(lenses_pos[i]))
                                         for i in range(len(lenses_mass))])) for j in z])
 

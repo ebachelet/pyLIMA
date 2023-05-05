@@ -13,9 +13,6 @@ from pyLIMA import microlfits
 from pyLIMA import microlmodels
 
 
-
-
-
 def _create_event():
     event = mock.MagicMock()
     event.telescopes = [mock.MagicMock()]
