@@ -7,6 +7,11 @@ from astropy.coordinates import solar_system_ephemeris, spherical_to_cartesian
 
 from pyLIMA.parallax import astropy_ephemerides
 
+AU = astronomical_constants.au.value
+SPEED_OF_LIGHT = astronomical_constants.c.value
+EARTH_RADIUS = astronomical_constants.R_earth.value
+
+
 def EN_trajectory_angle(piEN, piEE):
     """Find the angle between the North vector and the lens trajectory (at t0par). See Gould2004, RESOLUTION OF THE MACHO-LMC-5 PUZZLE: THE JERK-PARALLAX MICROLENS DEGENERACY
 
@@ -38,162 +43,7 @@ def compute_parallax_curvature(piE, delta_positions):
 
     return delta_tau, delta_beta
 
-
-class MLParallaxes(object):
-    """
-    ######## Parallax module ########
-
-
-    This module compute the parallax shifts due to different parallax effects.
-
-    Attributes :
-
-    event : the event object on which you perform the fit on. More details on the event module.
-
-    parallax_model : The parallax effect you want to fit. Have to be a list containing the
-    parallax model name
-    and the reference time to_par (in JD unit). Example : ['Annual',2457000.0]
-
-    AU : the astronomical unit,  as defined by astropy (in meter)
-
-    speed_of_light : the speed light c,  as defined by astropy (in meter/second)
-
-    Earth_radius : the Earth equatorial radius,  as defined by astropy (in meter)
-
-    target_angles_in_the_sky : a list containing [RA,DEC] of the target in radians unit.
-
-   :param event: the event object on which you perform the fit on. More details on the event module.
-   :param parallax_model: The parallax effect you want to fit. Have to be a list containing the
-   parallax model name
-        and the to_par value. Example : ['Annual',2457000.0]
-
-    """
-
-    def __init__(self, event_ra, event_dec, parallax_model):
-        """Initialization of the attributes described above."""
-
-        self.parallax_model = parallax_model[0]
-        self.to_par = parallax_model[1]
-        self.AU = astronomical_constants.au.value
-        self.speed_of_light = astronomical_constants.c.value
-        self.Earth_radius = astronomical_constants.R_earth.value
-
-        self.target_angles_in_the_sky = [event_ra * np.pi / 180, event_dec * np.pi / 180]
-        self.North_East_vectors_target()
-
-    def North_East_vectors_target(self):
-        """This function define the North and East vectors projected on the sky plane
-        perpendicular to the line
-        of sight (i.e the line define by RA,DEC of the event).
-        """
-        target_angles_in_the_sky = self.target_angles_in_the_sky
-        Target = np.array(
-            [np.cos(target_angles_in_the_sky[1]) * np.cos(target_angles_in_the_sky[0]),
-             np.cos(target_angles_in_the_sky[1]) * np.sin(target_angles_in_the_sky[0]),
-             np.sin(target_angles_in_the_sky[1])])
-
-        self.East = np.array(
-            [-np.sin(target_angles_in_the_sky[0]), np.cos(target_angles_in_the_sky[0]), 0.0])
-        self.North = np.cross(Target, self.East)
-
-
-    def parallax_combination(self, telescope):
-        """ Compute, and set, the deltas_positions attributes of the telescope object
-       inside the list of telescopes. deltas_positions is the offset between the position of the
-       observatory at the time t, and the
-       center of the Earth at the date to_par. More details on each parallax functions.
-
-       :param object telescope:  a telescope object on which you want to set the deltas_positions
-       due to parallax.
-
-       """
-
-        for data_type in ['astrometry', 'photometry']:
-
-
-            if data_type == 'photometry':
-
-                data = telescope.lightcurve_flux
-
-            else:
-
-                data = telescope.astrometry
-
-            if data is not None:
-
-                time = data['time'].value
-
-                delta_North = np.array([])
-                delta_East = np.array([])
-
-                location = telescope.location
-
-                if location == 'NewHorizon':
-
-                    delta_North, delta_East = self.lonely_satellite(time, telescope)
-
-                if location == 'Earth':
-
-                    if (self.parallax_model == 'Annual'):
-
-                        telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
-                        telescope.Earth_positions[data_type] = earth_positions
-                        telescope.Earth_speeds[data_type] = earth_speed
-
-                        delta_North = np.append(delta_North, telescope_positions[0])
-                        delta_East = np.append(delta_East, telescope_positions[1])
-
-                    if (self.parallax_model == 'Terrestrial'):
-
-                        altitude = telescope.altitude
-                        longitude = telescope.longitude
-                        latitude = telescope.latitude
-
-                        telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
-
-                        delta_North = np.append(delta_North, telescope_positions[0])
-                        delta_East = np.append(delta_East, telescope_positions[1])
-
-                    if (self.parallax_model == 'Full'):
-
-                        telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
-                        telescope.Earth_positions[data_type] = earth_positions
-                        telescope.Earth_speeds[data_type] = earth_speed
-
-                        delta_North = np.append(delta_North, telescope_positions[0])
-                        delta_East = np.append(delta_East, telescope_positions[1])
-
-                        altitude = telescope.altitude
-                        longitude = telescope.longitude
-                        latitude = telescope.latitude
-
-                        telescope_positions = -self.terrestrial_parallax(time, altitude, longitude, latitude)
-
-                        delta_North += telescope_positions[0]
-                        delta_East += telescope_positions[1]
-
-                if location == 'Space':
-
-                    telescope_positions, earth_positions, earth_speed = self.annual_parallax(time)
-                    telescope.Earth_positions[data_type] = earth_positions
-                    telescope.Earth_speeds[data_type] = earth_speed
-
-                    delta_North = np.append(delta_North, telescope_positions[0])
-                    delta_East = np.append(delta_East, telescope_positions[1])
-                    name = telescope.spacecraft_name
-
-                    telescope_positions = -self.space_parallax(time, name, telescope)
-
-                    delta_North += telescope_positions[0]
-                    delta_East += telescope_positions[1]
-
-                deltas_position = np.array([delta_North, delta_East])
-
-                # set the attributes deltas_positions for the telescope object
-                telescope.deltas_positions[data_type] = deltas_position
-
-
-    def annual_parallax(self, time_to_treat):
+def Earth_ephemerides(time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
         Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
@@ -206,28 +56,16 @@ class MLParallaxes(object):
         **WARNING** : this is a geocentric point of view.
                       slalib use MJD time definition, which is MJD = JD-2400000.5
         """
-
         with solar_system_ephemeris.set('builtin'):
 
-            Earth_position_time_reference = astropy_ephemerides.Earth_ephemerides(self.to_par)
-            Sun_position_time_reference = -Earth_position_time_reference[0]
-            Sun_speed_time_reference = -Earth_position_time_reference[1]
 
-            Earth_position = astropy_ephemerides.Earth_ephemerides(time_to_treat)
-            Earth_projected = np.array([np.dot(Earth_position[0].xyz.value.T, self.North),
-                                        np.dot(Earth_position[0].xyz.value.T, self.East)])
-            Earth_projected_speed = np.array([np.dot(Earth_position[1].xyz.value.T, self.North),
-                                              np.dot(Earth_position[1].xyz.value.T, self.East)])
+            Earth_ephemeris = astropy_ephemerides.Earth_ephemerides(time_to_treat)
+            Earth_positions = Earth_ephemeris[0].xyz.value.T
+            Earth_speeds = Earth_ephemeris[1].xyz.value.T
 
-            Sun_position = -Earth_position[0]
+            return Earth_positions, Earth_speeds
 
-            delta_Sun = Sun_position.xyz.value.T - np.c_[time_to_treat - self.to_par] * Sun_speed_time_reference.xyz.value - Sun_position_time_reference.xyz.value
-
-            delta_Sun_projected = np.array([np.dot(delta_Sun, self.North), np.dot(delta_Sun, self.East)])
-
-            return delta_Sun_projected, Earth_projected, Earth_projected_speed
-
-    def terrestrial_parallax(self, time_to_treat, altitude, longitude, latitude):
+def Earth_telescope_sidereal_times(time_to_treat, sidereal_type='mean'):
         """ Compute the position shift due to the distance of the obervatories from the Earth
         center.
         Please have a look on :
@@ -245,31 +83,12 @@ class MLParallaxes(object):
         **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
-        radius = (self.Earth_radius + altitude) / self.AU
-        Longitude = longitude * np.pi / 180.0
-        Latitude = latitude * np.pi / 180.0
-
-        #delta_telescope = []
-        #for time in time_to_treat:
-        #    time_mjd = time - 2400000.5
-        #    sideral_time = slalib.sla_gmst(time_mjd)
-        #    telescope_longitude = - Longitude - self.target_angles_in_the_sky[
-        #        0] + sideral_time
-
-        #    delta_telescope.append(radius * slalib.sla_dcs2c(telescope_longitude, Latitude))
-        #    import pdb;
-        #    pdb.set_trace()
         times = Time(time_to_treat, format='jd')
-        sideral_times = times.sidereal_time('apparent','greenwich').value/24*2*np.pi
-        telescope_longitudes = - Longitude - self.target_angles_in_the_sky[0] + sideral_times
+        sideral_times = times.sidereal_time(sidereal_type,'greenwich').value/24*2*np.pi
 
-        x,y,z = spherical_to_cartesian(radius, Latitude, telescope_longitudes)
-        delta_telescope = np.c_[x.value,y.value,z.value]
-        delta_telescope_projected = np.array(
-            [np.dot(delta_telescope, self.North), np.dot(delta_telescope, self.East)])
-        return delta_telescope_projected
+        return sideral_times
 
-    def space_parallax(self, time_to_treat, satellite_name, telescope):
+def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
         """ Compute the position shift due to the distance of the obervatories from the Earth
         center.
         Please have a look on :
@@ -286,10 +105,11 @@ class MLParallaxes(object):
 
         tstart = min(time_to_treat) - 1
         tend = max(time_to_treat) + 1
+        satellite_name  = telescope.spacecraft_name
 
         if len(telescope.spacecraft_positions) != 0:
 
-            # allow to pass the user to give his own ephemeris
+            # allow the user to give his own ephemeris
             satellite_positions = np.array(telescope.spacecraft_positions)
 
         else:
@@ -300,7 +120,7 @@ class MLParallaxes(object):
             #                                             step_size='1440m', verbose=False)[1]
             satellite_positions = pyLIMA.parallax.JPL_ephemerides.horizons_API(satellite_name, tstart, tend,
                                                                                          observatory='Geocentric',
-                                                                                         step_size='1440m')[1]
+                                                                                         step_size=step_size)[1]
 
             telescope.spacecraft_positions = np.array(satellite_positions).astype(float)
 
@@ -321,49 +141,118 @@ class MLParallaxes(object):
 
         x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
                                          ra_interpolated * np.pi / 180)
-        delta_satellite = np.c_[x.value, y.value, z.value]
+        spacecraft_positions = np.c_[x.value, y.value, z.value]
 
-        delta_satellite_projected = np.array(
-            [np.dot(delta_satellite, self.North), np.dot(delta_satellite, self.East)])
+        return spacecraft_positions
 
-        return delta_satellite_projected
+def parallax_combination(telescope, parallax_model, North_vector, East_vector, right_ascension):
+        """ Compute, and set, the deltas_positions attributes of the telescope object
+        inside the list of telescopes. deltas_positions is the offset between the position of the
+        observatory at the time t, and the
+        center of the Earth at the date to_par. More details on each parallax functions.
 
-    def lonely_satellite(self, time_to_treat, telescope):
+            :param object telescope:  a telescope object on which you want to set the deltas_positions
+            due to parallax.
+
         """
+
+        if telescope.location == 'Earth':
+
+            telescope.find_Earth_telescope_positions(right_ascension)
+
+
+        for data_type in ['astrometry', 'photometry']:
+
+            positions = 0
+
+            if data_type == 'photometry':
+
+                data = telescope.lightcurve_flux
+            else:
+
+                data = telescope.astrometry
+
+            if data is not None:
+
+                time = data['time'].value
+                earth_positions = telescope.Earth_positions[data_type]
+                Earth_projected_North = np.dot(earth_positions, North_vector)
+                Earth_projected_East = np.dot(earth_positions, East_vector)
+
+                telescope.Earth_positions_projected[data_type] = np.array([Earth_projected_North, Earth_projected_East])
+
+                earth_speeds = telescope.Earth_positions[data_type]
+                Earth_projected_North = np.dot(earth_speeds, North_vector)
+                Earth_projected_East = np.dot(earth_speeds, East_vector)
+
+                telescope.Earth_speeds_projected[data_type] = np.array(
+                    [Earth_projected_North, Earth_projected_East])
+
+                if (parallax_model[0] == 'Annual') | (parallax_model[0] =='Full'):
+
+                        positions += annual_parallax(time, earth_positions, parallax_model[1])
+
+                if (parallax_model == 'Terrestrial') | (telescope.location == 'Space'):
+
+                        positions -= telescope.telescope_positions[data_type]
+
+                delta_North = np.dot(positions,North_vector)
+                delta_East = np.dot(positions,East_vector)
+
+                deltas_position = np.array([delta_North, delta_East])
+
+                telescope.deltas_positions[data_type] = deltas_position
+
+
+def annual_parallax(time_to_treat, earth_positions, t0_par):
+
+        """Compute the position shift due to the Earth movement. Please have a look on :
+        "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
+        Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+
+        :param  time_to_treat: a numpy array containing the time where you want to compute this
+        effect.
+        :return: the shift induce by the Earth motion around the Sun
+        :rtype: array_like
+
+        **WARNING** : this is a geocentric point of view.
+                      slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
-        satellite_positions = np.array(telescope.spacecraft_positions)
+        Earth_position_time_reference = Earth_ephemerides(t0_par)
+        Sun_position_time_reference = -Earth_position_time_reference[0]
+        Sun_speed_time_reference = -Earth_position_time_reference[1]
 
-        dates = satellite_positions[:, 0].astype(float)
-        X = satellite_positions[:, 1].astype(float)
-        Y = satellite_positions[:, 2].astype(float)
-        Z = satellite_positions[:, 3].astype(float)
+        Sun_position = -earth_positions
+        delta_Sun = Sun_position- np.c_[time_to_treat - t0_par] * Sun_speed_time_reference - Sun_position_time_reference
 
-        interpolated_X = interpolate.interp1d(dates, X)
-        interpolated_Y = interpolate.interp1d(dates, Y)
-        interpolated_Z = interpolate.interp1d(dates, Z)
+        return delta_Sun
 
-        spacecraft_position_time_reference = np.array(
-            [interpolated_X(self.to_par), interpolated_Y(self.to_par), interpolated_Z(self.to_par)])
-        spacecraft_position_time_reference1 = np.array(
-            [interpolated_X(self.to_par - 1), interpolated_Y(self.to_par - 1), interpolated_Z(self.to_par - 1)])
-        spacecraft_position_time_reference2 = np.array(
-            [interpolated_X(self.to_par + 1), interpolated_Y(self.to_par + 1), interpolated_Z(self.to_par + 1)])
-        spacecraft_speed_time_reference = (
-                                                      spacecraft_position_time_reference2 - spacecraft_position_time_reference1) / 2
-        delta_spacecraft = []
+def terrestrial_parallax(sidereal_times, altitude, longitude, latitude, right_ascension):
+    """ Compute the position shift due to the distance of the obervatories from the Earth
+    center.
+    Please have a look on :
+    "Parallax effects in binary microlensing events"
+    Hardy, S.J and Walker, M.A. 1995. http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
 
-        for time in time_to_treat:
-            sat_position = np.array([interpolated_X(time), interpolated_Y(time), interpolated_Z(time)])
+    :param  time_to_treat: a numpy array containing the time where you want to compute this
+    effect.
+    :param altitude: the altitude of the telescope in meter
+    :param longitude: the longitude of the telescope in degree
+    :param latitude: the latitude of the telescope in degree
+    :return: the shift induce by the distance of the telescope to the Earth center.
+    :rtype: array_like
 
-            delta_satellite = sat_position - (
-                        time - self.to_par) * spacecraft_speed_time_reference - spacecraft_position_time_reference
+    **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
+    """
 
-            delta_spacecraft.append(delta_satellite.tolist())
 
-        delta_Sat = np.array(delta_spacecraft)
+    radius = (EARTH_RADIUS + altitude) / AU
+    Longitude = longitude * np.pi / 180.0
+    Latitude = latitude * np.pi / 180.0
+    telescope_longitudes = - Longitude - right_ascension + sidereal_times
 
-        delta_spacecraft_projected = np.array(
-            [np.dot(delta_Sat, self.North), np.dot(delta_Sat, self.East)])
+    x,y,z = spherical_to_cartesian(radius, Latitude, telescope_longitudes)
+    delta_telescope = np.c_[x.value,y.value,z.value]
 
-        return delta_spacecraft_projected
+    return delta_telescope

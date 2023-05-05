@@ -31,13 +31,13 @@ your_event.dec = -30
 CTIO_I = simulator.simulate_a_telescope('CTIO_I', your_event, 2458365.5, 2458965.5, 4, 'Earth', 'I',
                                         uniform_sampling=False, altitude=1000, longitude = -109.285399, 
                                         latitude = -27.130, bad_weather_percentage=10.0 / 100, 
-                                        moon_windows_avoidance=30, minimum_alt=30)
+                                        moon_windows_avoidance=30, minimum_alt=30,astrometry=False)
 
 GAIA_G = simulator.simulate_a_telescope('GAIA_G', your_event, 2458365.5, 2458965.5, 168, 'Space', 'G',
-                                        uniform_sampling=True, spacecraft_name='Gaia')
+                                        uniform_sampling=True, spacecraft_name='Gaia',astrometry=False)
 
 SPITZER_H = simulator.simulate_a_telescope('SPITZER_H', your_event, 2458565.5, 2458765.5, 168, 'Space', 'H',
-                                        uniform_sampling=True, spacecraft_name='Spitzer')
+                                        uniform_sampling=True, spacecraft_name='Spitzer',astrometry=False)
 
 
 ### Similar to tutorial 1, we need to associate this telescopee with the event we created:
@@ -68,8 +68,8 @@ pspl_parameters[1:5] = [0.60, 81.50, 0.02, 0.07]
 
 ### We also artificially set the source and blend fluxes of all telescopes to the same values
 ### just for plotting purposes (you don't have to do this normally):
-pspl_parameters[5::2] = [10000.,10000.,10000.] # source fluxes
-pspl_parameters[6::2] = [1000.,1000.,1000.] # blend fluxes
+pspl_parameters[-6::2] = [10000.,10000.,10000.] # source fluxes
+pspl_parameters[-6::2] = [1000.,1000.,1000.] # blend fluxes
 
 ### Transform the parameters into a pyLIMA class object. See the documentation for details.
 pyLIMA_parameters_1 = pspl.compute_pyLIMA_parameters(pspl_parameters)

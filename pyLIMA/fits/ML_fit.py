@@ -679,7 +679,7 @@ class MLfit(object):
             matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
             matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
 
-        if self.model.photometry:
+        if self.model.astrometry:
 
             matplotlib_astrometry = pyLIMA_plots.plot_astrometry(self.model, self.fit_results['best_model'])
 

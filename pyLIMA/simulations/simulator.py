@@ -31,7 +31,7 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 def simulate_a_telescope(name, event, time_start, time_end, sampling, location, filter, uniform_sampling=False,
                          altitude=0, longitude=0, latitude=0, spacecraft_name=None, bad_weather_percentage=0.0,
                          minimum_alt=20, moon_windows_avoidance=20, maximum_moon_illumination=100.0, photometry=True,
-                         astrometry=True,pixel_scale = 1):
+                         astrometry=True, pixel_scale = 1):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
         full time windows, then limitation are applied :
             - Sun has to be below horizon : Sun< -18

@@ -28,7 +28,7 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
     mu_N = pyLIMA_parameters.mu_source_N
     mu_E = pyLIMA_parameters.mu_source_E
 
-    earth_vector = telescope.Earth_positions['astrometry']
+    earth_vector = telescope.Earth_positions_projected['astrometry']
     parallax_source = pyLIMA_parameters.parallax_source
     Earth_projected = earth_vector*parallax_source #mas
 

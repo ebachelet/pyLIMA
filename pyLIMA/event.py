@@ -53,10 +53,14 @@ class Event(object):
         self.name = 'Sagittarius A*'
         self.ra = 266.416792
         self.dec = -29.007806
+        self.North = []
+        self.East = []
         self.telescopes = []
         self.survey = None
         self.fits = []
         self.parallax_model = None
+
+        self.North_East_vectors()
 
     def telescopes_names(self):
         """Print the the telescope's names contain in the event.
@@ -149,14 +153,11 @@ class Event(object):
         """ Compute the parallax displacement for all the telescopes, if this is desired in
         the second order parameter.
         """
-        import pyLIMA.parallax.parallax
-
-        self.parallax_model = pyLIMA.parallax.parallax.MLParallaxes(self.ra, self.dec, parallax_model)
 
         for telescope in self.telescopes:
 
         #    if len(telescope.deltas_positions) == 0:
-            telescope.compute_parallax(self.parallax_model)
+            telescope.compute_parallax(parallax_model, self.North, self.East, self.ra*np.pi/180)
 
     def total_number_of_data_points(self):
         """ Compute the parallax displacement for all the telescopes, if this is desired in
@@ -170,3 +171,18 @@ class Event(object):
             n_data = n_data + telescope.n_data('flux')
 
         return n_data
+
+    def North_East_vectors(self):
+        """This function define the North and East vectors projected on the sky plane
+        perpendicular to the line
+        of sight (i.e the line define by RA,DEC of the event).
+        """
+        target_angles_in_the_sky =  [self.ra * np.pi / 180, self.dec * np.pi / 180]
+        Target = np.array(
+            [np.cos(target_angles_in_the_sky[1]) * np.cos(target_angles_in_the_sky[0]),
+             np.cos(target_angles_in_the_sky[1]) * np.sin(target_angles_in_the_sky[0]),
+             np.sin(target_angles_in_the_sky[1])])
+
+        self.East = np.array(
+            [-np.sin(target_angles_in_the_sky[0]), np.cos(target_angles_in_the_sky[0]), 0.0])
+        self.North = np.cross(Target, self.East)

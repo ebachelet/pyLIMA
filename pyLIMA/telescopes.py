@@ -9,6 +9,7 @@ import numpy as np
 from astropy import constants as astronomical_constants
 
 from pyLIMA.toolbox.time_series import construct_time_series, clean_time_series
+from pyLIMA.parallax import parallax
 
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected lightcurve format differs, please
 # indicate this in the correponding lightcurve_magnitude_dictionnary or lightcurve_flux_dictionnary, see below.
@@ -103,6 +104,10 @@ class Telescope(object):
         self.deltas_positions = {}
         self.Earth_positions = {}
         self.Earth_speeds = {}
+        self.sidereal_times = {}
+        self.telescope_positions = {}
+        self.Earth_positions_projected = {}
+        self.Earth_speeds_projected = {}
 
         self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
         self.spacecraft_positions = [] #only for space base observatory, should be a list as
@@ -171,6 +176,8 @@ class Telescope(object):
 
                     break
 
+        self.initialize_positions()
+
         self.hidden()
 
     def n_data(self, choice='magnitude'):
@@ -202,15 +209,107 @@ class Telescope(object):
 
         self.gamma = star.find_gamma(self.filter)
 
-    def compute_parallax(self, parallax_obj):
+
+    def initialize_positions(self):
+
+        self.find_Earth_positions()
+
+        if self.location == 'Space':
+
+            self.find_space_positions()
+
+        else:
+
+            self.find_sidereal_time()
+
+    def find_Earth_positions(self):
+
+        for data_type in ['astrometry', 'photometry']:
+
+            if data_type == 'photometry':
+
+                data = self.lightcurve_flux
+
+            else:
+
+                data = self.astrometry
+
+            if data is not None:
+
+                time = data['time'].value
+
+                earth_positions, earth_speeds = parallax.Earth_ephemerides(time)
+                self.Earth_positions[data_type] = earth_positions
+                self.Earth_speeds[data_type] = earth_speeds
+
+    def find_sidereal_time(self, sidereal_type='mean'):
+
+        for data_type in ['astrometry', 'photometry']:
+
+            if data_type == 'photometry':
+
+                data = self.lightcurve_flux
+
+            else:
+
+                data = self.astrometry
+
+            if data is not None:
+
+                time = data['time'].value
+
+                sidereal_times = parallax.Earth_telescope_sidereal_times(time, sidereal_type=sidereal_type)
+                self.sidereal_times[data_type] = sidereal_times
+
+    def find_Earth_telescope_positions(self, right_ascension):
+
+        for data_type in ['astrometry', 'photometry']:
+
+            if data_type == 'photometry':
+
+                data = self.lightcurve_flux
+
+            else:
+
+                data = self.astrometry
+
+            if data is not None:
+
+                sidereal_times = self.sidereal_times[data_type]
+
+                telescope_positions = parallax.terrestrial_parallax(sidereal_times, self.altitude, self.longitude, self.latitude,
+                                                               right_ascension)
+
+                self.telescope_positions[data_type] = telescope_positions
+
+    def find_space_positions(self, step_size='1440m'):
+
+        for data_type in ['astrometry', 'photometry']:
+
+            if data_type == 'photometry':
+
+                data = self.lightcurve_flux
+
+            else:
+
+                data = self.astrometry
+
+            if data is not None:
+
+                time = data['time'].value
+
+                spacecraft_positions = parallax.space_ephemerides(self, time, step_size=step_size)
+                self.telescope_positions[data_type] = spacecraft_positions
+
+    def compute_parallax(self, parallax_model, North_vector, East_vector, right_ascension):
         """ Compute and set the deltas_positions attribute due to the parallax.
 
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
 
-        parallax_obj.parallax_combination(self)
-        print('Parallax(' + parallax_obj.parallax_model + ') estimated for the telescope ' + self.name + ': SUCCESS')
+        parallax.parallax_combination(self, parallax_model, North_vector, East_vector, right_ascension)
+        print('Parallax(' + parallax_model[0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
     def lightcurve_in_flux(self):
         """

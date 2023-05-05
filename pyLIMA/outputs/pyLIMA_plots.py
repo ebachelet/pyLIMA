@@ -18,14 +18,10 @@ from bokeh.models import Circle
 
 import pygtc
 
-
 from pyLIMA.toolbox import fake_telescopes, plots
 import pyLIMA.fits.objective_functions
 from pyLIMA.parallax import parallax
 from pyLIMA.astrometry import astrometric_positions
-
-
-
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.21
@@ -37,8 +33,6 @@ thismodule = sys.modules[__name__]
 
 thismodule.list_of_fake_telescopes = []
 thismodule.saved_model = None
-
-
 
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
@@ -116,31 +110,17 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                         model_telescope.spacecraft_name = tel.spacecraft_name
                         model_telescope.spacecraft_positions = tel.spacecraft_positions
 
-                        if microlensing_model.parallax_model[0] != 'None':
+                    if microlensing_model.parallax_model[0] != 'None':
 
-                            import pyLIMA.parallax.parallax
+                        model_telescope.initialize_positions()
 
-                            parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
-                                                                             microlensing_model.event.dec,
-                                                                             microlensing_model.parallax_model)
+                        model_telescope.compute_parallax(microlensing_model.parallax_model, microlensing_model.event.North
+                                                   , microlensing_model.event.East, microlensing_model.event.ra/180*np.pi)
 
-                            model_telescope.compute_parallax(parallax)
-
-                        list_of_fake_telescopes.append(model_telescope)
+                    list_of_fake_telescopes.append(model_telescope)
 
                     if tel.location == 'Earth' and Earth:
 
-                        if microlensing_model.parallax_model[0] != 'None':
-
-                            import pyLIMA.parallax.parallax
-
-                            parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
-                                                                             microlensing_model.event.dec,
-                                                                             microlensing_model.parallax_model)
-
-                            model_telescope.compute_parallax(parallax)
-
-                        list_of_fake_telescopes.append(model_telescope)
                         Earth = False
 
             if tel.astrometry is not None:
@@ -189,30 +169,18 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_telescope.spacecraft_name = tel.spacecraft_name
                     model_telescope.spacecraft_positions = tel.spacecraft_positions
 
-                    if microlensing_model.parallax_model[0] != 'None':
+                if microlensing_model.parallax_model[0] != 'None':
 
-                        import pyLIMA.parallax.parallax
+                    model_telescope.initialize_positions()
 
-                        parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
-                                                                         microlensing_model.event.dec,
-                                                                         microlensing_model.parallax_model)
+                    model_telescope.compute_parallax(microlensing_model.parallax_model,
+                                                   microlensing_model.event.North
+                                                   , microlensing_model.event.East,
+                                                   microlensing_model.event.ra / 180 * np.pi)
 
-                        model_telescope.compute_parallax(parallax)
 
-                    list_of_fake_telescopes.append(model_telescope)
 
-                if tel.location == 'Earth':
-
-                    if microlensing_model.parallax_model[0] != 'None':
-                        import pyLIMA.parallax.parallax
-
-                        parallax = pyLIMA.parallax.parallax.MLParallaxes(microlensing_model.event.ra,
-                                                                         microlensing_model.event.dec,
-                                                                         microlensing_model.parallax_model)
-
-                        model_telescope.compute_parallax(parallax)
-
-                    list_of_fake_telescopes.append(model_telescope)
+                list_of_fake_telescopes.append(model_telescope)
 
         thismodule.saved_model = microlensing_model
         thismodule.list_of_fake_telescopes = list_of_fake_telescopes
@@ -244,7 +212,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     figure_axes = figure_trajectory.add_subplot(111, aspect=1)
     figure_axes.set_aspect('equal', adjustable='box')
-    plt.subplots_adjust(top=0.9, bottom=0.1, wspace=0.1, hspace=0.1)
+    plt.subplots_adjust(top=0.8, bottom=0.1, left=0.2, right=0.9, wspace=0.1, hspace=0.1)
 
     if bokeh_plot is not None:
 
@@ -447,26 +415,6 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         East = np.dot(rota_mat, East)
         North = np.dot(rota_mat, North)
 
-        #figure_axes.plot([origin_t0par[0],origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], 'k', lw=2)
-        #figure_axes.plot([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], 'k', lw=2)
-        #figure_axes.quiver(origin_t0par[0],origin_t0par[1], north[0], north[1],  scale_units='xy', angles='xy', scale=1, color='k', lw=2)
-        #figure_axes.quiver(origin_t0par[0],origin_t0par[1], east[0], east[1],  scale_units='xy', angles='xy', scale=1, color='k', lw=2)
-       #figure_axes.quiver(0.8, 0.8, north[0], north[1], scale_units='xy', angles='xy', scale=1,
-       #                    color='k', lw=2, transform=plt.gca().transAxes)
-       # figure_axes.quiver(0.8, 0.8, east[0], east[1], scale_units='xy', angles='xy', scale=1,
-        #                   color='k', lw=2, transform=plt.gca().transAxes)
-       # Ncoords = [0.1/2, -0.005]
-       # Ncoords = np.dot(rota_mat, Ncoords)
-       # figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k', size=25, transform=plt.gca().transAxes)
-
-       # Ecoords = [-0.005, 0.1/2]
-       # Ecoords = np.dot(rota_mat, Ecoords)
-       # figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', rotation=np.rad2deg(plot_angle), ha='center', va='center', c='k',size=25, transform=plt.gca().transAxes)
-
-        #figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',linestyle='--', transform=plt.gca().transAxes)
-        #figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k', transform=plt.gca().transAxes, size=25)
-
-
         arrow = plt.annotate('', xy=(origin_t0par[0]+east[0],origin_t0par[1]+east[1]),xytext=(origin_t0par[0],origin_t0par[1]),
                              arrowprops=dict( arrowstyle="->", lw=3,alpha=0.5))
         E = plt.annotate('E', xy=(origin_t0par[0]+East[0],origin_t0par[1]+East[1]),
@@ -485,8 +433,9 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
             bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], line_dash='dotted', color='black')
 
 
-    legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
-
+    #legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
+    legend = figure_axes.legend(shadow=True, fontsize='large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+                                   mode="expand", borderaxespad=0, ncol=3, numpoints=1)
     for handle in legend.legendHandles:
 
         try:
@@ -510,9 +459,9 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     figure_axes.tick_params(axis='y', labelsize=15)
 
     #figure_axes.axis([-3, 3, -3, 3])
-    figure_axes.axis('scaled')
+    #figure_axes.axis('scaled')
     title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
-    figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
+    #figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
     return figure_trajectory, bokeh_geometry
 
@@ -530,25 +479,64 @@ def plot_astrometry(microlensing_model, model_parameters):
 
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
-    mat_figure = plt.figure()
-    mat_figure_ax = plt.axes()
+    left, width = 0.12, 0.55
+    bottom, height = 0.12, 0.55
+    bottom_h = left_h = left + width + 0.02
+
+    # Set up the geometry of the three plots
+    main_plot = [left, bottom, width, height]
+    residuals_x = [left, bottom_h, width, 0.25]
+    residuals_y = [left_h, bottom, 0.25, height]
+
+    # Set up the size of the figure
+    fig_size = (9.5,9.5)
+    ast_figure = plt.figure(figsize=fig_size)
+
+    # Make the three plots
+    ax_main = ast_figure.add_axes(main_plot)
+    ax_res_x = ast_figure.add_axes(residuals_x)
+    ax_res_y = ast_figure.add_axes(residuals_y)
+
+    ax_main.xaxis.grid(True)
+    ax_main.yaxis.grid(True)
+    ax_res_x.xaxis.grid(True)
+    ax_res_x.yaxis.grid(True)
+    ax_res_y.xaxis.grid(True)
+    ax_res_y.yaxis.grid(True)
+
+    ax_main.get_shared_x_axes().join(ax_main, ax_res_x)
+    ax_main.get_shared_y_axes().join(ax_main, ax_res_y)
+
     if len(model_parameters) != len(microlensing_model.model_dictionnary):
 
         telescopes_fluxes = microlensing_model.find_telescopes_fluxes(model_parameters)
 
         model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
-    plot_astrometric_data(mat_figure_ax, microlensing_model)
+    plot_astrometric_data(ax_main, microlensing_model)
 
-    plot_astrometric_models(mat_figure_ax, microlensing_model, model_parameters)
+    plot_astrometric_models([ax_main,ax_res_x, ax_res_y], microlensing_model, model_parameters)
 
-    legend = mat_figure_ax.legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
-                                   mode="expand", borderaxespad=0, ncol=3)
+    legend = ax_main.legend(shadow=True, fontsize='large', bbox_to_anchor=(1.5, 1.5), loc="upper right",borderaxespad=0, ncol=1)
 
-    mat_figure_ax.invert_xaxis()
+    ax_main.invert_xaxis()
+    ax_res_x.set_xticklabels([])
+    ax_res_y.set_yticklabels([])
 
+    for tel in microlensing_model.event.telescopes:
 
-def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
+        if tel.astrometry is not None:
+
+            unit = tel.astrometry['ra'].unit
+
+    ax_main.set_xlabel(r'$E~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
+    ax_main.set_ylabel(r'$N~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
+    ax_res_y.set_xlabel(r'$\Delta N~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
+    ax_res_x.set_ylabel(r'$\Delta E~['+str(unit)+']$', fontsize=4* fig_size[0] * 3 / 4.0)
+
+    return ast_figure
+
+def plot_astrometric_models(figure_axes, microlensing_model, model_parameters):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
@@ -571,13 +559,13 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
             index_color = np.where(name == telescopes_names)[0][0]
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][index_color]
 
-            figure_axe.plot(astrometric_model[0], astrometric_model[1], c=color)
+            figure_axes[0].plot(astrometric_model[0], astrometric_model[1], c=color)
 
             if Earth is True:
 
                 source_E, source_N = astrometric_positions.astrometric_position(tel, pyLIMA_parameters)
-                figure_axe.plot(source_E, source_N, c='k',label='Source')
-                figure_axe.plot(lens_E, lens_N, c='k', linestyle='--',label='Lens')
+                figure_axes[0].plot(source_E, source_N, c='k',label='Source')
+                figure_axes[0].plot(lens_E, lens_N, c='k', linestyle='--',label='Lens')
 
                 for index in [-1, 0, 1]:
 
@@ -588,7 +576,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
                         derivative = (source_N[index_time - 1] - source_N[index_time + 1]) / (
                                 source_E[index_time - 1] - source_E[index_time + 1])
 
-                        figure_axe.annotate('', xy=(source_E[index_time], source_N[index_time]),
+                        figure_axes[0].annotate('', xy=(source_E[index_time], source_N[index_time]),
                                              xytext=(source_E[index_time] - 0.001 * (source_E[index_time+1]-source_E[index_time]),
                                                      source_N[index_time] - 0.001 * (source_E[index_time+1]-source_E[index_time])*derivative),
                                              arrowprops=dict(arrowstyle="->", mutation_scale=35,
@@ -601,7 +589,7 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
                         derivative = (lens_N[index_time - 1] - lens_N[index_time + 1]) / (
                                 lens_E[index_time - 1] - lens_E[index_time + 1])
 
-                        figure_axe.annotate('', xy=(lens_E[index_time], lens_N[index_time]),
+                        figure_axes[0].annotate('', xy=(lens_E[index_time], lens_N[index_time]),
                                             xytext=(lens_E[index_time] - 0.001 * (lens_E[index_time+1]-lens_E[index_time]),
                                                     lens_N[index_time] - 0.001 * (lens_E[index_time+1]-lens_E[index_time])* derivative),
                                             arrowprops=dict(arrowstyle="->", mutation_scale=35,
@@ -613,7 +601,30 @@ def plot_astrometric_models(figure_axe, microlensing_model, model_parameters):
 
                 Earth = False
 
+  # plot residuals
 
+    for ind, tel in enumerate(microlensing_model.event.telescopes):
+
+        if tel.astrometry is not None:
+
+            delta_ra = tel.astrometry['ra'].value
+            err_ra = tel.astrometry['err_ra'].value
+
+            delta_dec = tel.astrometry['dec'].value
+            err_dec = tel.astrometry['err_dec'].value
+
+
+            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
+
+            model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
+
+            astrometric_model = model['astrometry']
+            figure_axes[1].errorbar(delta_ra, delta_ra-astrometric_model[0], yerr=err_ra, fmt='.', ecolor=color, color=color,
+                               label=tel.name, alpha=0.5)
+
+            figure_axes[2].errorbar(delta_dec-astrometric_model[1], delta_dec, xerr=err_dec, fmt='.', ecolor=color,
+                                    color=color,
+                                    label=tel.name, alpha=0.5)
 def plot_astrometric_data(figure_ax, microlensing_model):
 
     # plot data
@@ -689,7 +700,7 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     mat_figure_axes[0].invert_yaxis()
     mat_figure_axes[1].invert_yaxis()
-    legend = mat_figure_axes[0].legend(shadow=True, fontsize='x-large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+    legend = mat_figure_axes[0].legend(shadow=True, fontsize='large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3)
 
     try:
@@ -709,24 +720,24 @@ def initialize_light_curves_plot(plot_unit='Mag', event_name='A microlensing eve
     fig_size = [10, 10]
     mat_figure, mat_figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
                                        figsize=(fig_size[0], fig_size[1]), dpi=75)
-    plt.subplots_adjust(top=0.84, bottom=0.15, left=0.20, right=0.99, wspace=0.2, hspace=0.1)
+    plt.subplots_adjust(top=0.8, bottom=0.15, left=0.2, right=0.9, wspace=0.1, hspace=0.1)
     mat_figure_axes[0].grid()
     mat_figure_axes[1].grid()
-    mat_figure.suptitle(event_name, fontsize=30 * fig_size[0] / len(event_name))
+    #mat_figure.suptitle(event_name, fontsize=30 * fig_size[0] / len(event_name))
 
-    mat_figure_axes[0].set_ylabel(plot_unit, fontsize=5 * fig_size[1] * 3 / 4.0)
+    mat_figure_axes[0].set_ylabel(r'$'+plot_unit+'$', fontsize=5 * fig_size[1] * 3 / 4.0)
     mat_figure_axes[0].yaxis.set_major_locator(MaxNLocator(4))
     mat_figure_axes[0].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
     mat_figure_axes[0].text(0.01, 0.96, 'provided by pyLIMA', style='italic', fontsize=10,
                         transform=mat_figure_axes[0].transAxes)
 
-    mat_figure_axes[1].set_xlabel('JD', fontsize=5 * fig_size[0] * 3 / 4.0)
+    mat_figure_axes[1].set_xlabel(r'$JD$', fontsize=5 * fig_size[0] * 3 / 4.0)
     mat_figure_axes[1].xaxis.set_major_locator(MaxNLocator(3))
     mat_figure_axes[1].yaxis.set_major_locator(MaxNLocator(4, min_n_ticks=3))
 
     mat_figure_axes[1].ticklabel_format(useOffset=False, style='plain')
-    mat_figure_axes[1].set_ylabel('Residuals', fontsize=5 * fig_size[1] * 2 / 4.0)
+    mat_figure_axes[1].set_ylabel(r'$\Delta M$', fontsize=5 * fig_size[1] * 2 / 4.0)
     mat_figure_axes[1].tick_params(axis='x', labelsize=3.5 * fig_size[0] * 3 / 4.0)
     mat_figure_axes[1].tick_params(axis='y', labelsize=3.5 * fig_size[1] * 3 / 4.0)
 
