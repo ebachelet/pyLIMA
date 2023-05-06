@@ -2,7 +2,16 @@ import numpy as np
 
 
 def xy_shifts_to_NE_shifts(xy_shifts, piEN, piEE):
+    """ Transform the x,y positions into the North, East reference,
+        i.e. rotate by phi = np.arctan2(piEE,piEN)
 
+        :param array xy_shifts: the x and y positions
+        :param float piEN : the North component of the parallax vector
+        :param float piEE: a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.
+
+        :return: Delta_ra, Delta_dec position in North and East
+        :rtype: tuple, tuple of two array_like
+    """
     centroid_x = xy_shifts[0]
     centroid_y = xy_shifts[1]
 
@@ -14,14 +23,22 @@ def xy_shifts_to_NE_shifts(xy_shifts, piEN, piEE):
     return Delta_ra, Delta_dec
 
 
-def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
+def astrometric_positions_of_the_source(telescope, pyLIMA_parameters, time_ref=None):
+    """ The source astrometric positions without astrometric shifts
+
+        :param object telescope: the telescope object containing astrometric data
+        :param dictionnary pyLIMA_parameters : the dictionnary containing the model parameters
+        :param float time_ref: time of reference chosen, default is t0
+
+        :return: position_ra, position_dec astrometric position in North and East, units depend of the data units (pixels or degrees)
+        :rtype: tuple, tuple of two array_like
+    """
 
     time = telescope.astrometry['time'].value
 
     if time_ref is None:
 
         time_ref = pyLIMA_parameters.t0
-
 
     ref_N = getattr(pyLIMA_parameters, 'position_source_N_' + telescope.name)
     ref_E = getattr(pyLIMA_parameters, 'position_source_E_' + telescope.name)
@@ -51,13 +68,23 @@ def astrometric_position(telescope, pyLIMA_parameters, time_ref=None):
     return position_ra, position_dec
 
 
-def source_astrometric_position(telescope, pyLIMA_parameters, shifts=None, time_ref=None):
+def source_astrometric_positions(telescope, pyLIMA_parameters, shifts=None, time_ref=None):
+    """ The source astrometric positions with or without astrometric shifts
+
+        :param object telescope: the telescope object containing astrometric data
+        :param dictionnary pyLIMA_parameters : the dictionnary containing the model parameters
+        :param array shifts : arrays of North and East astrometric shifts in mas or pixel
+        :param float time_ref: time of reference chosen, default is t0
+
+        :return: position_ra, position_dec, astrometric position of the source in North and East, units depend of the data units (pixels or degrees)
+        :rtype: tuple, tuple of two array_like
+    """
 
     if shifts is None:
 
         shifts = np.zeros(2)
 
-    position_E, position_N = astrometric_position(telescope, pyLIMA_parameters, time_ref)
+    position_E, position_N = astrometric_positions_of_the_source(telescope, pyLIMA_parameters, time_ref)
 
     if telescope.astrometry['ra'].unit == 'deg':
 
@@ -71,11 +98,20 @@ def source_astrometric_position(telescope, pyLIMA_parameters, shifts=None, time_
 
     return position_ra, position_dec
 
-def lens_astrometric_position(model, telescope, pyLIMA_parameters, shifts=None):
+def lens_astrometric_positions(model, telescope, pyLIMA_parameters, time_ref=None):
+    """ The lens astrometric positions
 
-    source_EN = source_astrometric_position(telescope, pyLIMA_parameters, shifts=shifts)
+        :param object model: the microlensing model object to compute the source trajectory relative to lens
+        :param object telescope: the telescope object containing astrometric data
+        :param dictionnary pyLIMA_parameters : the dictionnary containing the model parameters
+        :param float time_ref: time of reference chosen, default is t0
 
-    source_relative_to_lens = model.source_trajectory(telescope, pyLIMA_parameters,data_type='astrometry')
+        :return: position_ra, position_dec astrometric position of the lens in North and East, units depend of the data units (pixels or degrees)
+        :rtype: tuple, tuple of two array_like
+    """
+    source_EN = source_astrometric_positions(telescope, pyLIMA_parameters, shifts=None, time_ref=time_ref)
+
+    source_relative_to_lens = model.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
 
     source_relative_to_lens_EN = xy_shifts_to_NE_shifts((source_relative_to_lens[0],source_relative_to_lens[1])
                                                          ,pyLIMA_parameters.piEN, pyLIMA_parameters.piEE)
