@@ -85,8 +85,9 @@ class Telescope(object):
 
     def __init__(self, name='NDG', camera_filter='I', pixel_scale = 1, light_curve=None,
                  light_curve_names=None, light_curve_units=None,
-                 location='Earth', spacecraft_name=None,
-                 astrometry=None, astrometry_names=None, astrometry_units=None):
+                 astrometry=None, astrometry_names=None, astrometry_units=None,
+                 location='Earth', altitude=-astronomical_constants.R_earth.value, longitude=0.57, latitude=49.49,
+                 spacecraft_name=None, spacecraft_positions=[],):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -98,9 +99,9 @@ class Telescope(object):
         self.bad_data = {}
 
         self.location = location
-        self.altitude = -astronomical_constants.R_earth.value  # default is Earth center
-        self.longitude = 0.57  # degrees
-        self.latitude = 49.49  # degrees , default is somewhere...
+        self.altitude = altitude  # default is Earth center
+        self.longitude = longitude  # degrees
+        self.latitude = latitude  # degrees , default is somewhere...
         self.deltas_positions = {}
         self.Earth_positions = {}
         self.Earth_speeds = {}
@@ -110,7 +111,7 @@ class Telescope(object):
         self.Earth_speeds_projected = {}
 
         self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
-        self.spacecraft_positions = [] #only for space base observatory, should be a list as
+        self.spacecraft_positions = spacecraft_positions #only for space base observatory, should be a list as
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
 
         #Microlensing LD coefficients
@@ -180,6 +181,30 @@ class Telescope(object):
 
         self.hidden()
 
+
+    def trim_data(self, photometry_mask = None, astrometry_mask=None):
+
+        if photometry_mask is not None:
+
+            self.lightcurve_flux = self.lightcurve_flux[photometry_mask]
+            self.lightcurve_magnitude = self.lightcurve_magnitude[photometry_mask]
+
+            self.Earth_positions['photometry'] = self.Earth_positions['photometry'][photometry_mask]
+            self.Earth_speeds['photometry'] = self.Earth_speeds['photometry'][photometry_mask]
+            self.sidereal_times['photometry'] =  self.sidereal_times['photometry'][photometry_mask]
+
+            self.telescope_positions['photometry'] = self.telescope_positions['photometry'][photometry_mask]
+
+        if astrometry_mask is not None:
+
+            self.astrometry = self.astrometry[astrometry_mask]
+
+            self.Earth_positions['astrometry'] = self.Earth_positions['astrometry'][astrometry_mask]
+            self.Earth_speeds['astrometry'] = self.Earth_speeds['astrometry'][astrometry_mask]
+            self.sidereal_times['astrometry'] = self.sidereal_times['astrometry'][astrometry_mask]
+
+            self.telescope_positions['astrometry'] = self.telescope_positions['astrometry'][astrometry_mask]
+
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.
 
@@ -207,7 +232,7 @@ class Telescope(object):
 
         """
 
-        self.gamma = star.find_gamma(self.filter)
+        self.ld_gamma = star.find_gamma(self.filter)
 
 
     def initialize_positions(self):
