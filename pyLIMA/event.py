@@ -46,19 +46,17 @@ class Event(object):
          
     """
 
-    def __init__(self):
+    def __init__(self,ra=266.416792, dec=-29.007806):
         """ Initialization of the attributes described above. """
 
         self.kind = 'Microlensing'
         self.name = 'Sagittarius A*'
-        self.ra = 266.416792
-        self.dec = -29.007806
+        self.ra = ra
+        self.dec = dec
         self.North = []
         self.East = []
         self.telescopes = []
         self.survey = None
-        self.fits = []
-        self.parallax_model = None
 
         self.North_East_vectors()
 

@@ -58,7 +58,6 @@ def Earth_ephemerides(time_to_treat):
         """
         with solar_system_ephemeris.set('builtin'):
 
-
             Earth_ephemeris = astropy_ephemerides.Earth_ephemerides(time_to_treat)
             Earth_positions = Earth_ephemeris[0].xyz.value.T
             Earth_speeds = Earth_ephemeris[1].xyz.value.T
@@ -160,10 +159,10 @@ def parallax_combination(telescope, parallax_model, North_vector, East_vector, r
 
             telescope.find_Earth_telescope_positions(right_ascension)
 
-
         for data_type in ['astrometry', 'photometry']:
 
-            positions = 0
+            delta_North = 0
+            delta_East = 0
 
             if data_type == 'photometry':
 
@@ -190,14 +189,16 @@ def parallax_combination(telescope, parallax_model, North_vector, East_vector, r
 
                 if (parallax_model[0] == 'Annual') | (parallax_model[0] =='Full'):
 
-                        positions += annual_parallax(time, earth_positions, parallax_model[1])
+                        annual_positions = annual_parallax(time, earth_positions, parallax_model[1])
 
-                if (parallax_model == 'Terrestrial') | (telescope.location == 'Space'):
+                        delta_North += np.dot(annual_positions, North_vector)
+                        delta_East += np.dot(annual_positions, East_vector)
 
-                        positions -= telescope.telescope_positions[data_type]
+                if (parallax_model[0] == 'Terrestrial') | (telescope.location == 'Space'):
 
-                delta_North = np.dot(positions,North_vector)
-                delta_East = np.dot(positions,East_vector)
+                        telescope_positions = -telescope.telescope_positions[data_type]
+                        delta_North += np.dot(telescope_positions, North_vector)
+                        delta_East += np.dot(telescope_positions, East_vector)
 
                 deltas_position = np.array([delta_North, delta_East])
 
@@ -256,3 +257,4 @@ def terrestrial_parallax(sidereal_times, altitude, longitude, latitude, right_as
     delta_telescope = np.c_[x.value,y.value,z.value]
 
     return delta_telescope
+

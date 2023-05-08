@@ -60,7 +60,7 @@ def error_flux_to_error_magnitude(error_flux, flux):
 
     return error_magnitude
 
-def noisy_observations(flux):
+def noisy_observations(flux, exp_time=None):
     """Add Poisson noise to observations.
 
         :param array_like flux: the observed flux
@@ -72,12 +72,21 @@ def noisy_observations(flux):
 
     """
 
-    photons = flux*EXPOSURE_TIME
+    if exp_time is not None:
+
+        exposure_time = exp_time
+
+    else:
+
+        exposure_time = EXPOSURE_TIME
+
+
+    photons = flux*exposure_time
 
     photons_observed = np.random.poisson(photons)
     err_photons_observed = photons_observed**0.5
 
-    flux_observed = photons_observed/EXPOSURE_TIME
-    err_flux_observed = err_photons_observed/EXPOSURE_TIME
+    flux_observed = photons_observed/exposure_time
+    err_flux_observed = err_photons_observed/exposure_time
 
     return flux_observed, err_flux_observed

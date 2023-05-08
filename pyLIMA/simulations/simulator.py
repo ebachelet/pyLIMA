@@ -271,7 +271,7 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], b
 
 
 
-def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
+def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True, exposure_times=[]):
     """ Simulate the flux of telescopes given a model and a set of parameters.
     It updates straight the telescopes object inside the given model.
 
@@ -281,7 +281,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
 
     """
 
-    for telescope in model.event.telescopes:
+    for ind, telescope in enumerate(model.event.telescopes):
 
         if telescope.lightcurve_flux is not None:
 
@@ -289,12 +289,16 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
 
             if add_noise:
 
-                observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux)
+                if exposure_times != []:
+
+                   exp_time =  exposure_times[ind]
+
+                observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux, exp_time)
 
             else:
 
                 observed_flux = theoritical_flux
-                err_observed_flux = [0]*len(theoritical_flux)
+                err_observed_flux = theoritical_flux**0.5
 
             telescope.lightcurve_flux['flux'] = observed_flux
             telescope.lightcurve_flux['err_flux'] = err_observed_flux
@@ -332,9 +336,9 @@ def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
             else:
 
                 obs_ra = theoritical_astrometry[0]
-                err_ra = [0]*len(obs_ra)
+                err_ra = theoritical_astrometry[0]*0.01
                 obs_dec = theoritical_astrometry[1]
-                err_dec = err_ra
+                err_dec =  theoritical_astrometry[1]*0.01
 
             telescope.astrometry['ra'] = obs_ra*unit.deg
             telescope.astrometry['err_ra'] = err_ra*unit.deg

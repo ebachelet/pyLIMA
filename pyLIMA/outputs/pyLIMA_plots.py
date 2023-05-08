@@ -458,7 +458,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     figure_axes.tick_params(axis='x', labelsize=15)
     figure_axes.tick_params(axis='y', labelsize=15)
 
-    #figure_axes.axis([-3, 3, -3, 3])
+    figure_axes.axis([-3, 3, -3, 3])
     #figure_axes.axis('scaled')
     title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
     #figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
