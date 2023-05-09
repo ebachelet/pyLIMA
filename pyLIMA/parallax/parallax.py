@@ -129,18 +129,29 @@ def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
         dec = satellite_positions[:, 2].astype(float)
         distances = satellite_positions[:, 3].astype(float)
 
-        interpolated_ra = interpolate.interp1d(dates, ra)
-        interpolated_dec = interpolate.interp1d(dates, dec)
-        interpolated_distance = interpolate.interp1d(dates, distances)
+        x, y, z = spherical_to_cartesian(distances, dec * np.pi / 180, ra * np.pi / 180)
 
-        ra_interpolated = interpolated_ra(time_to_treat)
-        dec_interpolated = interpolated_dec(time_to_treat)
-        distance_interpolated = interpolated_distance(time_to_treat)
+        interpolated_x = interpolate.interp1d(dates, x)
+        interpolated_y = interpolate.interp1d(dates, y)
+        interpolated_z = interpolate.interp1d(dates, z)
 
+        x_value = interpolated_x(time_to_treat)
+        y_value = interpolated_y(time_to_treat)
+        z_value = interpolated_z(time_to_treat)
 
-        x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
-                                         ra_interpolated * np.pi / 180)
-        spacecraft_positions = np.c_[x.value, y.value, z.value]
+        #breakpoint()
+        #interpolated_ra = interpolate.interp1d(dates, ra)
+        #interpolated_dec = interpolate.interp1d(dates, dec)
+        #interpolated_distance = interpolate.interp1d(dates, distances)
+
+        #ra_interpolated = interpolated_ra(time_to_treat)
+        #dec_interpolated = interpolated_dec(time_to_treat)
+        #distance_interpolated = interpolated_distance(time_to_treat)
+
+        #x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
+        #                                 ra_interpolated * np.pi / 180)
+
+        spacecraft_positions = np.c_[x_value, y_value, z_value]
 
         return spacecraft_positions
 

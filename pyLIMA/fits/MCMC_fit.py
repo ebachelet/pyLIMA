@@ -25,6 +25,13 @@ class MCMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
+        for ind,key in enumerate(self.fit_parameters.keys()):
+
+            if (fit_process_parameters[ind]<self.fit_parameters[key][1][0]) |  (fit_process_parameters[ind]>self.fit_parameters[key][1][1]):
+
+                return -np.inf
+
+
         likelihood = self.model_likelihood(fit_process_parameters)
 
         # Priors

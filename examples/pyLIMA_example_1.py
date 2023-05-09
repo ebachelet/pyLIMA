@@ -65,7 +65,6 @@ my_fit = LM_fit.LMfit(pspl)
 ### Before we run it, let's have a look at the initial fit parameters:
 my_fit.fit_parameters
 
-
 ### Now fit the MODEL to the EVENT. This may take a few seconds.
 my_fit.fit()
 

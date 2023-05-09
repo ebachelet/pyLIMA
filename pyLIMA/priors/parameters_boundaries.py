@@ -242,16 +242,3 @@ def parameters_boundaries(event, model_dictionnary):
             pass
 
     return bounds
-
-
-def rescaling_photometry_boundaries(model):
-
-    rescaling_boundaries = []
-
-    for telescope in model.event.telescopes:
-
-        if telescope.lightcurve_flux is not None:
-
-            rescaling_boundaries.append((0,10))
-
-    return rescaling_boundaries

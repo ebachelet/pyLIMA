@@ -21,10 +21,8 @@ from pyLIMA.simulations import simulator
 ### You can also set the coordinates for an event.
 ### In the context of the simulation, the coordinates will be used to check whether the
 ### target is observable from a specific observatory.
-your_event = event.Event()
+your_event = event.Event(ra=270,dec=-30)
 your_event.name = 'My simulated event'
-your_event.ra = 270
-your_event.dec = -30
 
 ### Create some telescope(s) to observe the event from. See tutorial 3 for more details.
 ### We will use CTIO_I (from Earth), Gaia_G and Spitzer_H (from Space):
