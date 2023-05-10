@@ -68,6 +68,7 @@ my_fit.fit_parameters
 ### Now fit the MODEL to the EVENT. This may take a few seconds.
 my_fit.fit()
 
+my_fit.fit_outputs()
 ### You can now recall the fit results on the screen by executing:
 my_fit.fit_results
 
