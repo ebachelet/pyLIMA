@@ -682,7 +682,7 @@ class MLfit(object):
 
         if self.model.astrometry:
 
-            matplotlib_astrometry, bokeh_astrometry = pyLIMA_plots.plot_astrometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot))
+            matplotlib_astrometry, bokeh_astrometry = pyLIMA_plots.plot_astrometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
 
         parameters = [key for ind,key in enumerate(self.model.model_dictionnary.keys()) if ('fsource' not in key) and ('fblend' not in key) and ('gblend' not in key)]
 
