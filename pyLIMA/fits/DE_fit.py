@@ -157,7 +157,7 @@ class DEfitnew(MLfit):
                                                                                popsize=int(self.DE_population_size),
                                                                                maxiter=1, tol=0.00, atol=1.0,
                                                                                strategy=self.strategy,
-                                                                               recombination=0.1, polish=False,
+                                                                               recombination=0.5, polish=False,
                                                                                init=init, disp=self.display_progress,
                                                                                workers=worker)
 
@@ -180,11 +180,11 @@ class DEfitnew(MLfit):
             pop_energies.append(np.copy(solver.population_energies))
 
             print('Best:',pop[-1][0],pop_energies[-1][0])
-            converged = solver.converged()
+            #converged = solver.converged()
 
-            if converged:
+            #if converged:
 
-                break
+            #    break
 
 
         pop = np.array(pop)

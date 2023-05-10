@@ -1,5 +1,7 @@
 from tqdm import tqdm
 import numpy as np
+import copy
+
 
 from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.models import generate_model
@@ -17,82 +19,47 @@ class BOOTSTRAPfit(MLfit):
 
         #create a new event
 
-        new_event = event.Event()
-        new_event.ra = self.model.event.ra
-        new_event.dec = self.model.event.dec
-
+        new_event = event.Event(ra=self.model.event.ra, dec=self.model.event.dec)
 
         for tel in self.model.event.telescopes:
 
-
-
                 if tel.lightcurve_flux is not None:
 
-
-                    bootstrap_indexes = np.random.randint(0,len(tel.lightcurve_flux),len(tel.lightcurve_flux))
-
-                    lightcurve =  np.c_[[tel.lightcurve_flux[key].value for key in tel.lightcurve_flux.columns]].T[bootstrap_indexes]
-                    light_curve_names =  [tel.lightcurve_flux[key].info.name for key in tel.lightcurve_flux.columns]
-                    light_curve_units =  [tel.lightcurve_flux[key].info.unit for key in tel.lightcurve_flux.columns]
+                    bootstrap_indexes_photometry = np.random.randint(0,len(tel.lightcurve_flux),len(tel.lightcurve_flux))
 
                 else:
 
-                    lightcurve = None
-                    light_curve_names = None
-                    light_curve_units = None
-
+                    bootstrap_indexes_photometry = None
 
                 if tel.astrometry is not None:
 
-                    bootstrap_indexes = np.random.randint(0,len(tel.astrometry),len(tel.astrometry))
-
-                    astrometry = np.c_[[tel.astrometry[key].value for key in tel.astrometry.columns]].T[
-                        bootstrap_indexes]
-                    astrometry_names =  [tel.astrometry[key].info.name for key in tel.astrometry.columns]
-                    astrometry_units =  [tel.astrometry[key].info.unit for key in tel.astrometry.columns]
+                    bootstrap_indexes_astrometry = np.random.randint(0,len(tel.astrometry),len(tel.astrometry))
 
                 else:
 
-                    astrometry = None
-                    astrometry_names = None
-                    astrometry_units = None
+                    bootstrap_indexes_astrometry = None
 
-                name = tel.name
-                camera_filter = tel.filter
-                location = tel.location
-                gamma = tel.gamma
-                spacecraft_name = tel.spacecraft_name
-                spacecraft_positions = tel.spacecraft_positions
-
-                new_telescope = telescopes.Telescope(name=name, camera_filter=camera_filter, light_curve=lightcurve,
-                    light_curve_names=light_curve_names, light_curve_units=light_curve_units, clean_the_light_curve=False,
-                    location=location, spacecraft_name=spacecraft_name,
-                    astrometry=astrometry, astrometry_names=astrometry_names, astrometry_units=astrometry_units)
-
-
-                new_telescope.altitude = tel.altitude
-                new_telescope.longitude = tel.longitude
-                new_telescope.latitude = tel.latitude
-
-                new_telescope.spacecraft_positions = tel.spacecraft_positions
-
+                new_telescope = copy.deepcopy(tel)
+                new_telescope.trim_data(photometry_mask=bootstrap_indexes_photometry,
+                                        astrometry_mask=bootstrap_indexes_astrometry)
 
                 new_event.telescopes.append(new_telescope)
 
-        new_model = generate_model.create_model(self.model.model_type,new_event, parallax=self.model.parallax_model,
+        new_model = generate_model.create_model(self.model.model_type, new_event, parallax=self.model.parallax_model,
                                                 xallarap=self.model.xallarap_model,
                                                 orbital_motion=self.model.orbital_motion_model,
-                                                blend_flux_parameter=self.model.blend_flux_parameter)
+                                                origin=self.model.origin,
+                                                blend_flux_parameter=self.model.blend_flux_parameter,
+                                                fancy_parameters=self.model.fancy_to_pyLIMA_dictionnary)
 
         return new_model
-
-
 
     def new_step(self,popi,popo):
 
         from pyLIMA.fits import TRF_fit
         np.random.seed(popi)
         updated_model = self.generate_new_model()
+
         trf = TRF_fit.TRFfit(updated_model)
         trf.model_parameters_guess = self.model_parameters_guess
 
@@ -100,13 +67,11 @@ class BOOTSTRAPfit(MLfit):
 
             trf.fit_parameters[key][1] = self.fit_parameters[key][1]
 
-
         trf.fit()
 
         return trf.fit_results['best_model']
 
-    def fit(self,number_of_samples=100, computational_pool = None ):
-
+    def fit(self,number_of_samples=100, computational_pool=None ):
 
         samples = []
 
@@ -135,6 +100,10 @@ class BOOTSTRAPfit(MLfit):
                 new_step = self.new_step(step,step)
 
                 samples.append(new_step)
-           
 
+        samples = np.array(samples)
+        breakpoint()
+
+        self.fit_results = {'best_model': fit_results, 'chi2': fit_chi2, 'fit_time': computation_time,
+                            'covariance_matrix': covariance_matrix}
         return np.array(samples)

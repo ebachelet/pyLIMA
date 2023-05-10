@@ -682,17 +682,27 @@ class MLfit(object):
 
         if self.model.astrometry:
 
-            matplotlib_astrometry = pyLIMA_plots.plot_astrometry(self.model, self.fit_results['best_model'])
+            matplotlib_astrometry, bokeh_astrometry = pyLIMA_plots.plot_astrometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot))
 
         parameters = [key for ind,key in enumerate(self.model.model_dictionnary.keys()) if ('fsource' not in key) and ('fblend' not in key) and ('gblend' not in key)]
 
         samples = self.samples_to_plot()
+        breakpoint()
         samples_to_plot = samples[:, :len(parameters)]
 
         matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(samples_to_plot, parameters_names=parameters,bokeh_plot=bokeh_plot)
 
-        bokeh_figure = gridplot([[row(bokeh_lightcurves, gridplot([[bokeh_geometry]],toolbar_location='above'))]],toolbar_location=None)
-        output_file(filename = self.model.event.name+'.html', title=self.model.event.name)
+        try:
+
+            bokeh_figure = gridplot([[row(bokeh_lightcurves, gridplot([[bokeh_geometry]],toolbar_location='above'))]],toolbar_location=None)
+
+        except:
+
+            pass
+
+        bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
+
+        output_file(filename='./'+bokeh_plot_name+'.html', title=bokeh_plot_name)
         save(bokeh_figure)
 
         return matplotlib_lightcurves, matplotlib_geometry, matplotlib_astrometry, matplotlib_distribution, bokeh_figure

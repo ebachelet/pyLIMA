@@ -271,7 +271,7 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude = [10,20], b
 
 
 
-def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True, exposure_times=[]):
+def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True, exposure_times=None):
     """ Simulate the flux of telescopes given a model and a set of parameters.
     It updates straight the telescopes object inside the given model.
 
@@ -289,11 +289,11 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True, exposure_
 
             if add_noise:
 
-                if exposure_times != []:
+                if exposure_times is not None:
 
                    exp_time =  exposure_times[ind]
 
-                observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux, exp_time)
+                observed_flux, err_observed_flux = brightness_transformation.noisy_observations(theoritical_flux, exposure_times)
 
             else:
 
