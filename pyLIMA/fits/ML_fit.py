@@ -111,7 +111,7 @@ class MLfit(object):
         self.fit_parameters = OrderedDict(
             sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
 
-        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.model.pyLIMA_standards_dictionnary)
+        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
 
         #t_0 limit fix
         mins_time = []
@@ -320,8 +320,8 @@ class MLfit(object):
 
                     if telescope.astrometry is not None:
 
-                        rescale_astrometry_guess.append(-4)
-                        rescale_astrometry_guess.append(-4)
+                        rescale_astrometry_guess.append(0)
+                        rescale_astrometry_guess.append(0)
 
                 self.rescale_astrometry_parameters_guess = rescale_astrometry_guess
 
@@ -368,6 +368,7 @@ class MLfit(object):
             for ind,prior in enumerate(self.priors):
 
                 probability = prior.pdf( fit_parameters_guess[ind])
+
                 if probability<10**-10:
 
                     samples = prior.rvs(1000)

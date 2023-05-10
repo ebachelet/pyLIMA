@@ -48,8 +48,8 @@ def all_telescope_astrometric_residuals(model, pyLIMA_parameters, norm=False, re
 
             if rescaling_astrometry_parameters is not None:
 
-                err_ra = astrometry['err_ra'].value+rescaling_astrometry_parameters_ra[ind]
-                err_dec = astrometry['err_dec'].value+rescaling_astrometry_parameters_dec[ind]
+                err_ra = astrometry['err_ra'].value*(rescaling_astrometry_parameters_ra[ind])
+                err_dec = astrometry['err_dec'].value*(rescaling_astrometry_parameters_dec[ind])
 
             else:
 

@@ -111,7 +111,7 @@ def rescale_photometry_boundaries():
 
 def rescale_astrometry_boundaries():
 
-    return (-20, 2.5)
+    return (-5, 5)
 
 def parallax_source_boundaries():
 
