@@ -103,12 +103,14 @@ class MLmodel(object):
         self.model_dictionnary = {}
         self.pyLIMA_standards_dictionnary = {}
         self.fancy_to_pyLIMA_dictionnary = fancy_parameters.copy()
+        self.pyLIMA_to_fancy_dictionnary = dict((v, k) for k, v in self.fancy_to_pyLIMA_dictionnary.items())
+
         self.pyLIMA_to_fancy = {}
         self.fancy_to_pyLIMA = {}
 
         self.parameters_guess = []
         self.Jacobian_flag = 'OK'
-        self.parameters_boundaries = []
+        self.standard_parameters_boundaries = []
 
         self.origin = origin
 
@@ -191,7 +193,7 @@ class MLmodel(object):
         self.pyLIMA_standards_dictionnary = OrderedDict(
             sorted(model_dictionnary_updated.items(), key=lambda x: x[1]))
 
-        self.parameters_boundaries = pyLIMA.priors.parameters_boundaries.parameters_boundaries(self.event, self.pyLIMA_standards_dictionnary)
+        self.standard_parameters_boundaries = pyLIMA.priors.parameters_boundaries.parameters_boundaries(self.event, self.pyLIMA_standards_dictionnary)
 
 
 

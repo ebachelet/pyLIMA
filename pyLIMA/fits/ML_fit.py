@@ -78,14 +78,42 @@ class MLfit(object):
 
     def define_fit_parameters(self):
 
-        fit_parameters_dictionnary_updated = self.model.model_dictionnary.copy()
+        standard_parameters_dictionnary = self.model.pyLIMA_standards_dictionnary.copy()
+        standard_parameters_boundaries = self.model.standard_parameters_boundaries.copy()
 
-        if self.telescopes_fluxes_method != 'fit':
+        fit_parameters_dictionnary_keys = []
+        fit_parameters_indexes = []
+        fit_parameters_boundaries = []
 
-            for telescope in self.model.event.telescopes:
+        for ind,key in enumerate(standard_parameters_dictionnary.keys()):
 
-                fit_parameters_dictionnary_updated.popitem()
-                fit_parameters_dictionnary_updated.popitem()
+            if (('fsource' in key) | ('fblend' in key) | ('gblend' in key)) & (self.telescopes_fluxes_method != 'fit'):
+
+                pass
+
+            else:
+
+                if key in self.model.fancy_to_pyLIMA.keys():
+
+                    thebound = namedtuple('parameters', [key])
+                    parameter = self.model.pyLIMA_to_fancy_dictionnary[key]
+                    setattr(thebound, key, standard_parameters_boundaries[ind])
+
+                    new_bounds = self.model.pyLIMA_to_fancy[parameter](thebound)
+
+                    thekey = parameter
+                    theind = ind
+                    theboundaries = new_bounds
+
+                else:
+
+                    thekey = key
+                    theind = ind
+                    theboundaries = standard_parameters_boundaries[ind]
+
+                fit_parameters_dictionnary_keys.append(thekey)
+                fit_parameters_indexes.append(theind)
+                fit_parameters_boundaries.append(theboundaries)
 
         if self.rescale_photometry:
 
@@ -93,8 +121,13 @@ class MLfit(object):
 
                 if telescope.lightcurve_flux is not None:
 
-                    fit_parameters_dictionnary_updated['logk_photometry_' + telescope.name] = \
-                        len(fit_parameters_dictionnary_updated)
+                    thekey = 'logk_photometry_' + telescope.name
+                    theind = len(fit_parameters_dictionnary_keys)
+                    theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
+
+                    fit_parameters_dictionnary_keys.append(thekey)
+                    fit_parameters_indexes.append(theind)
+                    fit_parameters_boundaries.append(theboundaries)
 
         if self.rescale_astrometry:
 
@@ -102,16 +135,32 @@ class MLfit(object):
 
                 if telescope.astrometry is not None:
 
-                    fit_parameters_dictionnary_updated['logk_astrometry_ra_' + telescope.name] = \
-                        len(fit_parameters_dictionnary_updated)
+                    thekey = 'logk_astrometry_ra' + telescope.name
+                    theind = len(fit_parameters_dictionnary_keys)
+                    theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
 
-                    fit_parameters_dictionnary_updated['logk_astrometry_dec_' + telescope.name] = \
-            len(fit_parameters_dictionnary_updated)
+                    fit_parameters_dictionnary_keys.append(thekey)
+                    fit_parameters_indexes.append(theind)
+                    fit_parameters_boundaries.append(theboundaries)
+
+                    thekey = 'logk_astrometry_dec' + telescope.name
+                    theind = len(fit_parameters_dictionnary_keys)
+                    theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
+
+                    fit_parameters_dictionnary_keys.append(thekey)
+                    fit_parameters_indexes.append(theind)
+                    fit_parameters_boundaries.append(theboundaries)
+
+
+        fit_parameters = {}
+
+        for ind,key in enumerate(fit_parameters_dictionnary_keys):
+
+            fit_parameters[key] = [fit_parameters_indexes[ind], fit_parameters_boundaries[ind]]
+
 
         self.fit_parameters = OrderedDict(
-            sorted(fit_parameters_dictionnary_updated.items(), key=lambda x: x[1]))
-
-        fit_parameters_boundaries = parameters_boundaries.parameters_boundaries(self.model.event, self.fit_parameters)
+            sorted(fit_parameters.items(), key=lambda x: x[1]))
 
         #t_0 limit fix
         mins_time = []
@@ -129,46 +178,7 @@ class MLfit(object):
                 mins_time.append(np.min(telescope.astrometry['time'].value))
                 maxs_time.append(np.max(telescope.astrometry['time'].value))
 
-        fit_parameters_boundaries[0] = [np.min(mins_time),np.max(maxs_time)]
-
-        for ind, key in enumerate(self.fit_parameters.keys()):
-
-            self.fit_parameters[key] = [ind, fit_parameters_boundaries[ind]]
-
-        if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
-
-            list_of_keys = [i for i in self.model.pyLIMA_standards_dictionnary]
-            bounds = namedtuple('parameters', list_of_keys)
-
-            for ind,key in enumerate(list_of_keys):
-
-                setattr(bounds, key, np.array(fit_parameters_boundaries[ind]))
-
-            for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
-
-                parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
-                index = np.where(parameter == np.array(list_of_keys))[0][0]
-
-                if 'center' in key:
-
-                    if key == 't_center':
-
-                        new_bounds = fit_parameters_boundaries[0]
-
-                    else:
-
-                        new_bounds = parameters_boundaries.parameters_boundaries(self.model.event, {key:'0'})[0]
-
-                else:
-
-                    new_bounds = self.model.pyLIMA_to_fancy[key](bounds)
-
-                new_bounds = np.sort(new_bounds)
-                self.fit_parameters.pop(key)
-                self.fit_parameters[key] = [index, new_bounds]
-
-        self.fit_parameters = OrderedDict(
-            sorted(self.fit_parameters.items(), key=lambda x: x[1]))
+        self.fit_parameters['t0'][1] = (np.min(mins_time),np.max(maxs_time))
 
         self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
                                        i in self.fit_parameters.keys()]
@@ -687,14 +697,14 @@ class MLfit(object):
         parameters = [key for ind,key in enumerate(self.model.model_dictionnary.keys()) if ('fsource' not in key) and ('fblend' not in key) and ('gblend' not in key)]
 
         samples = self.samples_to_plot()
-        breakpoint()
+
         samples_to_plot = samples[:, :len(parameters)]
 
         matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(samples_to_plot, parameters_names=parameters,bokeh_plot=bokeh_plot)
 
         try:
 
-            bokeh_figure = gridplot([[row(bokeh_lightcurves, gridplot([[bokeh_geometry]],toolbar_location='above'))]],toolbar_location=None)
+            bokeh_figure = gridplot([[bokeh_lightcurves,bokeh_geometry],[bokeh_astrometry,None]],toolbar_location='above')
 
         except:
 

@@ -216,7 +216,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     if bokeh_plot is not None:
 
-        bokeh_geometry = figure(width=350, height=350, x_range=(-3, 3), y_range=(-3, 3),
+        bokeh_geometry = figure(width=600, height=600, x_range=(-3, 3), y_range=(-3, 3),
                                 x_axis_label='x [' + u'\u03B8\u2091'']', y_axis_label='y [' + u'\u03B8\u2091'']')
 
     else:
@@ -257,7 +257,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                 color=color,
                                 legend_label=platform)
 
-            for ind in [-1, 0, 1]:
+            for ind in [-2, -1, 0, 1,  2]:
 
                 try:
 
@@ -436,6 +436,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     #legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
     legend = figure_axes.legend(shadow=True, fontsize='large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3, numpoints=1)
+
     for handle in legend.legendHandles:
 
         try:
@@ -467,7 +468,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
 
 
-def plot_astrometry(microlensing_model, model_parameters):
+def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     # Change matplotlib default colors
     n_telescopes = len(microlensing_model.event.telescopes)
@@ -479,14 +480,12 @@ def plot_astrometry(microlensing_model, model_parameters):
 
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
-    left, width = 0.12, 0.55
-    bottom, height = 0.12, 0.55
-    bottom_h = left_h = left + width + 0.02
+
 
     # Set up the geometry of the three plots
-    main_plot = [left, bottom, width, height]
-    residuals_x = [left, bottom_h, width, 0.25]
-    residuals_y = [left_h, bottom, 0.25, height]
+    main_plot = [0.12, 0.12, 0.48, 0.48]
+    residuals_x = [0.12, 0.83, 0.83, 0.15]
+    residuals_y = [0.12, 0.65, 0.83, 0.15]
 
     # Set up the size of the figure
     fig_size = (9.5,9.5)
@@ -504,8 +503,45 @@ def plot_astrometry(microlensing_model, model_parameters):
     ax_res_y.xaxis.grid(True)
     ax_res_y.yaxis.grid(True)
 
-    ax_main.get_shared_x_axes().join(ax_main, ax_res_x)
-    ax_main.get_shared_y_axes().join(ax_main, ax_res_y)
+    ax_res_x.get_shared_x_axes().join(ax_res_x, ax_res_y)
+    #ax_main.get_shared_y_axes().join(ax_main, ax_res_y)
+
+    unit = 'deg'
+    for tel in microlensing_model.event.telescopes:
+
+        if tel.astrometry is not None:
+
+            unit = tel.astrometry['ra'].unit
+
+    if bokeh_plot is not None:
+
+        bokeh_main = figure(width=600, height=600,toolbar_location=None,  x_axis_label=r'$E~['+str(unit)+']$',
+                            y_axis_label=r'$N~['+str(unit)+']$')
+        bokeh_res_x = figure(width=bokeh_main.width, height=200, x_range=bokeh_main.x_range,
+                                 y_range=(-0.1, 0.1), toolbar_location=None,
+                                 y_axis_label='Delta_N')
+        bokeh_res_y = figure(width=200, height=bokeh_main.height, y_range=bokeh_main.y_range,
+                                 x_range=(0.1, -0.1), toolbar_location=None,
+                                 x_axis_label='Delta_E')
+
+        bokeh_main.x_range.flipped = True
+
+        #bokeh_lightcurves.xaxis.minor_tick_line_color = None
+        #bokeh_lightcurves.xaxis.major_tick_line_color = None
+        #bokeh_lightcurves.xaxis.major_label_text_font_size = '0pt'
+        #bokeh_lightcurves.y_range.flipped = True
+        #bokeh_lightcurves.xaxis.formatter = BasicTickFormatter(use_scientific=False)
+
+
+        #bokeh_residuals.xaxis.formatter = BasicTickFormatter(use_scientific=False)
+        #bokeh_residuals.xaxis.major_label_orientation = np.pi / 4
+        #bokeh_residuals.xaxis.minor_tick_line_color = None
+
+    else:
+
+        bokeh_main = None
+        bokeh_res_x = None
+        bokeh_res_y = None
 
     if len(model_parameters) != len(microlensing_model.model_dictionnary):
 
@@ -513,30 +549,27 @@ def plot_astrometry(microlensing_model, model_parameters):
 
         model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
-    plot_astrometric_data(ax_main, microlensing_model)
+    plot_astrometric_data(ax_main, microlensing_model, bokeh_plot=bokeh_main)
 
-    plot_astrometric_models([ax_main,ax_res_x, ax_res_y], microlensing_model, model_parameters)
+    plot_astrometric_models([ax_main,ax_res_x, ax_res_y], microlensing_model, model_parameters,bokeh_plots = [bokeh_main,bokeh_res_x,bokeh_res_y])
 
-    legend = ax_main.legend(shadow=True, fontsize='large', bbox_to_anchor=(1.5, 1.5), loc="upper right",borderaxespad=0, ncol=1)
+    legend = ax_main.legend(shadow=True, fontsize='large', bbox_to_anchor=(1.05, 0.25), loc="center left",borderaxespad=0, ncol=2)
 
     ax_main.invert_xaxis()
     ax_res_x.set_xticklabels([])
-    ax_res_y.set_yticklabels([])
 
-    for tel in microlensing_model.event.telescopes:
 
-        if tel.astrometry is not None:
-
-            unit = tel.astrometry['ra'].unit
 
     ax_main.set_xlabel(r'$E~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
     ax_main.set_ylabel(r'$N~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
-    ax_res_y.set_xlabel(r'$\Delta N~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
-    ax_res_x.set_ylabel(r'$\Delta E~['+str(unit)+']$', fontsize=4* fig_size[0] * 3 / 4.0)
+    ax_res_y.set_ylabel(r'$\Delta E~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
+    ax_res_x.set_ylabel(r'$\Delta N~['+str(unit)+']$', fontsize=4* fig_size[0] * 3 / 4.0)
 
-    return ast_figure
+    figure_bokeh = gridplot([[bokeh_res_x,None],[bokeh_main, bokeh_res_y]], toolbar_location='above')
 
-def plot_astrometric_models(figure_axes, microlensing_model, model_parameters):
+    return ast_figure, figure_bokeh
+
+def plot_astrometric_models(figure_axes, microlensing_model, model_parameters, bokeh_plots=None):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
@@ -561,11 +594,20 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters):
 
             figure_axes[0].plot(astrometric_model[0], astrometric_model[1], c=color)
 
+            if bokeh_plots is not None:
+
+                bokeh_plots[0].line(astrometric_model[0], astrometric_model[1], color=color)
+
             if Earth is True:
 
                 source_E, source_N = astrometric_positions.astrometric_positions_of_the_source(tel, pyLIMA_parameters)
                 figure_axes[0].plot(source_E, source_N, c='k',label='Source')
                 figure_axes[0].plot(lens_E, lens_N, c='k', linestyle='--',label='Lens')
+
+                if bokeh_plots is not None:
+
+                    bokeh_plots[0].line(source_E, source_N, color='black',legend_label='Source')
+                    bokeh_plots[0].line(lens_E, lens_N, color='black',line_dash='dotted',legend_label='Lens')
 
                 for index in [-2,-1, 0, 1, 2]:
 
@@ -595,6 +637,21 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters):
                                             arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                             color='k'))
 
+                        if bokeh_plots is not None:
+
+                            oh = OpenHead(line_color='black', line_width=1)
+
+
+                            bokeh_plots[0].add_layout(Arrow(end=oh,
+                                                            x_start=source_E[index_time], y_start=source_N[index_time],
+                                                            x_end=source_E[index_time+1],
+                                                            y_end=source_N[index_time+1]))
+
+                            bokeh_plots[0].add_layout(Arrow(end=oh,
+                                                            x_start=lens_E[index_time], y_start=lens_N[index_time],
+                                                            x_end=lens_E[index_time+1],
+                                                            y_end=lens_N[index_time+1]))
+
                     except:
 
                         pass
@@ -613,19 +670,58 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters):
             delta_dec = tel.astrometry['dec'].value
             err_dec = tel.astrometry['err_dec'].value
 
-
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
 
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 
             astrometric_model = model['astrometry']
-            figure_axes[1].errorbar(delta_ra, delta_ra-astrometric_model[0], yerr=err_ra, fmt='.', ecolor=color, color=color,
+
+            figure_axes[1].errorbar(tel.astrometry['time'].value, delta_ra-astrometric_model[0], yerr=err_ra, fmt='.', ecolor=color, color=color,
                                label=tel.name, alpha=0.5)
 
-            figure_axes[2].errorbar(delta_dec-astrometric_model[1], delta_dec, xerr=err_dec, fmt='.', ecolor=color,
+            figure_axes[2].errorbar(tel.astrometry['time'].value, delta_dec-astrometric_model[1], yerr=err_dec, fmt='.', ecolor=color,
                                     color=color,
                                     label=tel.name, alpha=0.5)
-def plot_astrometric_data(figure_ax, microlensing_model):
+
+
+            res_ra = delta_ra - astrometric_model[0]
+            res_dec = delta_dec - astrometric_model[1]
+
+            X = []
+            Y = []
+
+            err_xs = []
+            err_ys = []
+
+            for x, y, rex, rey, xerr, yerr in zip(delta_ra, delta_dec, res_ra, res_dec, err_ra, err_dec):
+
+                X.append((x, x))
+                Y.append((y, y))
+
+                err_xs.append((rex - xerr, rex + xerr))
+                err_ys.append((rey - yerr, rey + yerr))
+
+            bokeh_plots[1].scatter(delta_ra, delta_dec-astrometric_model[1],
+                               color=color,
+                               size=5,
+                               muted_color=color,
+                               muted_alpha=0.2)
+
+            bokeh_plots[1].multi_line(X, err_ys, color=color,
+                                  muted_color=color,
+                                  muted_alpha=0.2)
+
+            bokeh_plots[2].scatter( delta_ra-astrometric_model[0], delta_dec,
+                               color=color,
+                               size=5,
+                               muted_color=color,
+                               muted_alpha=0.2)
+
+            bokeh_plots[2].multi_line(err_xs, Y, color=color,
+                                      muted_color=color,
+                                      muted_alpha=0.2)
+
+def plot_astrometric_data(figure_ax, microlensing_model,bokeh_plot=None):
 
     # plot data
     for ind, tel in enumerate(microlensing_model.event.telescopes):
@@ -645,7 +741,36 @@ def plot_astrometric_data(figure_ax, microlensing_model):
             figure_ax.errorbar(delta_ra, delta_dec, xerr=err_ra, yerr=err_dec, fmt='.', ecolor=color, color=color,
                                label=tel.name, alpha=0.5)
 
+            if bokeh_plot is not None:
 
+                bokeh_plot.scatter(delta_ra, delta_dec,
+                                   color=color,
+                                   size=5, legend_label=tel.name,
+                                   muted_color=color,
+                                   muted_alpha=0.2)
+
+
+                X = []
+                Y = []
+
+                err_xs = []
+                err_ys = []
+
+                for x, y,xerr, yerr in zip(delta_ra,delta_dec,err_ra,err_dec):
+
+                    X.append((x,x))
+                    Y.append((y,y))
+
+                    err_xs.append((x-xerr, x+xerr))
+                    err_ys.append((y - yerr, y + yerr))
+
+                bokeh_plot.multi_line(err_xs, Y, color=color,
+                                      muted_color=color,
+                                      muted_alpha=0.2)
+
+                bokeh_plot.multi_line(X, err_ys, color=color,
+                                      muted_color=color,
+                                      muted_alpha=0.2)
 def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     # Change matplotlib default colors
@@ -710,7 +835,7 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
         pass
 
-    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]],toolbar_location='above')
+    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]],toolbar_location=None)
 
     return mat_figure, figure_bokeh
 
@@ -908,7 +1033,7 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
             bokeh_plot.scatter(tel.lightcurve_magnitude['time'].value,
                                residus_in_mag,
                                color=color,
-                               size=5, legend_label=tel.name,
+                               size=5,
                                muted_color=color,
                                muted_alpha=0.2)
 

@@ -55,7 +55,7 @@ class PSPLmodel(MLmodel):
             shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y,
                                                                  pyLIMA_parameters.theta_E)
 
-            delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
+            delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts, pyLIMA_parameters.piEN,
                                                                                 pyLIMA_parameters.piEE)
 
             position_ra, position_dec = astrometric_positions.source_astrometric_positions(telescope, pyLIMA_parameters,
