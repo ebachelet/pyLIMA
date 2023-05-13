@@ -217,7 +217,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     if bokeh_plot is not None:
 
         bokeh_geometry = figure(width=600, height=600, x_range=(-3, 3), y_range=(-3, 3),
-                                x_axis_label='x [' + u'\u03B8\u2091'']', y_axis_label='y [' + u'\u03B8\u2091'']')
+                                x_axis_label=r'$$x [\theta_E]$$', y_axis_label=r'$$y [\theta_E]$$')
 
     else:
 
@@ -429,10 +429,15 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
         if bokeh_geometry is not None:
 
-            bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], line_dash='dotted', color='black')
-            bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], line_dash='dotted', color='black')
+            #bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + east[0]], [origin_t0par[1],origin_t0par[1] + east[1]], line_dash='dotted', color='black')
+            #bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + north[0]], [origin_t0par[1], origin_t0par[1] + north[1]], line_dash='dotted', color='black')
 
-
+            bokeh_geometry.add_layout(Arrow(end=OpenHead(line_color="grey", line_width=1),
+                               x_start=origin_t0par[0], y_start=origin_t0par[1], x_end=origin_t0par[0]+North[0],
+                                            y_end=origin_t0par[1]+North[1]))
+            bokeh_geometry.add_layout(Arrow(end=OpenHead(line_color="grey", line_width=1),
+                               x_start=origin_t0par[0], y_start=origin_t0par[1], x_end=origin_t0par[0]+East[0],
+                                            y_end=origin_t0par[1]+East[1]))
     #legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
     legend = figure_axes.legend(shadow=True, fontsize='large', bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                    mode="expand", borderaxespad=0, ncol=3, numpoints=1)
@@ -515,16 +520,21 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     if bokeh_plot is not None:
 
-        bokeh_main = figure(width=600, height=600,toolbar_location=None,  x_axis_label=r'$E~['+str(unit)+']$',
-                            y_axis_label=r'$N~['+str(unit)+']$')
-        bokeh_res_x = figure(width=bokeh_main.width, height=200, x_range=bokeh_main.x_range,
+        bokeh_main = figure(width=800, height=800,toolbar_location=None,  x_axis_label=r'$$E~['+str(unit)+']$$',
+                            y_axis_label=r'$$N~['+str(unit)+']$$')
+
+        bokeh_res_x = figure(width=bokeh_main.width, height=200,
                                  y_range=(-0.1, 0.1), toolbar_location=None,
-                                 y_axis_label='Delta_N')
-        bokeh_res_y = figure(width=200, height=bokeh_main.height, y_range=bokeh_main.y_range,
-                                 x_range=(0.1, -0.1), toolbar_location=None,
-                                 x_axis_label='Delta_E')
+                                 y_axis_label=r'$$\Delta_N$$')
+        bokeh_res_y = figure(width=bokeh_main.width, height=200,
+                                 y_range=(-0.1, 0.1), toolbar_location=None,
+                                 y_axis_label=r'$$\Delta_E$$')
 
         bokeh_main.x_range.flipped = True
+        bokeh_res_y.xaxis.formatter = BasicTickFormatter(use_scientific=False)
+        bokeh_res_x.xaxis.minor_tick_line_color = None
+        bokeh_res_x.xaxis.major_tick_line_color = None
+        bokeh_res_x.xaxis.major_label_text_font_size = '0pt'
 
         #bokeh_lightcurves.xaxis.minor_tick_line_color = None
         #bokeh_lightcurves.xaxis.major_tick_line_color = None
@@ -565,7 +575,7 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
     ax_res_y.set_ylabel(r'$\Delta E~['+str(unit)+']$', fontsize=4 * fig_size[0] * 3 / 4.0)
     ax_res_x.set_ylabel(r'$\Delta N~['+str(unit)+']$', fontsize=4* fig_size[0] * 3 / 4.0)
 
-    figure_bokeh = gridplot([[bokeh_res_x,None],[bokeh_main, bokeh_res_y]], toolbar_location='above')
+    figure_bokeh = gridplot([[bokeh_res_x],[bokeh_res_y], [bokeh_main]], toolbar_location='above')
 
     return ast_figure, figure_bokeh
 
@@ -683,43 +693,43 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters, b
                                     color=color,
                                     label=tel.name, alpha=0.5)
 
+            if bokeh_plots is not None:
 
-            res_ra = delta_ra - astrometric_model[0]
-            res_dec = delta_dec - astrometric_model[1]
+                res_ra = delta_ra - astrometric_model[0]
+                res_dec = delta_dec - astrometric_model[1]
 
-            X = []
-            Y = []
+                time = []
 
-            err_xs = []
-            err_ys = []
 
-            for x, y, rex, rey, xerr, yerr in zip(delta_ra, delta_dec, res_ra, res_dec, err_ra, err_dec):
+                err_xs = []
+                err_ys = []
 
-                X.append((x, x))
-                Y.append((y, y))
+                for t, rex, rey, xerr, yerr in zip(tel.astrometry['time'].value, res_ra, res_dec, err_ra, err_dec):
 
-                err_xs.append((rex - xerr, rex + xerr))
-                err_ys.append((rey - yerr, rey + yerr))
+                    time.append((t, t))
 
-            bokeh_plots[1].scatter(delta_ra, delta_dec-astrometric_model[1],
-                               color=color,
-                               size=5,
-                               muted_color=color,
-                               muted_alpha=0.2)
+                    err_xs.append((rex - xerr, rex + xerr))
+                    err_ys.append((rey - yerr, rey + yerr))
 
-            bokeh_plots[1].multi_line(X, err_ys, color=color,
-                                  muted_color=color,
-                                  muted_alpha=0.2)
+                bokeh_plots[1].scatter(tel.astrometry['time'].value, delta_ra-astrometric_model[0],
+                                   color=color,
+                                   size=5,
+                                   muted_color=color,
+                                   muted_alpha=0.2)
 
-            bokeh_plots[2].scatter( delta_ra-astrometric_model[0], delta_dec,
-                               color=color,
-                               size=5,
-                               muted_color=color,
-                               muted_alpha=0.2)
-
-            bokeh_plots[2].multi_line(err_xs, Y, color=color,
+                bokeh_plots[1].multi_line(time, err_xs, color=color,
                                       muted_color=color,
                                       muted_alpha=0.2)
+
+                bokeh_plots[2].scatter( tel.astrometry['time'].value, delta_dec-astrometric_model[1],
+                                   color=color,
+                                   size=5,
+                                   muted_color=color,
+                                   muted_alpha=0.2)
+
+                bokeh_plots[2].multi_line(time,err_ys, color=color,
+                                          muted_color=color,
+                                          muted_alpha=0.2)
 
 def plot_astrometric_data(figure_ax, microlensing_model,bokeh_plot=None):
 
@@ -787,10 +797,10 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     if bokeh_plot is not None:
 
-        bokeh_lightcurves = figure(width=800, height=600,toolbar_location=None,  y_axis_label='m [mag]')
+        bokeh_lightcurves = figure(width=800, height=600,toolbar_location=None,  y_axis_label=r'$$m [mag]$$')
         bokeh_residuals = figure(width=bokeh_lightcurves.width, height=200, x_range=bokeh_lightcurves.x_range,
                                  y_range=(0.18, -0.18), toolbar_location=None,
-                                 x_axis_label='JD', y_axis_label=u'\u0394m [mag]')
+                                 x_axis_label='JD', y_axis_label=r'$$\Delta m [mag]$$')
 
         bokeh_lightcurves.xaxis.minor_tick_line_color = None
         bokeh_lightcurves.xaxis.major_tick_line_color = None
@@ -1069,3 +1079,49 @@ def plot_distribution(samples,parameters_names=None, bokeh_plot = None):
         pass
 
     return GTC, bokeh_plot
+
+def plot_parameters_table(samples, parameters_names=None,bokeh_plot=None):
+
+    percentiles = np.percentile(samples, [16, 50, 84], axis=0)
+
+    table_val = [[r'$'+str(percentiles[1][i])+'^{+'+str(percentiles[2][i]-percentiles[1][i])+'}_{-'+str(percentiles[1][i]-percentiles[0][i])+'}$'] for i in range(len(percentiles[0]))]
+    raw_labels = parameters_names
+
+    table_colors = []
+    raw_colors = []
+    last_color = 'dodgerblue'
+
+    for i in range(len(table_val)):
+        table_colors.append([last_color])
+        raw_colors.append(last_color)
+
+        if last_color == 'dodgerblue':
+
+            last_color = 'white'
+
+        else:
+
+            last_color = 'dodgerblue'
+
+    column_labels = ['Parameters','Values']
+    
+    fig_size = [10, 7.5]
+    figure_table = plt.figure(figsize=(fig_size[0], fig_size[1]), dpi=75)
+    table_axes = figure_table.add_subplot(111, aspect=1)
+    ax = plt.gca()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    plt.box(on=None)
+    the_table = table_axes.table(cellText=table_val,loc='center',rowLabels=raw_labels,cellColours=table_colors,rowColours=raw_colors,colWidths=[.5]*2)
+    the_table.set_fontsize(25)
+    breakpoint()
+
+    #the_table = table_axes.table(cellText=table_val, cellColours=table_colors, rowColours=raw_colors,
+    #                             rowLabels=raw_labels,
+    ##                             colLabels=column_labels, loc='center left',
+     #                            rowLoc='left', colLoc='center',
+     #                            bbox=[0.0, -0.0, 1.0, 1.0]
+     #                            )
+
+
+    return figure_table

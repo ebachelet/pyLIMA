@@ -315,6 +315,9 @@ class MLmodel(object):
 
                     model_dictionnary['gblend_' + telescope.name] = len(model_dictionnary)
 
+                if self.blend_flux_parameter == 'noblend':
+
+                    pass
 
         return model_dictionnary
 
@@ -420,6 +423,10 @@ class MLmodel(object):
                 g_blend = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
                 f_blend = f_source * g_blend
 
+            if self.blend_flux_parameter =='noblend':
+
+                f_blend = 0
+
         except TypeError:
 
             # Fluxes parameters are estimated through np.polyfit
@@ -427,7 +434,17 @@ class MLmodel(object):
             flux = lightcurve['flux'].value
 
             try:
-                f_source, f_blend = np.polyfit(magnification, flux, 1)
+
+                if self.blend_flux_parameter == 'noblend':
+
+                    f_source = np.median(flux / magnification)
+                    f_blend = 0
+
+                else:
+
+                    f_source, f_blend = np.polyfit(magnification, flux, 1)
+
+
 
             except:
 

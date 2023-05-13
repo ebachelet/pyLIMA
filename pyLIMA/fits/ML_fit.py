@@ -85,6 +85,12 @@ class MLfit(object):
         fit_parameters_indexes = []
         fit_parameters_boundaries = []
 
+        thebounds = namedtuple('parameters', [i for i in standard_parameters_dictionnary.keys()])
+
+        for ind,key in enumerate(standard_parameters_dictionnary.keys()):
+
+            setattr(thebounds, key, np.array(standard_parameters_boundaries[ind]))
+
         for ind,key in enumerate(standard_parameters_dictionnary.keys()):
 
             if (('fsource' in key) | ('fblend' in key) | ('gblend' in key)) & (self.telescopes_fluxes_method != 'fit'):
@@ -95,11 +101,9 @@ class MLfit(object):
 
                 if key in self.model.fancy_to_pyLIMA.keys():
 
-                    thebound = namedtuple('parameters', [key])
                     parameter = self.model.pyLIMA_to_fancy_dictionnary[key]
-                    setattr(thebound, key, standard_parameters_boundaries[ind])
 
-                    new_bounds = self.model.pyLIMA_to_fancy[parameter](thebound)
+                    new_bounds = self.model.pyLIMA_to_fancy[parameter](thebounds)
 
                     thekey = parameter
                     theind = ind
@@ -646,18 +650,19 @@ class MLfit(object):
         :rtype: list
         """
 
-        telescopes_fluxes = []
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
+        telescopes_fluxes = self.model.find_telescopes_fluxes(fit_process_parameters)
 
-        for telescope in self.model.event.telescopes:
+        ind_source = 0
+        ind_blend = 1
+
+        for ind,telescope in enumerate(self.model.event.telescopes):
 
             if telescope.lightcurve_flux is not None:
+
                 flux = telescope.lightcurve_flux['flux'].value
 
-                ml_model = self.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
-
-                f_source = ml_model['f_source']
-                f_blend = ml_model['f_blend']
+                f_source = telescopes_fluxes[ind_source]
+                f_blend = telescopes_fluxes[ind_blend]
 
                 # Prior here
                 if (f_source <= self.fit_parameters['fsource_'+telescope.name][1][0]) | \
@@ -666,14 +671,15 @@ class MLfit(object):
                    (f_blend > self.fit_parameters['fblend_' + telescope.name][1][1]) |\
                    (f_source + f_blend <= 0):
 
-                    telescopes_fluxes.append(np.min(flux))
-                    telescopes_fluxes.append(0.0)
+                    telescopes_fluxes[ind_source] = np.min(flux)
+                    telescopes_fluxes[ind_blend] = 0.0
 
                 else:
 
-                    telescopes_fluxes.append(f_source)
-                    telescopes_fluxes.append(f_blend)
+                    pass
 
+                ind_source += 2
+                ind_blend += 2
 
         return telescopes_fluxes
 
@@ -701,7 +707,8 @@ class MLfit(object):
         samples_to_plot = samples[:, :len(parameters)]
 
         matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(samples_to_plot, parameters_names=parameters,bokeh_plot=bokeh_plot)
-
+        #matplotlib_table = pyLIMA_plots.plot_parameters_table(samples, parameters_names=[key for key in self.fit_parameters.keys()])
+        matplotlib_table = None
         try:
 
             bokeh_figure = gridplot([[bokeh_lightcurves,bokeh_geometry],[bokeh_astrometry,None]],toolbar_location='above')
@@ -710,10 +717,14 @@ class MLfit(object):
 
             pass
 
-        bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
 
-        output_file(filename='./'+bokeh_plot_name+'.html', title=bokeh_plot_name)
-        save(bokeh_figure)
+        if bokeh_figure is not None:
+            
+            bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
 
-        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_astrometry, matplotlib_distribution, bokeh_figure
+            output_file(filename='./'+bokeh_plot_name+'.html', title=bokeh_plot_name)
+            save(bokeh_figure)
+
+        return matplotlib_lightcurves, matplotlib_geometry, matplotlib_astrometry, matplotlib_distribution, \
+               matplotlib_table, bokeh_figure
 
