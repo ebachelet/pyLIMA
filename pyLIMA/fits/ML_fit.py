@@ -103,7 +103,7 @@ class MLfit(object):
 
                     parameter = self.model.pyLIMA_to_fancy_dictionnary[key]
 
-                    new_bounds = self.model.pyLIMA_to_fancy[parameter](thebounds)
+                    new_bounds = np.sort(self.model.pyLIMA_to_fancy[parameter](thebounds))
 
                     thekey = parameter
                     theind = ind
@@ -719,7 +719,7 @@ class MLfit(object):
 
 
         if bokeh_figure is not None:
-            
+
             bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
 
             output_file(filename='./'+bokeh_plot_name+'.html', title=bokeh_plot_name)
