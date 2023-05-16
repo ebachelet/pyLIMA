@@ -41,7 +41,7 @@ def t0(x):
 
     try:
 
-        alpha = x.alpha
+        alpha = x.alpha+np.pi
 
     except:
 
@@ -49,28 +49,28 @@ def t0(x):
 
     rotation = np.array([np.cos(alpha), np.sin(alpha)])
 
-    tau_prime = np.dot(rotation, [x.x_center, x.y_center])
+    tau_prime = -np.dot(rotation, [x.x_center, x.y_center])
 
-    t_0 = x.t_center-tau_prime*x.tE
-
+    t_0 = x.t_center+tau_prime*x.tE
+    #breakpoint()
     return t_0
 
 def u0(x):
 
     try:
 
-        alpha = x.alpha
+        alpha = x.alpha+np.pi
 
     except:
 
         alpha = 0
 
-    rotation = np.array([np.sin(alpha), -np.cos(alpha)])
+    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
 
-    u_prime = np.dot(rotation, [x.x_center, x.y_center])
+    u_prime = -np.dot(rotation, [x.x_center, x.y_center])
 
     u_0 = x.u_center-u_prime
-
+    #breakpoint()
     return u_0
 
 
@@ -78,7 +78,7 @@ def t_center(x):
 
     try:
 
-        alpha = x.alpha
+        alpha = x.alpha+np.pi
 
     except:
 
@@ -96,22 +96,19 @@ def u_center(x):
 
     try:
 
-        alpha = x.alpha
+        alpha = x.alpha+np.pi
 
     except:
 
         alpha = 0
 
-    rotation = np.array([np.sin(alpha), -np.cos(alpha)])
+    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
 
     u_prime = np.dot(rotation, [x.x_center, x.y_center])
 
     u_center = x.u0+u_prime
 
     return u_center
-
-
-
 
 standard_fancy_parameters = {'log_tE': 'tE', 'log_rho': 'rho', 'log_separation': 'separation',
                              'log_mass_ratio': 'mass_ratio'}

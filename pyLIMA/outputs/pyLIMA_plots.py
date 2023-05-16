@@ -203,6 +203,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                 format(int(i[2] * 255), 'x').zfill(2) for i in color]
 
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
+
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
     faketelescopes = create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters)

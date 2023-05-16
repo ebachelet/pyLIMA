@@ -28,10 +28,12 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 
     return fake_event
 
-def simulate_a_telescope(name, event, time_start, time_end, sampling, location, filter, uniform_sampling=False,
-                         altitude=0, longitude=0, latitude=0, spacecraft_name=None, bad_weather_percentage=0.0,
+def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.25, location=
+                        'Earth', filter='I', uniform_sampling=False,
+                         timestamps = [], altitude=0, longitude=0, latitude=0, spacecraft_name=None, spacecraft_positions=[],
+                         bad_weather_percentage=0.0,
                          minimum_alt=20, moon_windows_avoidance=20, maximum_moon_illumination=100.0, photometry=True,
-                         astrometry=True, pixel_scale = 1):
+                         astrometry=True, pixel_scale = 1,ra=270, dec=-30):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
         full time windows, then limitation are applied :
             - Sun has to be below horizon : Sun< -18
@@ -61,39 +63,46 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
     :rtype: object
     """
 
-    if (uniform_sampling is False) & (location != 'Space'):
+    if timestamps == []:
 
-        earth_location = EarthLocation(lon=longitude * astropy.units.deg,
-                                       lat=latitude * astropy.units.deg,
-                                       height=altitude * astropy.units.m)
+        if (uniform_sampling is False) & (location != 'Space'):
 
-        target = SkyCoord(event.ra, event.dec, unit='deg')
+            earth_location = EarthLocation(lon=longitude * astropy.units.deg,
+                                           lat=latitude * astropy.units.deg,
+                                           height=altitude * astropy.units.m)
 
-        minimum_sampling = sampling
+            target = SkyCoord(ra, dec, unit='deg')
 
-        time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
-                                               bad_weather_percentage)
+            minimum_sampling = sampling
 
-        time_convertion = Time(time_of_observations, format='jd').isot
+            time_of_observations = time_simulation(time_start, time_end, minimum_sampling,
+                                                   bad_weather_percentage)
 
-        telescope_altaz = target.transform_to(AltAz(obstime=time_convertion, location=earth_location))
-        altazframe = AltAz(obstime=time_convertion, location=earth_location)
-        Sun = get_sun(Time(time_of_observations, format='jd')).transform_to(altazframe)
-        Moon = get_moon(Time(time_of_observations, format='jd')).transform_to(altazframe)
-        Moon_illumination = moon_illumination(Sun, Moon)
-        Moon_separation = target.separation(Moon)
-        observing_windows = np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
-                                     & (Sun.alt < -18 * astropy.units.deg)
-                                     & (Moon_separation > moon_windows_avoidance * astropy.units.deg)
-                                     & (Moon_illumination < maximum_moon_illumination)
-                                     )[0]
+            time_convertion = Time(time_of_observations, format='jd').isot
 
-        time_of_observations = time_of_observations[observing_windows]
+            telescope_altaz = target.transform_to(AltAz(obstime=time_convertion, location=earth_location))
+            altazframe = AltAz(obstime=time_convertion, location=earth_location)
+            Sun = get_sun(Time(time_of_observations, format='jd')).transform_to(altazframe)
+            Moon = get_moon(Time(time_of_observations, format='jd')).transform_to(altazframe)
+            Moon_illumination = moon_illumination(Sun, Moon)
+            Moon_separation = target.separation(Moon)
 
+            observing_windows = np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
+                                         & (Sun.alt < -18 * astropy.units.deg)
+                                         & (Moon_separation > moon_windows_avoidance * astropy.units.deg)
+                                         & (Moon_illumination < maximum_moon_illumination)
+                                         )[0]
+
+            time_of_observations = time_of_observations[observing_windows]
+
+
+        else:
+
+            time_of_observations = np.arange(time_start, time_end, sampling / 24.0)
 
     else:
 
-        time_of_observations = np.arange(time_start, time_end, sampling / 24.0)
+            time_of_observations = np.array(timestamps)
 
     if photometry & (len(time_of_observations)>0):
 
@@ -105,8 +114,6 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
         lightcurveflux = None
 
     if astrometry:
-
-        time_of_observations = np.arange(time_start, time_end, sampling / (24.0))
 
         astrometry = np.ones((len(time_of_observations), 5)) * 42
         astrometry[:, 0] = time_of_observations
@@ -123,7 +130,7 @@ def simulate_a_telescope(name, event, time_start, time_end, sampling, location, 
                                      astrometry_names=['time', 'ra', 'err_ra', 'dec',
                                                        'err_dec'],
                                      astrometry_units=['JD','deg','deg','deg','deg'],
-                                     location=location, spacecraft_name=spacecraft_name)
+                                     location=location, spacecraft_name=spacecraft_name,spacecraft_positions=spacecraft_positions)
     return telescope
 
 def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
@@ -238,7 +245,7 @@ def simulate_microlensing_model_parameters(model):
 
     fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
 
-    if model.parallax_model != []:
+    if model.parallax_model[0] != 'None':
 
         fake_parameters[0] = np.random.uniform(model.parallax_model[1]-1, model.parallax_model[1]+1)
 

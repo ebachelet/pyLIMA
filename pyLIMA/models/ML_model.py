@@ -165,7 +165,7 @@ class MLmodel(object):
         if self.origin[0] != 'center_of_mass':
 
             setattr(pyLIMA_parameters, 'x_center', self.origin[1][0])
-            setattr(pyLIMA_parameters, 'y_center', self.origin[1][0])
+            setattr(pyLIMA_parameters, 'y_center', self.origin[1][1])
 
     def check_data_in_event(self):
 
@@ -203,6 +203,8 @@ class MLmodel(object):
 
             self.fancy_to_pyLIMA_dictionnary['t_center'] = 't0'
             self.fancy_to_pyLIMA_dictionnary['u_center'] = 'u0'
+
+            self.pyLIMA_to_fancy_dictionnary = dict((v, k) for k, v in self.fancy_to_pyLIMA_dictionnary.items())
 
 
         if len(self.fancy_to_pyLIMA_dictionnary) != 0:
@@ -490,7 +492,6 @@ class MLmodel(object):
             except:
 
                 setattr(model_parameters, key_parameter, None)
-
 
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
 

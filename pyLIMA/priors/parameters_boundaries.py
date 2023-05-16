@@ -137,6 +137,11 @@ def position_dec_boundaries():
 
     return (-90, 90) #(-90,90) degree
 
+def t_center_boundaries():
+
+    return t0_boundaries()
+
+
 def u_center_boundaries():
 
     return (-1, 1)

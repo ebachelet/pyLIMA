@@ -103,7 +103,13 @@ class MLfit(object):
 
                     parameter = self.model.pyLIMA_to_fancy_dictionnary[key]
 
-                    new_bounds = np.sort(self.model.pyLIMA_to_fancy[parameter](thebounds))
+                    try:
+
+                        new_bounds = np.sort(self.model.pyLIMA_to_fancy[parameter](thebounds))
+
+                    except:
+
+                        new_bounds = standard_parameters_boundaries[ind]
 
                     thekey = parameter
                     theind = ind
@@ -182,7 +188,13 @@ class MLfit(object):
                 mins_time.append(np.min(telescope.astrometry['time'].value))
                 maxs_time.append(np.max(telescope.astrometry['time'].value))
 
-        self.fit_parameters['t0'][1] = (np.min(mins_time),np.max(maxs_time))
+        if 't0' in self.fit_parameters.keys():
+
+            self.fit_parameters['t0'][1] = (np.min(mins_time),np.max(maxs_time))
+            
+        if 't_center' in self.fit_parameters.keys():
+
+            self.fit_parameters['t_center'][1] = (np.min(mins_time),np.max(maxs_time))
 
         self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
                                        i in self.fit_parameters.keys()]
