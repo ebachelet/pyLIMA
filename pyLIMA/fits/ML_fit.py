@@ -191,7 +191,7 @@ class MLfit(object):
         if 't0' in self.fit_parameters.keys():
 
             self.fit_parameters['t0'][1] = (np.min(mins_time),np.max(maxs_time))
-            
+
         if 't_center' in self.fit_parameters.keys():
 
             self.fit_parameters['t_center'][1] = (np.min(mins_time),np.max(maxs_time))

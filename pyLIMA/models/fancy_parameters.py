@@ -51,7 +51,7 @@ def t0(x):
 
     tau_prime = -np.dot(rotation, [x.x_center, x.y_center])
 
-    t_0 = x.t_center+tau_prime*x.tE
+    t_0 = float(x.t_center+tau_prime*x.tE)
     #breakpoint()
     return t_0
 
@@ -69,7 +69,7 @@ def u0(x):
 
     u_prime = -np.dot(rotation, [x.x_center, x.y_center])
 
-    u_0 = x.u_center-u_prime
+    u_0 = float(x.u_center-u_prime)
     #breakpoint()
     return u_0
 
@@ -88,7 +88,7 @@ def t_center(x):
 
     tau_prime = np.dot(rotation, [x.x_center, x.y_center])
 
-    t_center = x.t0+tau_prime*x.tE
+    t_center = float(x.t0+tau_prime*x.tE)
 
     return t_center
 
@@ -106,7 +106,7 @@ def u_center(x):
 
     u_prime = np.dot(rotation, [x.x_center, x.y_center])
 
-    u_center = x.u0+u_prime
+    u_center = float(x.u0+u_prime)
 
     return u_center
 

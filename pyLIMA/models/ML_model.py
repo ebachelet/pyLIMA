@@ -480,7 +480,6 @@ class MLmodel(object):
         :return: pyLIMA parameters
         :rtype: object (namedtuple)
         """
-
         model_parameters = collections.namedtuple('parameters', self.model_dictionnary.keys())
 
         for key_parameter in self.model_dictionnary.keys():
@@ -494,9 +493,7 @@ class MLmodel(object):
                 setattr(model_parameters, key_parameter, None)
 
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(model_parameters)
-
         self.change_origin(pyLIMA_parameters)
-        #breakpoint()
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(pyLIMA_parameters)
 
         if 'v_perp' in self.model_dictionnary.keys():
