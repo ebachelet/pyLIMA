@@ -143,7 +143,9 @@ class MLmodel(object):
     def photometric_model_Jacobian(self, telescope, pyLIMA_parameters):
 
         magnification_jacobian, amplification = self.model_magnification_Jacobian(telescope, pyLIMA_parameters)
-        fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
+        #fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
+        self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification[0])
+        fsource = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
         magnification_jacobian *= fsource
 
         if self.blend_flux_parameter == 'gblend':
@@ -381,22 +383,27 @@ class MLmodel(object):
 
         photometric_model = None
         astrometric_model = None
-        f_source = None
-        f_blend = None
+        #f_source = None
+        #f_blend = None
 
         if telescope.lightcurve_flux is not None:
 
             magnification = self.model_magnification(telescope, pyLIMA_parameters)
 
-            f_source, f_blend = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
+            #f_source, f_blend = self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
+            self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
+
+            f_source = getattr(pyLIMA_parameters, 'fsource_'+telescope.name)
+            f_blend = getattr(pyLIMA_parameters, 'fblend_'+telescope.name)
+
             photometric_model = f_source * magnification + f_blend
 
         if telescope.astrometry is not None:
 
             astrometric_model = self.model_astrometry(telescope, pyLIMA_parameters)
 
-        microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model, 'f_source': f_source,
-                              'f_blend': f_blend}
+        microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model}#, 'f_source': f_source,
+                             # 'f_blend': f_blend}
 
         return microlensing_model
 
@@ -434,43 +441,75 @@ class MLmodel(object):
             # Fluxes parameters are estimated through np.polyfit
             lightcurve = telescope.lightcurve_flux
             flux = lightcurve['flux'].value
+            err_flux = lightcurve['err_flux'].value
 
             try:
 
                 if self.blend_flux_parameter == 'noblend':
 
                     f_source = np.median(flux / magnification)
-                    f_blend = 0
+                    f_blend = 0.0
 
                 else:
 
-                    f_source, f_blend = np.polyfit(magnification, flux, 1)
+                    #breakpoint()
+                    f_source, f_blend = np.polyfit(magnification, flux, 1)#, w=1/err_flux)
 
-
+                    #from sklearn import linear_model, datasets
+                    #ransac = linear_model.RANSACRegressor()
+                    #ransac.fit(magnification.reshape(-1, 1), flux)
+                    #f_source = ransac.estimator_.coef_[0]
+                    #f_blend = ransac.estimator_.intercept_
 
             except:
 
                 f_source = 0.0
                 f_blend = 0.0
 
-        return f_source, f_blend
+        setattr(pyLIMA_parameters,  'fsource_' + telescope.name, f_source)
+        setattr(pyLIMA_parameters,'fblend_' + telescope.name, f_blend)
+
+        #return f_source, f_blend
 
 
     def find_telescopes_fluxes(self, fancy_parameters):
 
         pyLIMA_parameters = self.compute_pyLIMA_parameters(fancy_parameters)
 
+        keys = []
         fluxes = []
+
         for telescope in self.event.telescopes:
 
             if telescope.lightcurve_flux is not None:
 
-                model = self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+                self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-                fluxes.append(model['f_source'])
-                fluxes.append(model['f_blend'])
+                f_source = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
+                keys.append('fsource_' + telescope.name)
+                fluxes.append(f_source)
 
-        return fluxes
+                if self.blend_flux_parameter is 'fblend':
+
+                    f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
+
+                    keys.append('fblend_' + telescope.name)
+                    fluxes.append(f_blend)
+
+                if self.blend_flux_parameter is 'gblend':
+
+                    f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
+
+                    keys.append('gblend_' + telescope.name)
+                    fluxes.append(f_blend/f_source)
+
+        thefluxes = collections.namedtuple('parameters', keys)
+
+        for ind,key in enumerate(keys):
+
+            setattr(thefluxes, key, fluxes[ind])
+
+        return thefluxes
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
         """ Realize the transformation between the fancy parameters to fit to the

@@ -22,7 +22,14 @@ class LMfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        residus, err = self.model_residuals(fit_process_parameters)
+        parameters = np.array(fit_process_parameters)
+
+        model_parameters = parameters[self.model_parameters_index]
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        residus, err = self.model_residuals(pyLIMA_parameters, rescaling_photometry_parameters=None,
+                                            rescaling_astrometry_parameters=None)
 
         residuals = []
         errors = []

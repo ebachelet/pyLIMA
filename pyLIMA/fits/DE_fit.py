@@ -33,7 +33,8 @@ class DEfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = -self.model_likelihood(fit_process_parameters)
+        likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
+        likelihood *= -1
 
         # Priors
         priors = self.get_priors(fit_process_parameters)

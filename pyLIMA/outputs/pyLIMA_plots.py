@@ -822,6 +822,7 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
     if len(model_parameters) != len(microlensing_model.model_dictionnary):
 
         telescopes_fluxes = microlensing_model.find_telescopes_fluxes(model_parameters)
+        telescopes_fluxes = [getattr(telescopes_fluxes,key) for key in telescopes_fluxes._fields]
 
         model_parameters = np.r_[model_parameters,telescopes_fluxes]
 
@@ -896,8 +897,8 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters, bo
             model = microlensing_model.compute_the_microlensing_model(tel, pyLIMA_parameters)
 
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT-2.5*np.log10(model['photometry'])
-            f_source = model['f_source']
-            f_blend = model['f_blend']
+            f_source = getattr(pyLIMA_parameters, 'fsource_'+tel.name)
+            f_blend = getattr(pyLIMA_parameters, 'fblend_'+tel.name)
 
             if index == 0:
 
@@ -932,6 +933,7 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters, bo
 
 def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_plot=None, plot_unit='Mag'):
 
+
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
     #plot aligned data
@@ -948,13 +950,18 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
     for ref_tel in list_of_telescopes:
 
         model_magnification = microlensing_model.model_magnification(ref_tel, pyLIMA_parameters)
-        f_source, f_blend = microlensing_model.derive_telescope_flux(ref_tel, pyLIMA_parameters, model_magnification)
 
+        microlensing_model.derive_telescope_flux(ref_tel, pyLIMA_parameters, model_magnification)
+
+        f_source = getattr(pyLIMA_parameters, 'fsource_' + ref_tel.name)
+        f_blend = getattr(pyLIMA_parameters, 'fblend_' + ref_tel.name)
+
+        #model_magnification = (model['photometry']-f_blend)/f_source
 
         ref_names.append(ref_tel.name)
         ref_locations.append(ref_tel.location)
         ref_magnification.append(model_magnification)
-        ref_fluxes.append([f_source,f_blend])
+        ref_fluxes.append([f_source, f_blend])
 
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 

@@ -181,6 +181,10 @@ def parameters_boundaries(event, model_dictionnary):
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
                 function_name = key.split('_')[0] + '_boundaries(flux)'
 
+            if ('gblend_' in key):
+
+                function_name = key.split('_')[0] + '_boundaries()'
+
             if 'logk_photometry' in key:
 
                 function_name = 'rescale_photometry_boundaries()'

@@ -301,8 +301,8 @@ class MLfit(object):
 
             if self.telescopes_fluxes_parameters_guess == []:
 
-                telescopes_fluxes = self.find_fluxes(self.model_parameters_guess)
-
+                telescopes_fluxes = self.model.find_telescopes_fluxes(self.model_parameters_guess)
+                telescopes_fluxes = self.check_telescopes_fluxes_limits(telescopes_fluxes)
 
                 self.telescopes_fluxes_parameters_guess = telescopes_fluxes
 
@@ -418,42 +418,38 @@ class MLfit(object):
         return fit_parameters_guess
 
 
-    def model_residuals(self, parameters):
+    def model_residuals(self, pyLIMA_parameters, rescaling_photometry_parameters=None,
+                                            rescaling_astrometry_parameters=None):
 
-        parameters = np.array(parameters)
+        #parameters = np.array(parameters)
         residus = {'photometry':[],'astrometry':[]}
         errors = residus.copy()
 
         if self.model.photometry:
 
-            residuals_photometry, errors_flux = self.photometric_model_residuals(parameters)
+            residuals_photometry, errors_flux = self.photometric_model_residuals(pyLIMA_parameters,
+                                                rescaling_photometry_parameters=rescaling_photometry_parameters)
+
             residus['photometry'] = residuals_photometry
             errors['photometry'] = errors_flux
 
         if self.model.astrometry:
 
-            residuals_astrometry, errors_astrometry = self.astrometric_model_residuals(parameters)
+            residuals_astrometry, errors_astrometry = self.astrometric_model_residuals(pyLIMA_parameters,
+                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+
             residus['astrometry'] = [np.concatenate((i[0],i[1])) for i in residuals_astrometry]
             errors['astrometry'] = [np.concatenate((i[0],i[1])) for i in errors_astrometry]
 
         return residus, errors
 
-    def photometric_model_residuals(self, parameters):
+    def photometric_model_residuals(self, pyLIMA_parameters, rescaling_photometry_parameters=None):
 
-        parameters = np.array(parameters)
+        #parameters = np.array(parameters)
 
-        model_parameters = parameters[self.model_parameters_index]
+        #model_parameters = parameters[self.model_parameters_index]
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
-
-        if self.rescale_photometry:
-
-            rescaling_photometry_parameters = 10 ** (parameters[self.rescale_photometry_parameters_index])
-
-        else:
-
-            rescaling_photometry_parameters = None
-
+        #pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         residus_photometry, errflux_photometry = objective_functions.all_telescope_photometric_residuals(
             self.model, pyLIMA_parameters,
@@ -462,21 +458,21 @@ class MLfit(object):
 
         return residus_photometry, errflux_photometry
 
-    def astrometric_model_residuals(self, parameters):
+    def astrometric_model_residuals(self, pyLIMA_parameters, rescaling_astrometry_parameters=None):
 
-        parameters = np.array(parameters)
+        #parameters = np.array(parameters)
 
-        model_parameters = parameters[self.model_parameters_index]
+        #model_parameters = parameters[self.model_parameters_index]
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+        #pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
-        if self.rescale_astrometry:
+        #if self.rescale_astrometry:
 
-            rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
+        #    rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
 
-        else:
+        #else:
 
-            rescaling_astrometry_parameters = None
+        #    rescaling_astrometry_parameters = None
 
         residus_ra, residus_dec, err_ra, err_dec = objective_functions.all_telescope_astrometric_residuals(
             self.model, pyLIMA_parameters,
@@ -517,7 +513,28 @@ class MLfit(object):
 
         parameters = np.array(parameters)
 
-        residus, err = self.model_residuals(parameters)
+        model_parameters = parameters[self.model_parameters_index]
+
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        if self.rescale_photometry:
+
+            rescaling_photometry_parameters = 10 ** (parameters[self.rescale_photometry_parameters_index])
+
+        else:
+
+            rescaling_photometry_parameters = None
+
+        if self.rescale_astrometry:
+
+            rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
+
+        else:
+
+            rescaling_astrometry_parameters = None
+
+        residus, err = self.model_residuals(pyLIMA_parameters, rescaling_photometry_parameters=rescaling_photometry_parameters,
+                                            rescaling_astrometry_parameters=rescaling_astrometry_parameters)
 
         residuals = []
         errors = []
@@ -537,7 +554,7 @@ class MLfit(object):
 
         ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
 
-        return ln_likelihood
+        return ln_likelihood, pyLIMA_parameters
 
     def chi2_photometry(self, parameters):
 
@@ -650,7 +667,7 @@ class MLfit(object):
 
         return jacobi.T
 
-    def find_fluxes(self, fit_process_parameters):
+    def check_telescopes_fluxes_limits(self, telescopes_fluxes):
         """Find telescopes flux associated (fs,g) to the model. Used for initial_guess and LM
         method.
 
@@ -662,38 +679,22 @@ class MLfit(object):
         :rtype: list
         """
 
-        telescopes_fluxes = self.model.find_telescopes_fluxes(fit_process_parameters)
-
         ind_source = 0
-        ind_blend = 1
 
-        for ind,telescope in enumerate(self.model.event.telescopes):
+        new_fluxes = []
 
-            if telescope.lightcurve_flux is not None:
+        for ind, key in enumerate(telescopes_fluxes._fields):
 
-                flux = telescope.lightcurve_flux['flux'].value
-
-                f_source = telescopes_fluxes[ind_source]
-                f_blend = telescopes_fluxes[ind_blend]
+                flux = getattr(telescopes_fluxes, key)
 
                 # Prior here
-                if (f_source <= self.fit_parameters['fsource_'+telescope.name][1][0]) | \
-                   (f_source > self.fit_parameters['fsource_'+telescope.name][1][1]) |\
-                   (f_blend <= self.fit_parameters['fblend_' + telescope.name][1][0]) |\
-                   (f_blend > self.fit_parameters['fblend_' + telescope.name][1][1]) |\
-                   (f_source + f_blend <= 0):
+                if (flux <= self.fit_parameters[key][1][0]) | (flux > self.fit_parameters[key][1][1]):
 
-                    telescopes_fluxes[ind_source] = np.min(flux)
-                    telescopes_fluxes[ind_blend] = 0.0
+                   flux = np.sum(self.fit_parameters[key][1])/2
 
-                else:
+                new_fluxes.append(flux)
 
-                    pass
-
-                ind_source += 2
-                ind_blend += 2
-
-        return telescopes_fluxes
+        return new_fluxes
 
     def fit_outputs(self, bokeh_plot=None):
 
@@ -704,6 +705,7 @@ class MLfit(object):
         bokeh_figure = None
 
         if self.model.photometry:
+
 
             matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
             matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
