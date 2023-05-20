@@ -1,4 +1,4 @@
-def orbital_motion_2D_trajectory_shift(to_om, time, dalpha_dt):
+def orbital_motion_2D_trajectory_shift(time,to_om, dalpha_dt):
     """ Compute the trajectory curvature induced by the orbital motion of the lens.
 
     :param float to_om: the reference time for the orbital motion
@@ -11,10 +11,10 @@ def orbital_motion_2D_trajectory_shift(to_om, time, dalpha_dt):
 
     dalpha = dalpha_dt * (time - to_om)/365.25
 
-    return dalpha
+    return -dalpha
 
 
-def orbital_motion_2D_separation_shift(to_om, time, ds_dt):
+def orbital_motion_2D_separation_shift(time,to_om, ds_dt):
     """ Compute the binary separation change induced by the orbital motion of the lens.
 
     :param float to_om: the reference time for the orbital motion

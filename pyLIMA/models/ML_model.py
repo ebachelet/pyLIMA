@@ -453,7 +453,7 @@ class MLmodel(object):
                 else:
 
                     #breakpoint()
-                    f_source, f_blend = np.polyfit(magnification, flux, 1)#, w=1/err_flux)
+                    f_source, f_blend = np.polyfit(magnification, flux, 1, w=1/err_flux)
 
                     #from sklearn import linear_model, datasets
                     #ransac = linear_model.RANSACRegressor()
@@ -466,8 +466,8 @@ class MLmodel(object):
                 f_source = 0.0
                 f_blend = 0.0
 
-        setattr(pyLIMA_parameters,  'fsource_' + telescope.name, f_source)
-        setattr(pyLIMA_parameters,'fblend_' + telescope.name, f_blend)
+        setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
+        setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
 
         #return f_source, f_blend
 
@@ -535,7 +535,7 @@ class MLmodel(object):
         self.change_origin(pyLIMA_parameters)
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(pyLIMA_parameters)
 
-        if 'v_perp' in self.model_dictionnary.keys():
+        if 'v_radial' in self.model_dictionnary.keys():
 
             v_para = pyLIMA_parameters.v_para
             v_perp = pyLIMA_parameters.v_perp

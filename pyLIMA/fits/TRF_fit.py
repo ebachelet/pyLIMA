@@ -25,6 +25,7 @@ class TRFfit(LMfit):
         n_data = 0
 
         for telescope in self.model.event.telescopes:
+
             n_data = n_data + telescope.n_data('flux')
 
         if self.model.Jacobian_flag != 'No Way':

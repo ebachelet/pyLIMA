@@ -486,8 +486,29 @@ class MLfit(object):
 
         parameters = np.array(parameters)
 
-        residus, err = self.model_residuals(parameters)
+        model_parameters = parameters[self.model_parameters_index]
 
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        if self.rescale_photometry:
+
+            rescaling_photometry_parameters = 10 ** (parameters[self.rescale_photometry_parameters_index])
+
+        else:
+
+            rescaling_photometry_parameters = None
+
+        if self.rescale_astrometry:
+
+            rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
+
+        else:
+
+            rescaling_astrometry_parameters = None
+
+        residus, err = self.model_residuals(pyLIMA_parameters,
+                                            rescaling_photometry_parameters=rescaling_photometry_parameters,
+                                            rescaling_astrometry_parameters=rescaling_astrometry_parameters)
         residuals = []
         errors = []
 
@@ -703,7 +724,7 @@ class MLfit(object):
         matplotlib_astrometry = None
         matplotlib_distribution = None
         bokeh_figure = None
-
+        breakpoint()
         if self.model.photometry:
 
 

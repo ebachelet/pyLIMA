@@ -37,6 +37,8 @@ thismodule.saved_model = None
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
 
+    #Needs to be change...
+
     if microlensing_model == thismodule.saved_model:
 
         list_of_fake_telescopes = thismodule.list_of_fake_telescopes
@@ -112,10 +114,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     if microlensing_model.parallax_model[0] != 'None':
 
+                        breakpoint()
                         model_telescope.initialize_positions()
 
                         model_telescope.compute_parallax(microlensing_model.parallax_model, microlensing_model.event.North
-                                                   , microlensing_model.event.East, microlensing_model.event.ra/180*np.pi)
+                                                   , microlensing_model.event.East)#, microlensing_model.event.ra/180*np.pi)
 
                     list_of_fake_telescopes.append(model_telescope)
 
@@ -175,8 +178,8 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_telescope.compute_parallax(microlensing_model.parallax_model,
                                                    microlensing_model.event.North
-                                                   , microlensing_model.event.East,
-                                                   microlensing_model.event.ra / 180 * np.pi)
+                                                   , microlensing_model.event.East)#,
+                                                   #microlensing_model.event.ra / 180)# * np.pi)
 
 
 
@@ -760,7 +763,6 @@ def plot_astrometric_data(figure_ax, microlensing_model,bokeh_plot=None):
                                    muted_color=color,
                                    muted_alpha=0.2)
 
-
                 X = []
                 Y = []
 
@@ -883,7 +885,7 @@ def initialize_light_curves_plot(plot_unit='Mag', event_name='A microlensing eve
 def plot_photometric_models(figure_axe, microlensing_model, model_parameters, bokeh_plot = None, plot_unit='Mag'):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
-
+    breakpoint()
     list_of_telescopes = create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters)
     telescopes_names = np.array([i.name for i in microlensing_model.event.telescopes])
 

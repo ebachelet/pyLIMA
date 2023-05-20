@@ -155,7 +155,7 @@ class Event(object):
         for telescope in self.telescopes:
 
         #    if len(telescope.deltas_positions) == 0:
-            telescope.compute_parallax(parallax_model, self.North, self.East, self.ra*np.pi/180)
+            telescope.compute_parallax(parallax_model, self.North, self.East)#, self.ra*np.pi/180)
 
     def total_number_of_data_points(self):
         """ Compute the parallax displacement for all the telescopes, if this is desired in

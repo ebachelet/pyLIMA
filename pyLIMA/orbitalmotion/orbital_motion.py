@@ -16,7 +16,7 @@ def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):
 
     if orbital_motion_model[0] == '2D':
 
-        ds_dt = pyLIMA_parameters.v_para
+        ds_dt = pyLIMA_parameters.v_para*pyLIMA_parameters.separation
         dseparation = orbital_motion_2D.orbital_motion_2D_separation_shift(time, orbital_motion_model[1], ds_dt)
 
         dalpha_dt = pyLIMA_parameters.v_perp

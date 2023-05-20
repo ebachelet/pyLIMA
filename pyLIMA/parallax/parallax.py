@@ -43,6 +43,65 @@ def compute_parallax_curvature(piE, delta_positions):
 
     return delta_tau, delta_beta
 
+
+def parallax_combination(telescope, parallax_model, North_vector, East_vector):#/, right_ascension):
+        """ Compute, and set, the deltas_positions attributes of the telescope object
+        inside the list of telescopes. deltas_positions is the offset between the position of the
+        observatory at the time t, and the
+        center of the Earth at the date to_par. More details on each parallax functions.
+
+            :param object telescope:  a telescope object on which you want to set the deltas_positions
+            due to parallax.
+
+        """
+
+        for data_type in ['astrometry', 'photometry']:
+
+            delta_North = 0
+            delta_East = 0
+
+            if data_type == 'photometry':
+
+                data = telescope.lightcurve_flux
+            else:
+
+                data = telescope.astrometry
+
+            if data is not None:
+
+                time = data['time'].value
+                earth_positions = telescope.Earth_positions[data_type]
+                Earth_projected_North = np.dot(earth_positions, North_vector)
+                Earth_projected_East = np.dot(earth_positions, East_vector)
+
+                telescope.Earth_positions_projected[data_type] = np.array([Earth_projected_North, Earth_projected_East])
+
+                earth_speeds = telescope.Earth_positions[data_type]
+                Earth_projected_North = np.dot(earth_speeds, North_vector)
+                Earth_projected_East = np.dot(earth_speeds, East_vector)
+
+                telescope.Earth_speeds_projected[data_type] = np.array(
+                    [Earth_projected_North, Earth_projected_East])
+
+                if (parallax_model[0] == 'Annual') | (parallax_model[0] == 'Full'):
+
+                        annual_positions = annual_parallax(time, earth_positions, parallax_model[1])
+
+                        delta_North += np.dot(annual_positions, North_vector)
+                        delta_East += np.dot(annual_positions, East_vector)
+
+                if (parallax_model[0] == 'Terrestrial') | (parallax_model[0] == 'Full') \
+                        | (telescope.location == 'Space'):
+
+                    telescope_positions = telescope.telescope_positions[data_type]
+                    delta_North += np.dot(telescope_positions, North_vector)
+                    delta_East += np.dot(telescope_positions, East_vector)
+
+                deltas_position = np.array([delta_North, delta_East])
+
+                telescope.deltas_positions[data_type] = deltas_position
+
+
 def Earth_ephemerides(time_to_treat):
         """Compute the position shift due to the Earth movement. Please have a look on :
         "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
@@ -129,7 +188,7 @@ def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
         dec = satellite_positions[:, 2].astype(float)
         distances = satellite_positions[:, 3].astype(float)
 
-        x, y, z = spherical_to_cartesian(distances, dec * np.pi / 180, ra * np.pi / 180)
+        x, y, z = spherical_to_cartesian(r=distances, lat=dec * np.pi / 180, lon=ra * np.pi / 180)
 
         interpolated_x = interpolate.interp1d(dates, x)
         interpolated_y = interpolate.interp1d(dates, y)
@@ -151,70 +210,9 @@ def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
         #x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
         #                                 ra_interpolated * np.pi / 180)
 
-        spacecraft_positions = np.c_[x_value, y_value, z_value]
+        spacecraft_positions = -np.c_[x_value, y_value, z_value]
 
         return spacecraft_positions
-
-def parallax_combination(telescope, parallax_model, North_vector, East_vector, right_ascension):
-        """ Compute, and set, the deltas_positions attributes of the telescope object
-        inside the list of telescopes. deltas_positions is the offset between the position of the
-        observatory at the time t, and the
-        center of the Earth at the date to_par. More details on each parallax functions.
-
-            :param object telescope:  a telescope object on which you want to set the deltas_positions
-            due to parallax.
-
-        """
-
-        if telescope.location == 'Earth':
-
-            telescope.find_Earth_telescope_positions(right_ascension)
-
-        for data_type in ['astrometry', 'photometry']:
-
-            delta_North = 0
-            delta_East = 0
-
-            if data_type == 'photometry':
-
-                data = telescope.lightcurve_flux
-            else:
-
-                data = telescope.astrometry
-
-            if data is not None:
-
-                time = data['time'].value
-                earth_positions = telescope.Earth_positions[data_type]
-                Earth_projected_North = np.dot(earth_positions, North_vector)
-                Earth_projected_East = np.dot(earth_positions, East_vector)
-
-                telescope.Earth_positions_projected[data_type] = np.array([Earth_projected_North, Earth_projected_East])
-
-                earth_speeds = telescope.Earth_positions[data_type]
-                Earth_projected_North = np.dot(earth_speeds, North_vector)
-                Earth_projected_East = np.dot(earth_speeds, East_vector)
-
-                telescope.Earth_speeds_projected[data_type] = np.array(
-                    [Earth_projected_North, Earth_projected_East])
-
-                if (parallax_model[0] == 'Annual') | (parallax_model[0] =='Full'):
-
-                        annual_positions = annual_parallax(time, earth_positions, parallax_model[1])
-
-                        delta_North += np.dot(annual_positions, North_vector)
-                        delta_East += np.dot(annual_positions, East_vector)
-
-                if (parallax_model[0] == 'Terrestrial') | (telescope.location == 'Space'):
-
-                        telescope_positions = -telescope.telescope_positions[data_type]
-                        delta_North += np.dot(telescope_positions, North_vector)
-                        delta_East += np.dot(telescope_positions, East_vector)
-
-                deltas_position = np.array([delta_North, delta_East])
-
-                telescope.deltas_positions[data_type] = deltas_position
-
 
 def annual_parallax(time_to_treat, earth_positions, t0_par):
 
@@ -240,7 +238,7 @@ def annual_parallax(time_to_treat, earth_positions, t0_par):
 
         return delta_Sun
 
-def terrestrial_parallax(sidereal_times, altitude, longitude, latitude, right_ascension):
+def terrestrial_parallax(sidereal_times, altitude, longitude, latitude):
     """ Compute the position shift due to the distance of the obervatories from the Earth
     center.
     Please have a look on :
@@ -258,14 +256,15 @@ def terrestrial_parallax(sidereal_times, altitude, longitude, latitude, right_as
     **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
     """
 
-
     radius = (EARTH_RADIUS + altitude) / AU
     Longitude = longitude * np.pi / 180.0
     Latitude = latitude * np.pi / 180.0
-    telescope_longitudes = - Longitude - right_ascension + sidereal_times
 
-    x,y,z = spherical_to_cartesian(radius, Latitude, telescope_longitudes)
-    delta_telescope = np.c_[x.value,y.value,z.value]
+    telescope_longitudes = Longitude + sidereal_times
+
+    x,y,z = spherical_to_cartesian(r=radius, lat=Latitude, lon=telescope_longitudes)
+   # breakpoint()
+    delta_telescope = np.c_[x.value,y.value,z.value] #for some reasons, this is different sign as space parallax??
 
     return delta_telescope
 

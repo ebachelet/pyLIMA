@@ -177,8 +177,6 @@ class Telescope(object):
 
                     break
 
-        self.initialize_positions()
-
         self.hidden()
 
 
@@ -246,6 +244,7 @@ class Telescope(object):
         else:
 
             self.find_sidereal_time()
+            self.find_Earth_telescope_positions()
 
     def find_Earth_positions(self):
 
@@ -284,9 +283,16 @@ class Telescope(object):
                 time = data['time'].value
 
                 sidereal_times = parallax.Earth_telescope_sidereal_times(time, sidereal_type=sidereal_type)
+               # from astropy.coordinates import EarthLocation
+               # from astropy import units as u
+               # from astropy.time import Time
+
+                #loc = EarthLocation(lat=self.latitude * u.deg, lon=self.longitude * u.deg,height=self.altitude*u.m)
+               # times = Time(time, format='jd')
+               # sidereal_times = Time(times, location=loc).sidereal_time('mean').value/24*2*np.pi
                 self.sidereal_times[data_type] = sidereal_times
 
-    def find_Earth_telescope_positions(self, right_ascension):
+    def find_Earth_telescope_positions(self):
 
         for data_type in ['astrometry', 'photometry']:
 
@@ -302,8 +308,8 @@ class Telescope(object):
 
                 sidereal_times = self.sidereal_times[data_type]
 
-                telescope_positions = parallax.terrestrial_parallax(sidereal_times, self.altitude, self.longitude, self.latitude,
-                                                               right_ascension)
+                telescope_positions = parallax.terrestrial_parallax(sidereal_times, self.altitude, self.longitude,
+                                                                    self.latitude)
 
                 self.telescope_positions[data_type] = telescope_positions
 
@@ -326,14 +332,14 @@ class Telescope(object):
                 spacecraft_positions = parallax.space_ephemerides(self, time, step_size=step_size)
                 self.telescope_positions[data_type] = spacecraft_positions
 
-    def compute_parallax(self, parallax_model, North_vector, East_vector, right_ascension):
+    def compute_parallax(self, parallax_model, North_vector, East_vector):#, right_ascension):
         """ Compute and set the deltas_positions attribute due to the parallax.
 
         :param object event: a event object. More details in the event module.
         :param list parallax: a list containing the parallax model and to_par. More details in microlparallax module.
         """
-
-        parallax.parallax_combination(self, parallax_model, North_vector, East_vector, right_ascension)
+        self.initialize_positions()
+        parallax.parallax_combination(self, parallax_model, North_vector, East_vector)#, right_ascension)
         print('Parallax(' + parallax_model[0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
     def lightcurve_in_flux(self):
