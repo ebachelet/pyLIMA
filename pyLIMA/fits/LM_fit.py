@@ -10,10 +10,14 @@ from pyLIMA.outputs import pyLIMA_plots
 
 class LMfit(MLfit):
 
-    def __init__(self, model, telescopes_fluxes_method='fit'):
+    def __init__(self, model, telescopes_fluxes_method='fit',  loss_function='chi2'):
         """The fit class has to be intialized with an event object."""
 
-        super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method)
+        if loss_function=='likelihood':
+
+            print('Cannot use likelihood with gradient-like method')
+
+        super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method, loss_function=loss_function)
 
         self.guess = []
 
@@ -63,7 +67,6 @@ class LMfit(MLfit):
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
-
         if self.model.Jacobian_flag != 'No Way':
 
             jacobian_function = self.residuals_Jacobian
@@ -72,8 +75,17 @@ class LMfit(MLfit):
 
             jacobian_function = '2-point'
 
+        if self.loss_function == 'soft_l1':
+
+            loss = 'soft_l1'
+            jacobian_function = '2-point'
+
+        else:
+
+            loss = 'linear'
+
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',  max_nfev=50000,
-                                              jac=jacobian_function, xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
+                                              jac=jacobian_function, loss=loss, xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
 
         fit_results = lm_fit['x'].tolist()
         fit_chi2 = lm_fit['cost']*2 #chi2

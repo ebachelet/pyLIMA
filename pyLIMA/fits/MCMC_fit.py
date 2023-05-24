@@ -4,8 +4,7 @@ import sys
 import emcee
 
 from pyLIMA.fits.ML_fit import MLfit
-import pyLIMA.fits.objective_functions
-from pyLIMA.outputs import pyLIMA_plots
+from multiprocessing import Manager
 
 class MCMCfit(MLfit):
 
@@ -16,30 +15,18 @@ class MCMCfit(MLfit):
         super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
 
+
         self.MCMC_walkers = MCMC_walkers #times number of dimension!
         self.MCMC_links = MCMC_links
-        self.MCMC_chains = []
 
     def fit_type(self):
         return "Monte Carlo Markov Chain (Affine Invariant)"
 
     def objective_function(self, fit_process_parameters):
 
-        for ind,key in enumerate(self.fit_parameters.keys()):
+        objective = self.standard_objective_function(fit_process_parameters)
 
-            if (fit_process_parameters[ind]<self.fit_parameters[key][1][0]) |  (fit_process_parameters[ind]>self.fit_parameters[key][1][1]):
-
-                return -np.inf
-
-
-        likelihood = self.model_likelihood(fit_process_parameters)
-
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += priors
-
-        return likelihood
+        return -objective
 
     def fit(self, initial_population=[], computational_pool=False):
 
@@ -51,7 +38,6 @@ class MCMCfit(MLfit):
 
             number_of_parameters = len(best_solution)
             nwalkers = self.MCMC_walkers * number_of_parameters
-            nlinks = self.MCMC_links
 
             # Initialize the population of MCMC
             eps = 10**-1
@@ -106,14 +92,12 @@ class MCMCfit(MLfit):
             sampler.run_mcmc(population, nlinks, progress=True)
 
         computation_time = python_time.time() - start_time
-
-        mcmc_shape = list(sampler.get_chain().shape)
-        mcmc_shape[-1] += 1
-        MCMC_chains = np.zeros(mcmc_shape)
-        MCMC_chains[:, :, :-1] = sampler.get_chain()
-        MCMC_chains[:, :, -1] = sampler.get_log_prob()
-
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
+
+        self.trials = np.array(self.trials)
+        self.trials[:,-1] *= -1
+
+        MCMC_chains = self.reconstruct_chains(sampler.get_chain(),sampler.get_log_prob())
 
         best_model_index = np.where(MCMC_chains[:, :, -1] == MCMC_chains[:, :, -1].max())
         fit_results = MCMC_chains[np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], :-1]
@@ -124,6 +108,31 @@ class MCMCfit(MLfit):
         self.fit_results = {'best_model': fit_results, 'ln(likelihood)': fit_log_likelihood,
                             'MCMC_chains': MCMC_chains, 'fit_time': computation_time}
 
+
+    def reconstruct_chains(self, mcmc_samples, mcmc_prob):
+
+        if self.trials.shape[1] > mcmc_samples.shape[2]+1:
+
+            rangei, rangej, rangek = mcmc_samples.shape
+
+            unique_mcmc = np.unique(mcmc_prob,return_index=True,return_inverse=True,return_counts=True)
+            unique_trials = np.unique(self.trials[:,-1],return_index=True,return_inverse=True,return_counts=True)
+
+            trials_index = []
+
+            for value in unique_mcmc[0]:
+
+                indices = np.where(unique_trials[0] == value)[0][0]
+                trials_index.append(indices)
+
+            MCMC_chains = self.trials[unique_trials[1]][trials_index][unique_mcmc[2]].reshape(rangei, rangej, self.trials.shape[1])
+
+
+        else:
+
+            MCMC_chains = mcmc_samples
+
+        return MCMC_chains
 
     def samples_to_plot(self):
 

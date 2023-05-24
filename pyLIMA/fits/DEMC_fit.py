@@ -10,11 +10,12 @@ from pyLIMA.outputs import pyLIMA_plots
 class DEMCfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DEMC_walkers=2, DEMC_links = 5000):
+                 telescopes_fluxes_method='polyfit', loss_function='likelihood', DEMC_walkers=2, DEMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method,
+                         loss_function=loss_function)
 
         self.DEMC_walkers = DEMC_walkers #times number of dimension!
         self.DEMC_links = DEMC_links

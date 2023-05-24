@@ -2,6 +2,7 @@ import sys
 import numpy as np
 from collections import OrderedDict, namedtuple
 from bokeh.io import output_file, show
+from multiprocessing import Manager
 
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.outputs import pyLIMA_plots
@@ -54,16 +55,25 @@ class MLfit(object):
 
     """
 
-    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit'):
+    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False, telescopes_fluxes_method='fit', loss_function='chi2'):
         """The fit class has to be intialized with an event object."""
 
         self.model = model
         self.rescale_photometry = rescale_photometry
         self.rescale_astrometry = rescale_astrometry
         self.telescopes_fluxes_method = telescopes_fluxes_method
+
+        if rescale_astrometry | rescale_photometry:
+
+            print('Switching to likelihood objective function because of errorbars rescaling.')
+            loss_function = 'likelihood'
+
+        self.loss_function = loss_function
+
         self.fit_parameters = []
         self.fit_results = {}
         self.priors = None
+        self.trials = Manager().list() # to be recognize by all process during parallelization
 
         self.model_parameters_guess = []
         self.rescale_photometry_parameters_guess = []
@@ -206,9 +216,38 @@ class MLfit(object):
                                                     'logk_astrometry' in i]
 
 
-    def objective_function(self):
+    def standard_objective_function(self, fit_process_parameters):
 
-       pass
+        if self.loss_function == 'likelihood':
+            likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
+            likelihood *= -1
+            objective = likelihood
+
+        if self.loss_function == 'chi2':
+            chi2, pyLIMA_parameters = self.model_chi2(fit_process_parameters)
+            objective = chi2
+
+        if self.loss_function == 'soft_l1':
+            soft_l1, pyLIMA_parameters = self.model_soft_l1(fit_process_parameters)
+            objective = soft_l1
+
+        if self.telescopes_fluxes_method != 'fit':
+
+            fluxes = []
+
+            for tel in self.model.event.telescopes:
+
+                if tel.lightcurve_flux is not None:
+                    fluxes.append(getattr(pyLIMA_parameters, 'fsource_' + tel.name))
+                    fluxes.append(getattr(pyLIMA_parameters, 'fblend_' + tel.name))
+
+            self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
+
+        else:
+
+            self.trials.append(fit_process_parameters.tolist() + [objective])
+
+        return objective
 
     def get_priors(self, parameters):
 
@@ -528,7 +567,7 @@ class MLfit(object):
 
         chi2 = np.sum(residuals / errors)
 
-        return chi2
+        return chi2, pyLIMA_parameters
 
     def model_likelihood(self, parameters):
 
@@ -576,6 +615,15 @@ class MLfit(object):
         ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
 
         return ln_likelihood, pyLIMA_parameters
+
+    def model_soft_l1(self, parameters):
+
+        chi2,pyLIMA_parameters = self.model_chi2(parameters)
+
+        soft_l1 = 2*((1+chi2)**0.5-1)
+        soft_l1 = np.sum(soft_l1**2)
+
+        return soft_l1, pyLIMA_parameters
 
     def chi2_photometry(self, parameters):
 
@@ -724,7 +772,7 @@ class MLfit(object):
         matplotlib_astrometry = None
         matplotlib_distribution = None
         bokeh_figure = None
-        breakpoint()
+
         if self.model.photometry:
 
 

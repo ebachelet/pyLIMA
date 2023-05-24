@@ -411,3 +411,10 @@ def lens_equation(z,lenses_mass,lenses_pos):
                                         for i in range(len(lenses_mass))])) for j in z])
 
     return zeta
+
+def cusp_of_eternity():
+
+    import webbrowser
+    controller = webbrowser.get()
+
+    controller.open("https://youtu.be/UtQH70PjKA0")

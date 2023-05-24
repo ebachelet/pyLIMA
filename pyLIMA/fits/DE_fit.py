@@ -2,7 +2,6 @@ import scipy
 import time as python_time
 import numpy as np
 import sys
-from multiprocessing import Manager
 from tqdm import tqdm
 
 
@@ -14,14 +13,14 @@ from pyLIMA.outputs import pyLIMA_plots
 class DEfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000,
+                 telescopes_fluxes_method='polyfit', loss_function='likelihood', DE_population_size=10, max_iteration=10000,
                  display_progress=False, strategy='rand1bin'):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method,
+                         loss_function=loss_function)
 
-        self.population = Manager().list() # to be recognize by all process during parallelization
         self.DE_population_size = DE_population_size #Times number of dimensions!
         self.max_iteration = max_iteration
         self.fit_time = 0 #s
@@ -29,21 +28,14 @@ class DEfit(MLfit):
         self.strategy = strategy
 
     def fit_type(self):
+
         return "Differential Evolution"
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
-        likelihood *= -1
+        objective = self.standard_objective_function(fit_process_parameters)
 
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += -priors
-
-        self.population.append(fit_process_parameters.tolist() + [likelihood])
-
-        return likelihood
+        return objective
 
     def fit(self, initial_population=[], computational_pool=None):
 
@@ -76,6 +68,8 @@ class DEfit(MLfit):
                                                                                   recombination=0.5, polish=False, init=init,
                                                                                   disp=self.display_progress, workers=worker)
 
+        self.trials = np.array(self.trials)
+
         print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
         print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
 
@@ -85,7 +79,7 @@ class DEfit(MLfit):
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
 
-        DE_population = np.array(self.population)
+        DE_population = self.trials
 
         print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
 
@@ -120,7 +114,9 @@ class DEfitnew(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = -self.model_likelihood(fit_process_parameters)
+
+        likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
+        likelihood *= -1
 
         # Priors
         priors = self.get_priors(fit_process_parameters)

@@ -114,7 +114,6 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     if microlensing_model.parallax_model[0] != 'None':
 
-                        breakpoint()
                         model_telescope.initialize_positions()
 
                         model_telescope.compute_parallax(microlensing_model.parallax_model, microlensing_model.event.North
@@ -608,7 +607,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters, b
 
             figure_axes[0].plot(astrometric_model[0], astrometric_model[1], c=color)
 
-            if bokeh_plots is not None:
+            if bokeh_plots[0] is not None:
 
                 bokeh_plots[0].line(astrometric_model[0], astrometric_model[1], color=color)
 
@@ -618,7 +617,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters, b
                 figure_axes[0].plot(source_E, source_N, c='k',label='Source')
                 figure_axes[0].plot(lens_E, lens_N, c='k', linestyle='--',label='Lens')
 
-                if bokeh_plots is not None:
+                if bokeh_plots[0] is not None:
 
                     bokeh_plots[0].line(source_E, source_N, color='black',legend_label='Source')
                     bokeh_plots[0].line(lens_E, lens_N, color='black',line_dash='dotted',legend_label='Lens')
@@ -651,7 +650,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters, b
                                             arrowprops=dict(arrowstyle="->", mutation_scale=35,
                                                             color='k'))
 
-                        if bokeh_plots is not None:
+                        if bokeh_plots[0] is not None:
 
                             oh = OpenHead(line_color='black', line_width=1)
 
@@ -697,7 +696,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters, b
                                     color=color,
                                     label=tel.name, alpha=0.5)
 
-            if bokeh_plots is not None:
+            if bokeh_plots[1] is not None:
 
                 res_ra = delta_ra - astrometric_model[0]
                 res_dec = delta_dec - astrometric_model[1]
@@ -885,7 +884,7 @@ def initialize_light_curves_plot(plot_unit='Mag', event_name='A microlensing eve
 def plot_photometric_models(figure_axe, microlensing_model, model_parameters, bokeh_plot = None, plot_unit='Mag'):
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
-    breakpoint()
+
     list_of_telescopes = create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters)
     telescopes_names = np.array([i.name for i in microlensing_model.event.telescopes])
 

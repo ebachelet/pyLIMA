@@ -260,11 +260,11 @@ def terrestrial_parallax(sidereal_times, altitude, longitude, latitude):
     Longitude = longitude * np.pi / 180.0
     Latitude = latitude * np.pi / 180.0
 
-    telescope_longitudes = Longitude + sidereal_times
+    telescope_longitudes = Longitude - sidereal_times
 
     x,y,z = spherical_to_cartesian(r=radius, lat=Latitude, lon=telescope_longitudes)
-   # breakpoint()
-    delta_telescope = np.c_[x.value,y.value,z.value] #for some reasons, this is different sign as space parallax??
+    #breakpoint()
+    delta_telescope = -np.c_[x.value,y.value,z.value]
 
     return delta_telescope
 

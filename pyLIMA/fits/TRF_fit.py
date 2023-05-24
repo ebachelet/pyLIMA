@@ -36,9 +36,18 @@ class TRFfit(LMfit):
 
             jacobian_function = '2-point'
 
+        if self.loss_function == 'soft_l1':
+
+            loss = 'soft_l1'
+            jacobian_function = '2-point'
+
+        else:
+
+            loss = 'linear'
+
         trf_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='trf',
                                               bounds=(bounds_min, bounds_max),  max_nfev=50000, jac=jacobian_function,
-                                              xtol=10**-10,ftol=10**-10, gtol=10 ** -10)
+                                              loss=loss, xtol=10**-10,ftol=10**-10, gtol=10 ** -10)
 
         fit_results = trf_fit['x'].tolist()
         fit_chi2 = trf_fit['cost']*2  # chi2

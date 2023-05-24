@@ -420,16 +420,16 @@ class MLmodel(object):
         """
 
         try:
-            # Fluxes parameters are fitted
+            # Fluxes parameters are in the pyLIMA_parameters
             f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
 
             if self.blend_flux_parameter == 'fblend':
 
-                f_blend = 2 * getattr(pyLIMA_parameters, 'fblend_' + telescope.name) / 2
+                f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
 
             if self.blend_flux_parameter == 'gblend':
 
-                g_blend = 2 * getattr(pyLIMA_parameters, 'gblend_' + telescope.name) / 2
+                g_blend = getattr(pyLIMA_parameters, 'gblend_' + telescope.name)
                 f_blend = f_source * g_blend
 
             if self.blend_flux_parameter =='noblend':
