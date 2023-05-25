@@ -9,11 +9,12 @@ from multiprocessing import Manager
 class MCMCfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', MCMC_walkers=2, MCMC_links = 5000):
+                 telescopes_fluxes_method='polyfit', loss_function='likelihood', MCMC_walkers=2, MCMC_links = 5000):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
+                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method,
+                         loss_function=loss_function)
 
 
         self.MCMC_walkers = MCMC_walkers #times number of dimension!

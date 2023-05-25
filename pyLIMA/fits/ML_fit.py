@@ -85,8 +85,9 @@ class MLfit(object):
         self.rescale_astrometry_parameters_index = []
 
         self.define_fit_parameters()
+        self.define_priors_parameters()
 
-    def define_fit_parameters(self):
+    def define_parameters(self, include_telescopes_fluxes=True):
 
         standard_parameters_dictionnary = self.model.pyLIMA_standards_dictionnary.copy()
         standard_parameters_boundaries = self.model.standard_parameters_boundaries.copy()
@@ -97,13 +98,12 @@ class MLfit(object):
 
         thebounds = namedtuple('parameters', [i for i in standard_parameters_dictionnary.keys()])
 
-        for ind,key in enumerate(standard_parameters_dictionnary.keys()):
-
+        for ind, key in enumerate(standard_parameters_dictionnary.keys()):
             setattr(thebounds, key, np.array(standard_parameters_boundaries[ind]))
 
-        for ind,key in enumerate(standard_parameters_dictionnary.keys()):
+        for ind, key in enumerate(standard_parameters_dictionnary.keys()):
 
-            if (('fsource' in key) | ('fblend' in key) | ('gblend' in key)) & (self.telescopes_fluxes_method != 'fit'):
+            if (('fsource' in key) | ('fblend' in key) | ('gblend' in key)) & (include_telescopes_fluxes is False):
 
                 pass
 
@@ -140,7 +140,6 @@ class MLfit(object):
             for telescope in self.model.event.telescopes:
 
                 if telescope.lightcurve_flux is not None:
-
                     thekey = 'logk_photometry_' + telescope.name
                     theind = len(fit_parameters_dictionnary_keys)
                     theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
@@ -154,7 +153,6 @@ class MLfit(object):
             for telescope in self.model.event.telescopes:
 
                 if telescope.astrometry is not None:
-
                     thekey = 'logk_astrometry_ra' + telescope.name
                     theind = len(fit_parameters_dictionnary_keys)
                     theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
@@ -171,63 +169,89 @@ class MLfit(object):
                     fit_parameters_indexes.append(theind)
                     fit_parameters_boundaries.append(theboundaries)
 
-
         fit_parameters = {}
 
-        for ind,key in enumerate(fit_parameters_dictionnary_keys):
-
+        for ind, key in enumerate(fit_parameters_dictionnary_keys):
             fit_parameters[key] = [fit_parameters_indexes[ind], fit_parameters_boundaries[ind]]
 
-
-        self.fit_parameters = OrderedDict(
+        fit_parameters = OrderedDict(
             sorted(fit_parameters.items(), key=lambda x: x[1]))
 
-        #t_0 limit fix
+        # t_0 limit fix
         mins_time = []
         maxs_time = []
 
         for telescope in self.model.event.telescopes:
 
             if telescope.lightcurve_flux is not None:
-
                 mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
                 maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
 
             if telescope.astrometry is not None:
-
                 mins_time.append(np.min(telescope.astrometry['time'].value))
                 maxs_time.append(np.max(telescope.astrometry['time'].value))
 
-        if 't0' in self.fit_parameters.keys():
+        if 't0' in fit_parameters.keys():
 
-            self.fit_parameters['t0'][1] = (np.min(mins_time),np.max(maxs_time))
+            fit_parameters['t0'][1] = (np.min(mins_time), np.max(maxs_time))
 
-        if 't_center' in self.fit_parameters.keys():
+        if 't_center' in fit_parameters.keys():
 
-            self.fit_parameters['t_center'][1] = (np.min(mins_time),np.max(maxs_time))
+            fit_parameters['t_center'][1] = (np.min(mins_time), np.max(maxs_time))
 
-        self.model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
-                                       i in self.fit_parameters.keys()]
+        model_parameters_index = [self.model.model_dictionnary[i] for i in self.model.model_dictionnary.keys() if
+                                       i in fit_parameters.keys()]
 
-        self.rescale_photometry_parameters_index = [self.fit_parameters[i][0] for i in self.fit_parameters.keys() if
+        rescale_photometry_parameters_index = [fit_parameters[i][0] for i in fit_parameters.keys() if
                                                     'logk_photometry' in i]
 
-        self.rescale_astrometry_parameters_index = [self.fit_parameters[i][0] for i in self.fit_parameters.keys() if
+        rescale_astrometry_parameters_index = [fit_parameters[i][0] for i in fit_parameters.keys() if
                                                     'logk_astrometry' in i]
 
+
+        return fit_parameters, model_parameters_index, rescale_photometry_parameters_index, rescale_astrometry_parameters_index
+
+    def define_fit_parameters(self):
+
+        if self.telescopes_fluxes_method == 'fit':
+
+            include_fluxes = True
+
+        else:
+
+            include_fluxes = False
+
+        fit_parameters, model_parameters_index, rescale_photometry_parameters_index, \
+            rescale_astrometry_parameters_index = self.define_parameters(include_telescopes_fluxes=include_fluxes)
+
+        self.fit_parameters = fit_parameters
+        self.model_parameters_index = model_parameters_index
+        self.rescale_photometry_parameters_index = rescale_photometry_parameters_index
+        self.rescale_astrometry_parameters_index = rescale_astrometry_parameters_index
+
+    def define_priors_parameters(self):
+
+        include_fluxes = True
+
+        fit_parameters, model_parameters_index, rescale_photometry_parameters_index, \
+            rescale_astrometry_parameters_index = self.define_parameters(include_telescopes_fluxes=include_fluxes)
+
+        self.priors_parameters = fit_parameters
 
     def standard_objective_function(self, fit_process_parameters):
 
         if self.loss_function == 'likelihood':
+
             likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
-            likelihood *= -1
             objective = likelihood
 
         if self.loss_function == 'chi2':
+
             chi2, pyLIMA_parameters = self.model_chi2(fit_process_parameters)
             objective = chi2
 
         if self.loss_function == 'soft_l1':
+
             soft_l1, pyLIMA_parameters = self.model_soft_l1(fit_process_parameters)
             objective = soft_l1
 
@@ -238,6 +262,7 @@ class MLfit(object):
             for tel in self.model.event.telescopes:
 
                 if tel.lightcurve_flux is not None:
+
                     fluxes.append(getattr(pyLIMA_parameters, 'fsource_' + tel.name))
                     fluxes.append(getattr(pyLIMA_parameters, 'fblend_' + tel.name))
 
@@ -249,17 +274,19 @@ class MLfit(object):
 
         return objective
 
-    def get_priors(self, parameters):
+    def get_priors_probability(self, pyLIMA_parameters):
 
         ln_likelihood = 0
 
         if self.priors is not None:
 
-            for ind, prior_pdf in enumerate(self.priors):
+            for ind, prior_key in enumerate(self.priors.keys()):
+
+                prior_pdf = self.priors[prior_key]
 
                 if prior_pdf is not None:
 
-                    probability = prior_pdf.pdf(parameters[ind])
+                    probability = prior_pdf.pdf(getattr(pyLIMA_parameters, prior_key))
 
                     if probability > 0:
 
@@ -267,7 +294,7 @@ class MLfit(object):
 
                     else:
 
-                        ln_likelihood = -np.inf
+                        ln_likelihood = np.inf
 
         return ln_likelihood
 
@@ -430,13 +457,15 @@ class MLfit(object):
 
         if self.priors is not None:
 
-            for ind,prior in enumerate(self.priors):
+            for ind, prior_key in enumerate(self.fit_parameters.keys()):
 
-                probability = prior.pdf( fit_parameters_guess[ind])
+                prior_pdf = self.priors[prior_key]
+
+                probability = prior_pdf.pdf(fit_parameters_guess[ind])
 
                 if probability<10**-10:
 
-                    samples = prior.rvs(1000)
+                    samples = prior_pdf.rvs(1000)
 
                     fit_parameters_guess[ind] = np.median(samples)
 
@@ -460,7 +489,18 @@ class MLfit(object):
     def model_residuals(self, pyLIMA_parameters, rescaling_photometry_parameters=None,
                                             rescaling_astrometry_parameters=None):
 
-        #parameters = np.array(parameters)
+        if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
+
+            pass
+
+        else:
+
+            parameters = np.array(pyLIMA_parameters)
+
+            model_parameters = parameters[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
         residus = {'photometry':[],'astrometry':[]}
         errors = residus.copy()
 
@@ -484,11 +524,17 @@ class MLfit(object):
 
     def photometric_model_residuals(self, pyLIMA_parameters, rescaling_photometry_parameters=None):
 
-        #parameters = np.array(parameters)
+        if type(pyLIMA_parameters) is type: #it is a pyLIMA_parameters object
 
-        #model_parameters = parameters[self.model_parameters_index]
+            pass
 
-        #pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+        else:
+
+            parameters = np.array(pyLIMA_parameters)
+
+            model_parameters = parameters[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         residus_photometry, errflux_photometry = objective_functions.all_telescope_photometric_residuals(
             self.model, pyLIMA_parameters,
@@ -499,35 +545,38 @@ class MLfit(object):
 
     def astrometric_model_residuals(self, pyLIMA_parameters, rescaling_astrometry_parameters=None):
 
-        #parameters = np.array(parameters)
+        if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
 
-        #model_parameters = parameters[self.model_parameters_index]
+            pass
 
-        #pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+        else:
 
-        #if self.rescale_astrometry:
+            parameters = np.array(pyLIMA_parameters)
 
-        #    rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
+            model_parameters = parameters[self.model_parameters_index]
 
-        #else:
-
-        #    rescaling_astrometry_parameters = None
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         residus_ra, residus_dec, err_ra, err_dec = objective_functions.all_telescope_astrometric_residuals(
             self.model, pyLIMA_parameters,
             norm=False,
             rescaling_astrometry_parameters=rescaling_astrometry_parameters)
 
-
         return [residus_ra, residus_dec], [err_ra, err_dec]
 
     def model_chi2(self, parameters):
 
-        parameters = np.array(parameters)
+        if type(parameters) is type:  # it is a pyLIMA_parameters object
 
-        model_parameters = parameters[self.model_parameters_index]
+            pyLIMA_parameters = parameters
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+        else:
+
+            params = np.array(parameters)
+
+            model_parameters = params[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         if self.rescale_photometry:
 
@@ -571,11 +620,17 @@ class MLfit(object):
 
     def model_likelihood(self, parameters):
 
-        parameters = np.array(parameters)
+        if type(parameters) is type:  # it is a pyLIMA_parameters object
 
-        model_parameters = parameters[self.model_parameters_index]
+            pyLIMA_parameters = parameters
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+        else:
+
+            params = np.array(parameters)
+
+            model_parameters = params[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         if self.rescale_photometry:
 
@@ -593,8 +648,10 @@ class MLfit(object):
 
             rescaling_astrometry_parameters = None
 
+
         residus, err = self.model_residuals(pyLIMA_parameters, rescaling_photometry_parameters=rescaling_photometry_parameters,
                                             rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+
 
         residuals = []
         errors = []
@@ -609,16 +666,23 @@ class MLfit(object):
             except:
 
                 pass
+
         residuals = np.concatenate(residuals)
         errors = np.concatenate(errors)
 
-        ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+        ln_likelihood = np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+
+        prior = self.get_priors_probability(pyLIMA_parameters)
+
+        ln_likelihood += prior
+
+        ln_likelihood *= 0.5
 
         return ln_likelihood, pyLIMA_parameters
 
     def model_soft_l1(self, parameters):
 
-        chi2,pyLIMA_parameters = self.model_chi2(parameters)
+        chi2, pyLIMA_parameters = self.model_chi2(parameters)
 
         soft_l1 = 2*((1+chi2)**0.5-1)
         soft_l1 = np.sum(soft_l1**2)
@@ -626,8 +690,6 @@ class MLfit(object):
         return soft_l1, pyLIMA_parameters
 
     def chi2_photometry(self, parameters):
-
-        parameters = np.array(parameters)
 
         residus, errors = self.photometric_model_residuals(parameters)
         residuals = np.concatenate(residus) ** 2
@@ -639,8 +701,6 @@ class MLfit(object):
 
     def likelihood_photometry(self, parameters):
 
-        parameters = np.array(parameters)
-
         residus, errors = self.photometric_model_residuals(parameters)
 
         residuals = np.concatenate(residus['photometry'])**2
@@ -651,8 +711,6 @@ class MLfit(object):
         return ln_likelihood
 
     def chi2_astrometry(self, parameters):
-
-        parameters = np.array(parameters)
 
         residus, errors = self.astrometric_model_residuals(parameters)
 
@@ -667,8 +725,6 @@ class MLfit(object):
         return chi2
 
     def likelihood_photometry(self, parameters):
-
-        parameters = np.array(parameters)
 
         residus, errors = self.astrometric_model_residuals(parameters)
 

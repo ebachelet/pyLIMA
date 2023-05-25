@@ -87,7 +87,7 @@ class Telescope(object):
                  light_curve_names=None, light_curve_units=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None,
                  location='Earth', altitude=-astronomical_constants.R_earth.value, longitude=0.57, latitude=49.49,
-                 spacecraft_name=None, spacecraft_positions=[],):
+                 spacecraft_name=None):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -111,7 +111,7 @@ class Telescope(object):
         self.Earth_speeds_projected = {}
 
         self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
-        self.spacecraft_positions = spacecraft_positions #only for space base observatory, should be a list as
+        self.spacecraft_positions = {'astrometry':[],'photometry':[]} #only for space base observatory, should be a list as
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
 
         #Microlensing LD coefficients
@@ -283,13 +283,7 @@ class Telescope(object):
                 time = data['time'].value
 
                 sidereal_times = parallax.Earth_telescope_sidereal_times(time, sidereal_type=sidereal_type)
-               # from astropy.coordinates import EarthLocation
-               # from astropy import units as u
-               # from astropy.time import Time
 
-                #loc = EarthLocation(lat=self.latitude * u.deg, lon=self.longitude * u.deg,height=self.altitude*u.m)
-               # times = Time(time, format='jd')
-               # sidereal_times = Time(times, location=loc).sidereal_time('mean').value/24*2*np.pi
                 self.sidereal_times[data_type] = sidereal_times
 
     def find_Earth_telescope_positions(self):
@@ -313,7 +307,7 @@ class Telescope(object):
 
                 self.telescope_positions[data_type] = telescope_positions
 
-    def find_space_positions(self, step_size='1440m'):
+    def find_space_positions(self):
 
         for data_type in ['astrometry', 'photometry']:
 
@@ -328,9 +322,12 @@ class Telescope(object):
             if data is not None:
 
                 time = data['time'].value
+                satellite_positions = self.spacecraft_positions[data_type]
 
-                spacecraft_positions = parallax.space_ephemerides(self, time, step_size=step_size)
+                spacecraft_positions,satellite_positions = parallax.space_ephemerides(self, time, satellite_positions)
+
                 self.telescope_positions[data_type] = spacecraft_positions
+                self.spacecraft_positions[data_type] = satellite_positions
 
     def compute_parallax(self, parallax_model, North_vector, East_vector):#, right_ascension):
         """ Compute and set the deltas_positions attribute due to the parallax.

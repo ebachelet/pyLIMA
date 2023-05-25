@@ -59,7 +59,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time = np.arange(np.min(tel.lightcurve_magnitude['time'].value),
                                            np.max(tel.lightcurve_magnitude['time'].value),
-                                           0.1)
+                                           0.1).round(2)
 
 
                     model_time = np.r_[model_time, tel.lightcurve_magnitude['time'].value]
@@ -70,11 +70,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time1 = np.arange(np.min((np.min(tel.lightcurve_magnitude['time'].value),pyLIMA_parameters.t0 - 5 * pyLIMA_parameters.tE)),
                                            np.max((np.max(tel.lightcurve_magnitude['time'].value),pyLIMA_parameters.t0 + 5 * pyLIMA_parameters.tE)),
-                                           1)
+                                           1).round(2)
 
                     model_time2 = np.arange(pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
                                             pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
-                                            1)
+                                            1).round(2)
 
                     model_time = np.r_[model_time1,model_time2]
 
@@ -86,8 +86,6 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                             symmetric = 2*pyLIMA_parameters.t0-telescope.lightcurve_magnitude['time'].value
                             model_time = np.r_[model_time, symmetric]
-
-
 
                     model_time.sort()
 
@@ -131,18 +129,18 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time = np.arange(np.min(tel.astrometry['time'].value),
                                            np.max(tel.astrometry['time'].value),
-                                           0.1)
+                                           0.1).round(2)
                 else:
 
                     model_time1 = np.arange(np.min((np.min(tel.lightcurve_magnitude['time'].value),
                                                     pyLIMA_parameters.t0 - 5 * pyLIMA_parameters.tE)),
                                             np.max((np.max(tel.lightcurve_magnitude['time'].value),
                                                     pyLIMA_parameters.t0 + 5 * pyLIMA_parameters.tE)),
-                                            1)
+                                            1).round(2)
 
                     model_time2 = np.arange(pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
                                             pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
-                                            0.1)
+                                            0.1).round(2)
 
                     model_time = np.r_[model_time1, model_time2]
 
@@ -467,7 +465,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     figure_axes.tick_params(axis='x', labelsize=15)
     figure_axes.tick_params(axis='y', labelsize=15)
 
-    figure_axes.axis([-3, 3, -3, 3])
+    figure_axes.axis([-2, 2, -2, 2])
     #figure_axes.axis('scaled')
     title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
     #figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))

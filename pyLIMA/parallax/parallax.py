@@ -146,7 +146,7 @@ def Earth_telescope_sidereal_times(time_to_treat, sidereal_type='mean'):
 
         return sideral_times
 
-def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
+def space_ephemerides(telescope, time_to_treat, satellite_positions = []):
         """ Compute the position shift due to the distance of the obervatories from the Earth
         center.
         Please have a look on :
@@ -161,26 +161,21 @@ def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
         **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
-        tstart = min(time_to_treat) - 1
-        tend = max(time_to_treat) + 1
-        satellite_name  = telescope.spacecraft_name
+        if len(satellite_positions) != 0:
 
-        if len(telescope.spacecraft_positions) != 0:
-
-            # allow the user to give his own ephemeris
-            satellite_positions = np.array(telescope.spacecraft_positions)
+            pass
 
         else:
 
+            satellite_name = telescope.spacecraft_name
+
             # call JPL!
-            import pyLIMA.parallax.JPL_ephemerides
+            from pyLIMA.parallax import JPL_ephemerides
             #satellite_positions = pyLIMA.parallax.JPL_ephemerides.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
             #                                             step_size='1440m', verbose=False)[1]
-            satellite_positions = pyLIMA.parallax.JPL_ephemerides.horizons_API(satellite_name, tstart, tend,
-                                                                                         observatory='Geocentric',
-                                                                                         step_size=step_size)[1]
+            satellite_positions = JPL_ephemerides.horizons_API(satellite_name, time_to_treat, observatory='Geocentric')[1]
 
-            telescope.spacecraft_positions = np.array(satellite_positions).astype(float)
+        #telescope.spacecraft_positions[data_type] = np.array(satellite_positions).astype(float)
 
         satellite_positions = np.array(satellite_positions)
         dates = satellite_positions[:, 0].astype(float)
@@ -198,21 +193,9 @@ def space_ephemerides(telescope, time_to_treat,step_size='1440m'):
         y_value = interpolated_y(time_to_treat)
         z_value = interpolated_z(time_to_treat)
 
-        #breakpoint()
-        #interpolated_ra = interpolate.interp1d(dates, ra)
-        #interpolated_dec = interpolate.interp1d(dates, dec)
-        #interpolated_distance = interpolate.interp1d(dates, distances)
-
-        #ra_interpolated = interpolated_ra(time_to_treat)
-        #dec_interpolated = interpolated_dec(time_to_treat)
-        #distance_interpolated = interpolated_distance(time_to_treat)
-
-        #x, y, z = spherical_to_cartesian(distance_interpolated,  dec_interpolated* np.pi / 180,
-        #                                 ra_interpolated * np.pi / 180)
-
         spacecraft_positions = -np.c_[x_value, y_value, z_value]
 
-        return spacecraft_positions
+        return spacecraft_positions, satellite_positions
 
 def annual_parallax(time_to_treat, earth_positions, t0_par):
 
