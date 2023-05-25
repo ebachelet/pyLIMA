@@ -322,12 +322,11 @@ class Telescope(object):
             if data is not None:
 
                 time = data['time'].value
-                satellite_positions = self.spacecraft_positions[data_type]
 
-                spacecraft_positions,satellite_positions = parallax.space_ephemerides(self, time, satellite_positions)
+                satellite_positions, spacecraft_positions = parallax.space_ephemerides(self, time,data_type=data_type)
 
-                self.telescope_positions[data_type] = spacecraft_positions
-                self.spacecraft_positions[data_type] = satellite_positions
+                self.telescope_positions[data_type] = satellite_positions
+                self.spacecraft_positions[data_type] = spacecraft_positions
 
     def compute_parallax(self, parallax_model, North_vector, East_vector):#, right_ascension):
         """ Compute and set the deltas_positions attribute due to the parallax.

@@ -703,10 +703,10 @@ class MLfit(object):
 
         residus, errors = self.photometric_model_residuals(parameters)
 
-        residuals = np.concatenate(residus['photometry'])**2
-        errors = np.concatenate(errors['photometry'])**2
+        residuals = np.concatenate(residus)**2
+        errors = np.concatenate(errors)**2
 
-        ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+        ln_likelihood = 0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
 
         return ln_likelihood
 
@@ -724,7 +724,7 @@ class MLfit(object):
 
         return chi2
 
-    def likelihood_photometry(self, parameters):
+    def likelihood_astrometry(self, parameters):
 
         residus, errors = self.astrometric_model_residuals(parameters)
 
@@ -734,7 +734,7 @@ class MLfit(object):
         residuals = np.concatenate(residus) ** 2
         errors = np.concatenate(errors) ** 2
 
-        ln_likelihood = -0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
+        ln_likelihood = 0.5 * np.sum(residuals/errors + np.log(errors) + np.log(2 * np.pi))
 
         return ln_likelihood
 

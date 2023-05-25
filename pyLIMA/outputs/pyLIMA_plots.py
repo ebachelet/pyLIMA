@@ -36,9 +36,6 @@ thismodule.saved_model = None
 
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
-
-    #Needs to be change...
-
     if microlensing_model == thismodule.saved_model:
 
         list_of_fake_telescopes = thismodule.list_of_fake_telescopes
@@ -49,6 +46,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
     if len(list_of_fake_telescopes) == 0:
 
+        #Photometry first
         Earth = True
 
         for tel in microlensing_model.event.telescopes:
@@ -122,6 +120,10 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     if tel.location == 'Earth' and Earth:
 
                         Earth = False
+
+        # Astrometry
+
+        for tel in microlensing_model.event.telescopes:
 
             if tel.astrometry is not None:
 

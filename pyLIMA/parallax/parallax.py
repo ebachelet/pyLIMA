@@ -146,7 +146,7 @@ def Earth_telescope_sidereal_times(time_to_treat, sidereal_type='mean'):
 
         return sideral_times
 
-def space_ephemerides(telescope, time_to_treat, satellite_positions = []):
+def space_ephemerides(telescope, time_to_treat, data_type='photometry'):
         """ Compute the position shift due to the distance of the obervatories from the Earth
         center.
         Please have a look on :
@@ -161,23 +161,19 @@ def space_ephemerides(telescope, time_to_treat, satellite_positions = []):
         **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
         """
 
-        if len(satellite_positions) != 0:
+        satellite_name = telescope.spacecraft_name
 
-            pass
+        if len(telescope.spacecraft_positions[data_type]) !=0:
+
+            spacecraft_positions = telescope.spacecraft_positions[data_type]
 
         else:
 
-            satellite_name = telescope.spacecraft_name
-
             # call JPL!
             from pyLIMA.parallax import JPL_ephemerides
-            #satellite_positions = pyLIMA.parallax.JPL_ephemerides.produce_horizons_ephem(satellite_name, tstart, tend, observatory='Geocentric',
-            #                                             step_size='1440m', verbose=False)[1]
-            satellite_positions = JPL_ephemerides.horizons_API(satellite_name, time_to_treat, observatory='Geocentric')[1]
+            spacecraft_positions = JPL_ephemerides.horizons_API(satellite_name, time_to_treat, observatory='Geocentric')[1]
 
-        #telescope.spacecraft_positions[data_type] = np.array(satellite_positions).astype(float)
-
-        satellite_positions = np.array(satellite_positions)
+        satellite_positions = np.array(spacecraft_positions)
         dates = satellite_positions[:, 0].astype(float)
         ra = satellite_positions[:, 1].astype(float)
         dec = satellite_positions[:, 2].astype(float)
@@ -193,9 +189,9 @@ def space_ephemerides(telescope, time_to_treat, satellite_positions = []):
         y_value = interpolated_y(time_to_treat)
         z_value = interpolated_z(time_to_treat)
 
-        spacecraft_positions = -np.c_[x_value, y_value, z_value]
+        satellite_positions = -np.c_[x_value, y_value, z_value]
 
-        return spacecraft_positions, satellite_positions
+        return satellite_positions, spacecraft_positions
 
 def annual_parallax(time_to_treat, earth_positions, t0_par):
 

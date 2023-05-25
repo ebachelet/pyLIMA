@@ -15,8 +15,9 @@ class LMfit(MLfit):
 
         if loss_function=='likelihood':
 
-            print('Cannot use likelihood with gradient-like method')
-
+            print('Cannot use likelihood with gradient-like method,switching to chi2 (default)')
+            loss_function = 'chi2'
+            
         super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method, loss_function=loss_function)
 
         self.guess = []
