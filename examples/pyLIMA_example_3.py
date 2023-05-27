@@ -23,18 +23,15 @@ from pyLIMA.simulations import simulator
 ### You can also set the coordinates for an event.
 ### In the context of the simulation, the coordinates will be used to check whether the
 ### target is observable from a specific observatory.
-your_event = event.Event()
+your_event = event.Event(ra=270,dec=-30)
 your_event.name = 'My simulated event'
-your_event.ra = 270
-your_event.dec = -30
 
 ### Create some telescope(s) to observe the event from. The function we will use will create
 ### a generic telescope class (see pyLIMA documentation for details). We will need to create
 ### a new telescope for each observatory, telescope, filter combination. Let us start simple
 ### and generate a single telescope first. We will also set uniform_sampling=True, which will
 ### make sure the light curve generated will not have any gaps due to the night/day cycle.
-CTIO_I = simulator.simulate_a_telescope('CTIO_I', your_event, 2457365.5,2457965.5, 4, 'Earth', 'I',
-                                        uniform_sampling=True)
+CTIO_I = simulator.simulate_a_telescope(name='CTIO_I', time_start=2457365.5, time_end=2457965.5, sampling=4, location= 'Earth', filter='I', uniform_sampling=True, astrometry=False)
 
 ### Similar to tutorial 1, we need to associate this telescopee with the event we created:
 your_event.telescopes.append(CTIO_I)
@@ -89,7 +86,7 @@ plt.show()
 ### to the Sun. (For a full list of the options available please consult the documentation!)
 
 ### Let's create a new event to observe:
-your_event2 = event.Event()
+your_event2 = event.Event(ra=264, dec=-28)
 your_event2.name = 'My simulated event 2'
 your_event2.ra = 264
 your_event2.dec = -28
@@ -99,25 +96,25 @@ your_event2.dec = -28
 ### from CTIO. Each observing band counts as a seperate telescope, so we will need to create
 ### _four_ telescope objects:
 
-SAAO_I = simulator.simulate_a_telescope('SAAO_I', your_event2, 2457575.5, 2457625.5, 2.5, 'Earth','I',
+SAAO_I = simulator.simulate_a_telescope('SAAO_I', time_start=2457575.5, time_end=2457625.5, sampling=2.5, location='Earth', filter='I',
                                         uniform_sampling=False, altitude=400, longitude = 20.659279, 
                                         latitude = -32.3959, bad_weather_percentage=20.0 / 100, 
-                                        moon_windows_avoidance=20, minimum_alt=15)
+                                        moon_windows_avoidance=20, minimum_alt=15 ,astrometry=False)
 
-SSO_I = simulator.simulate_a_telescope('SSO_I', your_event2, 2457535.5, 2457645.5, 2.5, 'Earth','I',
+SSO_I = simulator.simulate_a_telescope('SSO_I', time_start=2457535.5, time_end=2457645.5, sampling = 2.5, location='Earth', filter='I',
                                         uniform_sampling=False, altitude=1165, longitude = 149.0685, 
                                         latitude = -31.2749, bad_weather_percentage=35.0 / 100, 
-                                        moon_windows_avoidance=20, minimum_alt=15)
+                                        moon_windows_avoidance=20, minimum_alt=15,astrometry=False)
 
-CTIO_I = simulator.simulate_a_telescope('CTIO_I', your_event2, 2457365.5, 2457965.5, 4.5, 'Earth', 'I',
+CTIO_I = simulator.simulate_a_telescope('CTIO_I', time_start=2457365.5, time_end=2457965.5, sampling=4.5, location='Earth', filter='I',
                                         uniform_sampling=False, altitude=1000, longitude = -109.285399, 
                                         latitude = -27.130, bad_weather_percentage=10.0 / 100, 
-                                        moon_windows_avoidance=30, minimum_alt=30)
+                                        moon_windows_avoidance=30, minimum_alt=30,astrometry=False)
 
-CTIO_V = simulator.simulate_a_telescope('CTIO_V', your_event2, 2457365.5, 2457965.5, 24.5, 'Earth', 'V',
+CTIO_V = simulator.simulate_a_telescope('CTIO_V', time_start=2457365.5, time_end=2457965.5, sampling=24.5, location='Earth', filter='V',
                                         uniform_sampling=False, altitude=1000, longitude = -109.285399, 
                                         latitude = -27.130, bad_weather_percentage=10.0 / 100, 
-                                        moon_windows_avoidance=30, minimum_alt=30)
+                                        moon_windows_avoidance=30, minimum_alt=30,astrometry=False)
 
 ### The meaning of the parameters, in this example, for the SAAO_I data set are:
 ### Name = SAAO_I, your_event2, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
@@ -258,7 +255,7 @@ for key in dspl.model_dictionnary.keys():
 ### You can check the first tutorial again for a detailed explanation if needed.
 from pyLIMA.fits import DE_fit
 
-my_fit = DE_fit.DEfit(dspl)
+my_fit = DE_fit.DEfit(dspl,display_progress=True, strategy='best1bin')
 my_fit.fit()
 my_fit.fit_results['best_model']
 

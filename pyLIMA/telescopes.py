@@ -87,7 +87,7 @@ class Telescope(object):
                  light_curve_names=None, light_curve_units=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None,
                  location='Earth', altitude=-astronomical_constants.R_earth.value, longitude=0.57, latitude=49.49,
-                 spacecraft_name=None):
+                 spacecraft_name=None, spacecraft_positions = {'astrometry':[],'photometry':[]}):
         """Initialization of the attributes described above."""
 
         self.name = name
@@ -111,7 +111,7 @@ class Telescope(object):
         self.Earth_speeds_projected = {}
 
         self.spacecraft_name = spacecraft_name # give the true name of the satellite, according to JPL horizon
-        self.spacecraft_positions = {'astrometry':[],'photometry':[]} #only for space base observatory, should be a list as
+        self.spacecraft_positions = spacecraft_positions.copy() #only for space base observatory, should be a list as
                                        # [dates(JD), ra(degree) , dec(degree) , distances(AU) ]
 
         #Microlensing LD coefficients
@@ -323,10 +323,10 @@ class Telescope(object):
 
                 time = data['time'].value
 
-                satellite_positions, spacecraft_positions = parallax.space_ephemerides(self, time,data_type=data_type)
+                satellite_positions, space_positions = parallax.space_ephemerides(self, time, data_type=data_type)
 
                 self.telescope_positions[data_type] = satellite_positions
-                self.spacecraft_positions[data_type] = spacecraft_positions
+                self.spacecraft_positions[data_type] = space_positions
 
     def compute_parallax(self, parallax_model, North_vector, East_vector):#, right_ascension):
         """ Compute and set the deltas_positions attribute due to the parallax.

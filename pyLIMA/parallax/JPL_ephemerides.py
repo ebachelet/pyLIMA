@@ -48,7 +48,7 @@ def horizons_API(body, time_to_treat, observatory='ELP'):
 
     tstop = 'JD' + str(time_to_treat.max()+1)
 
-    obj = Horizons(id=body, location=OBSERVATORY_ID, epochs={'start': tstart, 'stop': tstop, 'step':'1440m'})
+    obj = Horizons(id=body, location=OBSERVATORY_ID, epochs={'start': tstart, 'stop': tstop, 'step':'1440m'}) #daily cadence for interpolation
     ephemerides = obj.ephemerides()
 
     dates = ephemerides['datetime_jd'].data.data
@@ -56,35 +56,38 @@ def horizons_API(body, time_to_treat, observatory='ELP'):
     dec = ephemerides['DEC'].data.data
     distances = ephemerides['delta'].data.data
 
-    DATES = [dates.tolist()]
-    RA = [ra.tolist()]
-    DEC = [dec.tolist()]
-    DISTANCES = [distances.tolist()]
+    if distances.min()<0.002: #Low orbits
 
-    start = 0
+        #adding exact telescopes dates
+        DATES = [dates.tolist()]
+        RA = [ra.tolist()]
+        DEC = [dec.tolist()]
+        DISTANCES = [distances.tolist()]
 
-    while start<len(time_to_treat): #Split the time request in chunk of 50.
+        start = 0
 
-        end = start+50
-        obj = Horizons(id=body, location=OBSERVATORY_ID, epochs=time_to_treat[start:end])
-        ephemerides = obj.ephemerides()
+        while start<len(time_to_treat): #Split the time request in chunk of 50.
 
-        dates = ephemerides['datetime_jd'].data.data
-        ra = ephemerides['RA'].data.data
-        dec = ephemerides['DEC'].data.data
-        distances = ephemerides['delta'].data.data
+            end = start+50
+            obj = Horizons(id=body, location=OBSERVATORY_ID, epochs=time_to_treat[start:end])
+            ephemerides = obj.ephemerides()
 
-        DATES.append(dates)
-        RA.append(ra)
-        DEC.append(dec)
-        DISTANCES.append(distances)
+            dates = ephemerides['datetime_jd'].data.data
+            ra = ephemerides['RA'].data.data
+            dec = ephemerides['DEC'].data.data
+            distances = ephemerides['delta'].data.data
 
-        start = end
+            DATES.append(dates)
+            RA.append(ra)
+            DEC.append(dec)
+            DISTANCES.append(distances)
 
-    dates = np.concatenate(DATES)
-    ra = np.concatenate(RA)
-    dec = np.concatenate(DEC)
-    distances = np.concatenate(DISTANCES)
+            start = end
+
+        dates = np.concatenate(DATES)
+        ra = np.concatenate(RA)
+        dec = np.concatenate(DEC)
+        distances = np.concatenate(DISTANCES)
 
 
     flag = 'Succes connection to JPL'

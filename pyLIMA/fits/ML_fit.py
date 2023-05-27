@@ -142,7 +142,7 @@ class MLfit(object):
                 if telescope.lightcurve_flux is not None:
                     thekey = 'logk_photometry_' + telescope.name
                     theind = len(fit_parameters_dictionnary_keys)
-                    theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
+                    theboundaries = parameters_boundaries.parameters_boundaries(self.model.event, {thekey: 'dummy'})[0]
 
                     fit_parameters_dictionnary_keys.append(thekey)
                     fit_parameters_indexes.append(theind)
@@ -155,7 +155,7 @@ class MLfit(object):
                 if telescope.astrometry is not None:
                     thekey = 'logk_astrometry_ra' + telescope.name
                     theind = len(fit_parameters_dictionnary_keys)
-                    theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
+                    theboundaries = parameters_boundaries.parameters_boundaries(self.model.event, {thekey: 'dummy'})[0]
 
                     fit_parameters_dictionnary_keys.append(thekey)
                     fit_parameters_indexes.append(theind)
@@ -163,7 +163,7 @@ class MLfit(object):
 
                     thekey = 'logk_astrometry_dec' + telescope.name
                     theind = len(fit_parameters_dictionnary_keys)
-                    theboundaries = parameters_boundaries.parameters_boundaries(self.model, {thekey: 'dummy'})
+                    theboundaries = parameters_boundaries.parameters_boundaries(self.model.event, {thekey: 'dummy'})[0]
 
                     fit_parameters_dictionnary_keys.append(thekey)
                     fit_parameters_indexes.append(theind)
@@ -682,10 +682,55 @@ class MLfit(object):
 
     def model_soft_l1(self, parameters):
 
-        chi2, pyLIMA_parameters = self.model_chi2(parameters)
+        if type(parameters) is type:  # it is a pyLIMA_parameters object
 
-        soft_l1 = 2*((1+chi2)**0.5-1)
-        soft_l1 = np.sum(soft_l1**2)
+            pyLIMA_parameters = parameters
+
+        else:
+
+            params = np.array(parameters)
+
+            model_parameters = params[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        if self.rescale_photometry:
+
+            rescaling_photometry_parameters = 10 ** (parameters[self.rescale_photometry_parameters_index])
+
+        else:
+
+            rescaling_photometry_parameters = None
+
+        if self.rescale_astrometry:
+
+            rescaling_astrometry_parameters = 10 ** (parameters[self.rescale_astrometry_parameters_index])
+
+        else:
+
+            rescaling_astrometry_parameters = None
+
+        residus, err = self.model_residuals(pyLIMA_parameters,
+                                            rescaling_photometry_parameters=rescaling_photometry_parameters,
+                                            rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+        residuals = []
+        errors = []
+
+        for data_type in ['photometry','astrometry']:
+
+            try:
+
+                residuals.append(np.concatenate(residus[data_type])**2)
+                errors.append(np.concatenate(err[data_type])**2)
+
+            except:
+
+                pass
+
+        residuals = np.concatenate(residuals)
+        errors = np.concatenate(errors)
+
+        soft_l1 = 2*np.sum(((1+residuals/errors)**0.5-1))
 
         return soft_l1, pyLIMA_parameters
 

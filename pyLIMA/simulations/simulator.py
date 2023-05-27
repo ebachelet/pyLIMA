@@ -30,8 +30,8 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 
 def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.25, location=
                         'Earth', filter='I', uniform_sampling=False,
-                         timestamps = [], altitude=0, longitude=0, latitude=0, spacecraft_name=None, spacecraft_positions=[],
-                         bad_weather_percentage=0.0,
+                         timestamps = [], altitude=0, longitude=0, latitude=0, spacecraft_name=None,
+                         spacecraft_positions={'astrometry':[],'photometry':[]}, bad_weather_percentage=0.0,
                          minimum_alt=20, moon_windows_avoidance=20, maximum_moon_illumination=100.0, photometry=True,
                          astrometry=True, pixel_scale = 1,ra=270, dec=-30):
     """ Simulate a telescope. More details in the telescopes module. The observations simulation are made for the
