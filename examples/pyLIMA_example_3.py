@@ -88,15 +88,13 @@ plt.show()
 ### Let's create a new event to observe:
 your_event2 = event.Event(ra=264, dec=-28)
 your_event2.name = 'My simulated event 2'
-your_event2.ra = 264
-your_event2.dec = -28
 
 ### We will simulate telescopes in South Africa (SAAO),  Chile (CTIO) and Australia (SSO).
 ### For observing bands, we're simulate I-band for all sites, and also add a daily V-band observation
 ### from CTIO. Each observing band counts as a seperate telescope, so we will need to create
 ### _four_ telescope objects:
 
-SAAO_I = simulator.simulate_a_telescope('SAAO_I', time_start=2457575.5, time_end=2457625.5, sampling=2.5, location='Earth', filter='I',
+SAAO_I = simulator.simulate_a_telescope(name='SAAO_I', time_start=2457575.5, time_end=2457625.5, sampling=2.5, location='Earth', filter='I',
                                         uniform_sampling=False, altitude=400, longitude = 20.659279, 
                                         latitude = -32.3959, bad_weather_percentage=20.0 / 100, 
                                         moon_windows_avoidance=20, minimum_alt=15 ,astrometry=False)
@@ -117,10 +115,10 @@ CTIO_V = simulator.simulate_a_telescope('CTIO_V', time_start=2457365.5, time_end
                                         moon_windows_avoidance=30, minimum_alt=30,astrometry=False)
 
 ### The meaning of the parameters, in this example, for the SAAO_I data set are:
-### Name = SAAO_I, your_event2, location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
+### Name = 'SAAO_I', location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
 ### sampling(hours) = 2, location='Earth', filter = 'I', uniform_sampling=True, altitude = 400 m, 
 ### longitude = 20.659279, latitude = -32.3959, bad_weather_percentage = 20%, 
-### moon_windows_avoidance (degrees)=20, minimum_alt=15)
+### moon_windows_avoidance (degrees)=20, minimum_alt=15, astrometry=False)
 
 ### Associate these telescopes with the event we created:
 your_event2.telescopes.append(SAAO_I)
@@ -251,12 +249,13 @@ for key in dspl.model_dictionnary.keys():
     indice = dspl.model_dictionnary[key]
     print (key, ' = ', dspl_parameters[indice], ' : ', parameter_commentary[indice] )
 
-### Let's try to fit this now! 
+### Let's try to fit this now! (This can take a while!)
 ### You can check the first tutorial again for a detailed explanation if needed.
 from pyLIMA.fits import DE_fit
 
 my_fit = DE_fit.DEfit(dspl,display_progress=True, strategy='best1bin')
 my_fit.fit()
+
 my_fit.fit_results['best_model']
 
 ### Compare your DSPL fit parameters with what you defined in the DSPL simulation above:
@@ -264,7 +263,7 @@ print(my_fit.fit_results['best_model'] - dspl_parameters[0:7])
 
 ### Plot and constrast the optimized fit results and the simulated light curve:
 pyLIMA_plots.plot_lightcurves(dspl, my_fit.fit_results['best_model'])
-pyLIMA_plots.plot_geometry(dspl, dspl_parameters)
+pyLIMA_plots.plot_lightcurves(dspl, dspl_parameters)
 plt.show()
 
 ### This concludes tutorial 3.
