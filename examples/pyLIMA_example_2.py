@@ -18,7 +18,7 @@ from pyLIMA import telescopes
 ### Import fancy_parameters. This will allow us to change the definitions as required.
 from pyLIMA.models import fancy_parameters
 
-### fancy parameters already provides some commonly used options, for example:
+### fancy_parameters already provides some commonly used options, for example:
 fancy_parameters.standard_fancy_parameters
 
 ### Begin by create a new EVENT object and giving it a name, as in example 1.
@@ -29,6 +29,8 @@ your_event.name = 'My event name'
 ### Again, you will use simulated I-band data sets from two telescopes, OGLE and LCO.
 ### The data sets are pre-formatted: column 1 is the date, column 2 the magnitude and column 3 
 ### the uncertainty in the magnitude.
+
+### Load up the data:
 data_1 = np.loadtxt('./data/Survey_1.dat')
 telescope_1 = telescopes.Telescope(name = 'OGLE', 
                                    camera_filter = 'I',
@@ -76,7 +78,7 @@ fspl = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars)
 ### Since the results in example 1 were given in the standard format, we need to adjust them so they match the new definition.
 guess_parameters = [79.9, 0.008, np.log10(10.1), 0.023]
 
-### Import the TRF fitting algorithm
+### Import the TRF fitting algorithm and fit
 from pyLIMA.fits import TRF_fit
 my_fit = TRF_fit.TRFfit(fspl)
 my_fit.model_parameters_guess = guess_parameters
@@ -117,18 +119,19 @@ fspl2 = FSPL_model.FSPLmodel(your_event,fancy_parameters=my_pars2)
 ### t_star = rho * tE so in our example that is 10.1 * 0.023:
 guess_parameters2 = [79.9, 0.008, 10.1 * 0.023, np.log10(0.023)]
 
-### Do the fit using the new parameter definitions:
+### Perform the fit using the new parameter definitions:
 my_fit2 = TRF_fit.TRFfit(fspl2)
 my_fit2.model_parameters_guess = guess_parameters2
 my_fit2.fit()
+
 ### To call all standard plotting options you can also use the fit_outputs module.
 ### If you want just the light curve, you can use plot_lightcurves as in example 1.
 my_fit2.fit_outputs()
 plt.show()
 
 ### Let's look at the optimized parameters and the chi^2 of the fit:
-my_fit2.fit_results['best_model']
-my_fit2.fit_results['chi2']
+print("fit results: ", my_fit2.fit_results['best_model'])
+print("chi2: ", my_fit2.fit_results['chi2'])
 
 ### If you have forgotten the order of the parameters, do:
 my_fit2.fit_parameters.keys()
