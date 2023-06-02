@@ -46,7 +46,7 @@ class Event(object):
          
     """
 
-    def __init__(self,ra=266.416792, dec=-29.007806):
+    def __init__(self, ra=266.416792, dec=-29.007806):
         """ Initialization of the attributes described above. """
 
         self.kind = 'Microlensing'

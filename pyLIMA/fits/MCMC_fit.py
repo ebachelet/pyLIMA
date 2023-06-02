@@ -82,7 +82,6 @@ class MCMCfit(MLfit):
         except:
 
             pass
-
         if pool:
 
             with pool:

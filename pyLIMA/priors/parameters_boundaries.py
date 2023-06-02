@@ -107,7 +107,7 @@ def gblend_boundaries():
 
 def rescale_photometry_boundaries():
 
-    return (-20, 2.5)
+    return (-5, 5.)
 
 def rescale_astrometry_boundaries():
 

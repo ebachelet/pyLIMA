@@ -390,7 +390,7 @@ class MLfit(object):
 
                     if telescope.lightcurve_flux is not None:
 
-                        rescale_photometry_guess.append(-4)
+                        rescale_photometry_guess.append(0)
 
                 self.rescale_photometry_parameters_guess = rescale_photometry_guess
 
@@ -848,8 +848,6 @@ class MLfit(object):
         :return: a list of tuple with the (fs,g) telescopes flux parameters.
         :rtype: list
         """
-
-        ind_source = 0
 
         new_fluxes = []
 

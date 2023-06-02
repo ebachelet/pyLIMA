@@ -116,9 +116,9 @@ def all_telescope_photometric_residuals(model, pyLIMA_parameters, norm=False, re
 
             if rescaling_photometry_parameters is not None:
 
-                err_flux = lightcurve['err_flux'].value+rescaling_photometry_parameters[ind] * \
-                           microlensing_model['photometry']
-
+                #err_flux = lightcurve['err_flux'].value+rescaling_photometry_parameters[ind] * \
+                #           microlensing_model['photometry']
+                err_flux = lightcurve['err_flux'].value*rescaling_photometry_parameters[ind]
             else:
 
                 err_flux = lightcurve['err_flux'].value
