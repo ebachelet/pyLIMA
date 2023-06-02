@@ -50,8 +50,8 @@ your_event.find_survey('OGLE')
 your_event.check_event()
 
 ### Set the microlensing limb-darkening coefficients (gamma) for each telescope:
-your_event.telescopes[0].gamma = 0.5
-your_event.telescopes[1].gamma = 0.5
+your_event.telescopes[0].ld_gamma = 0.5
+your_event.telescopes[1].ld_gamma = 0.5
 
 ### Next, construct the MODEL you want to fit and link it to the EVENT you prepared. 
 ### Let's go with a basic FSPL, without second order effects:
