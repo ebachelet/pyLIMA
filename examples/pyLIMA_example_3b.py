@@ -28,13 +28,13 @@ your_event.name = 'My simulated event'
 ### We will use CTIO_I (from Earth), Gaia_G and Spitzer_H (from Space):
 CTIO_I = simulator.simulate_a_telescope('CTIO_I', time_start=2458365.5, time_end=2458965.5, sampling=4, location='Earth', filter='I', uniform_sampling=False, altitude=1000, longitude = -109.285399, 
                                         latitude = -27.130, bad_weather_percentage=10.0 / 100, 
-                                        moon_windows_avoidance=30, minimum_alt=30,astrometry=False)
+                                        moon_windows_avoidance=30, minimum_alt=30, astrometry=False)
 
 GAIA_G = simulator.simulate_a_telescope('GAIA_G', time_start=2458365.5, time_end=2458965.5, sampling=168, location='Space', filter='G',
-                                        uniform_sampling=True, spacecraft_name='Gaia',astrometry=False)
+                                        uniform_sampling=True, spacecraft_name='Gaia', astrometry=False)
 
 SPITZER_H = simulator.simulate_a_telescope('SPITZER_H', time_start=2458565.5, time_end=2458765.5, sampling=168, location='Space', filter='H',
-                                        uniform_sampling=True, spacecraft_name='Spitzer',astrometry=False)
+                                        uniform_sampling=True, spacecraft_name='Spitzer', astrometry=False)
 
 
 ### Similar to tutorial 1, we need to associate this telescopee with the event we created:
