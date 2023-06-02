@@ -18,12 +18,9 @@ from pyLIMA import telescopes
 from pyLIMA.outputs import pyLIMA_plots
 
 ### Create a new EVENT object and give it a name.
-your_event = event.Event()
-your_event.name = 'OB150966'
-
 #Here RA and DEC matter (because the event has a strong parallax signal) !!! 
-your_event.ra = 268.75425
-your_event.dec = -29.047111111111114
+your_event = event.Event(ra=268.75425, dec=-29.047111111111114)
+your_event.name = 'OB150966'
 
 ### You now need to associate all data sets with this EVENT. 
 ### There are 11 sets of observations and we want to include all of them. 
@@ -185,12 +182,14 @@ plt.show()
 ### Set up a new uniform-source, binary-lens (USBL) model and link it to the EVENT.
 ### For the USBL model, we will also need to specify four extra parameters: rho, s, q and alpha,
 ### as well as two more describing the parallax vector, piEN,piEE.
-### In order, the USBL parameters to be fitted are (for fancy_parameters=True): 
+### In order, the USBL parameters to be fitted are (assuming we use fancy_parameters): 
 ### {'to': 0, 'uo': 1, 'log(tE)': 2, 'log(rho)': 3, 'log(s)': 4, 'log(q)': 5, 'alpha': 6} + [piEN,piEE]
 ### (note that are also secondary parameters to be optimized that allow for data offsets 
 ### and blending)
-from pyLIMA.models import USBL_model
-usbl = USBL_model.USBLmodel(your_event, parallax=['Full', 2457205.5])
+from pyLIMA.models import USBL_model, fancy_parameters
+# Use the default fancy parameters log(tE), log(rho), log(s), log(q)
+fancy = fancy_parameters.standard_fancy_parameters
+usbl = USBL_model.USBLmodel(your_event, fancy_parameters=fancy, parallax=['Full', 2457205.5])
 ### t0par = 2457265.5
 
 ### Note: When you fit for parallax (and/or orbital motion), you also need to provide a 
@@ -201,7 +200,7 @@ usbl = USBL_model.USBLmodel(your_event, parallax=['Full', 2457205.5])
 ### the parameter space. 
 from pyLIMA.fits import DE_fit
 
-fit_2 = DE_fit.DEfit(usbl, fancy_parameters=True, telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000, display_progress=True)
+fit_2 = DE_fit.DEfit(usbl, telescopes_fluxes_method='polyfit', DE_population_size=10, max_iteration=10000, display_progress=True)
 
 ### You do not need to specify an initial position, but you do need to 
 ### provide allowed ranges for each parameter:
