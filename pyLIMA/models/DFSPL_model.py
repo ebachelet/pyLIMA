@@ -5,7 +5,7 @@ import copy
 
 from pyLIMA.magnification import magnification_FSPL
 
-class DSPLmodel(MLmodel):
+class DFSPLmodel(MLmodel):
     @property
     def model_type(self):
         """ Return the kind of microlensing model.

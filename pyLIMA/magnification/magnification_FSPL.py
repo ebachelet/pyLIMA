@@ -1,7 +1,38 @@
 import numpy as np
+import pkg_resources
+from scipy import interpolate, misc
 
 
-def magnification_FSPL_Yoo(tau, uo, rho, gamma, yoo_table, return_impact_parameter=False):
+resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
+template = pkg_resources.resource_filename('pyLIMA', resource_path)
+
+try:
+
+    yoo_table = np.loadtxt(template)
+
+except:
+
+    print('ERROR : No Yoo_B0B1.dat file found, please check!')
+
+b0b1 = yoo_table
+zz = b0b1[:, 0]
+b0 = b0b1[:, 1]
+b1 = b0b1[:, 2]
+
+interpol_b0 = interpolate.interp1d(zz, b0, kind='linear')
+interpol_b1 = interpolate.interp1d(zz, b1, kind='linear')
+
+dB0 = misc.derivative(lambda x: interpol_b0(x), zz[1:-1], dx=10 ** -4, order=3)
+dB1 = misc.derivative(lambda x: interpol_b1(x), zz[1:-1], dx=10 ** -4, order=3)
+dB0 = np.append(2.0, dB0)
+dB0 = np.concatenate([dB0, [dB0[-1]]])
+dB1 = np.append((2.0 - 3 * np.pi / 4), dB1)
+dB1 = np.concatenate([dB1, [dB1[-1]]])
+interpol_db0 = interpolate.interp1d(zz, dB0, kind='linear')
+interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
+YOO_TABLE = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
+
+def magnification_FSPL_Yoo(tau, uo, rho, gamma, return_impact_parameter=False):
     """
     The Yoo et al. Finite Source Point Lens magnification.
     "OGLE-2003-BLG-262: Finite-Source Effects from a Point-Mass Lens",Yoo, J. et al 2004
@@ -17,13 +48,12 @@ def magnification_FSPL_Yoo(tau, uo, rho, gamma, yoo_table, return_impact_paramet
 
     :param float gamma: the microlensing limb darkening coefficient.
 
-    :param array_like yoo_table: the Yoo et al. 2004 table approximation. See microlmodels for more details.
-
     :param boolean return_impact_parameter: if the impact parameter is needed or not
 
     :return: the FSPL magnification A_FSPL(t)
     :rtype: array_like
     """
+
     import pyLIMA.magnification.impact_parameter
     
     impact_parameter = pyLIMA.magnification.impact_parameter.impact_parameter(tau, uo)  # u(t)
@@ -36,21 +66,21 @@ def magnification_FSPL_Yoo(tau, uo, rho, gamma, yoo_table, return_impact_paramet
     magnification_fspl = np.zeros(len(magnification_pspl))
 
     # Far from the lens (z_yoo>>1), then PSPL.
-    indexes_PSPL = np.where((z_yoo > yoo_table[0][-1]))[0]
+    indexes_PSPL = np.where((z_yoo > YOO_TABLE[0][-1]))[0]
 
     magnification_fspl[indexes_PSPL] = magnification_pspl[indexes_PSPL]
 
     # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
-    indexes_WM = np.where((z_yoo < yoo_table[0][0]))[0]
+    indexes_WM = np.where((z_yoo <  YOO_TABLE[0][0]))[0]
 
     magnification_fspl[indexes_WM] = magnification_pspl[indexes_WM] * (2 * z_yoo[indexes_WM] - gamma *
                                                                        (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
 
     # FSPL regime (z_yoo~1), then Yoo et al derivatives
-    indexes_FSPL = np.where((z_yoo <= yoo_table[0][-1]) & (z_yoo >= yoo_table[0][0]))[0]
+    indexes_FSPL = np.where((z_yoo <=  YOO_TABLE[0][-1]) & (z_yoo >=  YOO_TABLE[0][0]))[0]
    
-    magnification_fspl[indexes_FSPL] = magnification_pspl[indexes_FSPL] * (yoo_table[1](z_yoo[indexes_FSPL]) -
-                                                                           gamma * yoo_table[2](z_yoo[indexes_FSPL]))
+    magnification_fspl[indexes_FSPL] = magnification_pspl[indexes_FSPL] * ( YOO_TABLE[1](z_yoo[indexes_FSPL]) -
+                                                                           gamma * YOO_TABLE[2](z_yoo[indexes_FSPL]))
 
     if return_impact_parameter:
         
@@ -63,6 +93,8 @@ def magnification_FSPL_Yoo(tau, uo, rho, gamma, yoo_table, return_impact_paramet
         return magnification_fspl
 
 
+
+### Deprecated
 def magnification_FSPL_Lee(tau, uo, rho, gamma):
     """
     The Lee et al. Finite Source Point Lens magnification.

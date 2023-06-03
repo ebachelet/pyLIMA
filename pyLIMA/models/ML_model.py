@@ -144,19 +144,20 @@ class MLmodel(object):
 
         magnification_jacobian, amplification = self.model_magnification_Jacobian(telescope, pyLIMA_parameters)
         #fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
-        self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification[0])
+        self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
         fsource = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
         magnification_jacobian *= fsource
 
         if self.blend_flux_parameter == 'gblend':
 
-            dfluxdfs = (amplification[0] +fblend)
+            dfluxdfs = (amplification[0]+getattr(pyLIMA_parameters, 'gblend_' + telescope.name))
             dfluxdg = [getattr(pyLIMA_parameters, 'fsource_' + telescope.name)]*len(amplification[0])
 
-        else:
+        if self.blend_flux_parameter == 'fblend':
 
             dfluxdfs = (amplification[0])
             dfluxdg = [1]*len(amplification[0])
+
         #breakpoint()
         jacobi = np.c_[magnification_jacobian,dfluxdfs,dfluxdg].T
         return jacobi

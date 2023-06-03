@@ -858,7 +858,13 @@ class MLfit(object):
                 # Prior here
                 if (flux <= self.fit_parameters[key][1][0]) | (flux > self.fit_parameters[key][1][1]):
 
-                   flux = np.sum(self.fit_parameters[key][1])/2
+                    if 'fsource' in key:
+
+                        flux = np.max(self.fit_parameters[key][1])
+
+                    else:
+
+                        flux = 0
 
                 new_fluxes.append(flux)
 

@@ -1,40 +1,8 @@
 import numpy as np
-import pkg_resources
-from scipy import interpolate, misc
 
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_FSPL, magnification_Jacobian
 from pyLIMA.astrometry import astrometric_shifts, astrometric_positions
-
-resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
-template = pkg_resources.resource_filename('pyLIMA', resource_path)
-
-try:
-
-    yoo_table = np.loadtxt(template)
-
-except:
-
-    print('ERROR : No Yoo_B0B1.dat file found, please check!')
-
-b0b1 = yoo_table
-zz = b0b1[:, 0]
-b0 = b0b1[:, 1]
-b1 = b0b1[:, 2]
-
-interpol_b0 = interpolate.interp1d(zz, b0, kind='linear')
-interpol_b1 = interpolate.interp1d(zz, b1, kind='linear')
-
-dB0 = misc.derivative(lambda x: interpol_b0(x), zz[1:-1], dx=10 ** -4, order=3)
-dB1 = misc.derivative(lambda x: interpol_b1(x), zz[1:-1], dx=10 ** -4, order=3)
-dB0 = np.append(2.0, dB0)
-dB0 = np.concatenate([dB0, [dB0[-1]]])
-dB1 = np.append((2.0 - 3 * np.pi / 4), dB1)
-dB1 = np.concatenate([dB1, [dB1[-1]]])
-interpol_db0 = interpolate.interp1d(zz, dB0, kind='linear')
-interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
-yoo_table = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
-
 
 class FSPLmodel(MLmodel):
 
@@ -44,8 +12,6 @@ class FSPLmodel(MLmodel):
         super().__init__(event, parallax=parallax, xallarap=xallarap,
                          orbital_motion=orbital_motion, origin=origin, blend_flux_parameter=blend_flux_parameter,
                          fancy_parameters=fancy_parameters)
-
-        self.yoo_table = yoo_table
 
     @property
     def model_type(self):
@@ -131,7 +97,7 @@ class FSPLmodel(MLmodel):
 
             magnification = magnification_FSPL.magnification_FSPL_Yoo(source_trajectory_x, source_trajectory_y,
                                                                               rho,
-                                                                              gamma, self.yoo_table,
+                                                                              gamma,
                                                                               return_impact_parameter)
         else:
 

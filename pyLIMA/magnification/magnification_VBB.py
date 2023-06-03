@@ -27,6 +27,7 @@ def magnification_FSPL(tau, uo, rho, limb_darkening_coefficient, sqrt_limb_darke
     VBB.a1 = limb_darkening_coefficient
 
     if sqrt_limb_darkening_coefficient:
+
         VBB.SetLDprofile(VBB.LDsquareroot)
         VBB.a2 = sqrt_limb_darkening_coefficient
 
@@ -37,7 +38,7 @@ def magnification_FSPL(tau, uo, rho, limb_darkening_coefficient, sqrt_limb_darke
     impact_parameter = pyLIMA.magnification.impact_parameter.impact_parameter(tau, uo)  # u(t)
 
     for ind, u in enumerate(impact_parameter):
-        magnification_VBB = VBB.ESPLMagDark(u, rho, limb_darkening_coefficient)
+        magnification_VBB = VBB.ESPLMagDark(u, rho)
 
         magnification_fspl.append(magnification_VBB)
 
@@ -73,7 +74,7 @@ def magnification_USBL(separation, mass_ratio, x_source, y_source, rho):
 
 def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_darkening_coefficient):
     """
-    The Uniform Source Binary Lens magnification, based on the work of Valerio Bozza, thanks :)
+    The Finite Source Binary Lens magnification, including limb-darkening, based on the work of Valerio Bozza, thanks :)
     "Microlensing with an advanced contour integration algorithm: Green's theorem to third order, error control,
     optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper if you used this.
     http://mnras.oxfordjournals.org/content/408/4/2188
@@ -82,8 +83,8 @@ def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_dar
     :param float mass_ratio: the mass ratio of the two bodies
     :param array_like x_source: the horizontal positions of the source center in the source plane
     :param array_like y_source: the vertical positions of the source center in the source plane
-    :param float limb_darkening_coefficient: the linear limb-darkening coefficient
     :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
+    :param float limb_darkening_coefficient: the linear limb-darkening coefficient
 
     :return: the FSBL magnification A_FSBL(t)
     :rtype: array_like
@@ -93,7 +94,7 @@ def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho, limb_dar
 
     for xs, ys, s in zip(x_source, y_source, separation):
 
-        magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient, VBB.Tol)
+        magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho, limb_darkening_coefficient)
 
         magnification_fsbl.append(magnification_VBB)
 
