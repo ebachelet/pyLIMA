@@ -90,7 +90,7 @@ class FSPLmodel(MLmodel):
         :rtype: array_like,array_like
         """
         if telescope.lightcurve_flux is not None:
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+            source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                  data_type='photometry')
             rho = pyLIMA_parameters.rho
             gamma = telescope.ld_gamma
@@ -122,7 +122,8 @@ class FSPLmodel(MLmodel):
 
             magnification_jacobian = magnification_Jacobian.magnification_numerical_Jacobian(self, telescope,
                                                                                              pyLIMA_parameters)
-        amplification = self.model_magnification(telescope, pyLIMA_parameters, return_impact_parameter=True)
+
+        amplification = self.model_magnification(telescope, pyLIMA_parameters, return_impact_parameter=False)
 
         return magnification_jacobian, amplification
 

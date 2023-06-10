@@ -12,77 +12,28 @@ from pyLIMA.models import fancy_parameters
 
 class MLmodel(object):
     """
-       ######## MLmodel module ########
+    This class is mother of all other microlensing models and define all attributes/functions.
 
-       This class defines the model you want to fit your data to. Model is the parent class, each model is a child
-       class (polymorphism), for example ModelPSPL.
+    Attributes
+    ----------
 
-       Attributes :
-
-           event : A event class which describe your event that you want to model. See the event module.
-
-
-           parallax_model : Parallax model you want to use for the Earth types telescopes.
-                      Has to be a list containing the model in the available_parallax
-                      parameter and the value of topar. Have a look here for more details :
-                      http://adsabs.harvard.edu/abs/2011ApJ...738...87S
-
-                       'Annual' --> Annual parallax
-                       'Terrestrial' --> Terrestrial parallax
-                       'Full' --> combination of previous
-
-                       topar --> a time in HJD choosed as the referenced time fot the parallax
-
-                     If you have some Spacecraft types telescopes, the space based parallax
-                     is computed if parallax is different of 'None'
-                     More details in the microlparallax module
-
-           xallarap_model : not available yet
-
-           orbital_motion_model : not available yet
-
-                   'None' --> No orbital motion
-                   '2D' --> Classical orbital motion
-                   '3D' --> Full Keplerian orbital motion
-
-                   toom --> a time in HJD choosed as the referenced time fot the orbital motion
-                           (Often choose equal to topar)
-
-                   More details in the microlomotion module
-
-           source_spots_model : not available yet
-
-                   'None' --> No source spots
-
-                    More details in the microlsspots module
-
-            yoo_table : an array which contains the Yoo et al table
-
-            Jacobian_flag : a flag indicated if a Jacobian can be used ('OK') or not.
-
-            model_dictionnary : a python dictionnary which describe the model parameters
-
-            pyLIMA_standards_dictionnary : the standard pyLIMA parameters dictionnary
-
-            fancy_to_pyLIMA_dictionnary : a dictionnary which described which fancy parameters replace a standard pyLIMA
-             parameter. For example : {'logrho': 'rho'}
-
-            pyLIMA_to_fancy : a dictionnary which described the function to transform the standard pyLIMA parameter to
-            the fancy one. Example :  {'logrho': lambda parameters: np.log10(parameters.rho)}
-
-            fancy_to_pyLIMA : a dictionnary which described the function to transform the fancy parameters to
-            pyLIMA standards. Example :  {'rho': lambda parameters: 10 ** parameters.logrho}
-
-            parameters_guess : a list containing guess on pyLIMA parameters.
-
-
-       :param object event: a event object. More details on the event module.
-       :param list parallax: a list of [string,float] indicating the parallax model you want and to_par
-       :param list xallarap: a list of [string,float] indicating the xallarap mode.l. NOT WORKING NOW.
-       :param list orbital_motion: a list of [string,float] indicating the parallax model you want and to_om.
-                                   NOT WORKING NOW.
-       :param string source_spots: a string indicated the source_spots you want. NOT WORKING.
-       """
+    event : an Event object
+    parallax_model : list[str,float], the parallax model type ('Annual', 'Terrestrial or 'Full') and t0,par
+    xallarap_model : list[str], the xallarap model (not implemented yet)
+    orbital_motion_model : list[str,float], the orbital motion model type ('2D', 'Circular' or 'Keplerian') and t0,kep
+    blend_flux_parameter : str, the blend flux parameter type ('fblend', 'gblend=fblend/fsource' or 'noblend')
+    photometry : bool, True if any telescopes in event object contains photometric data
+    astrometry : bool, True if any telescopes in event object contains astrometric data
+    model_dictionnary : dict, that represents the model parameters, including fancy parameters
+    pyLIMA_standards_dictionnary : dict, that represents the standard model parameters
+    fancy_to_pyLIMA_dictionnary : dict, that contains the names to transforms fancy parameters to pyLIMA standards
+    pyLIMA_to_fancy_dictionnary = dict, that contains the names to transforms pyLIMA standards to fancy parameters
+    pyLIMA_to_fancy : dict, that contains the functions to transforms fancy parameters to pyLIMA standards
+    fancy_to_pyLIMA : dict, that contains the functions to transforms pyLIMA standards to fancy parameters
+    Jacobian_flag : str, indicates if an analytical Jacobian is available for this model
+    standard_parameters_boundaries : list[[float,float]], a list of list containing the lower and upper limits of standards parameters
+    origin : list [str,[float,float]], a list containing the choice of the system origin, the floats indicating the X,Y origin
+    """
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
@@ -108,7 +59,6 @@ class MLmodel(object):
         self.pyLIMA_to_fancy = {}
         self.fancy_to_pyLIMA = {}
 
-        self.parameters_guess = []
         self.Jacobian_flag = 'OK'
         self.standard_parameters_boundaries = []
 
@@ -121,19 +71,51 @@ class MLmodel(object):
 
     @abc.abstractmethod
     def model_type(self):
+        """
+        Returns
+        -------
+        str the model type
+        """
+
         pass
 
     @abc.abstractmethod
     def paczynski_model_parameters(self):
+        """
+        Returns
+        -------
+        model_dictionary: dict, the Paczynski parameters dictionnary
+        """
         return
 
     @abc.abstractmethod
     def model_magnification(self, telescope, pyLIMA_parameters):
+        """
+        Parameters
+        ----------
+        telescope : a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters object
+
+        Returns
+        -------
+        magnification: array, the corresponding model magnification A(t)
+        """
         return
 
     @abc.abstractmethod
     def model_magnification_Jacobian(self, telescope, pyLIMA_parameters):
+        """
+        Parameters
+        ----------
+        telescope : a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters object
 
+        Returns
+        -------
+        magnification_Jacobian : array, the magnification Jacobian, i.e. [dA(t)/dt0,dA(t)/du0....]
+        amplification : array, the magnification
+
+        """
         magnification_jacobian = magnification_Jacobian.magnification_numerical_Jacobian(self, telescope, pyLIMA_parameters)
         amplification = self.model_magnification(telescope,pyLIMA_parameters, return_impact_parameter=True)
 
@@ -141,7 +123,16 @@ class MLmodel(object):
 
     @abc.abstractmethod
     def photometric_model_Jacobian(self, telescope, pyLIMA_parameters):
+        """
+        Parameters
+        ----------
+        telescope : a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters object
 
+        Returns
+        -------
+        jacobi : array, the model Jacobian, including the magnification and telescopes fluxes Jacobians
+        """
         magnification_jacobian, amplification = self.model_magnification_Jacobian(telescope, pyLIMA_parameters)
         #fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
         self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
@@ -150,13 +141,13 @@ class MLmodel(object):
 
         if self.blend_flux_parameter == 'gblend':
 
-            dfluxdfs = (amplification[0]+getattr(pyLIMA_parameters, 'gblend_' + telescope.name))
+            dfluxdfs = (amplification+getattr(pyLIMA_parameters, 'gblend_' + telescope.name))
             dfluxdg = [getattr(pyLIMA_parameters, 'fsource_' + telescope.name)]*len(amplification[0])
 
         if self.blend_flux_parameter == 'fblend':
 
-            dfluxdfs = (amplification[0])
-            dfluxdg = [1]*len(amplification[0])
+            dfluxdfs = (amplification)
+            dfluxdg = [1]*len(amplification)
 
         #breakpoint()
         jacobi = np.c_[magnification_jacobian,dfluxdfs,dfluxdg].T
@@ -164,14 +155,22 @@ class MLmodel(object):
 
     @abc.abstractmethod
     def change_origin(self, pyLIMA_parameters):
+        """
+        Add the new_origin to the pyLIMA_parameters object
 
+        Parameters
+        ----------
+        pyLIMA_parameters : a pyLIMA_parameters object
+        """
         if self.origin[0] != 'center_of_mass':
 
             setattr(pyLIMA_parameters, 'x_center', self.origin[1][0])
             setattr(pyLIMA_parameters, 'y_center', self.origin[1][1])
 
     def check_data_in_event(self):
-
+        """
+        Find if astrometry and/or photometry data are present
+        """
         for telescope in self.event.telescopes:
 
             if telescope.lightcurve_magnitude is not None:
@@ -183,7 +182,10 @@ class MLmodel(object):
                 self.astrometry = True
 
     def define_pyLIMA_standard_parameters(self):
-        """ Define the standard pyLIMA parameters dictionnary."""
+        """
+        Define the pyLIMA_standard dictionnary, i.e Paczynski parameters + second order parameters +fluxes parameters.
+        Also define the standard parameters boundaries
+        """
 
         model_dictionnary = self.paczynski_model_parameters()
 
@@ -198,9 +200,11 @@ class MLmodel(object):
 
         self.standard_parameters_boundaries = pyLIMA.priors.parameters_boundaries.parameters_boundaries(self.event, self.pyLIMA_standards_dictionnary)
 
-
-
     def define_fancy_parameters(self):
+        """
+        Define the fancy parameters, if the origin is different than center of mass and if users defined fancy parameters.
+        Also define the standard parameters boundaries
+        """
 
         if self.origin[0] != 'center_of_mass':
 
@@ -235,6 +239,20 @@ class MLmodel(object):
         self.define_model_parameters()
 
     def astrometric_model_parameters(self, model_dictionnary):
+        """
+        Define the standard astrometric model parameters, i.e. add theta_E, pi_s, mu_source_N, mu_source_E, and
+        ref_N, ref_E for each telescope containing astrometric data to the model dictionnary
+        WARNING: users need to provide a parallax model if they treat astrometric data!
+
+        Parameters
+        ----------
+        model_dictionnary : dict, a model dictionnary
+
+        Returns
+        -------
+        model_dictionnary : dict, the updated model dictionnary
+
+        """
 
         parameter = 0
         for telescope in self.event.telescopes:
@@ -243,8 +261,9 @@ class MLmodel(object):
 
                 if self.parallax_model[0] == 'None':
 
-                    print('Defining a default parallax model since we have astrometric data....')
-                    self.parallax_model = ['Full', np.mean(telescope.lightcurve_flux['time'].value)]
+                    raise ValueError('There are astrometric data in this model, please define a parallax model')
+                    #print('Defining a default parallax model since we have astrometric data....')
+                    #self.parallax_model = ['Full', np.mean(telescope.lightcurve_flux['time'].value)]
 
                 model_dictionnary['theta_E'] = len(model_dictionnary)
                 model_dictionnary['parallax_source'] = len(model_dictionnary)
@@ -252,6 +271,7 @@ class MLmodel(object):
                 model_dictionnary['mu_source_E'] = len(model_dictionnary)
 
                 parameter += 1
+                self.Jacobian_flag = 'No Way'
 
             if (telescope.astrometry is not None) & (parameter == 1):
 
@@ -260,12 +280,21 @@ class MLmodel(object):
                 #model_dictionnary['position_blend_N_' + telescope.name] = len(model_dictionnary)
                 #model_dictionnary['position_blend_E_' + telescope.name] = len(model_dictionnary)
 
-            self.Jacobian_flag = 'No Way'
-
         return model_dictionnary
 
     def second_order_model_parameters(self, model_dictionnary):
+        """
+        Update the model dictionnary with the corresponding second order parameters
 
+        Parameters
+        ----------
+        model_dictionnary : dict, a model dictionnary
+
+        Returns
+        -------
+        model_dictionnary : dict the updated model dictionnary
+
+        """
         jack = np.copy(self.Jacobian_flag)
 
         if self.parallax_model[0] != 'None':
@@ -305,7 +334,18 @@ class MLmodel(object):
         return model_dictionnary
 
     def telescopes_fluxes_model_parameters(self, model_dictionnary):
+        """
+        Update the model dictionnary with the corresponding telescope fluxes parameters
 
+        Parameters
+        ----------
+        model_dictionnary : dict, a model dictionnary
+
+        Returns
+        -------
+        model_dictionnary : dict the updated model dictionnary
+
+         """
         for telescope in self.event.telescopes:
 
             if telescope.lightcurve_flux is not None:
@@ -327,8 +367,9 @@ class MLmodel(object):
         return model_dictionnary
 
     def define_model_parameters(self):
-        """ Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
-         if you have some fancy parameters request.
+        """
+        Define the model parameters dictionnary. It is different to the pyLIMA_standards_dictionnary
+        if there is fancy parameters request.
         """
 
         self.model_dictionnary = self.pyLIMA_standards_dictionnary.copy()
@@ -350,42 +391,29 @@ class MLmodel(object):
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
     def print_model_parameters(self):
-        """ Define the model parameters dictionnary and print for the users.
+        """
+        Print the model parameters currently defined
         """
         self.define_model_parameters()
 
         print(self.model_dictionnary)
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
-        """ Compute the microlens model according the injected parameters. This is modified by child submodel sublclass,
-        if not the default microlensing model is returned.
-
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :returns: the microlensing model
-        :rtype: array_like
         """
 
-        return self._default_microlensing_model(telescope, pyLIMA_parameters)
+        Find the microlensing model for given telescope astrometry and photometry
 
-    def _default_microlensing_model(self, telescope, pyLIMA_parameters):
-        """ Compute the default microlens model according the injected parameters:
+        Parameters
+        ----------
+        telescope : a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters object
 
-        flux(t) = f_source*magnification(t)+f_blend
-
-        and the astrometric shifts if need be.
-
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :param array_like amplification: the magnification associated to the model
-        :returns: the microlensing model, the microlensing priors
-        :rtype: array_like, float
+        Returns
+        -------
+        microlensing_model : dict, the corresponding microlensing model for photometry and astromtry if avalaible
         """
-
         photometric_model = None
         astrometric_model = None
-        #f_source = None
-        #f_blend = None
 
         if telescope.lightcurve_flux is not None:
 
@@ -403,23 +431,20 @@ class MLmodel(object):
 
             astrometric_model = self.model_astrometry(telescope, pyLIMA_parameters)
 
-        microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model}#, 'f_source': f_source,
-                             # 'f_blend': f_blend}
+        microlensing_model = {'photometry': photometric_model, 'astrometry': astrometric_model}
 
         return microlensing_model
 
     def derive_telescope_flux(self, telescope, pyLIMA_parameters, magnification):
         """
-        Compute the source/blend flux
+        Set fsource and fblend in pyLIMA_parameters. If not present, estimate vita linear regression with the given magnification
 
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :param array_like magnification: an array containing the magnification
-
-        :returns:  the source and the blend flux
-        :rtype: tuple
+        Parameters
+        ----------
+        telescope : a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters object
+        magnification : array, containing the magnificationa at time t
         """
-
         try:
             # Fluxes parameters are in the pyLIMA_parameters
             f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
@@ -470,11 +495,18 @@ class MLmodel(object):
         setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
         setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
 
-        #return f_source, f_blend
-
-
     def find_telescopes_fluxes(self, fancy_parameters):
+        """
+        Find fsource and fblend for all telescope for a given fancy_parameter
 
+        Parameters
+        ----------
+        fancy_parameter :  list, a list of fancy parameters
+
+        Returns
+        -------
+        thefluxes : dict, a dictionnary containing the fluxes of all telescopes
+        """
         pyLIMA_parameters = self.compute_pyLIMA_parameters(fancy_parameters)
 
         keys = []
@@ -513,13 +545,19 @@ class MLmodel(object):
         return thefluxes
 
     def compute_pyLIMA_parameters(self, fancy_parameters):
-        """ Realize the transformation between the fancy parameters to fit to the
+        """
+        Realize the transformation between the fancy parameters to fit to the
         standard pyLIMA parameters needed to compute a model.
 
-        :param list fancy_parameters: the parameters you fit
-        :return: pyLIMA parameters
-        :rtype: object (namedtuple)
+        Parameters
+        ----------
+        fancy_parameter :  list, a list of fancy parameters
+
+        :Returns
+        -------
+        pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
         """
+
         model_parameters = collections.namedtuple('parameters', self.model_dictionnary.keys())
 
         for key_parameter in self.model_dictionnary.keys():
@@ -577,13 +615,18 @@ class MLmodel(object):
         return pyLIMA_parameters
 
     def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
-        """ Transform the fancy parameters to the pyLIMA standards. The output got all
-        the necessary standard attributes, example to, uo, tE...
+        """
+        Transform the fancy parameters to the pyLIMA standards. The output got all
+        the necessary standard attributes, example t0, u0, tE...
 
 
-        :param object fancy_parameters: the fancy_parameters as namedtuple
-        :return: the pyLIMA standards are added to the fancy parameters
-        :rtype: object
+        Parameters
+        ----------
+        fancy_parameters :  a pyLIMA_parameters object
+
+        :Returns
+        -------
+        fancy_parameters : dict, an updated dictionnary the pyLIMA parameters
         """
 
         if len(self.fancy_to_pyLIMA) != 0:
@@ -601,14 +644,19 @@ class MLmodel(object):
         return fancy_parameters
 
     def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
-        """ Transform the  the pyLIMA standards parameters to the fancy parameters. The output got all
-            the necessary fancy attributes.
-
-
-        :param object pyLIMA_parameters: the  standard pyLIMA parameters as namedtuple
-        :return: the fancy parameters are added to the fancy parameters
-        :rtype: object
         """
+        Transform the pyLIMA standards parameters to the fancy parameters. The output got all
+        the necessary fancy attributes.
+
+        Parameters
+        ----------
+        pyLIMA_parameter :  a pyLIMA parameter object
+
+        :Returns
+        -------
+        pyLIMA_parameters : dict, the updated pyLIMA parameter containing the fancy parameters
+        """
+
         if len(self.pyLIMA_to_fancy) != 0:
 
             for key_parameter in self.pyLIMA_to_fancy.keys():
@@ -619,12 +667,22 @@ class MLmodel(object):
 
 
     def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None):
-        """ Compute the microlensing source trajectory associated to a telescope for the given parameters.
+        """
+        Compute the microlensing source trajectory associated to a telescope for the given parameters for the photometry
+        or astrometry data
 
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: source_trajectory_x, source_trajectory_y the x,y compenents of the source trajectory
-        :rtype: array_like,array_like
+        Parameters
+        ----------
+        telescope : a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters object
+        data_type : str, photometry or astrometry
+
+        Returns
+        ----------
+        source_trajectory_x : array, the source x position
+        source_trajectory_y : array, the source y position
+        dseparation : array, the modification of binary separation if orbital motion is present
+        dalpha : array, the modification of the lens trajectory angle due to the orbital motion of the lens
         """
         # Linear basic trajectory
 
@@ -711,6 +769,7 @@ class MLmodel(object):
         else:
 
             dseparation = np.array([0] * len(tau))
+            dalpha = np.array([0] * len(tau))
 
         lens_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
         lens_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
@@ -718,5 +777,5 @@ class MLmodel(object):
         source_trajectory_x = -lens_trajectory_x
         source_trajectory_y = -lens_trajectory_y
 
-        return source_trajectory_x, source_trajectory_y, dseparation
+        return source_trajectory_x, source_trajectory_y, dseparation, dalpha
 

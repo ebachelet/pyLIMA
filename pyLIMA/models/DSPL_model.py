@@ -81,7 +81,7 @@ class DSPLmodel(MLmodel):
 
     def sources_trajectory(self, telescope, pyLIMA_parameters):
 
-        source1_trajectory_x, source1_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+        source1_trajectory_x, source1_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                data_type='photometry')
 
         parameters = [getattr(pyLIMA_parameters,i) for i in pyLIMA_parameters._fields]
@@ -91,7 +91,7 @@ class DSPLmodel(MLmodel):
         pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0+pyLIMA_parameters_2.delta_t0
         pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0+pyLIMA_parameters_2.delta_u0
 
-        source2_trajectory_x, source2_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters_2,
+        source2_trajectory_x, source2_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters_2,
                                                                                data_type='photometry')
 
         return source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, source2_trajectory_y

@@ -13,7 +13,7 @@ class FSPLargemodel(FSPLmodel):
         :rtype: array_like,array_like
         """
 
-        source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+        source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                              data_type='astrometry')
 
         rho = pyLIMA_parameters.rho

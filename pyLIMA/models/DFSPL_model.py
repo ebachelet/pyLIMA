@@ -59,7 +59,8 @@ class DFSPLmodel(MLmodel):
         """
 
         if telescope.lightcurve_flux is not None:
-            source1_trajectory_x, source1_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters,
+
+            source1_trajectory_x, source1_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                    data_type='photometry')
 
             pyLIMA_parameters_2 = copy.deepcopy(pyLIMA_parameters)

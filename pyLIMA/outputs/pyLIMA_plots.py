@@ -246,7 +246,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
             telescope_index = [i for i in range(len(microlensing_model.event.telescopes)) if
                                microlensing_model.event.telescopes[i].name == telescope.name][0]
 
-            trajectory_x, trajectory_y, dseparation = microlensing_model.source_trajectory(telescope,pyLIMA_parameters,
+            trajectory_x, trajectory_y, dseparation, dalpha = microlensing_model.source_trajectory(telescope,pyLIMA_parameters,
                                                                                                          data_type='photometry')
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index]
@@ -350,7 +350,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
         if telescope.lightcurve_flux is not None:
 
-            trajectory_x, trajectory_y, separation = microlensing_model.source_trajectory(telescope,
+            trajectory_x, trajectory_y, dseparation, dalpha = microlensing_model.source_trajectory(telescope,
                                                                                           pyLIMA_parameters,
                                                                                           data_type='photometry')
 
