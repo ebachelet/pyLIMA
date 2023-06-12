@@ -1,0 +1,28 @@
+[build-system]
+requires = [
+    "setuptools>=42",  # PEP-517 support
+    "setuptools_scm[toml]>=6.2",
+
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="pyLIMA"
+requires-python=">=3.7"
+dependencies=[
+    "astropy>=5.3",
+    "astroquery",
+    "bokeh < 3",
+    "emcee",
+    "kepler",
+    "numpy >= 1.7",
+    "pygtc",
+    "pymoo",
+    "scipy >= 1.0",
+    "tqdm >= 4.0",
+    "VBBinaryLensing>=3.6",
+
+]
+dynamic=["version"]  # Version is taken from setuptools_scm
+
+
