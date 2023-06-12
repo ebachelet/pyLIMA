@@ -2,15 +2,14 @@
 Welcome to pyLIMA (v2) tutorial 1!
 
 In this tutorial you will learn how pyLIMA works by fitting a simulated data set.
-We will cover how to read in data files, call different fitting routines and how to make plots.
+We will cover how to read in data files, call different fitting routines and how to
+make plots.
 Please take some time to familiarize yourself with the pyLIMA documentation.
 '''
 
+import matplotlib.pyplot as plt
 ### Import the required libraries.
 import numpy as np
-import matplotlib.pyplot as plt
-import os, sys
-
 from pyLIMA import event
 from pyLIMA import telescopes
 
@@ -19,22 +18,24 @@ your_event = event.Event()
 your_event.name = 'My event name'
 
 ### You now need to associate some data sets with this EVENT. 
-### For this example, you will use simulated I-band data sets from two telescopes, OGLE and LCO.
-### The data sets are pre-formatted: column 1 is the date, column 2 the magnitude and column 3 
+### For this example, you will use simulated I-band data sets from two telescopes,
+# OGLE and LCO.
+### The data sets are pre-formatted: column 1 is the date, column 2 the magnitude and
+# column 3
 ### the uncertainty in the magnitude.
 data_1 = np.loadtxt('./data/Survey_1.dat')
-telescope_1 = telescopes.Telescope(name = 'OGLE', 
-                                   camera_filter = 'I',
-                                   light_curve = data_1.astype(float),
-                                   light_curve_names = ['time','mag','err_mag'],
-                                   light_curve_units = ['JD','mag','mag'])
+telescope_1 = telescopes.Telescope(name='OGLE',
+                                   camera_filter='I',
+                                   light_curve=data_1.astype(float),
+                                   light_curve_names=['time', 'mag', 'err_mag'],
+                                   light_curve_units=['JD', 'mag', 'mag'])
 
 data_2 = np.loadtxt('./data/Followup_1.dat')
-telescope_2 = telescopes.Telescope(name = 'LCO', 
-                                   camera_filter = 'I',
-                                   light_curve = data_2.astype(float),
-                                   light_curve_names = ['time','mag','err_mag'],
-                                   light_curve_units = ['JD','mag','mag'])
+telescope_2 = telescopes.Telescope(name='LCO',
+                                   camera_filter='I',
+                                   light_curve=data_2.astype(float),
+                                   light_curve_names=['time', 'mag', 'err_mag'],
+                                   light_curve_units=['JD', 'mag', 'mag'])
 
 ### Append these two telescope data sets to your EVENT object.
 your_event.telescopes.append(telescope_1)
@@ -51,6 +52,7 @@ your_event.check_event()
 ### Next, construct the MODEL you want to fit and link it to the EVENT you prepared. 
 ### Let's go with a basic PSPL, without second order effects:
 from pyLIMA.models import PSPL_model
+
 pspl = PSPL_model.PSPLmodel(your_event)
 
 ### Let's try fitting the event with a simple Levenvberg_Marquardt (LM) algorithm.
@@ -76,18 +78,21 @@ my_fit.fit_results
 ### For example, if you want to see the best fit results, you can access them like this:
 my_fit.fit_results['best_model']
 
-### If you don't remember which parameter each entry represents, you can always access the
+### If you don't remember which parameter each entry represents, you can always
+# access the
 ### descriptions from fit_parameters.
 my_fit.fit_parameters.keys()
 
 ### Let's see some plots. Import the pyLIMA plotting tools.
 from pyLIMA.outputs import pyLIMA_plots
+
 pyLIMA_plots.plot_lightcurves(pspl, my_fit.fit_results['best_model'])
 plt.show()
 
 ### Let's try another fit with the differential evolution (DE) algorithm. 
 ### This will take longer... 
 from pyLIMA.fits import DE_fit
+
 my_fit2 = DE_fit.DEfit(pspl)
 my_fit2.fit()
 
@@ -96,9 +101,11 @@ pyLIMA_plots.plot_lightcurves(pspl, my_fit2.fit_results['best_model'])
 plt.show()
 
 ### You can use the Zoom-in function to look at the peak.
-### There is strong evidence of finite source effects in this event, so let's try to fit this.
+### There is strong evidence of finite source effects in this event, so let's try to
+# fit this.
 ### You will need to import the FSPL MODEL to do this:
 from pyLIMA.models import FSPL_model
+
 fspl = FSPL_model.FSPLmodel(your_event)
 
 ### You can still use the FITTING ALGORITHM that you imported previously. 
@@ -110,7 +117,8 @@ my_fit3.fit()
 pyLIMA_plots.plot_lightcurves(fspl, my_fit3.fit_results['best_model'])
 plt.show()
 
-### There is evidently still some structure in the residuals. Could be some limb darkening going on!
+### There is evidently still some structure in the residuals. Could be some limb
+# darkening going on!
 ### Let's try to fit for it.
 
 ### Set the microlensing limb-darkening coefficients (gamma) for each telescope:
@@ -131,9 +139,11 @@ guess_parameters = my_fit4.fit_results['best_model']
 print(guess_parameters)
 
 ### These parameter guesses can now be used to start an MCMC run, for example.
-### Using MCMC is recommended when you want to explore the posterior distribution of the parameters.
+### Using MCMC is recommended when you want to explore the posterior distribution of
+# the parameters.
 ### Let's fit again using MCMC. This might take some time ...
 from pyLIMA.fits import MCMC_fit
+
 my_fit5 = MCMC_fit.MCMCfit(fspl)
 my_fit5.model_parameters_guess = guess_parameters
 my_fit5.fit()
@@ -141,35 +151,44 @@ my_fit5.fit()
 ### Now your MCMC run is complete. Congratulations! 
 ### You can now plot the chains and explore how they evolve for each parameter.
 ### For example, to see how the chains for u0 evolve, do:
-plt.plot(my_fit5.fit_results['MCMC_chains'][:,:,1])
+plt.plot(my_fit5.fit_results['MCMC_chains'][:, :, 1])
 plt.show()
 
-### The first part in the slice [:,:,1] represents the iteration number, the second the chain number 
-### and the last represents the parameter number (in addition to the likelihood at the end).
+### The first part in the slice [:,:,1] represents the iteration number, the second
+# the chain number
+### and the last represents the parameter number (in addition to the likelihood at
+# the end).
 ### The parameters are in the same order as in my_fit5.fit_parameters.keys()
 
-### You can compare the MCMC distributions with the input values that were used to generate the light curve.
-### For this, let's only consider the chains after the 1000th iteration (i.e. after burn-in).
+### You can compare the MCMC distributions with the input values that were used to
+# generate the light curve.
+### For this, let's only consider the chains after the 1000th iteration (i.e. after
+# burn-in).
 ### [:7] at the end is just so only the first 7 digits are printed.
 MCMC_results = my_fit5.fit_results['MCMC_chains']
-print ('Parameters', ' Model','   Fit','     Errors')
-print ('-----------------------------------')
-print ('t_0:', '        79.9309 ',str(np.median(MCMC_results[1000:,:,0]))[:7],'',str(np.std(MCMC_results[1000:,:,0]))[:7])
-print ('u_0:', '        0.00826 ',str(np.median(MCMC_results[1000:,:,1]))[:7],'',str(np.std(MCMC_results[1000:,:,1]))[:7])
-print ('t_E:', '        10.1171 ',str(np.median(MCMC_results[1000:,:,2]))[:7],'',str(np.std(MCMC_results[1000:,:,2]))[:7])
-print ('rho:', '        0.02268 ',str(np.median(MCMC_results[1000:,:,3]))[:7],'',str(np.std(MCMC_results[1000:,:,3]))[:7])
+print('Parameters', ' Model', '   Fit', '     Errors')
+print('-----------------------------------')
+print('t_0:', '        79.9309 ', str(np.median(MCMC_results[1000:, :, 0]))[:7], '',
+      str(np.std(MCMC_results[1000:, :, 0]))[:7])
+print('u_0:', '        0.00826 ', str(np.median(MCMC_results[1000:, :, 1]))[:7], '',
+      str(np.std(MCMC_results[1000:, :, 1]))[:7])
+print('t_E:', '        10.1171 ', str(np.median(MCMC_results[1000:, :, 2]))[:7], '',
+      str(np.std(MCMC_results[1000:, :, 2]))[:7])
+print('rho:', '        0.02268 ', str(np.median(MCMC_results[1000:, :, 3]))[:7], '',
+      str(np.std(MCMC_results[1000:, :, 3]))[:7])
 
 ### You can now plot the correlation between any two parameters.
 ### Import the relevant libraries:
-from matplotlib.pyplot import hist2d
 from matplotlib.colors import LogNorm
 
 ### Now plot u0 against tE:
-plt.hist2d(MCMC_results[1000:,:,1].ravel(),MCMC_results[1000:,:,2].ravel(), norm=LogNorm(), bins=50)
+plt.hist2d(MCMC_results[1000:, :, 1].ravel(), MCMC_results[1000:, :, 2].ravel(),
+           norm=LogNorm(), bins=50)
 plt.xlabel('u0')
 plt.ylabel('tE')
 plt.show()
 
-### You can consult the matplotlib.pyplot.hist2d documentation to see additional arguments.
+### You can consult the matplotlib.pyplot.hist2d documentation to see additional
+# arguments.
 
 ### This concludes tutorial 1.
