@@ -3,9 +3,15 @@ name: Docker Image CI
 on:
   push:
     branches: [ "master" ,"Rebranding"]
+    
+    paths-ignore:
+        - 'examples/'
+        
   pull_request:
     branches: [ "master" ]
 
+    paths-ignore:
+        - 'examples/'
 
 jobs:
   build:
