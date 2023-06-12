@@ -235,7 +235,7 @@ def eccentric_anomaly_function(time, ellipticity, t_periastron, speed):
         phase = speed * (t - t_periastron)
         phase = phase % (2 * np.pi)
 
-        ecc = kepler.solve(phase, ellipticity)
+        ecc,cos_true_ecc, sin_true_ecc = kepler.kepler(phase, ellipticity)
 
         eccentricities.append(ecc)
 
