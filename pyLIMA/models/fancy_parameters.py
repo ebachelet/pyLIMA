@@ -36,17 +36,28 @@ def mass_ratio(x):
 
 
 def t0(x):
+
     try:
 
         alpha = x.alpha + np.pi
 
-    except ValueError:
+    except AttributeError:
 
         alpha = 0
 
+    try:
+
+        xcenter = x.x_center
+        ycenter = x.y_center
+
+    except AttributeError:
+
+        xcenter = 0
+        ycenter = 0
+
     rotation = np.array([np.cos(alpha), np.sin(alpha)])
 
-    tau_prime = -np.dot(rotation, [x.x_center, x.y_center])
+    tau_prime = -np.dot(rotation, [xcenter, ycenter])
 
     t_0 = float(x.t_center + tau_prime * x.tE)
     # breakpoint()
@@ -58,13 +69,23 @@ def u0(x):
 
         alpha = x.alpha + np.pi
 
-    except ValueError:
+    except AttributeError:
 
         alpha = 0
 
+    try:
+
+        xcenter = x.x_center
+        ycenter = x.y_center
+
+    except AttributeError:
+
+        xcenter = 0
+        ycenter = 0
+
     rotation = np.array([-np.sin(alpha), np.cos(alpha)])
 
-    u_prime = -np.dot(rotation, [x.x_center, x.y_center])
+    u_prime = -np.dot(rotation, [xcenter,ycenter])
 
     u_0 = float(x.u_center - u_prime)
     # breakpoint()
@@ -76,13 +97,23 @@ def t_center(x):
 
         alpha = x.alpha + np.pi
 
-    except ValueError:
+    except AttributeError:
 
         alpha = 0
 
+    try:
+
+        xcenter = x.x_center
+        ycenter = x.y_center
+
+    except AttributeError:
+
+        xcenter = 0
+        ycenter = 0
+
     rotation = np.array([np.cos(alpha), np.sin(alpha)])
 
-    tau_prime = np.dot(rotation, [x.x_center, x.y_center])
+    tau_prime = np.dot(rotation, [xcenter,ycenter])
 
     t_center = float(x.t0 + tau_prime * x.tE)
 
@@ -94,13 +125,23 @@ def u_center(x):
 
         alpha = x.alpha + np.pi
 
-    except ValueError:
+    except AttributeError:
 
         alpha = 0
 
+    try:
+
+        xcenter = x.x_center
+        ycenter = x.y_center
+
+    except AttributeError:
+
+        xcenter = 0
+        ycenter = 0
+
     rotation = np.array([-np.sin(alpha), np.cos(alpha)])
 
-    u_prime = np.dot(rotation, [x.x_center, x.y_center])
+    u_prime = np.dot(rotation, [xcenter, ycenter])
 
     u_center = float(x.u0 + u_prime)
 

@@ -31,7 +31,7 @@ def magnification_FSPL(tau, uo, rho, limb_darkening_coefficient,
         os.path.dirname(VBBinaryLensing.__file__) + '/VBBinaryLensing/data/ESPL.tbl')
     VBB.a1 = limb_darkening_coefficient
 
-    if sqrt_limb_darkening_coefficient:
+    if sqrt_limb_darkening_coefficient is not None:
         VBB.SetLDprofile(VBB.LDsquareroot)
         VBB.a2 = sqrt_limb_darkening_coefficient
 

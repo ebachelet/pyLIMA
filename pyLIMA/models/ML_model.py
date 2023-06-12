@@ -5,6 +5,8 @@ from collections import OrderedDict
 import numpy as np
 import pyLIMA.parallax.parallax
 import pyLIMA.priors.parameters_boundaries
+from pyLIMA.models import fancy_parameters
+
 from pyLIMA.magnification import magnification_Jacobian
 from pyLIMA.orbitalmotion import orbital_motion
 from pyLIMA.orbitalmotion import orbital_motion_3D
@@ -153,7 +155,7 @@ class MLmodel(object):
             telescope, pyLIMA_parameters)
         # fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters,
         # amplification[0])
-        self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification[0])
+        self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
         fsource = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
         magnification_jacobian *= fsource
 
@@ -590,7 +592,7 @@ class MLmodel(object):
                 setattr(model_parameters, key_parameter,
                         fancy_parameters[self.model_dictionnary[key_parameter]])
 
-            except ValueError:
+            except IndexError:
 
                 setattr(model_parameters, key_parameter, None)
 

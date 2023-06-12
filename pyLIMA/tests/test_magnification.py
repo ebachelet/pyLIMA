@@ -42,6 +42,7 @@ def test_magnification_PSPL_Jacobian():
 
     pspl = PSPLmodel(event)
     params = [2456789.2, 0.1, 34.5]
+
     pym = pspl.compute_pyLIMA_parameters(params)
 
     jacobian, magnification = magnification_Jacobian.magnification_PSPL_Jacobian(pspl,

@@ -103,14 +103,14 @@ def test_photometric_model_Jacobian():
     params = [0.5, 0.002, 35, 0.05]
 
     pym = Model.compute_pyLIMA_parameters(params)
-
     jacob = Model.photometric_model_Jacobian(event.telescopes[0], pym)
-    assert np.allclose(jacob, np.array([[-0., 0.],
-                                        [-0., -0.],
-                                        [0., 0.],
-                                        [-0., 0.],
-                                        [42.16176577, 1.99919488],
-                                        [1., 1.]]))
+
+    assert np.allclose(jacob, np.array([[ 2.61179660e+01, -3.90491801e-01],
+                                       [ 1.27978034e+02,  4.90617904e-02],
+                                       [-3.73113801e-01, -2.17559718e-01],
+                                       [ 3.72223348e+03, -3.44379393e-01],
+                                       [ 4.21617658e+01,  1.99919488e+00],
+                                       [ 1.00000000e+00,  1.00000000e+00]]))
 
 
 def test_change_origin():
@@ -300,14 +300,16 @@ def test_FSPL():
 
 def test_FSPLarge():
     event = _create_event()
-    event.ld_a1 = 0.28
+    event.telescopes[0].ld_a1 = 0.28
+    event.telescopes[0].ld_a2 = None
+
     Model = FSPLargemodel(event)
     params = [0.5, 0.002, 38, 6]
 
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert np.allclose(magi, [1.07726435, 1.07179673])
+    assert np.allclose(magi, [1.05837633, 1.05730364])
 
 
 def test_PSBL():
@@ -357,7 +359,8 @@ def test_USBL():
 
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
-    assert np.allclose(magi, [78.41795169, 2.12549786])
+
+    assert np.allclose(magi, [73.75028234,  2.12549786])
 
     event = _create_event()
 
@@ -368,4 +371,4 @@ def test_USBL():
 
     assert pym.x_center == -0.0019814238930123684
     assert pym.y_center == 0.0
-    assert np.allclose(magi, [82.26726321, 2.11882843])
+    assert np.allclose(magi,[76.16515049,  2.11882843])
