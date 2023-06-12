@@ -76,14 +76,14 @@ class NGSA2fit(MLfit):
         from pymoo.operators.mutation.pm import PolynomialMutation
         from pymoo.operators.repair.rounding import RoundingRepair
 
-#        algorithm = NSGA2(
-#            pop_size=40,
-#            n_offsprings=10,
-#            sampling=RandomSelection(),
-#            crossover=SBX(),
-#            mutation= PolynomialMutation(prob=1.0, eta=20, repair=RoundingRepair()),
-#            eliminate_duplicates=True
-#        )
+        #        algorithm = NSGA2(
+        #            pop_size=40,
+        #            n_offsprings=10,
+        #            sampling=RandomSelection(),
+        #            crossover=SBX(),
+        #            mutation= PolynomialMutation(prob=1.0, eta=20, repair=RoundingRepair()),
+        #            eliminate_duplicates=True
+        #        )
 
         algorithm = NSGA2(pop_size=100)
 
@@ -119,16 +119,5 @@ class NGSA2fit(MLfit):
 
         # mask =np.argmin((F[:,0]/F[:,0].max())**2+(F[:,1]/F[:,1].max())**2)
 
-        import pdb;
-        pdb.set_trace()
-
-        print('DE converge to objective function : f(x) = ', str(differential_evolution_estimation['fun']))
-        print('DE converge to parameters : = ', differential_evolution_estimation['x'].astype(str))
-
-        fit_results = np.hstack((differential_evolution_estimation['x'],differential_evolution_estimation['fun']))
-
-        computation_time = python_time.time() - starting_time
-        print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
-        self.DE_population = np.array(self.DE_population)
-        self.fit_results = fit_results
-        self.fit_time = computation_time
+        ###NOT COMPLETE
+        breakpoint()

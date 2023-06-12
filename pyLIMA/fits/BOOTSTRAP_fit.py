@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 import copy
-
+import time as python_time
 
 from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.models import generate_model
@@ -72,6 +72,8 @@ class BOOTSTRAPfit(MLfit):
 
     def fit(self,number_of_samples=100, computational_pool=None ):
 
+        start_time = python_time.time()
+
         samples = []
 
         if computational_pool is not None:
@@ -100,9 +102,8 @@ class BOOTSTRAPfit(MLfit):
 
                 samples.append(new_step)
 
-        samples = np.array(samples)
-        breakpoint()
+        computation_time = python_time.time() - start_time
 
-        self.fit_results = {'best_model': fit_results, 'chi2': fit_chi2, 'fit_time': computation_time,
-                            'covariance_matrix': covariance_matrix}
-        return np.array(samples)
+        samples = np.array(samples)
+
+        self.fit_results = {'samples':samples, 'fit_time': computation_time}

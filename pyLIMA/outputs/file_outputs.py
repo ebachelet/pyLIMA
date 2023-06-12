@@ -1,7 +1,6 @@
 import json
 import numpy as np
 import os
-
 def json_output(array_parameters, parameters_name, filename='parameters', output_directory='./'):
 
     fit_results = {}
@@ -29,53 +28,50 @@ def latex_output(array_parameters, parameters_name, filename='parameters', outpu
     """Function to output a LaTeX format table of the fit parameters"""
 
 
-    file_path = os.path.join(output_directory, filename+'.tex')
+#    file_path = os.path.join(output_directory, filename+'.tex')
 
-    t = open(file_path, 'w')
+#    t = open(file_path, 'w')
 
-    t.write('\\begin{table}[h!]\n')
-    t.write('\\centering\n')
+#    t.write('\\begin{table}[h!]\n')
+#    t.write('\\centering\n')
 
-    t.write('\\begin{tabular}{lll}\n')
-    t.write('\\hline\n')
-    t.write('\\hline\n')
-
-
-    t.write('Parameters&Value')
-    t.write('\\hline\n')
-
-    mcmc_chains = fit.MCMC_chains
-    best_model_index = np.argmax(mcmc_chains[:, -1])
-
-    for index, key in enumerate(fit.model.model_dictionnary):
-        best_param = mcmc_chains[best_model_index, index]
-        percent_34 = np.percentile(mcmc_chains[:, index], 16)
-        percent_50 = np.percentile(mcmc_chains[:, index], 50)
-        percent_84 = np.percentile(mcmc_chains[:, index], 84)
-
-        t.write(
-            key + '&' + str(best_param) + '&[' + str(percent_34) + ',' + str(percent_50) + ',' + str(
-                percent_84) + ']\\\\\n')
-
-    t.write('Chi2&' + str(-2 * mcmc_chains[best_model_index, -1]) + '&0\\\\\n')
+#    t.write('\\begin{tabular}{lll}\n')
+#    t.write('\\hline\n')
+#    t.write('\\hline\n')
 
 
-    t.write('Parameters&Value&Errors')
-    t.write('\\hline\n')
+#    t.write('Parameters&Value')
+#    t.write('\\hline\n')
 
-    for index, key in enumerate(fit.model.model_dictionnary):
-        t.write(key + '&' + str(fit.fit_results[index]) + '&' + str(
-        fit.fit_covariance.diagonal()[index] ** 0.5) + '\\\\\n')
+#    mcmc_chains = fit.MCMC_chains
+#    best_model_index = np.argmax(mcmc_chains[:, -1])
 
-        t.write('Chi2&' + str(fit.fit_results[-1]) + '&0\\\\\n')
+#    for index, key in enumerate(fit.model.model_dictionnary):
+#        best_param = mcmc_chains[best_model_index, index]
+#        percent_34 = np.percentile(mcmc_chains[:, index], 16)
+#        percent_50 = np.percentile(mcmc_chains[:, index], 50)
+#        percent_84 = np.percentile(mcmc_chains[:, index], 84)
 
-    t.write('\\hline\n')
-    t.write('\\end{tabular}\n')
-    t.write('\\end{table}\n')
+#        t.write(#            key + '&' + str(best_param) + '&[' + str(percent_34) + ',' + str(percent_50) + ',' + str(
+#                percent_84) + ']\\\\\n')
 
-    t.close()
+#    t.write('Chi2&' + str(-2 * mcmc_chains[best_model_index, -1]) + '&0\\\\\n')
 
 
+#    t.write('Parameters&Value&Errors')
+#    t.write('\\hline\n')
+
+#    for index, key in enumerate(fit.model.model_dictionnary):
+#        t.write(key + '&' + str(fit.fit_results[index]) + '&' + str(
+#        fit.fit_covariance.diagonal()[index] ** 0.5) + '\\\\\n')
+
+#        t.write('Chi2&' + str(fit.fit_results[-1]) + '&0\\\\\n')#
+
+#    t.write('\\hline\n')
+#    t.write('\\end{tabular}\n')
+#    t.write('\\end{table}\n')
+
+#    t.close()
 
 def pdf_output(fit, output_directory):
 

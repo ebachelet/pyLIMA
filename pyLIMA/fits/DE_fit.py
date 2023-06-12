@@ -4,11 +4,7 @@ import numpy as np
 import sys
 from tqdm import tqdm
 
-
-
 from pyLIMA.fits.ML_fit import MLfit
-from pyLIMA.outputs import pyLIMA_plots
-
 
 class DEfit(MLfit):
 

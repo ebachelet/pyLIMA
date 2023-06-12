@@ -520,14 +520,14 @@ class MLmodel(object):
                 keys.append('fsource_' + telescope.name)
                 fluxes.append(f_source)
 
-                if self.blend_flux_parameter is 'fblend':
+                if self.blend_flux_parameter == 'fblend':
 
                     f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
 
                     keys.append('fblend_' + telescope.name)
                     fluxes.append(f_blend)
 
-                if self.blend_flux_parameter is 'gblend':
+                if self.blend_flux_parameter == 'gblend':
 
                     f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
 
