@@ -10,7 +10,8 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 import matplotlib.pyplot as plt
 
 from pyLIMA import event
-
+from pyLIMA.models import PSPL_model
+from pyLIMA.outputs import pyLIMA_plots
 ### Import the simulator to be used for generating the simulated light curve
 from pyLIMA.simulations import simulator
 
@@ -61,7 +62,6 @@ your_event.check_event()
 ### Note that here we want to give a raference date to evalueate the parallax from,
 # and this needs
 ### to be close to t0.
-from pyLIMA.models import PSPL_model
 
 pspl = PSPL_model.PSPLmodel(your_event, parallax=['Full', 2458565.5])
 
@@ -93,7 +93,6 @@ pyLIMA_parameters_1 = pspl.compute_pyLIMA_parameters(pspl_parameters)
 simulator.simulate_lightcurve_flux(pspl, pyLIMA_parameters_1)
 
 #### Let's plot our simulated light curve using the pyLIMA plotter:
-from pyLIMA.outputs import pyLIMA_plots
 
 pyLIMA_plots.plot_lightcurves(pspl, pspl_parameters)
 

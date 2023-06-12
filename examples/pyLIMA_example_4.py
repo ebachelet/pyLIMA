@@ -12,8 +12,12 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 import matplotlib.pyplot as plt
 ### Import the required libraries.
 import numpy as np
+import scipy.optimize as so
+
 from pyLIMA import event
 from pyLIMA import telescopes
+from pyLIMA.models import FSPL_model
+from pyLIMA.outputs import pyLIMA_plots
 
 ### Create a new EVENT object and give it a name.
 your_event = event.Event()
@@ -57,7 +61,6 @@ your_event.telescopes[1].ld_gamma = 0.5
 
 ### Next, construct the MODEL you want to fit and link it to the EVENT you prepared. 
 ### Let's go with a basic FSPL, without second order effects:
-from pyLIMA.models import FSPL_model
 
 fspl = FSPL_model.FSPLmodel(your_event)
 
@@ -82,7 +85,6 @@ def chisq(fit_process_parameters, your_model):
 
 ### Now we can use your chisq OBJECTIVE FUNCTION for the fit.
 ### Let's assume it is scipy.optimize.minimize
-import scipy.optimize as so
 
 ### You need a reasonable starting guess ...
 your_guess = [79.963, 0.01, 9.6, 0.04]
@@ -107,7 +109,6 @@ print("chi^2:", result.fun)
 fspl.model_dictionnary
 
 ### Finally, let's look at the plot of the fit. Import the pyLIMA plotting tools:
-from pyLIMA.outputs import pyLIMA_plots
 
 pyLIMA_plots.plot_lightcurves(fspl, result.x)
 plt.show()

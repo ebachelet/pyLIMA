@@ -6,12 +6,19 @@ We will cover how to read in data files, call different fitting routines and how
 make plots.
 Please take some time to familiarize yourself with the pyLIMA documentation.
 '''
-
-import matplotlib.pyplot as plt
 ### Import the required libraries.
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LogNorm
+
 from pyLIMA import event
 from pyLIMA import telescopes
+from pyLIMA.models import PSPL_model
+from pyLIMA.fits import LM_fit
+from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.fits import DE_fit
+from pyLIMA.models import FSPL_model
+from pyLIMA.fits import MCMC_fit
 
 ### Create a new EVENT object and give it a name.
 your_event = event.Event()
@@ -51,7 +58,6 @@ your_event.check_event()
 
 ### Next, construct the MODEL you want to fit and link it to the EVENT you prepared. 
 ### Let's go with a basic PSPL, without second order effects:
-from pyLIMA.models import PSPL_model
 
 pspl = PSPL_model.PSPLmodel(your_event)
 
@@ -59,7 +65,6 @@ pspl = PSPL_model.PSPLmodel(your_event)
 ### Define the FITTING ALGORITHM you want to use for the MODEL you prepared.
 ### For more information about the models and fitting algorithms available  
 ### please consult the pyLIMA documentation.
-from pyLIMA.fits import LM_fit
 
 ### Initialize the fit by declaring a simple FIT object using the MODEL you defined:
 my_fit = LM_fit.LMfit(pspl)
@@ -84,14 +89,12 @@ my_fit.fit_results['best_model']
 my_fit.fit_parameters.keys()
 
 ### Let's see some plots. Import the pyLIMA plotting tools.
-from pyLIMA.outputs import pyLIMA_plots
 
 pyLIMA_plots.plot_lightcurves(pspl, my_fit.fit_results['best_model'])
 plt.show()
 
 ### Let's try another fit with the differential evolution (DE) algorithm. 
 ### This will take longer... 
-from pyLIMA.fits import DE_fit
 
 my_fit2 = DE_fit.DEfit(pspl)
 my_fit2.fit()
@@ -104,7 +107,6 @@ plt.show()
 ### There is strong evidence of finite source effects in this event, so let's try to
 # fit this.
 ### You will need to import the FSPL MODEL to do this:
-from pyLIMA.models import FSPL_model
 
 fspl = FSPL_model.FSPLmodel(your_event)
 
@@ -142,7 +144,6 @@ print(guess_parameters)
 ### Using MCMC is recommended when you want to explore the posterior distribution of
 # the parameters.
 ### Let's fit again using MCMC. This might take some time ...
-from pyLIMA.fits import MCMC_fit
 
 my_fit5 = MCMC_fit.MCMCfit(fspl)
 my_fit5.model_parameters_guess = guess_parameters
@@ -179,7 +180,6 @@ print('rho:', '        0.02268 ', str(np.median(MCMC_results[1000:, :, 3]))[:7],
 
 ### You can now plot the correlation between any two parameters.
 ### Import the relevant libraries:
-from matplotlib.colors import LogNorm
 
 ### Now plot u0 against tE:
 plt.hist2d(MCMC_results[1000:, :, 1].ravel(), MCMC_results[1000:, :, 2].ravel(),

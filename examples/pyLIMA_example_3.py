@@ -10,9 +10,14 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 
 ### Import the required libraries.
 import matplotlib.pyplot as plt
-
 from pyLIMA import event
-
+from pyLIMA.models import PSPL_model
+from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.models import DSPL_model
+from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.toolbox import brightness_transformation
+from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.fits import DE_fit
 ### Import the simulator to be used for generating the simulated light curve
 from pyLIMA.simulations import simulator
 
@@ -48,7 +53,6 @@ your_event.check_event()
 ### Now construct the MODEL you want to deploy to construct the light curves and 
 ### link it to the EVENT you prepared.
 ### We will use a simple point-lens point-source (PSPL) model in this example.
-from pyLIMA.models import PSPL_model
 
 pspl = PSPL_model.PSPLmodel(your_event)
 
@@ -73,7 +77,6 @@ pyLIMA_parameters_1 = pspl.compute_pyLIMA_parameters(pspl_parameters)
 simulator.simulate_lightcurve_flux(pspl, pyLIMA_parameters_1)
 
 #### Let's plot our simulated light curve using the pyLIMA plotter (recommended)!
-from pyLIMA.outputs import pyLIMA_plots
 
 pyLIMA_plots.plot_lightcurves(pspl, pspl_parameters)
 plt.show()
@@ -173,7 +176,6 @@ your_event2.find_survey('CTIO_I')
 ### Now construct the MODEL you want to deploy to construct the light curves and 
 ### link it to the EVENT you prepared.
 ### We will use the double-source point-lens (DSPL) model for this example.
-from pyLIMA.models import DSPL_model
 
 dspl = DSPL_model.DSPLmodel(your_event2)
 
@@ -210,7 +212,6 @@ simulator.simulate_lightcurve_flux(dspl, pyLIMA_parameters)
 
 #### Let's plot our simulated light curve!
 ### Plot with pyLIMA plotter (recommended):
-from pyLIMA.outputs import pyLIMA_plots
 
 pyLIMA_plots.list_of_fake_telescopes = []  # cleaning previous plots
 
@@ -256,7 +257,6 @@ magblend_CTIO_V = 21.22
 fluxes = []
 
 ### Import the magnitude to flux coversion function from pyLIMA and populate the array
-from pyLIMA.toolbox import brightness_transformation
 
 for mag in [magsource_CTIO_I, magblend_CTIO_I, magsource_SAAO_I, magblend_SAAO_I,
             magsource_SSO_I, magblend_SSO_I, magsource_CTIO_V, magblend_CTIO_V]:
@@ -273,7 +273,6 @@ pyLIMA_parameters = dspl.compute_pyLIMA_parameters(dspl_parameters)
 simulator.simulate_lightcurve_flux(dspl, pyLIMA_parameters)
 
 ### Plot it:
-from pyLIMA.outputs import pyLIMA_plots
 
 pyLIMA_plots.plot_lightcurves(dspl, dspl_parameters)
 plt.show()
@@ -307,7 +306,6 @@ for key in dspl.model_dictionnary.keys():
 
 ### Let's try to fit this now! (This can take a while!)
 ### You can check the first tutorial again for a detailed explanation if needed.
-from pyLIMA.fits import DE_fit
 
 my_fit = DE_fit.DEfit(dspl, display_progress=True, strategy='best1bin')
 my_fit.fit()

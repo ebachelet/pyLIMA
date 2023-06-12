@@ -14,6 +14,10 @@ import numpy as np
 from pyLIMA import event
 from pyLIMA import telescopes
 from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.models import PSPL_model
+from pyLIMA.fits import TRF_fit
+from pyLIMA.fits import DE_fit
+from pyLIMA.models import USBL_model, fancy_parameters
 
 ### Create a new EVENT object and give it a name.
 # Here RA and DEC matter (because the event has a strong parallax signal) !!!
@@ -150,7 +154,6 @@ plt.show()
 ### (PSPL) model.
 
 ### Set up the PSPL MODEL you want to fit and link it to the EVENT. 
-from pyLIMA.models import PSPL_model
 
 pspl = PSPL_model.PSPLmodel(your_event)
 
@@ -160,7 +163,6 @@ pspl = PSPL_model.PSPLmodel(your_event)
 ### starting guess parameters for t0, u0 and tE. You can guess roughly what starting
 # values
 ### you can try for these parameters by looking at the light curve again.
-from pyLIMA.fits import TRF_fit
 
 fit_1 = TRF_fit.TRFfit(pspl)
 fit_1.model_parameters_guess = [2457205.5, 1.0, 100.0]
@@ -198,7 +200,6 @@ plt.show()
 ### (note that are also secondary parameters to be optimized that allow for data
 # offsets
 ### and blending)
-from pyLIMA.models import USBL_model, fancy_parameters
 
 # Use the default fancy parameters log(tE), log(rho), log(s), log(q)
 fancy = fancy_parameters.standard_fancy_parameters
@@ -213,7 +214,6 @@ usbl = USBL_model.USBLmodel(your_event, fancy_parameters=fancy,
 
 ### Specify the fitting algorithm. This time go for a differential evolution search of 
 ### the parameter space. 
-from pyLIMA.fits import DE_fit
 
 fit_2 = DE_fit.DEfit(usbl, telescopes_fluxes_method='polyfit', DE_population_size=10,
                      max_iteration=10000, display_progress=True)

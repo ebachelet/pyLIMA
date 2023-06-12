@@ -9,12 +9,14 @@ replace them with parameters of your choice using the fancy_parameters module.
 We are going to fit the same light curves as in tutorial 1, but using different
 parametrization.
 '''
-
-import matplotlib.pyplot as plt
 ### First import the required libraries as before.
+import matplotlib.pyplot as plt
 import numpy as np
 from pyLIMA import event
 from pyLIMA import telescopes
+from pyLIMA.models import FSPL_model
+from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.fits import TRF_fit
 ### Import fancy_parameters. This will allow us to change the definitions as required.
 from pyLIMA.models import fancy_parameters
 
@@ -75,7 +77,6 @@ your_event.telescopes[1].ld_gamma = 0.5
 # provides the necessary functions to convert back and forth:
 my_pars = {'log_tE': 'tE'}
 
-from pyLIMA.models import FSPL_model
 
 fspl = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars)
 
@@ -90,14 +91,13 @@ fspl = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars)
 guess_parameters = [79.9, 0.008, np.log10(10.1), 0.023]
 
 ### Import the TRF fitting algorithm and fit
-from pyLIMA.fits import TRF_fit
 
 my_fit = TRF_fit.TRFfit(fspl)
 my_fit.model_parameters_guess = guess_parameters
 my_fit.fit()
 
 ### Let's see the plot. Zoom close to the peak again to see what is going on.
-from pyLIMA.outputs import pyLIMA_plots
+
 
 pyLIMA_plots.plot_lightcurves(fspl, my_fit.fit_results['best_model'])
 plt.show()
