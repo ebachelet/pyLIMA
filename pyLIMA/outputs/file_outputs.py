@@ -1,6 +1,7 @@
 import json
 import numpy as np
-import os
+import datetime
+
 def json_output(array_parameters, parameters_name, filename='parameters', output_directory='./'):
 
     fit_results = {}
