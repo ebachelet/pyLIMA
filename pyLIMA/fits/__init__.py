@@ -8,3 +8,6 @@ from .MCMC_fit import MCMCfit
 from .MINIMIZE_fit import MINIMIZEfit
 from .NGSA2_fit import NGSA2fit
 from .TRF_fit import TRFfit
+
+__all__ = ["BOOTSTRAPfit","DEMCfit","DEfit","DREAMfit","GRIDfit","LMfit","MCMCfit",
+           "MINIMIZEfit","NGSA2fit","TRFfit"]
