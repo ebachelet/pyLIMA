@@ -1,5 +1,3 @@
-import numpy as np
-
 from pyLIMA.orbitalmotion import orbital_motion_2D, orbital_motion_3D
 
 def orbital_motion_shifts(orbital_motion_model, time, pyLIMA_parameters):

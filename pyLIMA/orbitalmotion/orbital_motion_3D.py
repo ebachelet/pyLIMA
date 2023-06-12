@@ -1,5 +1,4 @@
 import numpy as np
-from PyAstronomy import pyasl
 
 def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     """"

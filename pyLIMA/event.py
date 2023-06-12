@@ -8,10 +8,8 @@ Created on Thu Aug 27 16:39:32 2015
 import sys
 import numpy as np
 
-
 class EventException(Exception):
     pass
-
 
 class Event(object):
     """

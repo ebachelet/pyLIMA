@@ -7,9 +7,7 @@ Created on Thu March 03 12:51:19 2017
 
 from __future__ import division
 import pkg_resources
-
 import numpy as np
-import os
 import astropy.io.fits as fits
 import scipy.interpolate as si
 

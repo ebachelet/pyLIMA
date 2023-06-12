@@ -8,7 +8,6 @@ import pyLIMA.parallax.parallax
 from pyLIMA.orbitalmotion import orbital_motion
 from pyLIMA.magnification import magnification_Jacobian
 from pyLIMA.orbitalmotion import orbital_motion_3D
-from pyLIMA.models import fancy_parameters
 
 class MLmodel(object):
     """

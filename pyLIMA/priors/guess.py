@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.signal as ss
 
-
 def initial_guess_PSPL(event):
     """Function to find initial PSPL guess for Levenberg-Marquardt solver (method=='LM').
        This assumes no blend.

@@ -1,7 +1,6 @@
 import numpy as np
 import pyLIMA.toolbox.brightness_transformation
 
-
 def astrometric_residuals(astrometry, astrometric_model):
 
 

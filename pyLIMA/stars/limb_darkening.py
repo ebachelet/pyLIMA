@@ -6,6 +6,7 @@ Created on Thu Aug 27 16:39:32 2015
 """
 import collections
 import contextlib
+
 try:
     import StringIO
 except ImportError:

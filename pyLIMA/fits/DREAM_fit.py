@@ -4,9 +4,6 @@ import sys
 import numpy as np
 
 from pyLIMA.fits.ML_fit import MLfit
-import pyLIMA.fits.objective_functions
-from pyLIMA.outputs import pyLIMA_plots
-import random
 
 
 

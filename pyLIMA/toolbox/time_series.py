@@ -1,6 +1,5 @@
 from astropy.table import QTable
 import numpy as np
-
 def clean_time_series(data):
 
     dataset = [data[key].value for key in data.columns.keys()]

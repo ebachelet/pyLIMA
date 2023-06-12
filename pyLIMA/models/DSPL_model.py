@@ -1,10 +1,7 @@
 import numpy as np
 
 from pyLIMA.models.ML_model import MLmodel
-import copy
-
 from pyLIMA.magnification import magnification_PSPL
-
 class DSPLmodel(MLmodel):
     @property
     def model_type(self):

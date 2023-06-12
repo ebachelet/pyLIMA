@@ -5,7 +5,6 @@ import sys
 
 from pyLIMA.fits.LM_fit import LMfit
 
-
 class TRFfit(LMfit):
 
     def fit_type(self):

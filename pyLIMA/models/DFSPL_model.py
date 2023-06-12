@@ -1,10 +1,7 @@
 import numpy as np
 
 from pyLIMA.models.DSPL_model import DSPLmodel
-import copy
-
 from pyLIMA.magnification import magnification_FSPL
-
 class DFSPLmodel(DSPLmodel):
     @property
     def model_type(self):

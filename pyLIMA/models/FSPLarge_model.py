@@ -1,7 +1,5 @@
 from pyLIMA.models.FSPL_model import FSPLmodel
 from pyLIMA.magnification import magnification_VBB
-
-
 class FSPLargemodel(FSPLmodel):
 
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):

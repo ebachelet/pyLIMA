@@ -2,7 +2,6 @@ from pyLIMA.models.USBL_model import USBLmodel
 from pyLIMA.magnification import magnification_VBB
 
 class FSBLmodel(USBLmodel):
-    @property
     def model_type(self):
 
         return 'FSBL'

@@ -6,7 +6,6 @@ import copy
 from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.models import generate_model
 from pyLIMA import event
-from pyLIMA import telescopes
 
 class BOOTSTRAPfit(MLfit):
 

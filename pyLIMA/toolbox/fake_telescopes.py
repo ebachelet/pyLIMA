@@ -1,6 +1,5 @@
 from pyLIMA import telescopes
 
-
 def create_a_fake_telescope(light_curve=None, astrometry_curve=None, name='A Fake Telescope', astrometry_unit='deg'):
 
     telescope = telescopes.Telescope(name=name, light_curve=light_curve,  light_curve_names = ['time', 'mag', 'err_mag'],

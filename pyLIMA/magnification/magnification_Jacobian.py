@@ -1,7 +1,5 @@
 import numpy as np
 from scipy.optimize._numdiff import approx_derivative
-
-
 def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
     """
     The Jacobian of the PSPL magnification

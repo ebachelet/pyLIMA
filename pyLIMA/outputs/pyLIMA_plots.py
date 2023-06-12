@@ -5,17 +5,10 @@ import cycler
 import matplotlib
 import sys
 
-from bokeh.io import output_file, show
-from bokeh.layouts import gridplot, grid, layout, row
-from bokeh.plotting import figure, curdoc
-from bokeh.transform import linear_cmap, log_cmap
-from bokeh.util.hex import hexbin
+from bokeh.layouts import gridplot
+from bokeh.plotting import figure
 from bokeh.models import BasicTickFormatter
-from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
-from bokeh.models import ColumnDataSource
 from bokeh.models import Arrow, OpenHead
-from bokeh.models import Circle
-
 import pygtc
 
 from pyLIMA.toolbox import fake_telescopes, plots

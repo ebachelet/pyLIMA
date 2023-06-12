@@ -5,7 +5,6 @@ import scipy.optimize as so
 import sys
 
 from pyLIMA.fits.ML_fit import MLfit
-import pyLIMA.fits.objective_functions
 from pyLIMA.outputs import pyLIMA_plots
 
 class GRIDfit(MLfit):

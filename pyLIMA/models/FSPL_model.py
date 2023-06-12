@@ -1,9 +1,5 @@
-import numpy as np
-
 from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_FSPL, magnification_Jacobian
-from pyLIMA.astrometry import astrometric_shifts, astrometric_positions
-
 class FSPLmodel(MLmodel):
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],

@@ -1,7 +1,6 @@
 from astropy.time import Time
 from astropy.coordinates import get_body_barycentric_posvel
 
-
 def Earth_ephemerides(time_to_treat):
 
     time_jd_reference = Time(time_to_treat, format='jd')

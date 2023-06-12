@@ -4,7 +4,6 @@ import sys
 import emcee
 
 from pyLIMA.fits.ML_fit import MLfit
-from multiprocessing import Manager
 
 class MCMCfit(MLfit):
 

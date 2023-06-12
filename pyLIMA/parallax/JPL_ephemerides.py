@@ -1,4 +1,3 @@
-import telnetlib
 from astroquery.jplhorizons import Horizons
 import numpy as np
 

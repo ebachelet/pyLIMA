@@ -1,14 +1,13 @@
 import sys
 import numpy as np
 from collections import OrderedDict, namedtuple
-from bokeh.io import output_file, show
 from multiprocessing import Manager
 
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.outputs import pyLIMA_plots
 import pyLIMA.fits.objective_functions as objective_functions
 
-from bokeh.layouts import gridplot, row
+from bokeh.layouts import gridplot
 from bokeh.plotting import output_file, save
 
 class FitException(Exception):

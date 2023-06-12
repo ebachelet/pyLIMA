@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-
 
 def plot_light_curve_magnitude(time, mag, mag_error=None, figure_axe=None, color=None, linestyle='-', marker=None, name=None):
 

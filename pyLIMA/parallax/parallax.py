@@ -1,7 +1,6 @@
 import numpy as np
 from astropy import constants as astronomical_constants
 from scipy import interpolate
-
 from astropy.time import Time
 from astropy.coordinates import solar_system_ephemeris, spherical_to_cartesian
 

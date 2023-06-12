@@ -4,7 +4,6 @@ from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_PSPL
 from pyLIMA.astrometry import astrometric_shifts, astrometric_positions
 from pyLIMA.magnification import magnification_Jacobian
-
 class PSPLmodel(MLmodel):
 
     def model_type(self):

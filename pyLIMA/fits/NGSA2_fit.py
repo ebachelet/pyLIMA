@@ -1,12 +1,9 @@
 import time as python_time
 import numpy as np
 import sys
-from collections import OrderedDict
 from pymoo.core.problem import ElementwiseProblem
 
 from pyLIMA.fits.ML_fit import MLfit
-import pyLIMA.fits.objective_functions
-from pyLIMA.priors import parameters_boundaries
 
 class MLProblem(ElementwiseProblem):
 

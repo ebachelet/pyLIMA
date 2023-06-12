@@ -1,6 +1,4 @@
 import numpy as np
-
-
 def xy_shifts_to_NE_shifts(xy_shifts, piEN, piEE):
     """ Transform the x,y positions into the North, East reference,
         i.e. rotate by phi = np.arctan2(piEE,piEN)
