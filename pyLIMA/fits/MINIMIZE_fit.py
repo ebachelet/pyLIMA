@@ -70,7 +70,7 @@ class MINIMIZEfit(LMfit):
             covariance_matrix = np.cov(self.population[mask, :-1].T)
 
 
-        except:
+        except ValueError:
 
             covariance_matrix = np.zeros((len(self.fit_parameters),
                                           len(self.fit_parameters)))

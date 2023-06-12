@@ -28,46 +28,6 @@ class FSPLmodel(MLmodel):
         return model_dictionary
 
     def model_astrometry(self, telescope, pyLIMA_parameters):
-        ##########THIS IS PSPL ASTROMETRY, HERE FOR TESTING....################
-        # if telescope.astrometry is not None:
-
-        #    source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(
-        #    telescope, pyLIMA_parameters, data_type='astrometry')
-
-        #    # Blended centroid shifts....
-        #    #magnification = self.model_magnification(telescope, pyLIMA_parameters)
-        #    #try:
-        #    #    g_blend = f_blending/f_source
-        #    #    shifts = astrometric_shifts.PSPL_shifts_with_blend(
-        #    source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E,
-        #    g_blend)
-        #    #    angle = np.arctan2(source_trajectory_y,source_trajectory_x)
-        #    #    shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
-
-        #    #except:
-
-        #    shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x,
-        #    source_trajectory_y,
-        #                                                         pyLIMA_parameters.theta_E)
-
-        #    delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(
-        #    shifts,pyLIMA_parameters.piEN,
-        #                                                                        pyLIMA_parameters.piEE)
-
-        #    position_ra, position_dec =
-        #    astrometric_positions.source_astrometric_position(telescope,
-        #    pyLIMA_parameters,
-        #                                                                                  shifts=(delta_ra, delta_dec),
-        #                                                                                  time_ref=self.parallax_model[
-        #                                                                                      1])
-
-        #    astro_shifts = np.array([position_ra, position_dec])
-
-        # else:
-
-        #    astro_shifts = None
-
-        # return astro_shifts
 
         pass
 

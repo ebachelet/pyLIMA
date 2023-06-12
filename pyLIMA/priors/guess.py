@@ -89,7 +89,7 @@ def initial_guess_PSPL(event):
                 errors_magnitude.append(
                     np.mean(lightcurve_bis[good_points]['err_mag'].value))
 
-            except:
+            except ValueError:
 
                 time = lightcurve_magnitude['time'].value
                 flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(

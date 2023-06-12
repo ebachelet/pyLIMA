@@ -77,7 +77,7 @@ class DREAMfit(MLfit):
         mutate = np.random.uniform(0, 1, len(parent0[:-1])) < crossover
         # breakpoint()
         # mutate = np.random.uniform(0, 1, len(parent1[:-1])) < -1
-        if np.all(mutate == False):
+        if np.all(mutate is False):
             rand = np.random.randint(0, len(mutate))
             mutate[rand] = True
 

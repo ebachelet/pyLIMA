@@ -28,7 +28,7 @@ class FSPLargemodel(FSPLmodel):
                                                         source_trajectory_y,
                                                         rho, linear_limb_darkening,
                                                         sqrt_limb_darkening)
-        except:
+        except ValueError:
 
             return magnification_VBB.magnification_FSPL(source_trajectory_x,
                                                         source_trajectory_y,

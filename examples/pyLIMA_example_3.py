@@ -12,9 +12,7 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 import matplotlib.pyplot as plt
 from pyLIMA import event
 from pyLIMA.models import PSPL_model
-from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.models import DSPL_model
-from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.toolbox import brightness_transformation
 from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.fits import DE_fit

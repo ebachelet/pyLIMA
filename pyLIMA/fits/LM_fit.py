@@ -47,7 +47,7 @@ class LMfit(MLfit):
                 residuals.append(np.concatenate(residus[data_type]))
                 errors.append(np.concatenate(err[data_type]))
 
-            except:
+            except ValueError:
 
                 pass
 
@@ -100,7 +100,7 @@ class LMfit(MLfit):
             # output
             covariance_matrix = np.linalg.pinv(np.dot(lm_fit['jac'].T, lm_fit['jac']))
 
-        except:
+        except ValueError:
 
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))

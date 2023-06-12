@@ -11,6 +11,8 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 import matplotlib.pyplot as plt
 ### First import the required libraries
 import numpy as np
+import multiprocessing as mul
+
 from pyLIMA import event
 from pyLIMA import telescopes
 from pyLIMA.outputs import pyLIMA_plots
@@ -231,7 +233,6 @@ fit_2.fit_parameters['piEN'][1] = [-0.5, 0.5]
 fit_2.fit_parameters['piEE'][1] = [-0.5, 0.5]
 
 ### Allow multiprocessing
-import multiprocessing as mul
 
 pool = mul.Pool(processes=4)
 
@@ -244,7 +245,7 @@ pool = mul.Pool(processes=4)
 perform_long_fit = False
 
 ### Fit the model:
-if perform_long_fit == True:
+if perform_long_fit is True:
     fit_2.fit(computational_pool=pool)
 
     # Save it

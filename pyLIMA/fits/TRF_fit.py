@@ -62,7 +62,7 @@ class TRFfit(LMfit):
             # output
             covariance_matrix = np.linalg.pinv(np.dot(trf_fit['jac'].T, trf_fit['jac']))
 
-        except:
+        except ValueError:
 
             covariance_matrix = np.zeros((len(self.fit_parameters),
                                           len(self.fit_parameters)))

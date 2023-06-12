@@ -17,7 +17,7 @@ def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None'],
 
         model_module = importlib.import_module('pyLIMA.models.' + model_type + '_model')
 
-    except:
+    except ValueError:
 
         return None
 

@@ -315,7 +315,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                                                   index] + sign *
                                                               0.001 * derivative))
 
-                except:
+                except ValueError:
 
                     pass
 
@@ -434,7 +434,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
             plot_angle += pyLIMA_parameters.alpha
 
-        except:
+        except ValueError:
 
             pass
 
@@ -452,20 +452,20 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         East = np.dot(rota_mat, East)
         North = np.dot(rota_mat, North)
 
-        arrow = plt.annotate('',
+        plt.annotate('',
                              xy=(origin_t0par[0] + east[0], origin_t0par[1] + east[1]),
                              xytext=(origin_t0par[0], origin_t0par[1]),
                              arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
-        E = plt.annotate('E', xy=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
+        plt.annotate('E', xy=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
                          xytext=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
                          weight='bold', alpha=0.5, ha='center', va='center',
                          rotation=np.rad2deg(plot_angle))
 
-        arrow = plt.annotate('', xy=(
+        plt.annotate('', xy=(
             origin_t0par[0] + north[0], origin_t0par[1] + north[1]),
                              xytext=(origin_t0par[0], origin_t0par[1]),
                              arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
-        N = plt.annotate('N',
+        plt.annotate('N',
                          xy=(origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
                          xytext=(
                              origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
@@ -473,12 +473,6 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                          rotation=np.rad2deg(plot_angle))
 
         if bokeh_geometry is not None:
-            # bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + east[0]],
-            # [origin_t0par[1],origin_t0par[1] + east[1]], line_dash='dotted',
-            # color='black')
-            # bokeh_geometry.line([origin_t0par[0], origin_t0par[0] + north[0]],
-            # [origin_t0par[1], origin_t0par[1] + north[1]], line_dash='dotted',
-            # color='black')
 
             bokeh_geometry.add_layout(
                 Arrow(end=OpenHead(line_color="grey", line_width=1),
@@ -502,7 +496,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
             handle.set_sizes([100])
 
-        except:
+        except ValueError:
 
             pass
 
@@ -520,7 +514,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     figure_axes.axis([-2, 2, -2, 2])
     # figure_axes.axis('scaled')
-    title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
+    #title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
     # figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
     return figure_trajectory, bokeh_geometry
@@ -589,16 +583,6 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
         bokeh_res_x.xaxis.major_tick_line_color = None
         bokeh_res_x.xaxis.major_label_text_font_size = '0pt'
 
-        # bokeh_lightcurves.xaxis.minor_tick_line_color = None
-        # bokeh_lightcurves.xaxis.major_tick_line_color = None
-        # bokeh_lightcurves.xaxis.major_label_text_font_size = '0pt'
-        # bokeh_lightcurves.y_range.flipped = True
-        # bokeh_lightcurves.xaxis.formatter = BasicTickFormatter(use_scientific=False)
-
-        # bokeh_residuals.xaxis.formatter = BasicTickFormatter(use_scientific=False)
-        # bokeh_residuals.xaxis.major_label_orientation = np.pi / 4
-        # bokeh_residuals.xaxis.minor_tick_line_color = None
-
     else:
 
         bokeh_main = None
@@ -616,7 +600,7 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
                             model_parameters,
                             bokeh_plots=[bokeh_main, bokeh_res_x, bokeh_res_y])
 
-    legend = ax_main.legend(shadow=True, fontsize='large', bbox_to_anchor=(1.05, 0.25),
+    ax_main.legend(shadow=True, fontsize='large', bbox_to_anchor=(1.05, 0.25),
                             loc="center left", borderaxespad=0, ncol=2)
 
     ax_main.invert_xaxis()
@@ -758,7 +742,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters,
                                                             y_end=lens_N[
                                                                 index_time + 1]))
 
-                    except:
+                    except ValueError:
 
                         pass
 
@@ -847,7 +831,7 @@ def plot_astrometric_data(figure_ax, microlensing_model, bokeh_plot=None):
             err_dec = tel.astrometry['err_dec'].value
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
-            marker = str(MARKER_SYMBOLS[0][ind])
+            #marker = str(MARKER_SYMBOLS[0][ind])
 
             figure_ax.errorbar(delta_ra, delta_dec, xerr=err_ra, yerr=err_dec, fmt='.',
                                ecolor=color, color=color,
@@ -945,15 +929,16 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     mat_figure_axes[0].invert_yaxis()
     mat_figure_axes[1].invert_yaxis()
-    legend = mat_figure_axes[0].legend(shadow=True, fontsize='large',
+    mat_figure_axes[0].legend(shadow=True, fontsize='large',
                                        bbox_to_anchor=(0, 1.02, 1, 0.2),
                                        loc="lower left",
                                        mode="expand", borderaxespad=0, ncol=3)
 
     try:
         bokeh_lightcurves.legend.click_policy = "mute"
-        legend = bokeh_lightcurves.legend[0]
-    except:
+        #legend = bokeh_lightcurves.legend[0]
+
+    except ValueError:
 
         pass
 
@@ -1059,7 +1044,6 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
 
     # plot aligned data
     index = 0
-    index_Earth = 0
 
     list_of_telescopes = create_telescopes_to_plot_model(microlensing_model,
                                                          pyLIMA_parameters)
@@ -1249,7 +1233,7 @@ def plot_parameters_table(samples, parameters_names=None, bokeh_plot=None):
 
             last_color = 'dodgerblue'
 
-    column_labels = ['Parameters', 'Values']
+    #column_labels = ['Parameters', 'Values']
 
     fig_size = [10, 7.5]
     figure_table = plt.figure(figsize=(fig_size[0], fig_size[1]), dpi=75)

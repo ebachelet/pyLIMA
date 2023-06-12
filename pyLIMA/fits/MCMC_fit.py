@@ -80,7 +80,7 @@ class MCMCfit(MLfit):
             if not pool.is_master():
                 pool.wait()
                 sys.exit(0)
-        except:
+        except ValueError:
 
             pass
         if pool:
@@ -155,7 +155,7 @@ class MCMCfit(MLfit):
                     index = self.fit_parameters[key][0]
                     MCMC_chains_with_fluxes[:, :, ind] = mcmc_samples[:, :, index]
 
-                except:
+                except ValueError:
 
                     MCMC_chains_with_fluxes[:, :, ind] = pre_chains[:, :,
                                                          index_fluxes_start]

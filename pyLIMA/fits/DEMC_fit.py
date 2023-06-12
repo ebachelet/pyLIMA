@@ -87,7 +87,8 @@ class DEMCfit(MLfit):
             if not pool.is_master():
                 pool.wait()
                 sys.exit(0)
-        except:
+
+        except ValueError:
 
             pass
 

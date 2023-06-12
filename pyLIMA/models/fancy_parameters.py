@@ -40,7 +40,7 @@ def t0(x):
 
         alpha = x.alpha + np.pi
 
-    except:
+    except ValueError:
 
         alpha = 0
 
@@ -58,7 +58,7 @@ def u0(x):
 
         alpha = x.alpha + np.pi
 
-    except:
+    except ValueError:
 
         alpha = 0
 
@@ -76,7 +76,7 @@ def t_center(x):
 
         alpha = x.alpha + np.pi
 
-    except:
+    except ValueError:
 
         alpha = 0
 
@@ -94,7 +94,7 @@ def u_center(x):
 
         alpha = x.alpha + np.pi
 
-    except:
+    except ValueError:
 
         alpha = 0
 

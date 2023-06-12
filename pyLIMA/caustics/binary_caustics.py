@@ -70,6 +70,7 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
     """
 
     try:
+
         medians_y = np.median(caustic_points[:, :].imag, axis=0)
 
         positive_y_branches = np.where(medians_y > 0)[0]
@@ -103,7 +104,7 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
                 np.conj(critical_curves_points[:, second_branch][::-1]),
                 np.conj(critical_curves_points[:, first_branch][::-1])]
 
-    except:
+    except ValueError:
 
         resonant_caustic = caustic_points
 
@@ -156,7 +157,7 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
                                                      order[2]][::-1]]
 
 
-    except:
+    except ValueError:
 
         medians_y = np.median(caustic_points[:, :].imag)
 
@@ -227,7 +228,7 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
         wide_caustic = np.r_[wide_bottom_caustic, wide_top_caustic]
         wide_cc = np.r_[wide_bottom_cc, wide_top_cc]
 
-    except:
+    except ValueError:
 
         medians_y = np.median(caustic_points[:, :].imag)
 
@@ -291,11 +292,7 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
     roots = []
     wm_1 = 4.0 * lens_1 * delta_mass
     wm_3 = 0.0
-    slice_1 = []
-    slice_2 = []
-    slice_3 = []
-    slice_4 = []
-    slices = [slice_1, slice_2, slice_3, slice_4]
+
     for angle in phi:
 
         e_phi = np.cos(-angle) + 1j * np.sin(-angle)  # See Witt & Mao

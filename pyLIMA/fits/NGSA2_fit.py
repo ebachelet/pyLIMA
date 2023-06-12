@@ -58,19 +58,9 @@ class NGSA2fit(MLfit):
 
     def fit(self, computational_pool=None):
 
-        starting_time = python_time.time()
+        #starting_time = python_time.time()
 
         from pymoo.algorithms.moo.nsga2 import NSGA2
-
-        #        algorithm = NSGA2(
-        #            pop_size=40,
-        #            n_offsprings=10,
-        #            sampling=RandomSelection(),
-        #            crossover=SBX(),
-        #            mutation= PolynomialMutation(prob=1.0, eta=20,
-        #            repair=RoundingRepair()),
-        #            eliminate_duplicates=True
-        #        )
 
         algorithm = NSGA2(pop_size=100)
 
@@ -99,12 +89,13 @@ class NGSA2fit(MLfit):
                        save_history=True,
                        verbose=True)
 
-        X = res.X
-        F = res.F
-        n_evals = np.array([e.evaluator.n_eval for e in res.history])
-        opt = np.array([e.opt[0].F for e in res.history])
+       # X = res.X
+       # F = res.F
+       # n_evals = np.array([e.evaluator.n_eval for e in res.history])
+       # opt = np.array([e.opt[0].F for e in res.history])
 
         # mask =np.argmin((F[:,0]/F[:,0].max())**2+(F[:,1]/F[:,1].max())**2)
+        #computation_time = python_time.time() - start_time
 
         ###NOT COMPLETE
         breakpoint()

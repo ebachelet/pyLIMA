@@ -129,7 +129,7 @@ class MLfit(object):
                         new_bounds = np.sort(
                             self.model.pyLIMA_to_fancy[parameter](thebounds))
 
-                    except:
+                    except ValueError:
 
                         new_bounds = standard_parameters_boundaries[ind]
 
@@ -377,7 +377,7 @@ class MLfit(object):
 
                 self.model_parameters_guess = guess_paczynski_parameters
 
-            except:
+            except ValueError:
 
                 raise FitException(
                     'Can not estimate guess, likely your model is too complex to '
@@ -485,7 +485,7 @@ class MLfit(object):
                     setattr(x, parameter, value)
                     fit_parameters_guess[index] = self.model.pyLIMA_to_fancy[key](x)
 
-                except:
+                except ValueError:
 
                     pass
 
@@ -647,7 +647,7 @@ class MLfit(object):
                 residuals.append(np.concatenate(residus[data_type]) ** 2)
                 errors.append(np.concatenate(err[data_type]) ** 2)
 
-            except:
+            except ValueError:
 
                 pass
 
@@ -704,7 +704,7 @@ class MLfit(object):
                 residuals.append(np.concatenate(residus[data_type]) ** 2)
                 errors.append(np.concatenate(err[data_type]) ** 2)
 
-            except:
+            except ValueError:
 
                 pass
 
@@ -766,7 +766,7 @@ class MLfit(object):
                 residuals.append(np.concatenate(residus[data_type]) ** 2)
                 errors.append(np.concatenate(err[data_type]) ** 2)
 
-            except:
+            except ValueError:
 
                 pass
 
@@ -965,7 +965,7 @@ class MLfit(object):
                 [[bokeh_lightcurves, bokeh_geometry], [bokeh_astrometry, None]],
                 toolbar_location='above')
 
-        except:
+        except ValueError:
 
             pass
 

@@ -409,7 +409,7 @@ class MLmodel(object):
                 try:
                     self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
                         self.fancy_to_pyLIMA_dictionnary[key_parameter])
-                except:
+                except ValueError:
 
                     pass
 
@@ -512,7 +512,7 @@ class MLmodel(object):
                     # f_source = ransac.estimator_.coef_[0]
                     # f_blend = ransac.estimator_.intercept_
 
-            except:
+            except ValueError:
 
                 f_source = 0.0
                 f_blend = 0.0
@@ -590,7 +590,7 @@ class MLmodel(object):
                 setattr(model_parameters, key_parameter,
                         fancy_parameters[self.model_dictionnary[key_parameter]])
 
-            except:
+            except ValueError:
 
                 setattr(model_parameters, key_parameter, None)
 
@@ -613,7 +613,7 @@ class MLmodel(object):
 
                     r_s = -v_para / v_radial
 
-                except:
+                except ValueError:
 
                     v_radial = np.sign(v_radial) * 10 ** -20
 
@@ -665,7 +665,7 @@ class MLmodel(object):
                     setattr(fancy_parameters, key_parameter,
                             self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
 
-                except:
+                except ValueError:
 
                     pass
 
@@ -752,7 +752,7 @@ class MLmodel(object):
                 tau += parallax_delta_tau
                 beta += parallax_delta_beta
 
-            except:
+            except ValueError:
 
                 pass
 
@@ -771,14 +771,14 @@ class MLmodel(object):
             #    period, eccentricity, t_periastron]
             #    xallarap_delta_tau, xallarap_delta_beta =
             #    microlxallarap.compute_xallarap_curvature(XiE,
-            #                                                                                        orbital_elements,
-            #                                                                                        mode='elliptic')
+            #      orbital_elements,
+            #      mode='elliptic')
             # else:
 
             #    orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period]
             #    xallarap_delta_tau, xallarap_delta_beta =
             #    microlxallarap.compute_xallarap_curvature(XiE,
-            #                                                                                        orbital_elements)
+            #    orbital_elements)
 
             # tau += xallarap_delta_tau
             # beta += xallarap_delta_beta
