@@ -14,7 +14,7 @@ dependencies=[
     "astroquery",
     "bokeh < 3",
     "emcee",
-    "kepler>=0.0.7",
+    "kepler>=0.0.6",
     "numpy >= 1.7",
     "pygtc",
     "pymoo",
