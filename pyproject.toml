@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 name="pyLIMA"
 requires-python=">=3.7"
 dependencies=[
-    "astropy>=5.3",
+    "astropy",
     "astroquery",
     "bokeh < 3",
     "emcee",
