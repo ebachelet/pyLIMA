@@ -229,9 +229,7 @@ class Telescope(object):
         :param object star: a stars object.
 
         """
-
         self.ld_gamma = star.find_gamma(self.filter)
-
 
     def initialize_positions(self):
 

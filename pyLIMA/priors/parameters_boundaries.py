@@ -164,6 +164,9 @@ def parameters_boundaries(event, model_dictionnary):
         try:
 
             function_name = key + '_boundaries()'
+            if ('rho_' in key):
+
+                function_name = 'rho_boundaries()'
 
             if ('q_flux' in key):
 

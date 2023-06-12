@@ -1,29 +1,36 @@
-def orbital_motion_2D_trajectory_shift(time,to_om, dalpha_dt):
-    """ Compute the trajectory curvature induced by the orbital motion of the lens.
-
-    :param float to_om: the reference time for the orbital motion
-    :param array_like time: the time array to compute the trajectory shift
-    :param float dalpha_dt: the angle change rate, in radian/day
-
-    :return: dalpha, the angle shift
-    :rtype: array_like
+def orbital_motion_2D_trajectory_shift(time, t0_om, dalpha_dt):
     """
+    Compute the trajectory curvature induced by the linear orbital motion of the lens.
 
-    dalpha = dalpha_dt * (time - to_om)/365.25
+    Parameters
+    ----------
+    time : array, containing the time to treat
+    t0_om : float, the time of reference of the orbital motion
+    dalpha_dt :  float, the linear rate of lens rotation
+
+    Returns
+    -------
+    dalpha : array, containts the variation of the lens trajectory angle du to the motion of the lens
+    """
+    dalpha = dalpha_dt * (time - t0_om)/365.25
 
     return -dalpha
 
 
-def orbital_motion_2D_separation_shift(time,to_om, ds_dt):
-    """ Compute the binary separation change induced by the orbital motion of the lens.
-
-    :param float to_om: the reference time for the orbital motion
-    :param array_like time: the time array to compute the trajectory shift
-    :param float ds_dt: the binary separation change rate, in einstein_ring_unit/day
-
-    :return: dseparation, the binary separation shift
-    :rtype: array_like
+def orbital_motion_2D_separation_shift(time,t0_om, ds_dt):
     """
-    dseparation = ds_dt * (time - to_om)/365.25
+    Compute the separation change induced by the linear orbital motion of the lens.
+
+    Parameters
+    ----------
+    time : array, containing the time to treat
+    t0_om : float, the time of reference of the orbital motion
+    ds_dt :  float, the linear rate of lens separation
+
+    Returns
+    -------
+    dseparation : array, containts the variation of the lens separation du to the motion of the lens
+    """
+    dseparation = ds_dt * (time - t0_om)/365.25
 
     return dseparation

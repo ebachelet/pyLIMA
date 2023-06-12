@@ -2,14 +2,26 @@ import numpy as np
 from PyAstronomy import pyasl
 
 def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
-    """" https: // arxiv.org / pdf / 2011.04780.pdf"""
+    """"
+    Circular and Keplerian orbital motion of the lens. Use the same parametrization from Bozza 2021.
+    See https://ui.adsabs.harvard.edu/abs/2021MNRAS.505..126B/abstract
+        https://ui.adsabs.harvard.edu/abs/2011ApJ...738...87S/abstract
 
+    Parameters
+    ----------
+    time : array, containing the time to treat
+    pyLIMA_parameters : a pyLIMA_parameters object
+    om_model :  list, [str,float] the orbital motion model
 
+    Returns
+    -------
+    dseparation : array, containts the variation of the lens separation due to the motion of the lens
+    dalpha : array, containts the variation of the lens trajectory angle due to the motion of the lens
+    """
     Rmatrix = pyLIMA_parameters.Rmatrix
     orbital_velocity = pyLIMA_parameters.orbital_velocity
     a_true = pyLIMA_parameters.a_true
     t_periastron = pyLIMA_parameters.t_periastron
-    #breakpoint()
 
     if om_model[0] == 'Circular': #Circular
 
@@ -19,7 +31,7 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
 
         r_microlens = np.dot(Rmatrix, r_prime)
 
-    else: #Keplerian/
+    else: #Keplerian
 
         eccentricity = pyLIMA_parameters.eccentricity
 
@@ -49,8 +61,35 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
 
 
 def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_para, v_perp, v_radial, t0_om):
-    """ Return Euler angles, semi-major axis and orbital velocity"""
+    """
+    Compute the (unscaled!, i.e. GMass is not known) orbital parameters from the microlensing parameters
+    See https://ui.adsabs.harvard.edu/abs/2021MNRAS.505..126B/abstract
+        https://ui.adsabs.harvard.edu/abs/2011ApJ...738...87S/abstract
+        https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 
+    Parameters
+    ----------
+    separation_0 : float, the binary separation at t0_om
+    r_s : float, the ratio of the radial separation s_z over the projected separation s_0
+    a_s : float, the ratio of the microlesing separation over the true (unscaled) semi-major axis
+    v_para : float, the rotation speed along the s_0 axis, i.e. 1/s ds/dt
+    v_perp : float, the rotation speed perpendicular to s_0 axis, i.e. dalpha/dt
+    v_radial : float, the rotation speed in the z axis, i.e. 1/s ds_z/dt
+    t0_om:  float, the time of reference of the orbital _motion model
+
+    Returns
+    -------
+    longitude_ascending_node : float
+    inclination : float
+    omega_peri : float
+    orbital_velocity : float
+    eccentricity : float
+    true_anomaly : float
+    t_periastron :  float
+    x_0 : float, the first column of the Rotation matrix
+    y_0 : float, the second column of the Rotation matrix
+    z_0 : float, the first column of the Rotation matrix
+    """
     e_0, h_0, r_0, v_0, r_norm, separation_z, a_true, GMass, orbital_velocity = state_orbital_elements(separation_0, r_s, a_s, v_para, v_perp, v_radial)
 
     # From Skowron2011, Bozza2020
@@ -102,10 +141,34 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
     return longitude_ascending_node, inclination, omega_peri, a_true, orbital_velocity, eccentricity, true_anomaly,\
            t_periastron, x_0, y_0, z_0
 
-
-
 def state_orbital_elements(separation_0, r_s, a_s, v_para, v_perp, v_radial):
+    """
+    Compute the stated orbital parameters from the microlensing parameters
+    See https://ui.adsabs.harvard.edu/abs/2021MNRAS.505..126B/abstract
+        https://ui.adsabs.harvard.edu/abs/2011ApJ...738...87S/abstract
+        https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 
+    Parameters
+    ----------
+    separation_0 : float, the binary separation at t0_om
+    r_s : float, the ratio of the radial separation s_z over the projected separation s_0
+    a_s : float, the ratio of the microlesing separation over the true (unscaled) semi-major axis
+    v_para : float, the rotation speed along the s_0 axis, i.e. 1/s ds/dt
+    v_perp : float, the rotation speed perpendicular to s_0 axis, i.e. dalpha/dt
+    v_radial : float, the rotation speed in the z axis, i.e. 1/s ds_z/dt
+
+    Returns
+    -------
+    e_0 : array, the eccentricity vector
+    h_0 : array, the specific angular momentum vector
+    r_0 : array, the microlensing separation vector at time t0_om
+    v_0 : array, the microlensing speed vector at time t0_om
+    r_norm : float, the norm of the separation vector
+    separation_z : float, the radial separation
+    a_true : float,the semi-major-axis
+    GMass : float, the unscaled mass
+    orbital_velocity : float, the orbital velocity of the lens
+    """
     separation_z = r_s * separation_0
     r_0 = np.array([separation_0, 0, separation_z])
 
@@ -126,7 +189,20 @@ def state_orbital_elements(separation_0, r_s, a_s, v_para, v_perp, v_radial):
 
 
 def eccentric_anomaly_function(time, ellipticity, t_periastron, speed):
+    """
+    Solve the Kepler equation, see https://github.com/dfm/kepler.py
 
+    Parameters
+    ----------
+    time : array, the time to treat
+    ellipticity : float, the eccentricity of the orbit
+    t_periastron : float, the time of periastron of the orbit
+    speed : float, the orbital velocity
+
+    Returns
+    -------
+    eccentricities : array, the associated eccentric anomalies at time t
+    """
     import kepler
 
     eccentricities = []

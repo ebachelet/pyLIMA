@@ -4,45 +4,14 @@ from pyLIMA.magnification import magnification_VBB
 class FSBLmodel(USBLmodel):
     @property
     def model_type(self):
-        """ Return the kind of microlensing model.
 
-        :returns: FSBL
-        :rtype: string
-        """
         return 'FSBL'
 
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=None):
-        """ The magnification associated to a USBL model.# Derivatives of the normalised residuals objective function for PSPL version
-
-        lightcurve = telescope.lightcurve_flux
-
-        time = lightcurve['time'].value
-
-        # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
-        # Amplification[1] is U(t).
-        Amplification = self.model_magnification(telescope, pyLIMA_parameters, return_impact_parameter=True)
-        dAmplificationdU = (-8) / (Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
-
-        # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
-        dUdt0 = -(time - pyLIMA_parameters.t0) / (pyLIMA_parameters.tE ** 2 * Amplification[1])
-        dUdu0 = pyLIMA_parameters.u0 / Amplification[1]
-        dUdtE = -(time - pyLIMA_parameters.t0) ** 2 / (pyLIMA_parameters.tE ** 3 * Amplification[1])
-
-        dAdt0 = dAmplificationdU * dUdt0
-        dAdu0 = dAmplificationdU * dUdu0
-        dAdtE = dAmplificationdU * dUdtE
-
-        fsource_Jacobian = Amplification[0]
-        fblend_Jacobian = [1]*len(Amplification[0])
-
-        jacobi = np.array([dAdt0, dAdu0, dAdtE, fsource_Jacobian, fblend_Jacobian])
-
-            From Bozza  2010 : http://adsabs.harvard.edu/abs/2010MNRAS.408.2188B
-
-            :param object telescope: a telescope object. More details in telescope module.
-            :param object pyLIMA_parameters: a namedtuple which contain the parameters
-            :return: magnification,
-            :rtype: array_like,
+        """
+        The magnification associated to a FSBL model, that includes limb-darkening.
+        See https://ui.adsabs.harvard.edu/abs/2010MNRAS.408.2188B/abstract
+            https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
         """
 
         if telescope.lightcurve_flux is not None:

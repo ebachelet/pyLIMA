@@ -400,7 +400,6 @@ class MLmodel(object):
 
     def compute_the_microlensing_model(self, telescope, pyLIMA_parameters):
         """
-
         Find the microlensing model for given telescope astrometry and photometry
 
         Parameters
@@ -553,7 +552,7 @@ class MLmodel(object):
         ----------
         fancy_parameter :  list, a list of fancy parameters
 
-        :Returns
+        Returns
         -------
         pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
         """
@@ -619,12 +618,11 @@ class MLmodel(object):
         Transform the fancy parameters to the pyLIMA standards. The output got all
         the necessary standard attributes, example t0, u0, tE...
 
-
         Parameters
         ----------
         fancy_parameters :  a pyLIMA_parameters object
 
-        :Returns
+        Returns
         -------
         fancy_parameters : dict, an updated dictionnary the pyLIMA parameters
         """

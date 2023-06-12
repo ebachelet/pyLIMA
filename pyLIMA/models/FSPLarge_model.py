@@ -3,18 +3,16 @@ from pyLIMA.magnification import magnification_VBB
 
 
 class FSPLargemodel(FSPLmodel):
-    @property
-    def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
-        """ The magnification associated to a FSPL model. More details in microlmagnification module.
 
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: magnification, impact_parameter
-        :rtype: array_like,array_like
+    def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
+        """
+        The finite source magnification of large source (i.e. no Yoo approximation), using VBB instead. Slower obviously...
+        See https://ui.adsabs.harvard.edu/abs/2010MNRAS.408.2188B/abstract
+            https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
         """
 
         source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
-                                                                             data_type='astrometry')
+                                                                             data_type='photometry')
 
         rho = pyLIMA_parameters.rho
         linear_limb_darkening = telescope.ld_a1

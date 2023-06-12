@@ -8,18 +8,12 @@ from pyLIMA.magnification import magnification_PSPL
 class DSPLmodel(MLmodel):
     @property
     def model_type(self):
-        """ Return the kind of microlensing model.
 
-        :returns: DSPL
-        :rtype: string
-        """
         return 'DSPL'
 
     def paczynski_model_parameters(self):
-        """ Define the PSPL standard parameters, [t0,u0,tE]
-
-        :returns: a dictionnary containing the pyLIMA standards
-        :rtype: dict
+        """
+        [t0,u0,delta_t0,delta_u0,q_flux_i]
         """
         model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3, 'tE': 4}
 
@@ -36,28 +30,13 @@ class DSPLmodel(MLmodel):
 
 
     def model_astrometry(self, telescope, pyLIMA_parameters):
-        """ The astrometric shifts associated to a PSPL model. More details in microlmagnification module.
 
-           :param object telescope: a telescope object. More details in telescope module.
-           :param object pyLIMA_parameters: a namedtuple which contain the parameters
-
-
-           :return: astro_shifts
-           :rtype: array_like
-        """
         pass
 
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
-        """ The magnification associated to a PSPL model. More details in microlmagnification module.
-
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :param boolean return_impact_parameter: if the impact parameter is needed or not
-
-        :return: magnification
-        :rtype: array_like
         """
-
+        The weighted (by q_flux) sum of the two source magnifications
+        """
         if telescope.lightcurve_flux is not None:
 
             source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, source2_trajectory_y = \
@@ -80,7 +59,21 @@ class DSPLmodel(MLmodel):
         return magnification
 
     def sources_trajectory(self, telescope, pyLIMA_parameters):
+        """
+        Compute the trajectories of the two sources
 
+        Parameters
+        ----------
+        telescope :  a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters objecr
+
+        Returns
+        -------
+        source1_trajectory_x : the x coordinates of source 1
+        source1_trajectory_y : the y coordinates of source 1
+        source2_trajectory_x : the x coordinates of source 2
+        source2_trajectory_y : the y coordinates of source 2
+        """
         source1_trajectory_x, source1_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
                                                                                data_type='photometry')
 

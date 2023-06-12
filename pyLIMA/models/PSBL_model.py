@@ -2,20 +2,14 @@ from pyLIMA.models.USBL_model import USBLmodel
 from pyLIMA.magnification import magnification_VBB
 
 class PSBLmodel(USBLmodel):
-    @property
-    def model_type(self):
-        """ Return the kind of microlensing model.
 
-        :returns: PSBL
-        :rtype: string
-        """
+    def model_type(self):
+
         return 'PSBL'
 
     def paczynski_model_parameters(self):
-        """ Define the USBL standard parameters, [to,uo,tE,rho, logs,logq,alpha]
-
-        :returns: a dictionnary containing the pyLIMA standards
-        :rtype: dict
+        """
+        [t0,u0,tE,s,q,alpha]
         """
         model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'separation': 3, 'mass_ratio': 4, 'alpha': 5}
 
@@ -28,16 +22,9 @@ class PSBLmodel(USBLmodel):
         pass
 
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=None):
-        """ The magnification associated to a USBL model.
-            From Bozza  2010 : http://adsabs.harvard.edu/abs/2010MNRAS.408.2188B
-
-            :param object telescope: a telescope object. More details in telescope module.
-            :param object pyLIMA_parameters: a namedtuple which contain the parameters
-            :return: magnification,
-            :rtype: array_like,
         """
-
-
+        The magnification associated to a PSBL model. No finite source effect ==> very fast
+        """
         if telescope.lightcurve_flux is not None:
 
             source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters, data_type='photometry')

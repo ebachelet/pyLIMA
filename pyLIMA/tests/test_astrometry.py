@@ -28,6 +28,10 @@ def test_astrometric_position_of_the_source():
     telescope.Earth_positions.__getitem__.side_effect = dico.__getitem__
     telescope.Earth_positions.__iter__.side_effect = dico.__iter__
 
+    dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
+    telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
+    telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
+
     pyparams = collections.namedtuple('test',['t0','position_source_N_test','position_source_E_test','mu_source_N',
                                               'mu_source_E','parallax_source'])
     setattr(pyparams, 't0', 2459875)
@@ -51,6 +55,10 @@ def test_astrometric_position_of_the_source():
     dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
     telescope.Earth_positions.__getitem__.side_effect = dico.__getitem__
     telescope.Earth_positions.__iter__.side_effect = dico.__iter__
+    dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
+    telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
+    telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
+
     telescope.pixel_scale = 100 #mas/pix
 
     pyparams = collections.namedtuple('test',['t0','position_source_N_test','position_source_E_test','mu_source_N',
@@ -77,8 +85,8 @@ def test_source_astrometric_positions():
     telescope.astrometry['time'].value = np.array([2459857, 2459959])
     telescope.astrometry['ra'].unit = 'deg'
     dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
-    telescope.Earth_positions.__getitem__.side_effect = dico.__getitem__
-    telescope.Earth_positions.__iter__.side_effect = dico.__iter__
+    telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
+    telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
     pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test', 'position_source_E_test', 'mu_source_N',
                                                'mu_source_E', 'parallax_source'])
@@ -101,8 +109,8 @@ def test_source_astrometric_positions():
     telescope.astrometry['time'].value = np.array([2459857, 2459959])
     telescope.astrometry['ra'].unit = 'deg'
     dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
-    telescope.Earth_positions.__getitem__.side_effect = dico.__getitem__
-    telescope.Earth_positions.__iter__.side_effect = dico.__iter__
+    telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
+    telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
     pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test', 'position_source_E_test', 'mu_source_N',
                                                'mu_source_E', 'parallax_source'])
@@ -128,7 +136,8 @@ def test_lens_astrometric_positions():
     telescope.astrometry['time'].value = np.array([2459857, 2459959])
     telescope.astrometry['ra'].unit = 'deg'
     dico = {'astrometry': np.array([np.array([0.2, 0.1]), np.array([0.6, 0.98])])}
-    telescope.Earth_positions = dico
+    telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
+    telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
     model = mock.MagicMock()
     model.source_trajectory.return_value = [np.array([0.28,1.36]), np.array([-0.28,0.78])]

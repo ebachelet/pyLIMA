@@ -43,8 +43,7 @@ def compute_parallax_curvature(piE, delta_positions):
 
     return delta_tau, delta_beta
 
-
-def parallax_combination(telescope, parallax_model, North_vector, East_vector):#/, right_ascension):
+def parallax_combination(telescope, parallax_model, North_vector, East_vector):
         """ Compute, and set, the deltas_positions attributes of the telescope object
         inside the list of telescopes. deltas_positions is the offset between the position of the
         observatory at the time t, and the

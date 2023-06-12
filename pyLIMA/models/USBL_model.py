@@ -17,18 +17,12 @@ class USBLmodel(MLmodel):
 
     @property
     def model_type(self):
-        """ Return the kind of microlensing model.
 
-        :returns: USBL
-        :rtype: string
-        """
         return 'USBL'
 
     def paczynski_model_parameters(self):
-        """ Define the USBL standard parameters, [to,uo,tE,rho, logs,logq,alpha]
-
-        :returns: a dictionnary containing the pyLIMA standards
-        :rtype: dict
+        """
+        [t0,u0,tE,rho,s,q,alpha]
         """
         model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3, 'separation': 4, 'mass_ratio': 5, 'alpha': 6}
 
@@ -41,16 +35,11 @@ class USBLmodel(MLmodel):
         pass
 
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=None):
-        """ The magnification associated to a USBL model.
-            From Bozza  2010 : http://adsabs.harvard.edu/abs/2010MNRAS.408.2188B
-
-            :param object telescope: a telescope object. More details in telescope module.
-            :param object pyLIMA_parameters: a namedtuple which contain the parameters
-            :return: magnification,
-            :rtype: array_like,
         """
-
-
+        The magnification associated to a USBL model.
+        See https://ui.adsabs.harvard.edu/abs/2010MNRAS.408.2188B/abstract
+            https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
+        """
         if telescope.lightcurve_flux is not None:
 
             #self.u0_t0_from_uc_tc(pyLIMA_parameters)
@@ -74,7 +63,16 @@ class USBLmodel(MLmodel):
 
 
     def change_origin(self, pyLIMA_parameters):
+        """
+        Change the origin of the model, by modifying x_center and y_center in the pyLIMA_parameters.
+        Depending of the model.origin[0]. Could be set to caustics, then it will compute the origin close
+        to the central, wide of close caustics. Could be also primary or secondary, the position of the primay and
+        secondary body.
 
+        Parameters
+        ----------
+         pyLIMA_parameters : a pyLIMA_parameters object
+        """
         if 'caustic' in self.origin[0]:
 
                 caustic_regime = binary_caustics.find_2_lenses_caustic_regime(pyLIMA_parameters.separation,
@@ -113,7 +111,6 @@ class USBLmodel(MLmodel):
 
                 setattr(pyLIMA_parameters, 'x_center', caustic.real)
                 setattr(pyLIMA_parameters, 'y_center', caustic.imag)
-
 
         if 'primary' in self.origin[0]:
 

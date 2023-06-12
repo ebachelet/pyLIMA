@@ -15,79 +15,58 @@ class FSPLmodel(MLmodel):
 
     @property
     def model_type(self):
-        """ Return the kind of microlensing model.
-
-        :returns: FSPL
-        :rtype: string
-        """
 
         return 'FSPL'
 
     def paczynski_model_parameters(self):
-        """ Define the FSPL standard parameters, [t0,u0,tE,rho]
-
-        :returns: a dictionnary containing the pyLIMA standards
-        :rtype: dict
+        """
+        [to,u0,tE,rho]
         """
         model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3}
-        self.Jacobian_flag='Analytical'
+        self.Jacobian_flag = 'Analytical'
 
         return model_dictionary
 
     def model_astrometry(self, telescope, pyLIMA_parameters):
+        ##########THIS IS PSPL ASTROMETRY, HERE FOR TESTING....################
+        #if telescope.astrometry is not None:
 
+        #    source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
 
-        """ The astrometric shifts associated to a PSPL model. More details in microlmagnification module.
+        #    # Blended centroid shifts....
+        #    #magnification = self.model_magnification(telescope, pyLIMA_parameters)
+        #    #try:
+        #    #    g_blend = f_blending/f_source
+        #    #    shifts = astrometric_shifts.PSPL_shifts_with_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E,g_blend)
+        #    #    angle = np.arctan2(source_trajectory_y,source_trajectory_x)
+        #    #    shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
 
-               :param object telescope: a telescope object. More details in telescope module.
-               :param object pyLIMA_parameters: a namedtuple which contain the parameters
+        #    #except:
 
+        #    shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y,
+        #                                                         pyLIMA_parameters.theta_E)
 
-               :return: astro_shifts
-               :rtype: array_like
-        """
+        #    delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
+        #                                                                        pyLIMA_parameters.piEE)
 
+        #    position_ra, position_dec = astrometric_positions.source_astrometric_position(telescope, pyLIMA_parameters,
+        #                                                                                  shifts=(delta_ra, delta_dec),
+        #                                                                                  time_ref=self.parallax_model[
+        #                                                                                      1])
 
-        #########THIS IS PSPL ASTROMETRY, HERE FOR TESTING....################
-        if telescope.astrometry is not None:
+        #    astro_shifts = np.array([position_ra, position_dec])
 
-            source_trajectory_x, source_trajectory_y, _ = self.source_trajectory(telescope, pyLIMA_parameters, data_type='astrometry')
+        #else:
 
-            # Blended centroid shifts....
-            #magnification = self.model_magnification(telescope, pyLIMA_parameters)
-            #try:
-            #    g_blend = f_blending/f_source
-            #    shifts = astrometric_shifts.PSPL_shifts_with_blend(source_trajectory_x, source_trajectory_y, pyLIMA_parameters.theta_E,g_blend)
-            #    angle = np.arctan2(source_trajectory_y,source_trajectory_x)
-            #    shifts = np.array([shifts*np.cos(angle), shifts*np.sin(angle)])
+        #    astro_shifts = None
 
-            #except:
+        #return astro_shifts
 
-            shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x, source_trajectory_y,
-                                                                 pyLIMA_parameters.theta_E)
+        pass
 
-            delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,pyLIMA_parameters.piEN,
-                                                                                pyLIMA_parameters.piEE)
-
-            position_ra, position_dec = astrometric_positions.source_astrometric_position(telescope, pyLIMA_parameters,
-                                                                                          shifts=(delta_ra, delta_dec),
-                                                                                          time_ref=self.parallax_model[
-                                                                                              1])
-
-            astro_shifts = np.array([position_ra, position_dec])
-
-        else:
-
-            astro_shifts = None
-
-        return astro_shifts
     def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
-        """ The magnification associated to a FSPL model. More details in microlmagnification module.
-
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: magnification, impact_parameter
-        :rtype: array_like,array_like
+        """
+        The FSPL magnification, see  http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
         """
         if telescope.lightcurve_flux is not None:
             source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
@@ -106,14 +85,9 @@ class FSPLmodel(MLmodel):
         return magnification
 
     def model_magnification_Jacobian(self, telescope, pyLIMA_parameters):
-        """ The derivative of a FSPL model
-
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: jacobi
-        :rtype: array_like
         """
-
+        [dA(t)/dt0,dA(t)/du0,dA(t)/dtE,dA(t)/drho]
+        """
         if self.Jacobian_flag == 'Analytical':
 
             magnification_jacobian= magnification_Jacobian.magnification_FSPL_Jacobian(self, telescope,pyLIMA_parameters)
@@ -128,12 +102,5 @@ class FSPLmodel(MLmodel):
         return magnification_jacobian, amplification
 
     def astrometry_Jacobian(self, telescope, pyLIMA_parameters):
-        """ The derivative of a PSPL model lightcurve
-
-        :param object telescope: a telescope object. More details in telescope module.
-        :param object pyLIMA_parameters: a namedtuple which contain the parameters
-        :return: jacobi
-        :rtype: array_like
-        """
 
         pass
