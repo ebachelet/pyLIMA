@@ -724,28 +724,30 @@ class MLmodel(object):
         # Xallarap?
         if 'XiEN' in pyLIMA_parameters._fields:
 
-            XiE = np.array([pyLIMA_parameters.XiEN, pyLIMA_parameters.XiEE])
-            ra = pyLIMA_parameters.ra_xallarap
-            dec = pyLIMA_parameters.dec_xallarap
-            period = pyLIMA_parameters.period_xallarap
+            #XiE = np.array([pyLIMA_parameters.XiEN, pyLIMA_parameters.XiEE])
+            #ra = pyLIMA_parameters.ra_xallarap
+            #dec = pyLIMA_parameters.dec_xallarap
+            #period = pyLIMA_parameters.period_xallarap
 
-            if 'eccentricity_xallarap' in pyLIMA_parameters._fields:
-                eccentricity = pyLIMA_parameters.eccentricity_xallarap
-                t_periastron = pyLIMA_parameters.t_periastron_xallarap
+            #if 'eccentricity_xallarap' in pyLIMA_parameters._fields:
+            #    eccentricity = pyLIMA_parameters.eccentricity_xallarap
+            #    t_periastron = pyLIMA_parameters.t_periastron_xallarap
 
-                orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period, eccentricity, t_periastron]
-                xallarap_delta_tau, xallarap_delta_beta = microlxallarap.compute_xallarap_curvature(XiE,
-                                                                                                    orbital_elements,
-                                                                                                    mode='elliptic')
-            else:
+            #    orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period, eccentricity, t_periastron]
+            #    xallarap_delta_tau, xallarap_delta_beta = microlxallarap.compute_xallarap_curvature(XiE,
+            #                                                                                        orbital_elements,
+            #                                                                                        mode='elliptic')
+            #else:
 
-                orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period]
-                xallarap_delta_tau, xallarap_delta_beta = microlxallarap.compute_xallarap_curvature(XiE,
-                                                                                                    orbital_elements)
+            #    orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period]
+            #    xallarap_delta_tau, xallarap_delta_beta = microlxallarap.compute_xallarap_curvature(XiE,
+            #                                                                                        orbital_elements)
 
-            tau += xallarap_delta_tau
-            beta += xallarap_delta_beta
+            #tau += xallarap_delta_tau
+            #beta += xallarap_delta_beta
 
+            ### To be implemented
+            pass
         if 'alpha' in pyLIMA_parameters._fields:
 
             alpha = pyLIMA_parameters.alpha
