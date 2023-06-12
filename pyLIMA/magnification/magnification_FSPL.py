@@ -9,7 +9,7 @@ try:
 
     yoo_table = np.loadtxt(template)
 
-except:
+except ValueError:
 
     print('ERROR : No Yoo_B0B1.dat file found, please check!')
 

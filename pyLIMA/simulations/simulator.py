@@ -250,7 +250,7 @@ def simulate_microlensing_model_parameters(model):
             fake_parameters.append(
                 np.random.uniform(boundaries[ind][0], boundaries[ind][1]))
 
-        except:
+        except AttributeError:
 
             pass
 

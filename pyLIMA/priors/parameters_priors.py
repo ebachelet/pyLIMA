@@ -27,10 +27,8 @@ class NormalDistribution(object):
         self.sigma = sigma
 
     def pdf(self, x):
-        probability = 1 / self.sigma / np.sqrt(2 * np.pi) * np.exp(-0.5 *
-                                                                   ((
-                                                                                x -
-                                                                                self.mean) / self.sigma) ** 2)
+        probability = 1 / self.sigma / np.sqrt(2 * np.pi) * \
+                      np.exp(-0.5 * ((x -self.mean) / self.sigma) ** 2)
 
         return probability
 

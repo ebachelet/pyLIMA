@@ -170,7 +170,6 @@ class Telescope(object):
                 self.lightcurve_flux = data[good_lines]
                 self.lightcurve_magnitude = self.lightcurve_in_magnitude()
 
-                lines = np.arange(0, len(data))
                 bad_data = {}
                 bad_data['non_finite_lines'] = non_finite_lines
                 bad_data['non_unique_lines'] = non_unique_lines
@@ -183,7 +182,6 @@ class Telescope(object):
 
             self.astrometry = data[good_lines]
 
-            lines = np.arange(0, len(data))
             bad_data = {}
             bad_data['non_finite_lines'] = non_finite_lines
             bad_data['non_unique_lines'] = non_unique_lines
@@ -196,8 +194,7 @@ class Telescope(object):
                 if len(self.bad_data[data_type][key]) != 0:
                     print(
                         'pyLIMA found (and eliminate) some bad_data for telescope ' +
-                        self.name + ', '
-                                                                                                  'please check your_telescope.bad_data')
+                        self.name + ', please check your_telescope.bad_data')
 
                     break
 
@@ -247,7 +244,8 @@ class Telescope(object):
 
             if choice == 'magnitude':
                 return len(self.lightcurve_magnitude['mag'])
-        except:
+
+        except ValueError:
 
             return 0
 
@@ -463,6 +461,6 @@ class Telescope(object):
 
             if self.name == 'Mexicola':
                 controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
-        except:
+        except ValueError:
 
             pass

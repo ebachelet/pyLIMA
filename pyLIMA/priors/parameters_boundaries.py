@@ -202,7 +202,7 @@ def parameters_boundaries(event, model_dictionnary):
                         key.split('position_source_N_')[1] == np.array(
                             telescopes_names))[0][0]
 
-                except:
+                except IndexError:
 
                     telescope_ind = np.where(
                         key.split('position_source_E_')[1] == np.array(
@@ -231,7 +231,7 @@ def parameters_boundaries(event, model_dictionnary):
                         key.split('position_blend_N_')[1] == np.array(
                             telescopes_names))[0][0]
 
-                except:
+                except IndexError:
 
                     telescope_ind = np.where(
                         key.split('position_blend_E_')[1] == np.array(
@@ -253,9 +253,9 @@ def parameters_boundaries(event, model_dictionnary):
 
             bounds.append(eval(function_name))
 
-        except:
-            breakpoint()
+        except AttributeError:
 
+            breakpoint()
             pass
 
     return bounds

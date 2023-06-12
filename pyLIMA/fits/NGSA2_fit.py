@@ -1,6 +1,6 @@
-import time as python_time
-
+#import time as python_time
 import numpy as np
+
 from pyLIMA.fits.ML_fit import MLfit
 from pymoo.core.problem import ElementwiseProblem
 
@@ -89,6 +89,7 @@ class NGSA2fit(MLfit):
                        save_history=True,
                        verbose=True)
 
+        print(res)
        # X = res.X
        # F = res.F
        # n_evals = np.array([e.evaluator.n_eval for e in res.history])

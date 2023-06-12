@@ -198,6 +198,6 @@ def photometric_residuals_in_magnitude(telescope, model, pyLIMA_parameters):
 
         return residuals
 
-    except:
+    except ValueError:
 
         return []
