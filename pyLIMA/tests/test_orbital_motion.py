@@ -122,6 +122,3 @@ def test_eccentric_anomaly_function():
                                                                       2456589, 3.2)
 
     assert ecc[0] == 6.2307350891533675
-
-
-breakpoint()
