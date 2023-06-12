@@ -1,15 +1,20 @@
 import numpy as np
 import scipy.signal as ss
 
+
 def initial_guess_PSPL(event):
-    """Function to find initial PSPL guess for Levenberg-Marquardt solver (method=='LM').
+    """Function to find initial PSPL guess for Levenberg-Marquardt solver (
+    method=='LM').
        This assumes no blend.
 
-    :param object event: the event object on which you perform the fit on. More details on the
+    :param object event: the event object on which you perform the fit on. More
+    details on the
                             event module.
 
-    :return: the PSPL guess for this event. A list of parameters associated to the PSPL model + the source flux of
-    :return: the PSPL guess for this event. A list of parameters associated to the PSPL model + the source flux of
+    :return: the PSPL guess for this event. A list of parameters associated to the
+    PSPL model + the source flux of
+    :return: the PSPL guess for this event. A list of parameters associated to the
+    PSPL model + the source flux of
                 the survey telescope.
     :rtype: list,float
     """
@@ -28,20 +33,26 @@ def initial_guess_PSPL(event):
             try:
 
                 # only the best photometry
-                good_photometry_indexes = np.where((lightcurve_magnitude['err_mag'].value <
-                                                    max(0.1, mean_error_magnitude)))[0]
+                good_photometry_indexes = \
+                np.where((lightcurve_magnitude['err_mag'].value <
+                          max(0.1, mean_error_magnitude)))[0]
                 lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
 
-                lightcurve_bis['time'] = lightcurve_bis['time'][lightcurve_bis['time'].value.argsort()]
-                lightcurve_bis['mag'] = lightcurve_bis['mag'][lightcurve_bis['time'].value.argsort()]
-                lightcurve_bis['err_mag'] = lightcurve_bis['err_mag'][lightcurve_bis['time'].value.argsort()]
+                lightcurve_bis['time'] = lightcurve_bis['time'][
+                    lightcurve_bis['time'].value.argsort()]
+                lightcurve_bis['mag'] = lightcurve_bis['mag'][
+                    lightcurve_bis['time'].value.argsort()]
+                lightcurve_bis['err_mag'] = lightcurve_bis['err_mag'][
+                    lightcurve_bis['time'].value.argsort()]
                 mag = lightcurve_bis['mag'].value
                 flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
 
-                # clean the lightcurve using Savitzky-Golay filter on 3 points, degree 1.
+                # clean the lightcurve using Savitzky-Golay filter on 3 points,
+                # degree 1.
                 mag_clean = ss.savgol_filter(mag, 3, 1)
                 time = lightcurve_bis['time'].value
-                flux_clean = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag_clean)
+                flux_clean = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(
+                    mag_clean)
                 errmag = lightcurve_bis['err_mag'].value
 
                 flux_source = min(flux_clean)
@@ -50,8 +61,10 @@ def initial_guess_PSPL(event):
                 while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
 
                     indexes = \
-                        np.where((flux_clean[good_points] > np.median(flux_clean[good_points])) & (
-                            errmag[good_points] <= max(0.1, 2.0 * np.mean(errmag[good_points]))))[0]
+                        np.where((flux_clean[good_points] > np.median(
+                            flux_clean[good_points])) & (
+                                         errmag[good_points] <= max(0.1, 2.0 * np.mean(
+                                     errmag[good_points]))))[0]
 
                     if len(indexes) < 1:
 
@@ -62,21 +75,25 @@ def initial_guess_PSPL(event):
                         good_points = good_points[indexes]
 
                         # gravity = (
-                        #   np.median(time[good_points]), np.median(flux_clean[good_points]),
+                        #   np.median(time[good_points]), np.median(flux_clean[
+                        #   good_points]),
                         #    np.mean(errmag[good_points]))
 
-                        # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 / gravity[0] ** 2)
+                        # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 /
+                        # gravity[0] ** 2)
 
                 to = np.median(time[good_points])
                 max_flux = max(flux[good_points])
                 to_estimations.append(to)
                 maximum_flux_estimations.append(max_flux)
-                errors_magnitude.append(np.mean(lightcurve_bis[good_points]['err_mag'].value))
+                errors_magnitude.append(
+                    np.mean(lightcurve_bis[good_points]['err_mag'].value))
 
             except:
 
                 time = lightcurve_magnitude['time'].value
-                flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(lightcurve_magnitude['mag'].value)
+                flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(
+                    lightcurve_magnitude['mag'].value)
                 to = np.median(time)
                 max_flux = max(flux)
                 to_estimations.append(to)
@@ -88,15 +105,15 @@ def initial_guess_PSPL(event):
     survey = event.telescopes[0]
     lightcurve = survey.lightcurve_magnitude
 
-
     lightcurve = lightcurve[lightcurve['time'].value.argsort()]
 
     ## fs, uo, tE estimations only one the survey telescope
 
-
     time = lightcurve['time'].value
-    flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(lightcurve['mag'].value)
-    errflux = pyLIMA.toolbox.brightness_transformation.error_magnitude_to_error_flux(lightcurve['err_mag'].value, flux)
+    flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(
+        lightcurve['mag'].value)
+    errflux = pyLIMA.toolbox.brightness_transformation.error_magnitude_to_error_flux(
+        lightcurve['err_mag'].value, flux)
 
     # fs estimation, no blend
 
@@ -140,7 +157,8 @@ def initial_guess_PSPL(event):
         if len(index_moins) != 0:
             t_demi_amplification = (time[index_plus[0]] - time[index_moins[-1]])
             tE_demi_amplification = t_demi_amplification / (
-                2 * np.sqrt(-2 + 2 * np.sqrt(1 + 1 / (half_magnification ** 2 - 1)) - uo_guess ** 2))
+                    2 * np.sqrt(-2 + 2 * np.sqrt(
+                1 + 1 / (half_magnification ** 2 - 1)) - uo_guess ** 2))
 
             tE_guesses.append(tE_demi_amplification)
 
@@ -161,7 +179,8 @@ def initial_guess_PSPL(event):
 
     # Method 2 : flux(t_E) = fs_guess * (uo^+3)/[(uo^2+1)^0.5*(uo^2+5)^0.5]
 
-    amplification_tE = (uo_guess ** 2 + 3) / ((uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
+    amplification_tE = (uo_guess ** 2 + 3) / (
+                (uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
     flux_tE = fs_guess * amplification_tE
 
     index_tE_plus = np.where((flux < flux_tE) & (time > to))[0]
@@ -179,11 +198,14 @@ def initial_guess_PSPL(event):
 
         tE_guesses.append(tE_plus)
 
-    # Method 3 : the first points before/after to_guess that reach the baseline. Very rough
+    # Method 3 : the first points before/after to_guess that reach the baseline. Very
+    # rough
     # approximation ot tE.
 
-    index_tE_baseline_plus = np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
-    index_tE_baseline_moins = np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+    index_tE_baseline_plus = \
+    np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+    index_tE_baseline_moins = \
+    np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
 
     if len(index_tE_baseline_plus) != 0:
         tEPlus = time[index_tE_baseline_plus[0]] - to_guess
@@ -207,13 +229,16 @@ def initial_guess_PSPL(event):
 
 
 def initial_guess_FSPL(event):
-    """Function to find initial FSPL guess for Levenberg-Marquardt solver (method=='LM').
+    """Function to find initial FSPL guess for Levenberg-Marquardt solver (
+    method=='LM').
        This assumes no blend.
 
-    :param object event: the event object on which you perform the fit on. More details on the
+    :param object event: the event object on which you perform the fit on. More
+    details on the
                             event module.
 
-    :return: the FSPL guess for this event. A list of parameters associated to the FSPL model + the source flux of
+    :return: the FSPL guess for this event. A list of parameters associated to the
+    FSPL model + the source flux of
                 the survey telescope.
     :rtype: list,float
     """
@@ -228,13 +253,16 @@ def initial_guess_FSPL(event):
 
 
 def initial_guess_DSPL(event):
-    """Function to find initial DSPL guess for Levenberg-Marquardt solver (method=='LM').
+    """Function to find initial DSPL guess for Levenberg-Marquardt solver (
+    method=='LM').
        This assumes no blend.
 
-       :param object event: the event object on which you perform the fit on. More details on the
+       :param object event: the event object on which you perform the fit on. More
+       details on the
                             event module.
 
-       :return: the DSPL guess for this event. A list of parameters associated to the DSPL model + the source flux of
+       :return: the DSPL guess for this event. A list of parameters associated to the
+       DSPL model + the source flux of
                 the survey telescope.
        :rtype: list,float
     """

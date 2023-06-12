@@ -6,16 +6,20 @@ Created on Thu Aug 27 16:39:32 2015
 """
 
 import sys
+
 import numpy as np
+
 
 class EventException(Exception):
     pass
+
 
 class Event(object):
     """
     ######## Event module ########
 
-    This module create an event object with the informations (attributes) needed for the fits.
+    This module create an event object with the informations (attributes) needed for
+    the fits.
 
     Attributes :
 
@@ -23,19 +27,25 @@ class Event(object):
 
          name : name of the event. Should be a string. Default is 'Sagittarius A*'
 
-         ra : right ascension of the event (J2000). Should be a float in degree between 0.0 and
-         360.0. Default is ra of Sagittarius A, :math:`\\alpha` = 266.416792 from Baker & Sramek
+         ra : right ascension of the event (J2000). Should be a float in degree
+         between 0.0 and
+         360.0. Default is ra of Sagittarius A, :math:`\\alpha` = 266.416792 from
+         Baker & Sramek
          1999ApJ...524..805B
 
-         dec : declination of the event (J2000). Should be a float in degree between -90 and 90.
-         Default is dec of Sagittarius A, :math:`\\delta` = -29.007806 from Baker & Sramek
+         dec : declination of the event (J2000). Should be a float in degree between
+         -90 and 90.
+         Default is dec of Sagittarius A, :math:`\\delta` = -29.007806 from Baker &
+         Sramek
          1999ApJ...524..805B
 
-         Teff : effective temperature of the star in Kelvin. Should be a float. Default is 5000.0 K
+         Teff : effective temperature of the star in Kelvin. Should be a float.
+         Default is 5000.0 K
 
          log_g : surface gravity in log10 cgs unit. Should be a float. Default is 4.5
 
-         telescopes : list of telescopes names (strings). Default is an empty list. Have to be
+         telescopes : list of telescopes names (strings). Default is an empty list.
+         Have to be
          fill with some telescopes class instances.
 
          survey : the reference telescope. Has to be a string, default is 'None'.
@@ -72,13 +82,20 @@ class Event(object):
         Then check if the right ascension (event.ra) is between 0 and 360 degrees.
         Then check if the declination (event.dec) is between -90 and 90 degrees.
         Then check if you have any telescopes ingested.
-        Finally check if your telescopes have a lightcurve attributes different from None.
+        Finally check if your telescopes have a lightcurve attributes different from
+        None.
         """
         for telescope in self.telescopes:
 
-            if (telescope.lightcurve_flux is None) & (telescope.lightcurve_magnitude is None) & (telescope.astrometry is None):
-                print('WARNING : The telescope ' +telescope.name+ ' is empty (no lightcurves or astrometry'
-                                                                               ', it is useless, so I deleted it)')
+            if (telescope.lightcurve_flux is None) & (
+                    telescope.lightcurve_magnitude is None) & (
+                    telescope.astrometry is None):
+                print(
+                    'WARNING : The telescope ' + telescope.name + ' is empty (no '
+                                                                  'lightcurves or '
+                                                                  'astrometry'
+                                                                  ', it is useless, '
+                                                                  'so I deleted it)')
 
                 self.telescopes.remove(telescope)
 
@@ -88,14 +105,16 @@ class Event(object):
 
         if (self.ra > 360) or (self.ra < 0):
             raise EventException('ERROR : The event ra (' + str(
-                self.ra) + ') is not correct, it has to be a float between 0 and 360 degrees')
+                self.ra) + ') is not correct, it has to be a float between 0 and 360 '
+                           'degrees')
 
         if (self.dec > 90) or (self.dec < -90):
             raise EventException('ERROR : The event dec (' + str(
                 self.dec) + ') is not correct, it has to be between -90 and 90 degrees')
 
         if len(self.telescopes) == 0:
-            raise EventException('There is no telescope associated to your event, no fit possible!')
+            raise EventException(
+                'There is no telescope associated to your event, no fit possible!')
 
         else:
 
@@ -103,11 +122,15 @@ class Event(object):
 
                 if (len(telescope.lightcurve_magnitude) == 0) & \
                         (len(telescope.lightcurve_flux) == 0):
-                    print('ERROR : There is no associated lightcurve in magnitude or flux with ' \
-                          'this telescopes : ' \
-                          + telescope.name + ', add one with telescope.lightcurve = your_data')
-                    raise EventException('There is no lightcurve associated to the  telescope ' + str(
-                        telescope.name) + ', no fit possible!')
+                    print(
+                        'ERROR : There is no associated lightcurve in magnitude or '
+                        'flux with ' \
+                        'this telescopes : ' \
+                        + telescope.name + ', add one with telescope.lightcurve = '
+                                           'your_data')
+                    raise EventException(
+                        'There is no lightcurve associated to the  telescope ' + str(
+                            telescope.name) + ', no fit possible!')
 
         print(sys._getframe().f_code.co_name, ' : Everything looks fine...')
 
@@ -115,7 +138,8 @@ class Event(object):
         """Function to find the survey telescope in the telescopes list,
         and put it on the first place (useful for some fits functions).
 
-        :param choice: the name of the telescope choosing as the survey. Has to be a string.
+        :param choice: the name of the telescope choosing as the survey. Has to be a
+        string.
                            Default is the first telescope.
         """
         self.survey = choice or self.telescopes[0].name
@@ -138,7 +162,8 @@ class Event(object):
         """ Transform all telescopes magnitude lightcurves in flux units.
 
 
-            :param choice: to clean your lightcurve or not. Has to be a string 'Yes' or 'No'.
+            :param choice: to clean your lightcurve or not. Has to be a string 'Yes'
+            or 'No'.
             Defaul is 'Yes'. More details in the telescope module
         """
 
@@ -146,15 +171,17 @@ class Event(object):
             telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
 
     def compute_parallax_all_telescopes(self, parallax_model):
-        """ Compute the parallax displacement for all the telescopes, if this is desired in
+        """ Compute the parallax displacement for all the telescopes, if this is
+        desired in
         the second order parameter.
         """
 
         for telescope in self.telescopes:
-
             telescope.compute_parallax(parallax_model, self.North, self.East)
+
     def total_number_of_data_points(self):
-        """ Compute the parallax displacement for all the telescopes, if this is desired in
+        """ Compute the parallax displacement for all the telescopes, if this is
+        desired in
             the second order parameter.
             :return: n_data, the total number of points
             :rtype: float
@@ -171,12 +198,13 @@ class Event(object):
         perpendicular to the line
         of sight (i.e the line define by RA,DEC of the event).
         """
-        target_angles_in_the_sky =  [self.ra * np.pi / 180, self.dec * np.pi / 180]
+        target_angles_in_the_sky = [self.ra * np.pi / 180, self.dec * np.pi / 180]
         Target = np.array(
             [np.cos(target_angles_in_the_sky[1]) * np.cos(target_angles_in_the_sky[0]),
              np.cos(target_angles_in_the_sky[1]) * np.sin(target_angles_in_the_sky[0]),
              np.sin(target_angles_in_the_sky[1])])
 
         self.East = np.array(
-            [-np.sin(target_angles_in_the_sky[0]), np.cos(target_angles_in_the_sky[0]), 0.0])
+            [-np.sin(target_angles_in_the_sky[0]), np.cos(target_angles_in_the_sky[0]),
+             0.0])
         self.North = np.cross(Target, self.East)

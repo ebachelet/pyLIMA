@@ -7,10 +7,12 @@ Created on Thu Apr 20 11:19:38 2017
 import numpy as np
 import scipy.spatial as ss
 
+
 def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolution=1000):
     """  Find and sort caustics for a binary lens
 
-        :param float separation: the projected normalised angular distance between the two bodies
+        :param float separation: the projected normalised angular distance between
+        the two bodies
         :param float mass_ratio: the mass ratio of the two bodies
         :param int resolution: number of points desired in the caustic computation.
 
@@ -29,23 +31,28 @@ def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolutio
     resonant_caustic = None
     resonant_cc = None
 
-    caustics_points, critical_curve_points = compute_2_lenses_caustics_points(separation, mass_ratio,
-                                                                              resolution=resolution)
+    caustics_points, critical_curve_points = compute_2_lenses_caustics_points(
+        separation, mass_ratio,
+        resolution=resolution)
 
     caustic_regime = find_2_lenses_caustic_regime(separation, mass_ratio)
 
     if caustic_regime == 'resonant':
-        resonant_caustic, resonant_cc = sort_2lenses_resonant_caustic(caustics_points, critical_curve_points)
+        resonant_caustic, resonant_cc = sort_2lenses_resonant_caustic(caustics_points,
+                                                                      critical_curve_points)
 
     if caustic_regime == 'close':
         result = sort_2lenses_close_caustics(caustics_points, critical_curve_points)
-        central_caustic, close_top_caustic, close_bottom_caustic, central_cc, close_top_cc, close_bottom_cc = result
+        central_caustic, close_top_caustic, close_bottom_caustic, central_cc, \
+            close_top_cc, close_bottom_cc = result
 
     if caustic_regime == 'wide':
-        central_caustic, wide_caustic, central_cc, wide_cc = sort_2lenses_wide_caustics(caustics_points,
-                                                                                        critical_curve_points)
+        central_caustic, wide_caustic, central_cc, wide_cc = sort_2lenses_wide_caustics(
+            caustics_points,
+            critical_curve_points)
 
-    caustics = [central_caustic, close_top_caustic, close_bottom_caustic, wide_caustic, resonant_caustic]
+    caustics = [central_caustic, close_top_caustic, close_bottom_caustic, wide_caustic,
+                resonant_caustic]
     critical_curve = [central_cc, close_top_cc, close_bottom_cc, wide_cc, resonant_cc]
 
     return caustic_regime, caustics, critical_curve
@@ -55,7 +62,8 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
     """ Sort the caustic points to have regular resonant caustic
 
         :param array caustic_points: the points of the caustics, in complex notation
-        :param array critical_curves_points: the points of the critical curve, in complex notation
+        :param array critical_curves_points: the points of the critical curve,
+        in complex notation
 
         :return: the resonant caustic,  the resonant critical curve
         :rtype:  array, array_like
@@ -69,24 +77,31 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
         first_branch = positive_y_branches[0]
         second_branch = positive_y_branches[1]
 
-        if np.max((caustic_points[:, first_branch]).real) > np.max((caustic_points[:, second_branch]).real):
+        if np.max((caustic_points[:, first_branch]).real) > np.max(
+                (caustic_points[:, second_branch]).real):
 
-            resonant_caustic = np.r_[caustic_points[:, second_branch], caustic_points[:, first_branch],
-                                     np.conj(caustic_points[:, first_branch][::-1]),
-                                     np.conj(caustic_points[:, second_branch][::-1])]
+            resonant_caustic = np.r_[
+                caustic_points[:, second_branch], caustic_points[:, first_branch],
+                np.conj(caustic_points[:, first_branch][::-1]),
+                np.conj(caustic_points[:, second_branch][::-1])]
 
-            resonant_cc = np.r_[critical_curves_points[:, second_branch], critical_curves_points[:, first_branch],
-                                np.conj(critical_curves_points[:, first_branch][::-1]),
-                                np.conj(critical_curves_points[:, second_branch][::-1])]
+            resonant_cc = np.r_[
+                critical_curves_points[:, second_branch], critical_curves_points[:,
+                                                          first_branch],
+                np.conj(critical_curves_points[:, first_branch][::-1]),
+                np.conj(critical_curves_points[:, second_branch][::-1])]
         else:
 
-            resonant_caustic = np.r_[caustic_points[:, first_branch], caustic_points[:, second_branch],
-                                     np.conj(caustic_points[:, second_branch][::-1]),
-                                     np.conj(caustic_points[:, first_branch][::-1])]
+            resonant_caustic = np.r_[
+                caustic_points[:, first_branch], caustic_points[:, second_branch],
+                np.conj(caustic_points[:, second_branch][::-1]),
+                np.conj(caustic_points[:, first_branch][::-1])]
 
-            resonant_cc = np.r_[critical_curves_points[:, first_branch], critical_curves_points[:, second_branch],
-                                np.conj(critical_curves_points[:, second_branch][::-1]),
-                                np.conj(critical_curves_points[:, first_branch][::-1])]
+            resonant_cc = np.r_[
+                critical_curves_points[:, first_branch], critical_curves_points[:,
+                                                         second_branch],
+                np.conj(critical_curves_points[:, second_branch][::-1]),
+                np.conj(critical_curves_points[:, first_branch][::-1])]
 
     except:
 
@@ -101,9 +116,11 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
     """ Sort the caustic points to have one central caustic and two "planetary" caustics
 
         :param array caustic_points: the points of the caustics, in complex notation
-        :param array critical_curves_points: the points of the critical curve, in complex notation
+        :param array critical_curves_points: the points of the critical curve,
+        in complex notation
 
-        :return: the central caustic,  the top planetary caustic, the bottom planetary caustic,
+        :return: the central caustic,  the top planetary caustic, the bottom
+        planetary caustic,
         the central critical curve, the top critical curve, the bottom critical curve
         :rtype:  array, array, array, array, array, array
     """
@@ -119,16 +136,24 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
         close_top_caustic = caustic_points[:, order[-1]]
         close_top_cc = critical_curves_points[:, order[-1]]
 
-        if np.abs(caustic_points[-1, order[1]].real - caustic_points[0, order[2]].real) < np.abs(
-            caustic_points[-1, order[1]].real - caustic_points[:, order[2]][::-1][0].real):
+        if np.abs(caustic_points[-1, order[1]].real - caustic_points[
+            0, order[2]].real) < np.abs(
+            caustic_points[-1, order[1]].real - caustic_points[:, order[2]][::-1][
+                0].real):
 
-            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]]]
-            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]]]
+            central_caustic = np.r_[
+                caustic_points[:, order[1]], caustic_points[:, order[2]]]
+            central_cc = np.r_[
+                critical_curves_points[:, order[1]], critical_curves_points[:,
+                                                     order[2]]]
 
         else:
 
-            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]][::-1]]
-            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]][::-1]]
+            central_caustic = np.r_[
+                caustic_points[:, order[1]], caustic_points[:, order[2]][::-1]]
+            central_cc = np.r_[
+                critical_curves_points[:, order[1]], critical_curves_points[:,
+                                                     order[2]][::-1]]
 
 
     except:
@@ -143,28 +168,38 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
         close_top_caustic = caustic_points[:, order[-1]]
         close_top_cc = critical_curves_points[:, order[-1]]
 
-        if np.abs(caustic_points[-1, order[1]].real - caustic_points[0, order[2]].real) < np.abs(
-                        caustic_points[-1, order[1]].real - caustic_points[:, order[2]][::-1][0].real):
+        if np.abs(caustic_points[-1, order[1]].real - caustic_points[
+            0, order[2]].real) < np.abs(
+            caustic_points[-1, order[1]].real - caustic_points[:, order[2]][::-1][
+                0].real):
 
-            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]]]
-            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]]]
+            central_caustic = np.r_[
+                caustic_points[:, order[1]], caustic_points[:, order[2]]]
+            central_cc = np.r_[
+                critical_curves_points[:, order[1]], critical_curves_points[:,
+                                                     order[2]]]
 
         else:
 
-            central_caustic = np.r_[caustic_points[:, order[1]], caustic_points[:, order[2]][::-1]]
-            central_cc = np.r_[critical_curves_points[:, order[1]], critical_curves_points[:, order[2]][::-1]]
+            central_caustic = np.r_[
+                caustic_points[:, order[1]], caustic_points[:, order[2]][::-1]]
+            central_cc = np.r_[
+                critical_curves_points[:, order[1]], critical_curves_points[:,
+                                                     order[2]][::-1]]
 
-
-    return central_caustic, close_top_caustic, close_bottom_caustic, central_cc, close_top_cc, close_bottom_cc
+    return central_caustic, close_top_caustic, close_bottom_caustic, central_cc, \
+        close_top_cc, close_bottom_cc
 
 
 def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
     """ Sort the caustic points to have one central caustic and one "planetary" caustics
 
         :param array caustic_points: the points of the caustics, in complex notation
-        :param array critical_curves_points: the points of the critical curve, in complex notation
+        :param array critical_curves_points: the points of the critical curve,
+        in complex notation
 
-        :return: the central caustic,  the  planetary caustic, the central critical curve,
+        :return: the central caustic,  the  planetary caustic, the central critical
+        curve,
         the planetary critical curve
         :rtype:  array, array, array, array
     """
@@ -220,13 +255,17 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
 
 
 def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
-    """  Find the critical curve points and caustics points associated to a binary lens. See :
-        "On the Minimum Magnification Between Caustic Crossings for Microlensing by Binary and Multiple Stars"
+    """  Find the critical curve points and caustics points associated to a binary
+    lens. See :
+        "On the Minimum Magnification Between Caustic Crossings for Microlensing by
+        Binary and Multiple Stars"
         Witt and Mao 1995 http://adsabs.harvard.edu/abs/1995ApJ...447L.105W
-        "Investigation of high amplification events in light curves of gravitationally lensed quasars"
+        "Investigation of high amplification events in light curves of
+        gravitationally lensed quasars"
         Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
-        :param float separation: the projected normalised angular distance between the two bodies
+        :param float separation: the projected normalised angular distance between
+        the two bodies
         :param float mass_ratio: the mass ratio of the two bodies
         :param int resolution: number of points desired in the caustic computation.
 
@@ -274,7 +313,8 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
         if np.max(np.abs(checks)) > 10 ** -10:
             pass
         else:
-            # polynomial_roots = np.polynomial.polynomial.polyroots(polynomial_coefficients[::-1])
+            # polynomial_roots = np.polynomial.polynomial.polyroots(
+            # polynomial_coefficients[::-1])
 
             if len(roots) == 0:
 
@@ -299,8 +339,9 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
             roots.append(pol_roots)
 
             images_conjugate = np.conj(pol_roots)
-            zeta_caustics = pol_roots + mass_1 / (lens_1_conjugate - images_conjugate) + mass_2 / (
-                lens_2_conjugate - images_conjugate)
+            zeta_caustics = pol_roots + mass_1 / (
+                    lens_1_conjugate - images_conjugate) + mass_2 / (
+                                    lens_2_conjugate - images_conjugate)
 
             if len(caustics) == 0:
                 caustics = zeta_caustics
@@ -316,14 +357,17 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
 
     return caustics, critical_curves
 
+
 def find_2_lenses_caustic_regime(separation, mass_ratio):
     """  Find the caustic regime.
         "An alternative parameterisation for binary-lens caustic-crossing events"
         Cassan A.2008 http://adsabs.harvard.edu/abs/2008A%26A...491..587C
-        "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The Caustic Region Of INfluence"
+        "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The
+        Caustic Region Of INfluence"
         Penny M.2014 http://adsabs.harvard.edu/abs/2014ApJ...790..142P
 
-       :param float separation: the projected normalised angular distance between the two bodies
+       :param float separation: the projected normalised angular distance between the
+       two bodies
        :param float mass_ratio: the mass ratio of the two bodies
 
        :return: caustic_regime: close, wide or resonant
@@ -340,18 +384,22 @@ def find_2_lenses_caustic_regime(separation, mass_ratio):
 
     close_limit = mass_ratio / (1 + mass_ratio) ** 2.0
 
-    if (separation < 1.0) & (1 / separation ** 8.0 * ((1 - separation ** 4.0) / 3.0) ** 3.0 > close_limit):
+    if (separation < 1.0) & (1 / separation ** 8.0 * (
+            (1 - separation ** 4.0) / 3.0) ** 3.0 > close_limit):
         caustic_regime = 'close'
         return caustic_regime
 
     return caustic_regime
 
+
 def poly_binary_eiphi_0(separation, mass_ratio):
     """  Build the polynomial associated to phi=0 binary caustics.
-        "Investigation of high amplification events in light curves of gravitationally lensed quasars"
+        "Investigation of high amplification events in light curves of
+        gravitationally lensed quasars"
         Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
-       :param float separation: the projected normalised angular distance between the two bodies
+       :param float separation: the projected normalised angular distance between the
+       two bodies
        :param float mass_ratio: the mass ratio of the two bodies
 
        :return: polynomial coefficients
@@ -362,18 +410,27 @@ def poly_binary_eiphi_0(separation, mass_ratio):
     q = mass_ratio
 
     polynomial_coefficients = [1.0, 2.0 * s * (q - 1) / (q + 1.0),
-                               (s ** 2 * (q ** 2 - 4 * q + 1) - q ** 2 - 2 * q - 1) / (q ** 2 + 2.0 * q + 1.0),
-                               2 * (-q ** 3 * s + (s ** 2 + 1) * q * s * (- q + 1) + s) / (q ** 3 + 3.0 * q ** 2 + 3.0 * q + 1.0),
-                               (-q ** 2 * s ** 2 * (q ** 2 + q - s ** 2) - s ** 2 * (1 + q)) / (q ** 4 + 4.0 * q ** 3 + 6.0 * q ** 2 + 4.0 * q + 1.0)]
+                               (s ** 2 * (q ** 2 - 4 * q + 1) - q ** 2 - 2 * q - 1) / (
+                                       q ** 2 + 2.0 * q + 1.0),
+                               2 * (-q ** 3 * s + (s ** 2 + 1) * q * s * (
+                                       - q + 1) + s) / (
+                                       q ** 3 + 3.0 * q ** 2 + 3.0 * q + 1.0),
+                               (-q ** 2 * s ** 2 * (q ** 2 + q - s ** 2) - s ** 2 * (
+                                       1 + q)) / (
+                                       q ** 4 + 4.0 * q ** 3 + 6.0 * q ** 2 + 4.0
+                                       * q + 1.0)]
 
     return polynomial_coefficients
 
+
 def caustic_points_at_phi_0(separation, mass_ratio):
     """ Find caustics points at phi=0 binary caustics.
-           "Investigation of high amplification events in light curves of gravitationally lensed quasars"
+           "Investigation of high amplification events in light curves of
+           gravitationally lensed quasars"
            Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
-          :param float separation: the projected normalised angular distance between the two bodies
+          :param float separation: the projected normalised angular distance between
+          the two bodies
           :param float mass_ratio: the mass ratio of the two bodies
 
           :return: caustic points
@@ -383,20 +440,22 @@ def caustic_points_at_phi_0(separation, mass_ratio):
     polynomial_coefficients = poly_binary_eiphi_0(separation, mass_ratio)
     solutions = np.roots(polynomial_coefficients)
 
-    m_tot = 1+mass_ratio
-    m_1 = 1/m_tot
-    m_2 = mass_ratio*m_1
+    m_tot = 1 + mass_ratio
+    m_1 = 1 / m_tot
+    m_2 = mass_ratio * m_1
 
-    position_1 = -separation*m_2
-    position_2 = position_1+separation
+    position_1 = -separation * m_2
+    position_2 = position_1 + separation
 
     caustic_points = lens_equation(solutions, [m_1, m_2], [position_1, position_2])
 
     return caustic_points
 
-def lens_equation(z,lenses_mass,lenses_pos):
+
+def lens_equation(z, lenses_mass, lenses_pos):
     """ The complex lens equation
-           "Investigation of high amplification events in light curves of gravitationally lensed quasars"
+           "Investigation of high amplification events in light curves of
+           gravitationally lensed quasars"
            Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
           :param array z: the complex position in the image plane
@@ -407,13 +466,14 @@ def lens_equation(z,lenses_mass,lenses_pos):
           :rtype: array
     """
 
-    zeta = np.array([j-np.sum(np.array([lenses_mass[i]/(np.conj(j)-np.conj(lenses_pos[i]))
-                                        for i in range(len(lenses_mass))])) for j in z])
+    zeta = np.array(
+        [j - np.sum(np.array([lenses_mass[i] / (np.conj(j) - np.conj(lenses_pos[i]))
+                              for i in range(len(lenses_mass))])) for j in z])
 
     return zeta
 
-def cusp_of_eternity():
 
+def cusp_of_eternity():
     import webbrowser
     controller = webbrowser.get()
 

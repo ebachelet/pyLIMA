@@ -1,13 +1,14 @@
 import time as python_time
+
 import numpy as np
-import sys
+from pyLIMA.fits.ML_fit import MLfit
 from pymoo.core.problem import ElementwiseProblem
 
-from pyLIMA.fits.ML_fit import MLfit
 
 class MLProblem(ElementwiseProblem):
 
-    def __init__(self, bounds, objective_photometry=None, objective_astrometry=None, **kwargs):
+    def __init__(self, bounds, objective_photometry=None, objective_astrometry=None,
+                 **kwargs):
 
         n_var = len(bounds)
         n_obj = 0
@@ -30,7 +31,6 @@ class MLProblem(ElementwiseProblem):
 
             self.objective_astrometry = None
 
-
         super().__init__(n_var=n_var,
                          n_obj=n_obj,
                          n_constr=0,
@@ -38,19 +38,14 @@ class MLProblem(ElementwiseProblem):
                          xu=np.array([i[1] for i in bounds]),
                          **kwargs)
 
-
-
-
     def _evaluate(self, x, out, *args, **kwargs):
 
         objectives = []
 
         if self.objective_photometry is not None:
-
             objectives.append(self.objective_photometry(x))
 
         if self.objective_astrometry is not None:
-
             objectives.append(self.objective_astrometry(x))
 
         out["F"] = objectives
@@ -61,27 +56,19 @@ class NGSA2fit(MLfit):
     def fit_type(self):
         return "Non-dominated Sorting Genetic Algorithm"
 
-
-
-
-
-    def fit(self,computational_pool=None):
+    def fit(self, computational_pool=None):
 
         starting_time = python_time.time()
 
         from pymoo.algorithms.moo.nsga2 import NSGA2
-        from pymoo.factory import get_sampling, get_crossover, get_mutation
-        from pymoo.operators.selection.rnd import RandomSelection
-        from pymoo.operators.crossover.sbx import SBX
-        from pymoo.operators.mutation.pm import PolynomialMutation
-        from pymoo.operators.repair.rounding import RoundingRepair
 
         #        algorithm = NSGA2(
         #            pop_size=40,
         #            n_offsprings=10,
         #            sampling=RandomSelection(),
         #            crossover=SBX(),
-        #            mutation= PolynomialMutation(prob=1.0, eta=20, repair=RoundingRepair()),
+        #            mutation= PolynomialMutation(prob=1.0, eta=20,
+        #            repair=RoundingRepair()),
         #            eliminate_duplicates=True
         #        )
 
@@ -108,7 +95,7 @@ class NGSA2fit(MLfit):
         res = minimize(problem,
                        algorithm,
                        ('n_gen', 200),
-                        seed=1,
+                       seed=1,
                        save_history=True,
                        verbose=True)
 

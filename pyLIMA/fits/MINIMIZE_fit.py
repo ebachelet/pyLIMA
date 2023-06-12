@@ -1,9 +1,10 @@
-import scipy
-import time as python_time
-import numpy as np
 import sys
+import time as python_time
 
+import numpy as np
+import scipy
 from pyLIMA.fits.LM_fit import LMfit
+
 
 class MINIMIZEfit(LMfit):
 
@@ -26,28 +27,33 @@ class MINIMIZEfit(LMfit):
 
         starting_time = python_time.time()
         self.population = []
-        # use the analytical Jacobian (faster) if no second order are present, else let the
+        # use the analytical Jacobian (faster) if no second order are present,
+        # else let the
         # algorithm find it.
         self.guess = self.initial_guess()
 
-        bounds_min = [self.fit_parameters[key][1][0] for key in self.fit_parameters.keys()]
-        bounds_max = [self.fit_parameters[key][1][1] for key in self.fit_parameters.keys()]
-        bounds = [[bounds_min[i],bounds_max[i]] for i in range(len(bounds_max))]
+        bounds_min = [self.fit_parameters[key][1][0] for key in
+                      self.fit_parameters.keys()]
+        bounds_max = [self.fit_parameters[key][1][1] for key in
+                      self.fit_parameters.keys()]
+        bounds = [[bounds_min[i], bounds_max[i]] for i in range(len(bounds_max))]
         n_data = 0
 
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
-        #if self.model.Jacobian_flag != 'No Way':
+        # if self.model.Jacobian_flag != 'No Way':
 
         #    jacobian_function = self.residuals_Jacobian
 
-        #else:
+        # else:
 
-        #jacobian_function = '2-point'
+        # jacobian_function = '2-point'
 
-        minimize_fit = scipy.optimize.minimize(self.objective_function, self.guess,method='Nelder-Mead',
-                                               bounds=bounds, options={'maxiter': 50000, 'disp': True},)
+        minimize_fit = scipy.optimize.minimize(self.objective_function, self.guess,
+                                               method='Nelder-Mead',
+                                               bounds=bounds, options={'maxiter': 50000,
+                                                                       'disp': True}, )
 
         self.population = np.array(self.population)
 
@@ -58,9 +64,10 @@ class MINIMIZEfit(LMfit):
 
             ###Currently ugly#####
 
-            mask = self.population[:, -1] < self.population[:, -1].min() +36 #Valerio magic 10%
+            mask = self.population[:, -1] < self.population[:,
+                                            -1].min() + 36  # Valerio magic 10%
 
-            covariance_matrix = np.cov(self.population[mask,:-1].T)
+            covariance_matrix = np.cov(self.population[mask, :-1].T)
 
 
         except:
@@ -70,9 +77,9 @@ class MINIMIZEfit(LMfit):
 
         computation_time = python_time.time() - starting_time
 
-        print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
+        print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
         print('best_model:', fit_results, ' likelihood:', fit_chi2)
 
-        self.fit_results = {'best_model': fit_results, 'likelihood': fit_chi2, 'fit_time': computation_time,
+        self.fit_results = {'best_model': fit_results, 'likelihood': fit_chi2,
+                            'fit_time': computation_time,
                             'covariance_matrix': covariance_matrix}
-

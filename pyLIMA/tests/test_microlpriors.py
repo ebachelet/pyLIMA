@@ -1,5 +1,3 @@
-import os.path
-
 import numpy as np
 
 from pyLIMA import microlpriors
@@ -9,9 +7,6 @@ def test_microlensing_flux_priors_negative_source_flux():
     priors = microlpriors.microlensing_flux_priors(100, -1.0, 0)
 
     assert priors == np.inf
-
-
-
 
 
 def test_microlensing_parameters_outside_limits():

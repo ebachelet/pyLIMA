@@ -1,21 +1,24 @@
-import scipy
-import time as python_time
-import numpy as np
 import sys
+import time as python_time
 
+import numpy as np
+import scipy
 from pyLIMA.fits.ML_fit import MLfit
+
 
 class LMfit(MLfit):
 
-    def __init__(self, model, telescopes_fluxes_method='fit',  loss_function='chi2'):
+    def __init__(self, model, telescopes_fluxes_method='fit', loss_function='chi2'):
         """The fit class has to be intialized with an event object."""
 
-        if loss_function=='likelihood':
-
-            print('Cannot use likelihood with gradient-like method,switching to chi2 (default)')
+        if loss_function == 'likelihood':
+            print(
+                'Cannot use likelihood with gradient-like method,switching to chi2 ('
+                'default)')
             loss_function = 'chi2'
-            
-        super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method, loss_function=loss_function)
+
+        super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method,
+                         loss_function=loss_function)
 
         self.guess = []
 
@@ -30,7 +33,8 @@ class LMfit(MLfit):
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
-        residus, err = self.model_residuals(pyLIMA_parameters, rescaling_photometry_parameters=None,
+        residus, err = self.model_residuals(pyLIMA_parameters,
+                                            rescaling_photometry_parameters=None,
                                             rescaling_astrometry_parameters=None)
 
         residuals = []
@@ -50,16 +54,16 @@ class LMfit(MLfit):
         residuals = np.concatenate(residuals)
         errors = np.concatenate(errors)
 
-        return residuals/errors
+        return residuals / errors
 
     def fit(self):
 
         start_time = python_time.time()
 
-        # use the analytical Jacobian (faster) if no second order are present, else let the
+        # use the analytical Jacobian (faster) if no second order are present,
+        # else let the
         # algorithm find it.
         self.guess = self.initial_guess()
-
 
         n_data = 0
         for telescope in self.model.event.telescopes:
@@ -82,33 +86,38 @@ class LMfit(MLfit):
 
             loss = 'linear'
 
-        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess, method='lm',  max_nfev=50000,
-                                              jac=jacobian_function, loss=loss, xtol=10**-10, ftol=10**-10, gtol=10 ** -10)
+        lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess,
+                                              method='lm', max_nfev=50000,
+                                              jac=jacobian_function, loss=loss,
+                                              xtol=10 ** -10, ftol=10 ** -10,
+                                              gtol=10 ** -10)
 
         fit_results = lm_fit['x'].tolist()
-        fit_chi2 = lm_fit['cost']*2 #chi2
+        fit_chi2 = lm_fit['cost'] * 2  # chi2
 
         try:
-            # Try to extract the covariance matrix from the levenberg-marquard_fit output
-            covariance_matrix = np.linalg.pinv(np.dot(lm_fit['jac'].T,lm_fit['jac']))
+            # Try to extract the covariance matrix from the levenberg-marquard_fit
+            # output
+            covariance_matrix = np.linalg.pinv(np.dot(lm_fit['jac'].T, lm_fit['jac']))
 
         except:
 
             covariance_matrix = np.zeros((len(self.model.model_dictionnary),
                                           len(self.model.model_dictionnary)))
 
-
-        covariance_matrix *= fit_chi2/(n_data-len(self.model.model_dictionnary))
+        covariance_matrix *= fit_chi2 / (n_data - len(self.model.model_dictionnary))
         computation_time = python_time.time() - start_time
 
-        print(sys._getframe().f_code.co_name, ' : '+self.fit_type()+' fit SUCCESS')
+        print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
         print('best_model:', fit_results, ' chi2:', fit_chi2)
 
-        self.fit_results = {'best_model': fit_results, 'chi2' : fit_chi2, 'fit_time': computation_time,
+        self.fit_results = {'best_model': fit_results, 'chi2': fit_chi2,
+                            'fit_time': computation_time,
                             'covariance_matrix': covariance_matrix}
 
     def samples_to_plot(self):
 
-        samples = np.random.multivariate_normal(self.fit_results['best_model'], self.fit_results['covariance_matrix'],
+        samples = np.random.multivariate_normal(self.fit_results['best_model'],
+                                                self.fit_results['covariance_matrix'],
                                                 10000)
         return samples

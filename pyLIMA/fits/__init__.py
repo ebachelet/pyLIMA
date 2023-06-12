@@ -1,6 +1,6 @@
 from .BOOTSTRAP_fit import BOOTSTRAPfit
-from .DE_fit import DEfit
 from .DEMC_fit import DEMCfit
+from .DE_fit import DEfit
 from .DREAM_fit import DREAMfit
 from .GRIDS_fit import GRIDfit
 from .LM_fit import LMfit

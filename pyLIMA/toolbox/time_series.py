@@ -1,7 +1,8 @@
-from astropy.table import QTable
 import numpy as np
-def clean_time_series(data):
+from astropy.table import QTable
 
+
+def clean_time_series(data):
     dataset = [data[key].value for key in data.columns.keys()]
     dataset = np.c_[dataset].T
 
@@ -11,7 +12,6 @@ def clean_time_series(data):
     for key in data.columns.keys():
 
         if 'err' in key:
-
             mask = data[key].value != 0
 
             finite_lines = finite_lines & mask
@@ -20,7 +20,8 @@ def clean_time_series(data):
 
     lines = np.arange(0, len(data))
 
-    good_lines = [line for line in lines if (line in unique_index) & (finite_lines[line])]
+    good_lines = [line for line in lines if
+                  (line in unique_index) & (finite_lines[line])]
     non_finite_lines = lines[~finite_lines].tolist()
     non_unique_lines = [i for i in lines if i not in unique_index]
 
@@ -28,7 +29,6 @@ def clean_time_series(data):
 
 
 def construct_time_series(data, columns_names, column_units):
-
-    table = QTable(data, names=columns_names,units=column_units)
+    table = QTable(data, names=columns_names, units=column_units)
 
     return table

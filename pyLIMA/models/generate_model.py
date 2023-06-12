@@ -1,6 +1,9 @@
 import importlib
-def create_model(model_type,event, parallax=['None', 0.0], xallarap=['None'],
-                 orbital_motion=['None', 0.0], origin = ['center_of_mass', [0,0]],  blend_flux_parameter='fblend',
+
+
+def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None'],
+                 orbital_motion=['None', 0.0], origin=['center_of_mass', [0, 0]],
+                 blend_flux_parameter='fblend',
                  fancy_parameters={}):
     """
     Load a model according to the supplied model_type. Models are expected to be named
@@ -12,14 +15,15 @@ def create_model(model_type,event, parallax=['None', 0.0], xallarap=['None'],
 
     try:
 
-        model_module = importlib.import_module('pyLIMA.models.'+model_type+'_model')
+        model_module = importlib.import_module('pyLIMA.models.' + model_type + '_model')
 
-    except :
-
+    except:
 
         return None
 
     new_model = getattr(model_module, '{}model'.format(model_type))
 
-    return new_model(event, parallax=parallax, xallarap=xallarap,orbital_motion=orbital_motion,
-                     blend_flux_parameter=blend_flux_parameter,origin=origin, fancy_parameters=fancy_parameters)
+    return new_model(event, parallax=parallax, xallarap=xallarap,
+                     orbital_motion=orbital_motion,
+                     blend_flux_parameter=blend_flux_parameter, origin=origin,
+                     fancy_parameters=fancy_parameters)

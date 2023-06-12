@@ -2,7 +2,8 @@ import numpy as np
 
 # ZERO POINT AND EXPOSURE TIME MATCH ~Roman telescope by default
 ZERO_POINT = 27.4
-EXPOSURE_TIME = 50 #s
+EXPOSURE_TIME = 50  # s
+
 
 def magnitude_to_flux(magnitude):
     """ Transform the injected magnitude to the the corresponding flux.
@@ -13,7 +14,7 @@ def magnitude_to_flux(magnitude):
     :rtype: array_like
     """
 
-    flux = 10 ** ((ZERO_POINT- magnitude) / 2.5)
+    flux = 10 ** ((ZERO_POINT - magnitude) / 2.5)
 
     return flux
 
@@ -35,7 +36,8 @@ def flux_to_magnitude(flux):
 def error_magnitude_to_error_flux(error_magnitude, flux):
     """ Transform the injected magnitude error to the the corresponding error in flux.
 
-    :param array_like error_magnitude: the magnitude errors measurements you want to transform.
+    :param array_like error_magnitude: the magnitude errors measurements you want to
+    transform.
     :param array_like flux: the fluxes corresponding to these errors
 
     :return: the transformed errors in flux units
@@ -60,6 +62,7 @@ def error_flux_to_error_magnitude(error_flux, flux):
 
     return error_magnitude
 
+
 def noisy_observations(flux, exp_time=None):
     """Add Poisson noise to observations.
 
@@ -80,13 +83,12 @@ def noisy_observations(flux, exp_time=None):
 
         exposure_time = EXPOSURE_TIME
 
-
-    photons = flux*exposure_time
+    photons = flux * exposure_time
 
     photons_observed = np.random.poisson(photons)
-    err_photons_observed = photons_observed**0.5
+    err_photons_observed = photons_observed ** 0.5
 
-    flux_observed = photons_observed/exposure_time
-    err_flux_observed = err_photons_observed/exposure_time
+    flux_observed = photons_observed / exposure_time
+    err_flux_observed = err_photons_observed / exposure_time
 
     return flux_observed, err_flux_observed

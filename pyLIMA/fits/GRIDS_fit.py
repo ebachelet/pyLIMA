@@ -1,21 +1,24 @@
-import numpy as np
-import time as python_time
-from tqdm import tqdm
-import scipy.optimize as so
 import sys
+import time as python_time
 
+import numpy as np
+import scipy.optimize as so
 from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.outputs import pyLIMA_plots
+from tqdm import tqdm
+
 
 class GRIDfit(MLfit):
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', DE_population_size=2, max_iteration=2000,
-                 fix_parameters = [], grid_resolution = 10):
+                 telescopes_fluxes_method='polyfit', DE_population_size=2,
+                 max_iteration=2000,
+                 fix_parameters=[], grid_resolution=10):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
-                         rescale_astrometry=rescale_astrometry, telescopes_fluxes_method=telescopes_fluxes_method)
+                         rescale_astrometry=rescale_astrometry,
+                         telescopes_fluxes_method=telescopes_fluxes_method)
 
         self.DE_population_size = DE_population_size
         self.max_iteration = max_iteration
@@ -55,15 +58,16 @@ class GRIDfit(MLfit):
         parameters_on_the_grid = []
 
         for parameter_name in self.fix_parameters:
-
             parameter_range = self.fit_parameters[parameter_name][1]
 
-            parameters_on_the_grid.append(np.linspace(parameter_range[0], parameter_range[1],
-                                                      self.grid_resolution))
+            parameters_on_the_grid.append(
+                np.linspace(parameter_range[0], parameter_range[1],
+                            self.grid_resolution))
 
         parameters_on_the_grid = np.array(parameters_on_the_grid)
         params = map(np.asarray, parameters_on_the_grid)
-        grid = np.broadcast_arrays(*[x[(slice(None),) + (None,) * i] for i, x in enumerate(params)])
+        grid = np.broadcast_arrays(
+            *[x[(slice(None),) + (None,) * i] for i, x in enumerate(params)])
 
         reformate_grid = np.vstack(grid).reshape(len(parameters_on_the_grid), -1).T
 
@@ -83,22 +87,23 @@ class GRIDfit(MLfit):
     def fit_on_grid_pixel(self, *fixed_parameters):
 
         fixed_parameters = np.ravel(fixed_parameters)
-        differential_evolution_estimation = so.differential_evolution(self.objective_function,
-                                                                                  bounds=self.bounds,
-                                                                                  mutation=(0.5, 1.5),
-                                                                                  popsize=self.DE_population_size,
-                                                                                  args=([fixed_parameters]),
-                                                                                  maxiter=self.max_iteration, tol=0.00,
-                                                                                  atol=1.0, strategy='rand1bin',
-                                                                                  recombination=0.5, polish=True,
-                                                                                  init='latinhypercube',
-                                                                                  disp=False)
+        differential_evolution_estimation = so.differential_evolution(
+            self.objective_function,
+            bounds=self.bounds,
+            mutation=(0.5, 1.5),
+            popsize=self.DE_population_size,
+            args=([fixed_parameters]),
+            maxiter=self.max_iteration, tol=0.00,
+            atol=1.0, strategy='rand1bin',
+            recombination=0.5, polish=True,
+            init='latinhypercube',
+            disp=False)
 
         fitted_parameters = differential_evolution_estimation['x']
-        best_model = self.reconstruct_fit_process_parameters(fitted_parameters, fixed_parameters)
+        best_model = self.reconstruct_fit_process_parameters(fitted_parameters,
+                                                             fixed_parameters)
         best_model = np.append(best_model, differential_evolution_estimation['fun'])
         return best_model
-
 
     def fit(self, computational_pool=None):
 
@@ -106,16 +111,16 @@ class GRIDfit(MLfit):
 
         start_time = python_time.time()
 
-        self.bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys() if key not in self.fix_parameters]
-
-
+        self.bounds = [self.fit_parameters[key][1] for key in self.fit_parameters.keys()
+                       if key not in self.fix_parameters]
 
         if computational_pool is not None:
 
             with computational_pool as pool, tqdm(total=len(hyper_grid)) as pbar:
 
                 res = [pool.apply_async(self.fit_on_grid_pixel, args=(hyper_grid[i],),
-                                    callback=lambda _: pbar.update(1)) for i in range(len(hyper_grid))]
+                                        callback=lambda _: pbar.update(1)) for i in
+                       range(len(hyper_grid))]
 
                 population = np.array([r.get() for r in res])
 
@@ -123,21 +128,23 @@ class GRIDfit(MLfit):
             population = []
 
             for j in tqdm(range(self.max_iteration)):
-
                 new_step = self.fit_on_grid_pixel([hyper_grid[j]])
                 population.append(new_step)
 
             GRIDS_population = np.array(population)
 
             computation_time = python_time.time() - start_time
-            print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
+            print(sys._getframe().f_code.co_name,
+                  ' : ' + self.fit_type() + ' fit SUCCESS')
 
+            best_model_index = GRIDS_population[:, -1].argmin()
 
-            best_model_index = GRIDS_population[:,-1].argmin()
+            print('best_model:', GRIDS_population[best_model_index, :-1],
+                  '-ln(likelihood)', GRIDS_population[best_model_index, -1])
 
-            print('best_model:', GRIDS_population[best_model_index,:-1], '-ln(likelihood)', GRIDS_population[best_model_index,-1])
-
-            self.fit_results = {'best_model': GRIDS_population[best_model_index,:-1], '-(ln_likelihood)': GRIDS_population[best_model_index,-1],
+            self.fit_results = {'best_model': GRIDS_population[best_model_index, :-1],
+                                '-(ln_likelihood)': GRIDS_population[
+                                    best_model_index, -1],
                                 'fit_time': computation_time,
                                 'GRIDS_population': GRIDS_population}
 
@@ -145,5 +152,3 @@ class GRIDfit(MLfit):
 
         pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
         pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
-
-

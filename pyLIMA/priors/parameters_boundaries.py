@@ -1,149 +1,152 @@
 import numpy as np
 
+
 def t0_boundaries():
+    # minimum_observing_time_telescopes = []
+    # maximum_observing_time_telescopes = []
 
-    #minimum_observing_time_telescopes = []
-    #maximum_observing_time_telescopes = []
-
-    #for telescope in event.telescopes:
+    # for telescope in event.telescopes:
 
     #    try:
 
-    #        minimum_observing_time_telescopes.append(min(telescope.lightcurve_flux['time'].value))
-    #        maximum_observing_time_telescopes.append(max(telescope.lightcurve_flux['time'].value))
+    #        minimum_observing_time_telescopes.append(min(telescope.lightcurve_flux[
+    #        'time'].value))
+    #        maximum_observing_time_telescopes.append(max(telescope.lightcurve_flux[
+    #        'time'].value))
 
     #    except:
 
-    #        minimum_observing_time_telescopes.append(min(telescope.astrometry['time'].value))
-    #        maximum_observing_time_telescopes.append(max(telescope.astrometry['time'].value))
+    #        minimum_observing_time_telescopes.append(min(telescope.astrometry[
+    #        'time'].value))
+    #        maximum_observing_time_telescopes.append(max(telescope.astrometry[
+    #        'time'].value))
 
     to_boundaries = (2400000, 2500000)
 
     return to_boundaries
 
-def delta_t0_boundaries():
 
+def delta_t0_boundaries():
     return (-150, 150)
 
-def delta_u0_boundaries():
 
-    return (-1.0,1.0)
+def delta_u0_boundaries():
+    return (-1.0, 1.0)
+
 
 def u0_boundaries():
+    return (0.0, 1.0)
 
-    return (0.0,1.0)
 
 def tE_boundaries():
+    return (0.1, 500)
 
-    return (0.1,500)
 
 def rho_boundaries():
-
     return (5 * 10 ** -5, 0.05)
 
-def q_flux_boundaries():
 
-    return (0.001,1.0)
+def q_flux_boundaries():
+    return (0.001, 1.0)
+
 
 def separation_boundaries():
+    return (0.1, 10.0)
 
-    return (0.1,10.0)
 
 def mass_ratio_boundaries():
+    return (10 ** (-6.0), 1.0)
 
-    return (10**(-6.0),1.0)
 
 def alpha_boundaries():
+    return (0, 2 * np.pi)
 
-    return (0,2*np.pi)
 
 def piEN_boundaries():
+    return (-1.0, 1.0)
 
-    return (-1.0,1.0)
 
 def piEE_boundaries():
+    return (-1.0, 1.0)
 
-    return (-1.0,1.0)
 
 def v_para_boundaries():
+    return (-10.0, 10.0)
 
-    return (-10.0,10.0)
 
 def v_perp_boundaries():
+    return (-10.0, 10.0)
 
-    return (-10.0,10.0)
 
 def v_radial_boundaries():
+    return (-10.0, 10.0)
 
-    return (-10.0,10.0)
 
 def theta_E_boundaries():
+    return (0.0, 10.0)
 
-    return (0.0,10.0)
 
 def r_s_boundaries():
+    return (-10, 10)
 
-    return (-10,10)
 
 def a_s_boundaries():
+    return (0.500001, 10)
 
-    return (0.500001,10)
 
 def rE_boundaries():
+    return (0.1, 100.0)  # AU
 
-    return (0.1,100.0) #AU
 
 def fsource_boundaries(flux):
+    return (0.0, np.max(flux))
 
-    return (0.0,np.max(flux))
 
 def fblend_boundaries(flux):
+    return (-np.max(flux), np.max(flux))
 
-    return (-np.max(flux),np.max(flux))
 
 def gblend_boundaries():
-
     return (-1.0, 1000)
 
-def rescale_photometry_boundaries():
 
+def rescale_photometry_boundaries():
     return (-5, 5.)
 
-def rescale_astrometry_boundaries():
 
+def rescale_astrometry_boundaries():
     return (-5, 5)
 
-def parallax_source_boundaries():
 
-    return (0.01,10) #mas
+def parallax_source_boundaries():
+    return (0.01, 10)  # mas
+
 
 def mu_source_N_boundaries():
+    return (-20, 20)  # pixel/yr
 
-    return (-20, 20) #pixel/yr
 
 def mu_source_E_boundaries():
+    return (-20, 20)  # pixel/yr
 
-    return (-20, 20) #pixel/yr
 
 def position_pixel_boundaries():
+    return (-4096, 4096)  # pix
 
-    return (-4096,4096) #pix
 
 def position_ra_boundaries():
+    return (0, 360)  # (0,360) degree
 
-    return (0, 360) #(0,360) degree
 
 def position_dec_boundaries():
+    return (-90, 90)  # (-90,90) degree
 
-    return (-90, 90) #(-90,90) degree
 
 def t_center_boundaries():
-
     return t0_boundaries()
 
 
 def u_center_boundaries():
-
     return (-1, 1)
 
 
@@ -165,49 +168,47 @@ def parameters_boundaries(event, model_dictionnary):
 
             function_name = key + '_boundaries()'
             if ('rho_' in key):
-
                 function_name = 'rho_boundaries()'
 
             if ('q_flux' in key):
-
                 function_name = 'q_flux_boundaries()'
 
             if ('fsource_' in key):
-
-                telescope_ind = np.where(key.split('fsource_')[1]==np.array(telescopes_names))[0][0]
+                telescope_ind = \
+                np.where(key.split('fsource_')[1] == np.array(telescopes_names))[0][0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
                 function_name = key.split('_')[0] + '_boundaries(flux)'
 
             if ('fblend_' in key):
-
-                telescope_ind = np.where(key.split('fblend_')[1]==np.array(telescopes_names))[0][0]
+                telescope_ind = \
+                np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
                 function_name = key.split('_')[0] + '_boundaries(flux)'
 
             if ('gblend_' in key):
-
                 function_name = key.split('_')[0] + '_boundaries()'
 
             if 'logk_photometry' in key:
-
                 function_name = 'rescale_photometry_boundaries()'
 
             if 'logk_astrometry' in key:
-
                 function_name = 'rescale_astrometry_boundaries()'
 
             if 'position_source' in key:
 
                 try:
 
-                    telescope_ind = np.where(key.split('position_source_N_')[1] == np.array(telescopes_names))[0][0]
+                    telescope_ind = np.where(
+                        key.split('position_source_N_')[1] == np.array(
+                            telescopes_names))[0][0]
 
                 except:
 
-                    telescope_ind = np.where(key.split('position_source_E_')[1] == np.array(telescopes_names))[0][0]
+                    telescope_ind = np.where(
+                        key.split('position_source_E_')[1] == np.array(
+                            telescopes_names))[0][0]
 
                 if event.telescopes[telescope_ind].astrometry['ra'].unit == 'deg':
-
 
                     if 'position_source_E' in key:
 
@@ -226,11 +227,15 @@ def parameters_boundaries(event, model_dictionnary):
 
                 try:
 
-                    telescope_ind = np.where(key.split('position_blend_N_')[1] == np.array(telescopes_names))[0][0]
+                    telescope_ind = np.where(
+                        key.split('position_blend_N_')[1] == np.array(
+                            telescopes_names))[0][0]
 
                 except:
 
-                    telescope_ind = np.where(key.split('position_blend_E_')[1] == np.array(telescopes_names))[0][0]
+                    telescope_ind = np.where(
+                        key.split('position_blend_E_')[1] == np.array(
+                            telescopes_names))[0][0]
 
                 if event.telescopes[telescope_ind].astrometry['ra'].unit == 'deg':
 

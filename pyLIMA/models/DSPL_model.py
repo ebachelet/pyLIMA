@@ -1,7 +1,8 @@
 import numpy as np
-
-from pyLIMA.models.ML_model import MLmodel
 from pyLIMA.magnification import magnification_PSPL
+from pyLIMA.models.ML_model import MLmodel
+
+
 class DSPLmodel(MLmodel):
     @property
     def model_type(self):
@@ -25,27 +26,35 @@ class DSPLmodel(MLmodel):
 
         return model_dictionary
 
-
     def model_astrometry(self, telescope, pyLIMA_parameters):
 
         pass
 
-    def model_magnification(self, telescope, pyLIMA_parameters, return_impact_parameter=False):
+    def model_magnification(self, telescope, pyLIMA_parameters,
+                            return_impact_parameter=False):
         """
         The weighted (by q_flux) sum of the two source magnifications
         """
         if telescope.lightcurve_flux is not None:
 
-            source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, source2_trajectory_y = \
+            source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, \
+                source2_trajectory_y = \
                 self.sources_trajectory(telescope, pyLIMA_parameters)
 
-            source1_magnification = magnification_PSPL.magnification_PSPL(source1_trajectory_x, source1_trajectory_y)
+            source1_magnification = magnification_PSPL.magnification_PSPL(
+                source1_trajectory_x, source1_trajectory_y)
 
-            source2_magnification = magnification_PSPL.magnification_PSPL(source2_trajectory_x, source2_trajectory_y)
+            source2_magnification = magnification_PSPL.magnification_PSPL(
+                source2_trajectory_x, source2_trajectory_y)
 
-            blend_magnification_factor = getattr(pyLIMA_parameters, 'q_flux_' + telescope.filter)
+            blend_magnification_factor = getattr(pyLIMA_parameters,
+                                                 'q_flux_' + telescope.filter)
 
-            effective_magnification = (source1_magnification + source2_magnification * blend_magnification_factor) / (1 + blend_magnification_factor)
+            effective_magnification = (
+                                              source1_magnification +
+                                              source2_magnification *
+                                              blend_magnification_factor) / (
+                                              1 + blend_magnification_factor)
 
             magnification = effective_magnification
 
@@ -71,17 +80,20 @@ class DSPLmodel(MLmodel):
         source2_trajectory_x : the x coordinates of source 2
         source2_trajectory_y : the y coordinates of source 2
         """
-        source1_trajectory_x, source1_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters,
-                                                                               data_type='photometry')
+        source1_trajectory_x, source1_trajectory_y, _, _ = self.source_trajectory(
+            telescope, pyLIMA_parameters,
+            data_type='photometry')
 
-        parameters = [getattr(pyLIMA_parameters,i) for i in pyLIMA_parameters._fields]
+        parameters = [getattr(pyLIMA_parameters, i) for i in pyLIMA_parameters._fields]
 
         pyLIMA_parameters_2 = self.compute_pyLIMA_parameters(parameters)
 
-        pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0+pyLIMA_parameters_2.delta_t0
-        pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0+pyLIMA_parameters_2.delta_u0
+        pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0 + pyLIMA_parameters_2.delta_t0
+        pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0 + pyLIMA_parameters_2.delta_u0
 
-        source2_trajectory_x, source2_trajectory_y, _, _ = self.source_trajectory(telescope, pyLIMA_parameters_2,
-                                                                               data_type='photometry')
+        source2_trajectory_x, source2_trajectory_y, _, _ = self.source_trajectory(
+            telescope, pyLIMA_parameters_2,
+            data_type='photometry')
 
-        return source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, source2_trajectory_y
+        return source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, \
+            source2_trajectory_y

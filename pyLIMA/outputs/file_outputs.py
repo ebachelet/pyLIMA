@@ -1,14 +1,15 @@
-import json
-import numpy as np
 import datetime
+import json
 
-def json_output(array_parameters, parameters_name, filename='parameters', output_directory='./'):
+import numpy as np
 
+
+def json_output(array_parameters, parameters_name, filename='parameters',
+                output_directory='./'):
     fit_results = {}
 
     for index, key in enumerate(parameters_name):
-
-        value = array_parameters[:,index]
+        value = array_parameters[:, index]
         param_dic = {}
         param_dic['value'] = value
         param_dic['comment'] = ''
@@ -16,16 +17,16 @@ def json_output(array_parameters, parameters_name, filename='parameters', output
         param_dic['unit'] = ''
         fit_results[key] = param_dic
 
-
     with open(output_directory + filename + '_.json', 'w') as outfile:
         json.dump(fit_results, outfile)
 
 
 def numpy_output(array_parameters, filename='parameters', output_directory='./'):
-
     np.save(output_directory + filename, array_parameters)
 
-def latex_output(array_parameters, parameters_name, filename='parameters', output_directory='./'):
+
+def latex_output(array_parameters, parameters_name, filename='parameters',
+                 output_directory='./'):
     """Function to output a LaTeX format table of the fit parameters"""
 
 
@@ -53,7 +54,8 @@ def latex_output(array_parameters, parameters_name, filename='parameters', outpu
 #        percent_50 = np.percentile(mcmc_chains[:, index], 50)
 #        percent_84 = np.percentile(mcmc_chains[:, index], 84)
 
-#        t.write(#            key + '&' + str(best_param) + '&[' + str(percent_34) + ',' + str(percent_50) + ',' + str(
+#        t.write(#            key + '&' + str(best_param) + '&[' + str(percent_34) +
+#        ',' + str(percent_50) + ',' + str(
 #                percent_84) + ']\\\\\n')
 
 #    t.write('Chi2&' + str(-2 * mcmc_chains[best_model_index, -1]) + '&0\\\\\n')
@@ -75,7 +77,6 @@ def latex_output(array_parameters, parameters_name, filename='parameters', outpu
 #    t.close()
 
 def pdf_output(fit, output_directory):
-
     from matplotlib.backends.backend_pdf import PdfPages
     with PdfPages(output_directory + fit.event.name + '.pdf') as pdf:
         figure_1 = fit.outputs.figure_lightcurve
@@ -93,4 +94,3 @@ def pdf_output(fit, output_directory):
         pdf_details['Subject'] = 'A microlensing fit'
 
         pdf_details['CreationDate'] = datetime.today()
-

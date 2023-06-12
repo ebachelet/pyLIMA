@@ -2,7 +2,6 @@ import numpy as np
 import pkg_resources
 from scipy import interpolate, misc
 
-
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
 template = pkg_resources.resource_filename('pyLIMA', resource_path)
 
@@ -32,6 +31,7 @@ interpol_db0 = interpolate.interp1d(zz, dB0, kind='linear')
 interpol_db1 = interpolate.interp1d(zz, dB1, kind='linear')
 YOO_TABLE = [zz, interpol_b0, interpol_b1, interpol_db0, interpol_db1]
 
+
 def magnification_FSPL_Yoo(tau, uo, rho, gamma, return_impact_parameter=False):
     """
     The Yoo et al. Finite Source Point Lens magnification.
@@ -55,11 +55,14 @@ def magnification_FSPL_Yoo(tau, uo, rho, gamma, return_impact_parameter=False):
     """
 
     import pyLIMA.magnification.impact_parameter
-    
-    impact_parameter = pyLIMA.magnification.impact_parameter.impact_parameter(tau, uo)  # u(t)
+
+    impact_parameter = pyLIMA.magnification.impact_parameter.impact_parameter(tau,
+                                                                              uo)  #
+    # u(t)
     impact_parameter_square = impact_parameter ** 2  # u(t)^2
 
-    magnification_pspl = (impact_parameter_square + 2) / (impact_parameter * (impact_parameter_square + 4) ** 0.5)
+    magnification_pspl = (impact_parameter_square + 2) / (
+            impact_parameter * (impact_parameter_square + 4) ** 0.5)
 
     z_yoo = impact_parameter / rho
 
@@ -71,27 +74,28 @@ def magnification_FSPL_Yoo(tau, uo, rho, gamma, return_impact_parameter=False):
     magnification_fspl[indexes_PSPL] = magnification_pspl[indexes_PSPL]
 
     # Very close to the lens (z_yoo<<1), then Witt&Mao limit.
-    indexes_WM = np.where((z_yoo <  YOO_TABLE[0][0]))[0]
+    indexes_WM = np.where((z_yoo < YOO_TABLE[0][0]))[0]
 
-    magnification_fspl[indexes_WM] = magnification_pspl[indexes_WM] * (2 * z_yoo[indexes_WM] - gamma *
-                                                                       (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
+    magnification_fspl[indexes_WM] = magnification_pspl[indexes_WM] * (
+            2 * z_yoo[indexes_WM] - gamma *
+            (2 - 3 * np.pi / 4) * z_yoo[indexes_WM])
 
     # FSPL regime (z_yoo~1), then Yoo et al derivatives
-    indexes_FSPL = np.where((z_yoo <=  YOO_TABLE[0][-1]) & (z_yoo >=  YOO_TABLE[0][0]))[0]
-   
-    magnification_fspl[indexes_FSPL] = magnification_pspl[indexes_FSPL] * ( YOO_TABLE[1](z_yoo[indexes_FSPL]) -
-                                                                           gamma * YOO_TABLE[2](z_yoo[indexes_FSPL]))
+    indexes_FSPL = np.where((z_yoo <= YOO_TABLE[0][-1]) & (z_yoo >= YOO_TABLE[0][0]))[0]
+
+    magnification_fspl[indexes_FSPL] = magnification_pspl[indexes_FSPL] * (
+            YOO_TABLE[1](z_yoo[indexes_FSPL]) -
+            gamma * YOO_TABLE[2](z_yoo[indexes_FSPL]))
 
     if return_impact_parameter:
-        
+
         # return both
         return magnification_fspl, impact_parameter
-    
+
     else:
-        
+
         # return magnification
         return magnification_fspl
-
 
 
 ### Deprecated
@@ -144,7 +148,8 @@ def magnification_FSPL_Lee(tau, uo, rho, gamma):
 
         else:
 
-            factor = (source_radius ** 2 - impact_parameter ** 2 * np.sin(x) ** 2) ** 0.5
+            factor = (source_radius ** 2 - impact_parameter ** 2 * np.sin(
+                x) ** 2) ** 0.5
             ucos = u * np.cos(x)
             if impact_parameter <= source_radius:
 
@@ -161,7 +166,8 @@ def magnification_FSPL_Lee(tau, uo, rho, gamma):
     def Lee_US(x, impact_parameter, source_radius, limb_darkening_coefficient=0):
 
         limits = Lee_limits(x, impact_parameter, source_radius)
-        amp = limits[1] * (limits[1] ** 2 + 4) ** 0.5 - limits[0] * (limits[0] ** 2 + 4) ** 0.5
+        amp = limits[1] * (limits[1] ** 2 + 4) ** 0.5 - limits[0] * (
+                limits[0] ** 2 + 4) ** 0.5
 
         return amp
 
@@ -171,8 +177,9 @@ def magnification_FSPL_Lee(tau, uo, rho, gamma):
         x2 = x ** 2
         u2 = impact_parameter ** 2
 
-        factor = (1 - limb_darkening_coeff * (1 - 1.5 * (1 - (x2 - 2 * impact_parameter * x * np.cos(phi) + u2) /
-                                                         source_radius ** 2) ** 0.5))
+        factor = (1 - limb_darkening_coeff * (
+                1 - 1.5 * (1 - (x2 - 2 * impact_parameter * x * np.cos(phi) + u2) /
+                           source_radius ** 2) ** 0.5))
         if np.isnan(factor):
             factor = 0
 
@@ -184,10 +191,12 @@ def magnification_FSPL_Lee(tau, uo, rho, gamma):
 
     import pyLIMA.magnification.impact_parameter
     from scipy import integrate
-    impact_param = pyLIMA.magnification.impact_parameter.impact_parameter(tau, uo)  # u(t) 
+    impact_param = pyLIMA.magnification.impact_parameter.impact_parameter(tau,
+                                                                          uo)  # u(t)
     impact_param_square = impact_param ** 2  # u(t)^2
 
-    magnification_pspl = (impact_param_square + 2) / (impact_param * (impact_param_square + 4) ** 0.5)
+    magnification_pspl = (impact_param_square + 2) / (
+            impact_param * (impact_param_square + 4) ** 0.5)
 
     z_yoo = impact_param / rho
 
@@ -204,19 +213,25 @@ def magnification_FSPL_Lee(tau, uo, rho, gamma):
     ampli_US = []
 
     for idx, u in enumerate(impact_param[indexes_US]):
-        ampli_US.append(1/(np.pi*rho**2)*integrate.quad(Lee_US, 0.0, np.pi, args=(u, rho), limit=100, epsabs=0.001,
-                                                        epsrel=0.001)[0])
+        ampli_US.append(1 / (np.pi * rho ** 2) *
+                        integrate.quad(Lee_US, 0.0, np.pi, args=(u, rho), limit=100,
+                                       epsabs=0.001,
+                                       epsrel=0.001)[0])
     magnification_fspl[indexes_US] = ampli_US
-    
+
     # Very Close to the lens (z<=3), FSPL
     indexes_FS = np.where((z_yoo <= 3))[0]
 
     ampli_FS = []
 
     for idx, u in enumerate(impact_param[indexes_FS]):
-        ampli_FS.append(2/(np.pi*rho**2)*integrate.nquad(Lee_FS, [Lee_limits, [0.0, np.pi]], args=(u, rho, gamma),
-                                                         opts=[{'limit': 100, 'epsabs': 0.001, 'epsrel': 0.001},
-                                                               {'limit': 100, 'epsabs': 0.001, 'epsrel': 0.001}])[0])
+        ampli_FS.append(2 / (np.pi * rho ** 2) *
+                        integrate.nquad(Lee_FS, [Lee_limits, [0.0, np.pi]],
+                                        args=(u, rho, gamma),
+                                        opts=[{'limit': 100, 'epsabs': 0.001,
+                                               'epsrel': 0.001},
+                                              {'limit': 100, 'epsabs': 0.001,
+                                               'epsrel': 0.001}])[0])
 
     magnification_fspl[indexes_FS] = ampli_FS
 

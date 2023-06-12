@@ -1,7 +1,8 @@
-from astroquery.jplhorizons import Horizons
 import numpy as np
+from astroquery.jplhorizons import Horizons
 
-TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL, see space_parallax.
+TIMEOUT_JPL = 120  # seconds. The time you allow telnetlib to discuss with JPL,
+# see space_parallax.
 JPL_TYPICAL_REQUEST_TIME_PER_LINE = 0.002  # seconds.
 
 JPL_HORIZONS_ID = {
@@ -15,11 +16,13 @@ JPL_HORIZONS_ID = {
 
 }
 
+
 def horizons_obscodes(observatory):
     """Transform observatory names to JPL horizon codes.
     Write by Tim Lister, thanks :)
 
-    :param str observatory: the satellite name you would like to obtain ephemeris. As to be in the dictionnary
+    :param str observatory: the satellite name you would like to obtain ephemeris. As
+    to be in the dictionnary
            JPL_HORIZONS_ID (exact name matching!).
 
     :return: the JPL ID of your satellite.
@@ -39,15 +42,16 @@ def horizons_obscodes(observatory):
 
 
 def horizons_API(body, time_to_treat, observatory='ELP'):
-
     OBSERVATORY_ID = horizons_obscodes(observatory)
     body = horizons_obscodes(body)
 
-    tstart = 'JD' + str(time_to_treat.min()-1)
+    tstart = 'JD' + str(time_to_treat.min() - 1)
 
-    tstop = 'JD' + str(time_to_treat.max()+1)
+    tstop = 'JD' + str(time_to_treat.max() + 1)
 
-    obj = Horizons(id=body, location=OBSERVATORY_ID, epochs={'start': tstart, 'stop': tstop, 'step':'1440m'}) #daily cadence for interpolation
+    obj = Horizons(id=body, location=OBSERVATORY_ID,
+                   epochs={'start': tstart, 'stop': tstop,
+                           'step': '1440m'})  # daily cadence for interpolation
     ephemerides = obj.ephemerides()
 
     dates = ephemerides['datetime_jd'].data.data
@@ -55,9 +59,9 @@ def horizons_API(body, time_to_treat, observatory='ELP'):
     dec = ephemerides['DEC'].data.data
     distances = ephemerides['delta'].data.data
 
-    if distances.min()<0.002: #Low orbits
+    if distances.min() < 0.002:  # Low orbits
 
-        #adding exact telescopes dates
+        # adding exact telescopes dates
         DATES = [dates.tolist()]
         RA = [ra.tolist()]
         DEC = [dec.tolist()]
@@ -65,10 +69,11 @@ def horizons_API(body, time_to_treat, observatory='ELP'):
 
         start = 0
 
-        while start<len(time_to_treat): #Split the time request in chunk of 50.
+        while start < len(time_to_treat):  # Split the time request in chunk of 50.
 
-            end = start+50
-            obj = Horizons(id=body, location=OBSERVATORY_ID, epochs=time_to_treat[start:end])
+            end = start + 50
+            obj = Horizons(id=body, location=OBSERVATORY_ID,
+                           epochs=time_to_treat[start:end])
             ephemerides = obj.ephemerides()
 
             dates = ephemerides['datetime_jd'].data.data
@@ -94,4 +99,3 @@ def horizons_API(body, time_to_treat, observatory='ELP'):
     positions = np.c_[dates, ra, dec, distances]
 
     return flag, positions
-

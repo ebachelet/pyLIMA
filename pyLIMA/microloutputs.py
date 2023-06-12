@@ -5,57 +5,51 @@ Created on Mon Nov  9 16:38:14 2015
 @author: ebachelet
 """
 from __future__ import division
-from datetime import datetime
+
 import collections
 import copy
+import json
+import os
+from datetime import datetime
 
 import cycler
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator, MultipleLocator
-from matplotlib.ticker import FormatStrFormatter
-from matplotlib.colors import LogNorm
-from matplotlib.font_manager import FontProperties
-
+import numpy as np
 from bokeh.io import show
 from bokeh.layouts import gridplot, row
+from bokeh.models import Arrow, OpenHead
+from bokeh.models import BasicTickFormatter
+from bokeh.models import ColumnDataSource
+from bokeh.models.widgets import DataTable, TableColumn
 from bokeh.plotting import figure
 from bokeh.transform import log_cmap
-
-from bokeh.models import BasicTickFormatter
-from bokeh.models.widgets import DataTable, TableColumn
-from bokeh.models import ColumnDataSource
-from bokeh.models import Arrow, OpenHead
-from bokeh.models import Circle
-
-import numpy as np
-from astropy.time import Time
-from scipy.stats.distributions import t as student
-import os
-import json
-
-from pyLIMA import microltoolbox
-from pyLIMA import microlstats
+from matplotlib.colors import LogNorm
+from matplotlib.font_manager import FontProperties
+from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import MaxNLocator
 from pyLIMA import microlcaustics
 from pyLIMA import microlparallax
+from pyLIMA import microlstats
+from pyLIMA import microltoolbox
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.21
 MAX_PLOT_TICKS = 2
-MARKER_SYMBOLS = np.array([['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10])
+MARKER_SYMBOLS = np.array(
+    [['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10])
 
 
 # plt.style.use('ggplot')
 
 def json_output(fit, output_directory):
-
     errors = fit_errors(fit, fit.fit_covariance)
 
     fit_results = {}
-    source_fluxes = {}	
-    source_fluxes['value'] = {}	
+    source_fluxes = {}
+    source_fluxes['value'] = {}
     blend_fluxes = {}
-    blend_fluxes['value'] = {}	
+    blend_fluxes['value'] = {}
     for index, key in enumerate(fit.model.model_dictionnary):
 
         value = fit.fit_results[index]
@@ -64,20 +58,19 @@ def json_output(fit, output_directory):
         param_dic['comment'] = ''
         param_dic['format'] = 'float'
         param_dic['unit'] = ''
-        
+
         if index < len(fit.model.parameters_boundaries):
-    
+
             fit_results[key] = param_dic
         else:
-            
+
             if key[:3] == 'fs_':
-                 
-               source_fluxes['value'][key]=value 
+
+                source_fluxes['value'][key] = value
 
             else:
 
-                blend_fluxes['value'][key]=value 
-    
+                blend_fluxes['value'][key] = value
 
     fit_results['source_fluxes'] = source_fluxes
     fit_results['blend_fluxes'] = blend_fluxes
@@ -87,8 +80,8 @@ def json_output(fit, output_directory):
     blend_fluxes_errors = {}
     blend_fluxes_errors['value'] = {}
     for index, key in enumerate(fit.model.model_dictionnary):
-        
-        value = getattr(errors,'err_'+key)
+
+        value = getattr(errors, 'err_' + key)
 
         error_dic = {}
         error_dic['value'] = value
@@ -97,22 +90,23 @@ def json_output(fit, output_directory):
         error_dic['unit'] = ''
 
         if index < len(fit.model.parameters_boundaries):
-    
-            fit_results['sig_'+key] = param_dic
+
+            fit_results['sig_' + key] = param_dic
         else:
-            
+
             if key[:3] == 'fs_':
-                 
-               source_fluxes_errors['value'][key]=value 
+
+                source_fluxes_errors['value'][key] = value
 
             else:
 
-               blend_fluxes_errors['value'][key]=value 
+                blend_fluxes_errors['value'][key] = value
 
     fit_results['sig_source_fluxes'] = source_fluxes_errors
     fit_results['sig_blend_fluxes'] = blend_fluxes_errors
-    with open( output_directory+fit.event.name+'_.json', 'w') as outfile:
+    with open(output_directory + fit.event.name + '_.json', 'w') as outfile:
         json.dump(fit_results, outfile)
+
 
 def latex_output(fit, output_directory):
     """Function to output a LaTeX format table of the fit parameters"""
@@ -120,7 +114,8 @@ def latex_output(fit, output_directory):
     event_name = fit.event.name
     fit_type = fit.method
 
-    file_path = os.path.join(output_directory, event_name + '_' + fit_type + '_results.tex')
+    file_path = os.path.join(output_directory,
+                             event_name + '_' + fit_type + '_results.tex')
 
     t = open(file_path, 'w')
 
@@ -146,7 +141,8 @@ def latex_output(fit, output_directory):
             percent_84 = np.percentile(mcmc_chains[:, index], 84)
 
             t.write(
-                key + '&' + str(best_param) + '&[' + str(percent_34) + ',' + str(percent_50) + ',' + str(
+                key + '&' + str(best_param) + '&[' + str(percent_34) + ',' + str(
+                    percent_50) + ',' + str(
                     percent_84) + ']\\\\\n')
 
         t.write('Chi2&' + str(-2 * mcmc_chains[best_model_index, -1]) + '&0\\\\\n')
@@ -195,14 +191,18 @@ def statistical_outputs(fit):
 
         :return: a namedtuple containing the following attributes :
 
-                  fit_parameters : an namedtuple object containing all the fitted parameters
+                  fit_parameters : an namedtuple object containing all the fitted
+                  parameters
 
-                  fit_errors : an namedtuple object containing all the fitted parameters errors
+                  fit_errors : an namedtuple object containing all the fitted
+                  parameters errors
 
-                  fit_correlation_matrix : a numpy array representing the fitted parameters
+                  fit_correlation_matrix : a numpy array representing the fitted
+                  parameters
                   correlation matrix
 
-                  figure_lightcurve : a two matplotlib figure showing the data and model and the
+                  figure_lightcurve : a two matplotlib figure showing the data and
+                  model and the
                   correspoding residuals
 
         :rtype: object
@@ -239,7 +239,8 @@ def statistical_outputs(fit):
         telescope_Anderson_Darling_residuals_test.append(Anderson_Darling)
         telescope_Shapiro_Wilk_residuals_test.append(Shapiro_Wilk)
 
-        chi2_sur_dof = microlstats.normalized_chi2((residuals ** 2).sum(), len(residuals),
+        chi2_sur_dof = microlstats.normalized_chi2((residuals ** 2).sum(),
+                                                   len(residuals),
                                                    len(fit.model.parameters_boundaries) + 2)
         BIC = 0.0
         AIC = 0.0
@@ -261,11 +262,14 @@ def statistical_outputs(fit):
     telescope_Anderson_Darling_residuals_test.append(Anderson_Darling)
     telescope_Shapiro_Wilk_residuals_test.append(Shapiro_Wilk)
 
-    chi2_sur_dof = microlstats.normalized_chi2(best_parameters[-1], len(total_residuals),
+    chi2_sur_dof = microlstats.normalized_chi2(best_parameters[-1],
+                                               len(total_residuals),
                                                len(fit.model.parameters_boundaries) + 2)
-    BIC = microlstats.Bayesian_Information_Criterion(best_parameters[-1], len(total_residuals),
+    BIC = microlstats.Bayesian_Information_Criterion(best_parameters[-1],
+                                                     len(total_residuals),
                                                      len(fit.model.parameters_boundaries) + 2)
-    AIC = microlstats.Akaike_Information_Criterion(best_parameters[-1], len(fit.model.parameters_boundaries) + 2)
+    AIC = microlstats.Akaike_Information_Criterion(best_parameters[-1],
+                                                   len(fit.model.parameters_boundaries) + 2)
 
     telescope_chi2.append(best_parameters[-1])
     telescope_chi2_sur_dof.append(chi2_sur_dof)
@@ -274,27 +278,31 @@ def statistical_outputs(fit):
 
     raw_labels = [i.name for i in fit.event.telescopes]
     raw_labels += ['All site']
-    column_labels = ['Kolmogorov-Smirnov\n(KS_stat,p_value)', 'Anderson-Darling\n(AD_stat,p value)',
-                     'Shapiro-Wilk\n(SW_stat,p_value)', 'chi2', 'chi2_dof', 'BIC', 'AIC']
+    column_labels = ['Kolmogorov-Smirnov\n(KS_stat,p_value)',
+                     'Anderson-Darling\n(AD_stat,p value)',
+                     'Shapiro-Wilk\n(SW_stat,p_value)', 'chi2', 'chi2_dof', 'BIC',
+                     'AIC']
     table_val = []
     table_colors = []
     colors_dictionary = {0: 'r', 1: 'y', 2: 'g'}
 
     for i in range(len(raw_labels)):
-        table_val.append([np.round(telescope_Kolmogorv_Smirnov_residuals_test[i][:2], 3),
-                          np.round(telescope_Anderson_Darling_residuals_test[i][:2], 3),
-                          np.round(telescope_Shapiro_Wilk_residuals_test[i][:2], 3),
-                          np.round(telescope_chi2[i], 3), np.round(telescope_chi2_sur_dof[i][0], 3),
-                          np.round(telescope_BIC[i], 3), np.round(telescope_AIC[i], 3)])
+        table_val.append(
+            [np.round(telescope_Kolmogorv_Smirnov_residuals_test[i][:2], 3),
+             np.round(telescope_Anderson_Darling_residuals_test[i][:2], 3),
+             np.round(telescope_Shapiro_Wilk_residuals_test[i][:2], 3),
+             np.round(telescope_chi2[i], 3), np.round(telescope_chi2_sur_dof[i][0], 3),
+             np.round(telescope_BIC[i], 3), np.round(telescope_AIC[i], 3)])
 
-        table_colors.append([colors_dictionary[telescope_Kolmogorv_Smirnov_residuals_test[i][2]],
-                             colors_dictionary[telescope_Anderson_Darling_residuals_test[i][2]],
-                             colors_dictionary[telescope_Shapiro_Wilk_residuals_test[i][2]],
-                             'w',
-                             colors_dictionary[telescope_chi2_sur_dof[i][1]],
-                             'w',
-                             'w',
-                             ])
+        table_colors.append(
+            [colors_dictionary[telescope_Kolmogorv_Smirnov_residuals_test[i][2]],
+             colors_dictionary[telescope_Anderson_Darling_residuals_test[i][2]],
+             colors_dictionary[telescope_Shapiro_Wilk_residuals_test[i][2]],
+             'w',
+             colors_dictionary[telescope_chi2_sur_dof[i][1]],
+             'w',
+             'w',
+             ])
 
     # table_val = np.round(table_val, 5).tolist()
 
@@ -306,7 +314,8 @@ def statistical_outputs(fit):
     table_axes.get_yaxis().set_visible(False)
     table_axes.get_xaxis().set_visible(False)
     the_table.auto_set_font_size(False)
-    the_table.set_fontsize(fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
+    the_table.set_fontsize(
+        fig_size[0] * 3 / 4.0 / np.log10(len(fit.model.model_dictionnary.keys())))
     the_table.scale(0.75, 0.75)
     title = fit.model.event.name + ' : ' + fit.model.model_type
     figure_stats.suptitle(title, fontsize=30 * fig_size[0] / len(title))
@@ -321,12 +330,14 @@ def fit_outputs(fit):
 
               fit_parameters : an namedtuple object containing all the fitted parameters
 
-              fit_errors : an namedtuple object containing all the fitted parameters errors
+              fit_errors : an namedtuple object containing all the fitted parameters
+              errors
 
               fit_correlation_matrix : a numpy array representing the fitted parameters
               correlation matrix
 
-              figure_lightcurve : a two matplotlib figure showing the data and model and the
+              figure_lightcurve : a two matplotlib figure showing the data and model
+              and the
               correspoding residuals
 
     :rtype: object
@@ -334,9 +345,11 @@ def fit_outputs(fit):
     # Change matplotlib default colors
     n = len(fit.event.telescopes)
     color = plt.cm.jet(np.linspace(0.01, 0.99, n))  # This returns RGBA; convert:
-    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255, rgb[2] * 255),
+    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255,
+    # rgb[2] * 255),
     #                tuple(color[:, 0:-1]))
-    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255), 'x').zfill(2) +
+    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255),
+                                                                     'x').zfill(2) +
                 format(int(i[2] * 255), 'x').zfill(2) for i in color]
 
     matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
@@ -354,11 +367,14 @@ def fit_outputs(fit):
         errors = fit_errors(fit)
         figure_lightcurve, bokeh_lightcurve = LM_plot_lightcurves(fit)
 
-        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve', 'figure_geometry',
+        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix',
+                       'figure_lightcurve', 'figure_geometry',
                        'figure_table']
-        values_outputs = [results, errors, covariance_matrix, figure_lightcurve, figure_trajectory, figure_table]
+        values_outputs = [results, errors, covariance_matrix, figure_lightcurve,
+                          figure_trajectory, figure_table]
         bokeh_grid = gridplot(
-            [[row([bokeh_lightcurve, gridplot([[bokeh_trajectory], [bokeh_table]], toolbar_location=None)])]],
+            [[row([bokeh_lightcurve, gridplot([[bokeh_trajectory], [bokeh_table]],
+                                              toolbar_location=None)])]],
             toolbar_location="above")
 
     if fit.method == 'DE':
@@ -373,14 +389,18 @@ def fit_outputs(fit):
 
         figure_lightcurve, bokeh_lightcurve = LM_plot_lightcurves(fit)
 
-        figure_distributions, bokeh_distributions = plot_distributions(fit, fit.DE_population)
-        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve', 'figure_geometry',
+        figure_distributions, bokeh_distributions = plot_distributions(fit,
+                                                                       fit.DE_population)
+        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix',
+                       'figure_lightcurve', 'figure_geometry',
                        'figure_table', 'figure_distributions']
-        values_outputs = [results, errors, covariance_matrix, figure_lightcurve, figure_trajectory, figure_table,
+        values_outputs = [results, errors, covariance_matrix, figure_lightcurve,
+                          figure_trajectory, figure_table,
                           figure_distributions]
 
         bokeh_grid = gridplot(
-            [[row([bokeh_lightcurve, gridplot([[bokeh_trajectory], [bokeh_table]], toolbar_location=None)])]
+            [[row([bokeh_lightcurve, gridplot([[bokeh_trajectory], [bokeh_table]],
+                                              toolbar_location=None)])]
                 , [row([bokeh_distributions])]],
             toolbar_location="above")
 
@@ -408,21 +428,25 @@ def fit_outputs(fit):
 
         figure_distributions, bokeh_distributions = plot_distributions(fit, mcmc_chains)
 
-        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix', 'figure_lightcurve', 'figure_geometry',
+        key_outputs = ['fit_parameters', 'fit_errors', 'fit_correlation_matrix',
+                       'figure_lightcurve', 'figure_geometry',
                        'figure_table', 'figure_distributions']
-        values_outputs = [results, errors, covariance_matrix, figure_lightcurve, figure_trajectory, figure_table,
+        values_outputs = [results, errors, covariance_matrix, figure_lightcurve,
+                          figure_trajectory, figure_table,
                           figure_distributions]
 
-        bokeh_grid = gridplot([[row([bokeh_lightcurve, gridplot([[bokeh_trajectory], [bokeh_table]], toolbar_location=None)])]
-                , [row([bokeh_distributions])]],
-            toolbar_location="above")
+        bokeh_grid = gridplot([[row([bokeh_lightcurve,
+                                     gridplot([[bokeh_trajectory], [bokeh_table]],
+                                              toolbar_location=None)])]
+                                  , [row([bokeh_distributions])]],
+                              toolbar_location="above")
     outputs = collections.namedtuple('Fit_outputs', key_outputs)
 
     count = 0
     for key in key_outputs:
         setattr(outputs, key, values_outputs[count])
         count += 1
-    
+
     show(bokeh_grid)
     return outputs
 
@@ -432,7 +456,8 @@ def complete_MCMC_parameters(fit, parameters):
     chichi = parameters[-1]
     parameters = parameters[:-1].tolist()
     for index, telescope in enumerate(fit.event.telescopes):
-        _, fs, fb = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)
+        _, fs, fb = fit.model.compute_the_microlensing_model(telescope,
+                                                             pyLIMA_parameters)
         parameters.append(fs)
         parameters.append(fb)
 
@@ -444,16 +469,17 @@ def create_the_fake_telescopes(fit, parameters):
     pyLIMA_parameters = fit.model.compute_pyLIMA_parameters(parameters)
 
     telescopes_ground = np.array([[i, fit.event.telescopes[i].n_data()] for i
-                                  in range(len(fit.event.telescopes)) if fit.event.telescopes[i].location == 'Earth'])
+                                  in range(len(fit.event.telescopes)) if
+                                  fit.event.telescopes[i].location == 'Earth'])
 
     try:
 
         telescopes_index = [telescopes_ground[0, 0]]
     except:
         telescopes_index = []
-   
-    telescopes_space = [i for i in range(len(fit.event.telescopes)) if fit.event.telescopes[i].location == 'Space']
 
+    telescopes_space = [i for i in range(len(fit.event.telescopes)) if
+                        fit.event.telescopes[i].location == 'Space']
 
     telescopes_index += telescopes_space
 
@@ -465,34 +491,41 @@ def create_the_fake_telescopes(fit, parameters):
     for telescope_index in telescopes_index:
 
         reference_telescope = copy.copy(fit.event.telescopes[telescope_index])
-        telescope_time = fit.event.telescopes[telescope_index].lightcurve_flux['time'].value
+        telescope_time = fit.event.telescopes[telescope_index].lightcurve_flux[
+            'time'].value
 
         if fit.event.telescopes[telescope_index].location == 'Space':
-		
-            if np.min(telescope_time)>np.min(reference_telescope.spacecraft_positions[:,0]):
-               time_minimum = np.min(reference_telescope.spacecraft_positions[:,0])
+
+            if np.min(telescope_time) > np.min(
+                    reference_telescope.spacecraft_positions[:, 0]):
+                time_minimum = np.min(reference_telescope.spacecraft_positions[:, 0])
             else:
-               time_minimum = np.min(telescope_time)
+                time_minimum = np.min(telescope_time)
 
-            if np.max(telescope_time)<np.max(reference_telescope.spacecraft_positions[:,0]):
-               time_maximum = np.max(reference_telescope.spacecraft_positions[:,0])
+            if np.max(telescope_time) < np.max(
+                    reference_telescope.spacecraft_positions[:, 0]):
+                time_maximum = np.max(reference_telescope.spacecraft_positions[:, 0])
             else:
-               time_maximum = np.max(telescope_time)
+                time_maximum = np.max(telescope_time)
 
-
-            time = np.linspace( time_minimum, time_maximum, 5000)
+            time = np.linspace(time_minimum, time_maximum, 5000)
         else:
-            time = np.linspace(np.min([np.min(telescope_time), pyLIMA_parameters.to - 3 * pyLIMA_parameters.tE]),
-                             np.max([np.max(telescope_time), pyLIMA_parameters.to + 3 * pyLIMA_parameters.tE]), 5000)
+            time = np.linspace(np.min([np.min(telescope_time),
+                                       pyLIMA_parameters.to - 3 *
+                                       pyLIMA_parameters.tE]),
+                               np.max([np.max(telescope_time),
+                                       pyLIMA_parameters.to + 3 *
+                                       pyLIMA_parameters.tE]),
+                               5000)
         import pyLIMA.telescopes
 
         reference_telescope.lightcurve_magnitude = \
-            pyLIMA.telescopes.construct_time_series(np.c_[time, [0] * len(time), [0] * len(time)],
-                                                    ['time','mag','err_mag'],['JD','mag','mag'])
+            pyLIMA.telescopes.construct_time_series(
+                np.c_[time, [0] * len(time), [0] * len(time)],
+                ['time', 'mag', 'err_mag'], ['JD', 'mag', 'mag'])
         reference_telescope.lightcurve_flux = reference_telescope.lightcurve_in_flux()
 
         if fit.model.parallax_model[0] != 'None':
-
             reference_telescope.compute_parallax(fit.model.event.parallax_model)
 
         fit.event.fake_telescopes.append(reference_telescope)
@@ -503,7 +536,8 @@ def plot_distributions(fit, mcmc_chains):
         Only plot the best mcmc_chains are plotted.
         :param fit: a fit object. See the microlfits for more details.
         :param mcmc_best: a numpy array representing the best (<= 6 sigma) mcmc chains.
-        :return: a multiple matplotlib subplot representing the parameters distributions (2D slice +
+        :return: a multiple matplotlib subplot representing the parameters
+        distributions (2D slice +
         histogram)
         :rtype: matplotlib_figure
     """
@@ -513,7 +547,8 @@ def plot_distributions(fit, mcmc_chains):
     max_plot_ticks = MAX_PLOT_TICKS
     dimensions = len(mcmc_chains[0]) - 1
 
-    figure_distributions, axes = plt.subplots(dimensions, dimensions, figsize=(fig_size[0], fig_size[1]))
+    figure_distributions, axes = plt.subplots(dimensions, dimensions,
+                                              figsize=(fig_size[0], fig_size[1]))
     keys = list(fit.model.model_dictionnary)
 
     chains = np.copy(mcmc_chains)
@@ -543,8 +578,10 @@ def plot_distributions(fit, mcmc_chains):
             axes[j, i].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
             axes[j, i].xaxis.set_major_locator(MaxNLocator(2))
             axes[j, i].yaxis.set_major_locator(MaxNLocator(2))
-            # axes[j, i].set_xticks([np.percentile(chain_i, 1), np.percentile(chain_i, 99)])
-            # axes[j, i].set_yticks([np.percentile(chain_j, 99), np.percentile(chain_j, 99)])
+            # axes[j, i].set_xticks([np.percentile(chain_i, 1), np.percentile(
+            # chain_i, 99)])
+            # axes[j, i].set_yticks([np.percentile(chain_j, 99), np.percentile(
+            # chain_j, 99)])
 
             if j > i:
                 figure_distributions.delaxes(axes[i, j])
@@ -573,10 +610,14 @@ def plot_distributions(fit, mcmc_chains):
 
             if j < i:
                 H, ye, xe = np.histogram2d(chain_i, chain_j, bins=50)
-                hex = figure(x_range=(min(xe), max(xe)), y_range=(min(ye), max(ye)), toolbar_location=None, width=250,
+                hex = figure(x_range=(min(xe), max(xe)), y_range=(min(ye), max(ye)),
+                             toolbar_location=None, width=250,
                              height=250)
-                hex.image(image=[np.log10(H)], x=xe[0], y=ye[0], dw=xe[-1] - xe[0], dh=ye[-1] - ye[0],
-                          color_mapper=log_cmap('counts', 'Viridis256', 0.1, np.max(np.log10(H)))['transform'])
+                hex.image(image=[np.log10(H)], x=xe[0], y=ye[0], dw=xe[-1] - xe[0],
+                          dh=ye[-1] - ye[0],
+                          color_mapper=
+                          log_cmap('counts', 'Viridis256', 0.1, np.max(np.log10(H)))[
+                              'transform'])
                 # bins = hexbin(chain_i, chain_j, 0.1)
                 # hex = figure(title="Hexbin", match_aspect=True)
                 # hex.hex_tile(q="q", r="r", size=0.1, line_color=None, source=bins,
@@ -608,14 +649,16 @@ def plot_distributions(fit, mcmc_chains):
 
 
 def parameters_result(fit, parameters=None):
-    """ Produce a namedtuple object containing the fitted parameters in the fit.fit_results.
+    """ Produce a namedtuple object containing the fitted parameters in the
+    fit.fit_results.
 
     :param fit: a fit object. See the microlfits for more details.
     :param fit_parameters: a namedtuple object containing the fitted parameters.
     :rtype: object
     """
 
-    fit_parameters = collections.namedtuple('Parameters', fit.model.model_dictionnary.keys())
+    fit_parameters = collections.namedtuple('Parameters',
+                                            fit.model.model_dictionnary.keys())
 
     if parameters is not None:
 
@@ -628,7 +671,8 @@ def parameters_result(fit, parameters=None):
     for parameter in fit.model.model_dictionnary.keys():
 
         try:
-            setattr(fit_parameters, parameter, parameters[fit.model.model_dictionnary[parameter]])
+            setattr(fit_parameters, parameter,
+                    parameters[fit.model.model_dictionnary[parameter]])
         except:
             pass
 
@@ -681,7 +725,8 @@ def fit_errors(fit, covariance_matrix=None):
 
     for i in fit.model.model_dictionnary.keys():
         try:
-            setattr(parameters_errors, 'err_' + i, errors[fit.model.model_dictionnary[i]])
+            setattr(parameters_errors, 'err_' + i,
+                    errors[fit.model.model_dictionnary[i]])
         except:
             pass
     return parameters_errors
@@ -690,7 +735,8 @@ def fit_errors(fit, covariance_matrix=None):
 def cov2corr(covariance_matrix):
     """Covariance matrix to correlation matrix.
 
-    :param array_like covariance_matrix: a (square) numpy array representing the covariance matrix
+    :param array_like covariance_matrix: a (square) numpy array representing the
+    covariance matrix
 
     :return: a (square) numpy array representing the correlation matrix
     :rtype: array_like
@@ -698,13 +744,16 @@ def cov2corr(covariance_matrix):
     """
 
     covariance_diagonal = np.sqrt(covariance_matrix.diagonal())
-    correlation_matrix = ((covariance_matrix.T / covariance_diagonal).T) / covariance_diagonal
+    correlation_matrix = ((
+                                      covariance_matrix.T / covariance_diagonal).T) /\
+                         covariance_diagonal
 
     return correlation_matrix
 
 
 def MCMC_plot_lightcurves(fit, mcmc_best):
-    """Plot 35 models from the mcmc_best sample. This is made to have  35 models equally spaced
+    """Plot 35 models from the mcmc_best sample. This is made to have  35 models
+    equally spaced
     in term of objective funtion (~chichi)
 
     :param fit: a fit object. See the microlfits for more details.
@@ -715,8 +764,10 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     """
 
     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)
-    bokeh_lightcurves = figure(width=800, height=600, toolbar_location=None, y_axis_label='m [mag]')
-    bokeh_residuals = figure(width=bokeh_lightcurves.plot_width, plot_height=200, x_range=bokeh_lightcurves.x_range,
+    bokeh_lightcurves = figure(width=800, height=600, toolbar_location=None,
+                               y_axis_label='m [mag]')
+    bokeh_residuals = figure(width=bokeh_lightcurves.plot_width, plot_height=200,
+                             x_range=bokeh_lightcurves.x_range,
                              y_range=(0.18, -0.18), toolbar_location=None,
                              x_axis_label='JD', y_axis_label=u'\u0394m [mag]')
 
@@ -741,33 +792,41 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
             for index, telescope in enumerate(fit.event.telescopes):
 
                 telescope_name = telescope.name
-                parameters_to_change = [(i, name) for i, name in enumerate(pyLIMA_parameters._fields) if
+                parameters_to_change = [(i, name) for i, name in
+                                        enumerate(pyLIMA_parameters._fields) if
                                         telescope_name in name]
 
                 for parameter in parameters_to_change:
-                    parameters_to_plot[parameter[0]] = getattr(pyLIMA_parameters, parameter[1].replace(telescope_name,
-                                                                                                       telescope_reference_name))
+                    parameters_to_plot[parameter[0]] = getattr(pyLIMA_parameters,
+                                                               parameter[1].replace(
+                                                                   telescope_name,
+                                                                   telescope_reference_name))
 
             plot_model(figure_axes[0], fit,
-                       parameters=parameters_to_plot, telescope_index=telescope_index, model_color='grey',
+                       parameters=parameters_to_plot, telescope_index=telescope_index,
+                       model_color='grey',
                        model_alpha=0.25, label=False, bokeh_plot=bokeh_lightcurves)
 
         if telescope_index == 0:
 
             plot_model(figure_axes[0], fit,
                        parameters=parameters_to_plot, telescope_index=telescope_index,
-                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index_color],
+                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                           telescope_index_color],
                        bokeh_plot=bokeh_lightcurves)
         else:
 
             plot_model(figure_axes[0], fit,
                        parameters=parameters_to_plot, telescope_index=telescope_index,
-                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index_color],
+                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                           telescope_index_color],
                        label=False, bokeh_plot=bokeh_lightcurves)
 
-    plot_align_data(figure_axes[0], fit, telescope_index=0, parameters=parameters, bokeh_plot=bokeh_lightcurves)
+    plot_align_data(figure_axes[0], fit, telescope_index=0, parameters=parameters,
+                    bokeh_plot=bokeh_lightcurves)
 
-    plot_residuals(figure_axes[1], fit, parameters=parameters, bokeh_plot=bokeh_residuals)
+    plot_residuals(figure_axes[1], fit, parameters=parameters,
+                   bokeh_plot=bokeh_residuals)
 
     figure_axes[0].legend(numpoints=1, loc='best',
                           fancybox=True, framealpha=0.5)
@@ -787,13 +846,15 @@ def MCMC_plot_lightcurves(fit, mcmc_best):
     bokeh_residuals.xaxis.major_label_orientation = np.pi / 4
     bokeh_residuals.xaxis.minor_tick_line_color = None
 
-    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]], toolbar_location=None)
+    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]],
+                            toolbar_location=None)
 
     return figure_lightcurves, figure_bokeh
 
 
 def LM_plot_lightcurves(fit):
-    """Plot the aligned datasets and the best fit on the first subplot figure_axes[0] and residuals
+    """Plot the aligned datasets and the best fit on the first subplot figure_axes[0]
+    and residuals
     on the second subplot figure_axes[1].
 
     :param object fit: a fit object. See the microlfits for more details.
@@ -803,8 +864,10 @@ def LM_plot_lightcurves(fit):
     """
 
     figure_lightcurves, figure_axes = initialize_plot_lightcurve(fit)
-    bokeh_lightcurves = figure(width=800, height=600, toolbar_location=None, y_axis_label='m [mag]')
-    bokeh_residuals = figure(width=bokeh_lightcurves.plot_width, plot_height=200, x_range=bokeh_lightcurves.x_range,
+    bokeh_lightcurves = figure(width=800, height=600, toolbar_location=None,
+                               y_axis_label='m [mag]')
+    bokeh_residuals = figure(width=bokeh_lightcurves.plot_width, plot_height=200,
+                             x_range=bokeh_lightcurves.x_range,
                              y_range=(0.18, -0.18), toolbar_location=None,
                              x_axis_label='JD', y_axis_label=u'\u0394m [mag]')
 
@@ -825,12 +888,16 @@ def LM_plot_lightcurves(fit):
     for index, telescope in enumerate(fit.event.telescopes):
 
         telescope_name = telescope.name
-        parameters_to_change = [(i, name) for i, name in enumerate(pyLIMA_parameters._fields) if telescope_name in name]
+        parameters_to_change = [(i, name) for i, name in
+                                enumerate(pyLIMA_parameters._fields) if
+                                telescope_name in name]
 
         for parameter in parameters_to_change:
-            parameters_to_plot[parameter[0]] = getattr(pyLIMA_parameters, parameter[1].replace(telescope_name,
-                                                                                               telescope_reference_name))
- 
+            parameters_to_plot[parameter[0]] = getattr(pyLIMA_parameters,
+                                                       parameter[1].replace(
+                                                           telescope_name,
+                                                           telescope_reference_name))
+
     for telescope_index, telescope in enumerate(fit.event.fake_telescopes):
 
         telescope_index_color = [i for i in range(len(fit.event.telescopes)) if
@@ -838,18 +905,24 @@ def LM_plot_lightcurves(fit):
 
         if telescope_index == 0:
 
-            plot_model(figure_axes[0], fit, parameters=parameters_to_plot, telescope_index=telescope_index,
-                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index_color],
+            plot_model(figure_axes[0], fit, parameters=parameters_to_plot,
+                       telescope_index=telescope_index,
+                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                           telescope_index_color],
                        bokeh_plot=bokeh_lightcurves)
 
         else:
-            plot_model(figure_axes[0], fit, parameters=parameters_to_plot, telescope_index=telescope_index,
-                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index_color],
+            plot_model(figure_axes[0], fit, parameters=parameters_to_plot,
+                       telescope_index=telescope_index,
+                       model_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                           telescope_index_color],
                        label=False, bokeh_plot=bokeh_lightcurves)
 
-    plot_align_data(figure_axes[0], fit, telescope_index=0, parameters=best_parameters, bokeh_plot=bokeh_lightcurves)
+    plot_align_data(figure_axes[0], fit, telescope_index=0, parameters=best_parameters,
+                    bokeh_plot=bokeh_lightcurves)
 
-    plot_residuals(figure_axes[1], fit, parameters=best_parameters, bokeh_plot=bokeh_residuals)
+    plot_residuals(figure_axes[1], fit, parameters=best_parameters,
+                   bokeh_plot=bokeh_residuals)
     figure_axes[0].legend(numpoints=1, loc='best',
                           fancybox=True, framealpha=0.5)
 
@@ -873,7 +946,8 @@ def LM_plot_lightcurves(fit):
     bokeh_residuals.xaxis.major_label_orientation = np.pi / 4
     bokeh_residuals.xaxis.minor_tick_line_color = None
 
-    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]], toolbar_location=None)
+    figure_bokeh = gridplot([[bokeh_lightcurves], [bokeh_residuals]],
+                            toolbar_location=None)
 
     return figure_lightcurves, figure_bokeh
 
@@ -888,9 +962,11 @@ def initialize_plot_lightcurve(fit):
 
     """
     fig_size = [10, 10]
-    figure, figure_axes = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1]},
+    figure, figure_axes = plt.subplots(2, 1, sharex=True,
+                                       gridspec_kw={'height_ratios': [3, 1]},
                                        figsize=(fig_size[0], fig_size[1]), dpi=75)
-    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.99, wspace=0.2, hspace=0.1)
+    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.99, wspace=0.2,
+                        hspace=0.1)
     figure_axes[0].grid()
     figure_axes[1].grid()
     # fig_size = plt.rcParams["figure.figsize"]
@@ -915,15 +991,18 @@ def initialize_plot_lightcurve(fit):
     return figure, figure_axes
 
 
-def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color='b', model_alpha=1.0, label=True,
+def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color='b',
+               model_alpha=1.0, label=True,
                bokeh_plot=None):
-    """Plot the microlensing model corresponding to parameters, time and with the same properties as  telescope,  the best fit and first telescope.
+    """Plot the microlensing model corresponding to parameters, time and with the
+    same properties as  telescope,  the best fit and first telescope.
 
     :param object fit: a fit object. See the microlfits for more details.
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
     :param list parameters : a list of model parameters.
     :param np.array time : the time stamps for the model.
-    :param int telescope_index : which telescope you want a model (depends on filter, location etc...)
+    :param int telescope_index : which telescope you want a model (depends on filter,
+    location etc...)
     :param str model_color : the model color
     :param float model_alpha : the intensity of the model line
 
@@ -940,14 +1019,16 @@ def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color=
     telescope = fit.event.fake_telescopes[telescope_index]
 
     time = telescope.lightcurve_flux['time'].value
-    flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['flux']
+    flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[
+        'flux']
 
     import pyLIMA.toolbox.brightness_transformation
     magnitude = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(flux_model)
 
     if label == True:
 
-        figure_axe.plot(time, magnitude, c=model_color, label=fit.model.model_type, lw=3, alpha=model_alpha)
+        figure_axe.plot(time, magnitude, c=model_color, label=fit.model.model_type,
+                        lw=3, alpha=model_alpha)
 
     else:
 
@@ -955,7 +1036,8 @@ def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color=
 
     if telescope_index == 0:
         figure_axe.set_ylim(
-            [min(magnitude) - plot_lightcurve_windows, max(magnitude) + plot_lightcurve_windows])
+            [min(magnitude) - plot_lightcurve_windows,
+             max(magnitude) + plot_lightcurve_windows])
         figure_axe.set_xlim(
             [pyLIMA_parameters.to - 2 * np.abs(pyLIMA_parameters.tE),
              pyLIMA_parameters.to + 2 * np.abs(pyLIMA_parameters.tE)])
@@ -965,7 +1047,8 @@ def plot_model(figure_axe, fit, parameters=None, telescope_index=0, model_color=
     if bokeh_plot is not None:
 
         if label == True:
-            bokeh_plot.line(time, magnitude, color=model_color, alpha=model_alpha, legend=fit.model.model_type)
+            bokeh_plot.line(time, magnitude, color=model_color, alpha=model_alpha,
+                            legend=fit.model.model_type)
         else:
             bokeh_plot.line(time, magnitude, color=model_color, alpha=model_alpha)
 
@@ -989,7 +1072,8 @@ def plot_residuals(figure_axe, fit, parameters=None, bokeh_plot=None):
         flux = telescope.lightcurve_flux['time'].value
         err_mag = telescope.lightcurve_magnitude['err_mag'].value
 
-        flux_model = fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['flux']
+        flux_model = \
+        fit.model.compute_the_microlensing_model(telescope, pyLIMA_parameters)['flux']
 
         residuals = 2.5 * np.log10(flux_model / flux)
 
@@ -999,7 +1083,8 @@ def plot_residuals(figure_axe, fit, parameters=None, bokeh_plot=None):
         if bokeh_plot is not None:
 
             bokeh_plot.scatter(time, residuals,
-                               color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index]
+                               color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                   index]
                                , size=5)
 
             err_xs = []
@@ -1009,14 +1094,16 @@ def plot_residuals(figure_axe, fit, parameters=None, bokeh_plot=None):
                 err_xs.append((x, x))
                 err_ys.append((y - yerr, y + yerr))
 
-            bokeh_plot.multi_line(err_xs, err_ys, color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index])
+            bokeh_plot.multi_line(err_xs, err_ys, color=
+            plt.rcParams["axes.prop_cycle"].by_key()["color"][index])
 
     figure_axe.set_ylim([-plot_residuals_windows, plot_residuals_windows])
     figure_axe.invert_yaxis()
     figure_axe.yaxis.get_major_ticks()[-1].draw = lambda *args: None
 
 
-def plot_align_data(figure_axe, fit, telescope_index=0, parameters=None, bokeh_plot=None):
+def plot_align_data(figure_axe, fit, telescope_index=0, parameters=None,
+                    bokeh_plot=None):
     """Plot the aligned data.
 
     :param matplotlib_axes figure_axe: a matplotlib axes correpsonding to the figure.
@@ -1025,34 +1112,42 @@ def plot_align_data(figure_axe, fit, telescope_index=0, parameters=None, bokeh_p
 
     """
 
-    normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit, telescope_index, parameters)
+    normalised_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(
+        fit, telescope_index, parameters)
 
     for index, telescope in enumerate(fit.event.telescopes):
         lightcurve = normalised_lightcurves[index]
 
-
-        figure_axe.errorbar(lightcurve['time'].value, lightcurve['mag'].value, yerr=lightcurve['err_mag'].value, ls='None',
-                            marker=str(MARKER_SYMBOLS[0][index]), markersize=7.5, capsize=0.0,
+        figure_axe.errorbar(lightcurve['time'].value, lightcurve['mag'].value,
+                            yerr=lightcurve['err_mag'].value, ls='None',
+                            marker=str(MARKER_SYMBOLS[0][index]), markersize=7.5,
+                            capsize=0.0,
                             label=telescope.name)
 
         if bokeh_plot is not None:
 
             bokeh_plot.scatter(lightcurve['time'].value, lightcurve['mag'].value,
-                               color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index]
+                               color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                   index]
                                , size=5, legend=telescope.name,
-                               muted_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index],
+                               muted_color=
+                               plt.rcParams["axes.prop_cycle"].by_key()["color"][index],
                                muted_alpha=0.2)
 
             err_xs = []
             err_ys = []
 
-            for x, y, yerr in zip(lightcurve['time'].value, lightcurve['mag'].value, lightcurve['err_mag'].value):
+            for x, y, yerr in zip(lightcurve['time'].value, lightcurve['mag'].value,
+                                  lightcurve['err_mag'].value):
                 err_xs.append((x, x))
                 err_ys.append((y - yerr, y + yerr))
 
-            bokeh_plot.multi_line(err_xs, err_ys, color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index],
+            bokeh_plot.multi_line(err_xs, err_ys, color=
+            plt.rcParams["axes.prop_cycle"].by_key()["color"][index],
                                   legend=telescope.name,
-                                  muted_color=plt.rcParams["axes.prop_cycle"].by_key()["color"][index],
+                                  muted_color=
+                                  plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                      index],
                                   muted_alpha=0.2)
 
 
@@ -1060,8 +1155,10 @@ def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_tel
     """Align data to the survey telescope (i.e telescope 0).
 
     :param array_like lightcurve_telescope_mag: the survey telescope in magnitude
-    :param float fs_reference: thce survey telescope reference source flux (i.e the fitted value)
-    :param float g_reference: the survey telescope reference blending parameter (i.e the fitted
+    :param float fs_reference: thce survey telescope reference source flux (i.e the
+    fitted value)
+    :param float g_reference: the survey telescope reference blending parameter (i.e
+    the fitted
     value)
     :param float fs_telescope: the telescope source flux (i.e the fitted value)
     :param float g_reference: the telescope blending parameter (i.e the fitted value)
@@ -1074,11 +1171,13 @@ def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_tel
     time = lightcurve_telescope_flux['time'].value
     flux = lightcurve_telescope_flux['flux'].value
     error_flux = lightcurve_telescope_flux['err_flux'].value
-    err_mag = pyLIMA.toolbox.brightness_transformation.error_flux_to_error_magnitude(error_flux, flux)
+    err_mag = pyLIMA.toolbox.brightness_transformation.error_flux_to_error_magnitude(
+        error_flux, flux)
 
     residuals = 2.5 * np.log10(model_telescope / flux)
     import pyLIMA.toolbox.brightness_transformation
-    magnitude_normalised = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(model_ghost) + residuals
+    magnitude_normalised = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(
+        model_ghost) + residuals
 
     lightcurve_normalised = [time, magnitude_normalised, err_mag]
 
@@ -1090,14 +1189,16 @@ def align_telescope_lightcurve(lightcurve_telescope_flux, model_ghost, model_tel
 def parameters_table(fit):
     """Plot the fit parameters and errors.
         :param object fit: a fit object. See the microlfits for more details.
-        :param list best_parameters: a list containing the model you want to plot the trajectory
+        :param list best_parameters: a list containing the model you want to plot the
+        trajectory
     """
 
     column_labels = ['Parameters', 'Errors']
 
     try:
         # DE or LM
-        table_val = [fit.fit_results, (fit.fit_covariance.diagonal() ** 0.5).tolist() + [0.0]]
+        table_val = [fit.fit_results,
+                     (fit.fit_covariance.diagonal() ** 0.5).tolist() + [0.0]]
         raw_labels = list(fit.model.model_dictionnary.keys()) + ['Chi^2']
 
 
@@ -1105,13 +1206,16 @@ def parameters_table(fit):
         # MCMC
         best_chain = np.argmax(fit.MCMC_chains[:, -1])
 
-        table_val = [(fit.MCMC_chains[best_chain, :-1]).tolist() + [fit.MCMC_chains[best_chain, -1] * -2],
-                     ((np.percentile(fit.MCMC_chains[:, :-1], 84, axis=0) - np.percentile(fit.MCMC_chains[:, :-1],
-                                                                                          16,
-                                                                                          axis=0)) / 2).tolist()
+        table_val = [(fit.MCMC_chains[best_chain, :-1]).tolist() + [
+            fit.MCMC_chains[best_chain, -1] * -2],
+                     ((np.percentile(fit.MCMC_chains[:, :-1], 84,
+                                     axis=0) - np.percentile(fit.MCMC_chains[:, :-1],
+                                                             16,
+                                                             axis=0)) / 2).tolist()
                      + [0.0]]
 
-        raw_labels = list(fit.model.model_dictionnary.keys())[:len(table_val[0]) - 1] + ['Chi^2']
+        raw_labels = list(fit.model.model_dictionnary.keys())[
+                     :len(table_val[0]) - 1] + ['Chi^2']
 
     table_val = np.round(table_val, 5).tolist()
     table_val = np.array(table_val).T.tolist()
@@ -1135,7 +1239,8 @@ def parameters_table(fit):
     figure_table = plt.figure(figsize=(fig_size[0], fig_size[1]), dpi=75)
     table_axes = figure_table.add_subplot(111, aspect=1)
 
-    the_table = table_axes.table(cellText=table_val, cellColours=table_colors, rowColours=raw_colors,
+    the_table = table_axes.table(cellText=table_val, cellColours=table_colors,
+                                 rowColours=raw_colors,
                                  rowLabels=raw_labels,
                                  colLabels=column_labels, loc='center left',
                                  rowLoc='left', colLoc='center',
@@ -1173,13 +1278,17 @@ def parameters_table(fit):
 
 
 def plot_geometry(fit):
-    """Plot the lensing geometry (i.e source trajectory) and the table of best parameters.
+    """Plot the lensing geometry (i.e source trajectory) and the table of best
+    parameters.
     :param object fit: a fit object. See the microlfits for more details.
-    :param list best_parameters: a list containing the model you want to plot the trajectory
+    :param list best_parameters: a list containing the model you want to plot the
+    trajectory
     """
 
-    bokeh_geometry = figure(width=350, height=350, x_range=(-3, 3), y_range=(-3, 3), toolbar_location=None,
-                            x_axis_label='x [' + u'\u03B8\u2091'']', y_axis_label='y [' + u'\u03B8\u2091'']'
+    bokeh_geometry = figure(width=350, height=350, x_range=(-3, 3), y_range=(-3, 3),
+                            toolbar_location=None,
+                            x_axis_label='x [' + u'\u03B8\u2091'']',
+                            y_axis_label='y [' + u'\u03B8\u2091'']'
                             )
 
     if len(fit.fit_results) != 0:
@@ -1209,58 +1318,77 @@ def plot_geometry(fit):
         fit.model.find_origin(pyLIMA_parameters)
         to, uo = fit.model.uo_to_from_uc_tc(pyLIMA_parameters)
 
-        trajectory_x, trajectory_y, separation = fit.model.source_trajectory(reference_telescope,
-                                                                             to, uo,
-                                                                             pyLIMA_parameters.tE,
-                                                                             pyLIMA_parameters)
+        trajectory_x, trajectory_y, separation = fit.model.source_trajectory(
+            reference_telescope,
+            to, uo,
+            pyLIMA_parameters.tE,
+            pyLIMA_parameters)
 
         figure_axes.plot(trajectory_x, trajectory_y,
-                         c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+                         c=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                             telescope_index],
                          label=platform)
         bokeh_geometry.line(trajectory_x, trajectory_y,
-                            color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+                            color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                telescope_index],
                             legend=platform)
 
         for index in [-1, 0, 1]:
 
             try:
                 index = np.argmin(np.abs(telescope.lightcurve_magnitude['time'].value -
-                                         (pyLIMA_parameters.to + index * pyLIMA_parameters.tE)))
-                sign = np.sign(trajectory_x[index+1]-trajectory_x[index])
+                                         (
+                                                     pyLIMA_parameters.to + index *
+                                                     pyLIMA_parameters.tE)))
+                sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
                 derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
                         trajectory_x[index - 1] - trajectory_x[index + 1])
 
                 figure_axes.annotate('', xy=(trajectory_x[index], trajectory_y[index]),
-                                     xytext=(trajectory_x[index] - sign* 0.001, trajectory_y[index] - sign* 0.001 * derivative),
+                                     xytext=(trajectory_x[index] - sign * 0.001,
+                                             trajectory_y[
+                                                 index] - sign * 0.001 * derivative),
                                      arrowprops=dict(arrowstyle="->", mutation_scale=35,
-                                                     color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                                     color=plt.rcParams[
+                                                         "axes.prop_cycle"].by_key()[
+                                                         "color"][
                                                          telescope_index]))
 
                 bokeh_geometry.add_layout(Arrow(end=OpenHead(line_color=
-                                                             plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                                             plt.rcParams[
+                                                                 "axes.prop_cycle"].by_key()[
+                                                                 "color"][
                                                                  telescope_index]),
-                                                x_start=trajectory_x[index], y_start=trajectory_y[index],
-                                                x_end=trajectory_x[index] + sign*0.001,
-                                                y_end=trajectory_y[index] + sign*0.001 * derivative
+                                                x_start=trajectory_x[index],
+                                                y_start=trajectory_y[index],
+                                                x_end=trajectory_x[
+                                                          index] + sign * 0.001,
+                                                y_end=trajectory_y[
+                                                          index] + sign * 0.001 *
+                                                      derivative
                                                 ))
             except:
                 pass
         if fit.model.model_type == 'DSPL':
-            trajectory_x, trajectory_y, separation = fit.model.source_trajectory(reference_telescope,
-                                                                                 pyLIMA_parameters.to + pyLIMA_parameters.delta_to,
-                                                                                 pyLIMA_parameters.uo + pyLIMA_parameters.delta_uo,
-                                                                                 pyLIMA_parameters.tE,
-                                                                                 pyLIMA_parameters)
+            trajectory_x, trajectory_y, separation = fit.model.source_trajectory(
+                reference_telescope,
+                pyLIMA_parameters.to + pyLIMA_parameters.delta_to,
+                pyLIMA_parameters.uo + pyLIMA_parameters.delta_uo,
+                pyLIMA_parameters.tE,
+                pyLIMA_parameters)
 
             figure_axes.plot(trajectory_x, trajectory_y,
-                             c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index], alpha=0.5)
+                             c=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                 telescope_index], alpha=0.5)
 
             bokeh_geometry.line(trajectory_x, trajectory_y,
-                                color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index], alpha=0.5,
+                                color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                    telescope_index], alpha=0.5,
                                 legend=platform)
 
     if 'BL' in fit.model.model_type:
-        regime, caustics, cc = microlcaustics.find_2_lenses_caustics_and_critical_curves(
+        regime, caustics, cc = \
+            microlcaustics.find_2_lenses_caustics_and_critical_curves(
             10 ** pyLIMA_parameters.logs,
             10 ** pyLIMA_parameters.logq,
             resolution=5000)
@@ -1285,7 +1413,8 @@ def plot_geometry(fit):
         einstein_ring = plt.Circle((0, 0), 1, fill=False, color='k', linestyle='--')
         figure_axes.add_artist(einstein_ring)
 
-        bokeh_geometry.circle(0, 0, radius=1, line_dash='dashed', line_color='black', fill_color=None)
+        bokeh_geometry.circle(0, 0, radius=1, line_dash='dashed', line_color='black',
+                              fill_color=None)
 
     for telescope_index, telescope in enumerate(fit.event.telescopes):
 
@@ -1303,58 +1432,62 @@ def plot_geometry(fit):
         else:
             rho = 10 ** -3
 
-        patches = [plt.Circle((x, y), rho, color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+        patches = [plt.Circle((x, y), rho,
+                              color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                  telescope_index],
                               alpha=0.2) for x, y in zip(trajectory_x, trajectory_y)]
         coll = matplotlib.collections.PatchCollection(patches, match_original=True)
 
         figure_axes.scatter(trajectory_x, trajectory_y,
-                            c=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
+                            c=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                telescope_index],
                             alpha=0.5, label=telescope.name, s=0.1)
 
         figure_axes.add_collection(coll)
 
         bokeh_geometry.circle(trajectory_x, trajectory_y, radius=rho,
-                              color=plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index],
-                              radius_dimension = 'max',fill_alpha=0.5)
-    
+                              color=plt.rcParams["axes.prop_cycle"].by_key()["color"][
+                                  telescope_index],
+                              radius_dimension='max', fill_alpha=0.5)
 
     if fit.model.parallax_model[0] != 'None':
 
         piEN = pyLIMA_parameters.piEN
         piEE = pyLIMA_parameters.piEE
-        
-        EN_trajectory_angle = microlparallax.EN_trajectory_angle(piEN,piEE)
+
+        EN_trajectory_angle = microlparallax.EN_trajectory_angle(piEN, piEE)
 
         plot_angle = -(EN_trajectory_angle)
 
         try:
-        
+
             plot_angle += pyLIMA_parameters.alpha
-           
+
         except:
             pass
-            
-        north = [0.1,0]
-        east = [0,0.1]
 
+        north = [0.1, 0]
+        east = [0, 0.1]
 
-        rota_mat = np.array([[np.cos(plot_angle),-np.sin(plot_angle)],  [np.sin(plot_angle),np.cos(plot_angle)]])
-        east = np.dot(rota_mat,east)
-        north = np.dot(rota_mat,north)
+        rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)],
+                             [np.sin(plot_angle), np.cos(plot_angle)]])
+        east = np.dot(rota_mat, east)
+        north = np.dot(rota_mat, north)
 
-        figure_axes.plot([0.8,0.8+east[0]],[0.8,0.8+east[1]],'k', transform=plt.gca().transAxes)
-        Ecoords = [0,0.15]
-        Ecoords = np.dot(rota_mat,Ecoords)
-        figure_axes.text(0.8+Ecoords[0],0.8+Ecoords[1],'E',c='k',transform=plt.gca().transAxes,size=25)
+        figure_axes.plot([0.8, 0.8 + east[0]], [0.8, 0.8 + east[1]], 'k',
+                         transform=plt.gca().transAxes)
+        Ecoords = [0, 0.15]
+        Ecoords = np.dot(rota_mat, Ecoords)
+        figure_axes.text(0.8 + Ecoords[0], 0.8 + Ecoords[1], 'E', c='k',
+                         transform=plt.gca().transAxes, size=25)
 
+        figure_axes.plot([0.8, 0.8 + north[0]], [0.8, 0.8 + north[1]], 'k',
+                         transform=plt.gca().transAxes)
+        Ncoords = [0.15, 0.0]
+        Ncoords = np.dot(rota_mat, Ncoords)
+        figure_axes.text(0.8 + Ncoords[0], 0.8 + Ncoords[1], 'N', c='k',
+                         transform=plt.gca().transAxes, size=25)
 
-        figure_axes.plot([0.8,0.8+north[0]],[0.8,0.8+north[1]],'k', transform=plt.gca().transAxes)
-        Ncoords = [0.15,0.0]
-        Ncoords = np.dot(rota_mat,Ncoords)
-        figure_axes.text(0.8+Ncoords[0],0.8+Ncoords[1],'N',c='k',transform=plt.gca().transAxes,size=25)
-    
-    
-    
     legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True, framealpha=0.5)
     for handle in legend.legendHandles:
         try:

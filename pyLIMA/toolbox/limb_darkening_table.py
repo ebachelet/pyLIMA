@@ -11,11 +11,11 @@ try:
     import StringIO
 
 except ImportError:
-    
+
     import io as StringIO
 
-
-_CLARET_COLUMNS = 'log_g, Teff, metallicity, microturbulent_velocity, linear_limb_darkening, ' \
+_CLARET_COLUMNS = 'log_g, Teff, metallicity, microturbulent_velocity, ' \
+                  'linear_limb_darkening, ' \
                   'filter, method, model'
 _ClaretType = collections.namedtuple('ClaretType', _CLARET_COLUMNS)
 

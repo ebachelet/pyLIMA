@@ -10,14 +10,15 @@ def orbital_motion_2D_trajectory_shift(time, t0_om, dalpha_dt):
 
     Returns
     -------
-    dalpha : array, containts the variation of the lens trajectory angle du to the motion of the lens
+    dalpha : array, containts the variation of the lens trajectory angle du to the
+    motion of the lens
     """
-    dalpha = dalpha_dt * (time - t0_om)/365.25
+    dalpha = dalpha_dt * (time - t0_om) / 365.25
 
     return -dalpha
 
 
-def orbital_motion_2D_separation_shift(time,t0_om, ds_dt):
+def orbital_motion_2D_separation_shift(time, t0_om, ds_dt):
     """
     Compute the separation change induced by the linear orbital motion of the lens.
 
@@ -29,8 +30,9 @@ def orbital_motion_2D_separation_shift(time,t0_om, ds_dt):
 
     Returns
     -------
-    dseparation : array, containts the variation of the lens separation du to the motion of the lens
+    dseparation : array, containts the variation of the lens separation du to the
+    motion of the lens
     """
-    dseparation = ds_dt * (time - t0_om)/365.25
+    dseparation = ds_dt * (time - t0_om) / 365.25
 
     return dseparation

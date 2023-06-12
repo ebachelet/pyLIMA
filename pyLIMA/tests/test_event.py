@@ -4,11 +4,10 @@ Created on Wed May 18 15:19:27 2016
 
 @author: ebachelet
 """
-import numpy as np
 import unittest.mock as mock
+
+import numpy as np
 import pytest
-
-
 from pyLIMA import event
 
 
@@ -19,7 +18,8 @@ def test_check_event_bad_name():
 
     with pytest.raises(event.EventException) as event_exception:
         current_event.check_event()
-    assert 'The event name (49.49) is not correct, it has to be a string' in str(event_exception.value)
+    assert 'The event name (49.49) is not correct, it has to be a string' in str(
+        event_exception.value)
 
 
 def test_check_event_bad_ra():
@@ -61,7 +61,8 @@ def test_check_event_with_one_telescope_with_magnitude_lightcurve():
     current_event = event.Event()
     telescope = mock.MagicMock()
     telescope.name = 'NDG'
-    telescope.lightcurve_magnitude = np.array([0, 36307805477.010025, -39420698921.705284])
+    telescope.lightcurve_magnitude = np.array(
+        [0, 36307805477.010025, -39420698921.705284])
     current_event.telescopes.append(telescope)
 
     current_event.check_event()

@@ -1,9 +1,6 @@
-import collections
-
 import unittest.mock as mock
-import numpy as np
-import pytest
 
+import numpy as np
 from pyLIMA import microlsimulator
 
 
@@ -20,7 +17,9 @@ def test_noisy_observations():
     flux_observed = np.random.normal(flux, error)
 
     assert np.all(
-        np.abs(microlsimulator.noisy_observations(flux, error) - flux_observed) < 10 * error)  # 10 sigma diff allowed
+        np.abs(microlsimulator.noisy_observations(flux,
+                                                  error) - flux_observed) < 10 *
+        error)  # 10 sigma diff allowed
 
 
 def test_time_simulation():
@@ -55,25 +54,31 @@ def test_simulate_a_microlensing_event():
 
 def test_simulate_a_telescope():
     event = mock.MagicMock()
-    telescope = microlsimulator.simulate_a_telescope('blabli', event, 0,42,1, 'Space',
-                                                     'orange', altitude = 51, longitude = 51, latitude=51)
+    telescope = microlsimulator.simulate_a_telescope('blabli', event, 0, 42, 1, 'Space',
+                                                     'orange', altitude=51,
+                                                     longitude=51, latitude=51)
 
-    assert len(telescope.lightcurve_flux[:, 0]) == 42*24
+    assert len(telescope.lightcurve_flux[:, 0]) == 42 * 24
 
     event.ra = 270
     event.dec = -30
 
-    telescope = microlsimulator.simulate_a_telescope('blabli', event,2457850,2457900,1, 'Earth',
-                                                     'orange', altitude = 0, longitude = 0, latitude=-30,
+    telescope = microlsimulator.simulate_a_telescope('blabli', event, 2457850, 2457900,
+                                                     1, 'Earth',
+                                                     'orange', altitude=0, longitude=0,
+                                                     latitude=-30,
                                                      bad_weather_percentage=0.0,
-                                                     minimum_alt=0, moon_windows_avoidance=0,
+                                                     minimum_alt=0,
+                                                     moon_windows_avoidance=0,
                                                      maximum_moon_illumination=100.0
                                                      )
-    
-    histogram, windows = np.histogram(telescope.lightcurve_flux[:,0],np.arange(2457850,2457900))
+
+    histogram, windows = np.histogram(telescope.lightcurve_flux[:, 0],
+                                      np.arange(2457850, 2457900))
 
     assert len(telescope.lightcurve_flux[:, 0]) == 461.0
-    assert histogram[0]<histogram[-1]
+    assert histogram[0] < histogram[-1]
+
 
 def test_simulate_a_microlensing_model():
     event = mock.MagicMock()
@@ -86,7 +91,6 @@ def test_simulate_a_microlensing_model():
     model = microlsimulator.simulate_a_microlensing_model(event)
 
     assert model.model_type == 'PSPL'
-
 
 
 def test_simulate_microlensing_model_parameters():
@@ -110,7 +114,7 @@ def test_simulate_microlensing_model_parameters():
     assert 1 < parameters[2]
     assert parameters[2] < 500
 
-    model = microlsimulator.simulate_a_microlensing_model(event,'FSPL')
+    model = microlsimulator.simulate_a_microlensing_model(event, 'FSPL')
 
     parameters = microlsimulator.simulate_microlensing_model_parameters(model)
 
@@ -122,6 +126,7 @@ def test_simulate_microlensing_model_parameters():
     parameters = microlsimulator.simulate_microlensing_model_parameters(model)
 
     assert parameters[2] < 100
+
 
 def test_simulate_fluxes_parameters():
     telescope = mock.MagicMock()
@@ -151,7 +156,8 @@ def test_simulate_lightcurve_flux():
 
     fake_flux_parameters = microlsimulator.simulate_fluxes_parameters(event.telescopes)
 
-    pyLIMA_parameters = model.compute_pyLIMA_parameters(parameters + fake_flux_parameters)
+    pyLIMA_parameters = model.compute_pyLIMA_parameters(
+        parameters + fake_flux_parameters)
 
     microlsimulator.simulate_lightcurve_flux(model, pyLIMA_parameters, 'No')
 

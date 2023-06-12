@@ -1,10 +1,9 @@
-import os.path
-
-import numpy as np
 import unittest.mock as mock
 
-from pyLIMA import microltoolbox, microlmodels
+import numpy as np
 from pyLIMA import event
+from pyLIMA import microltoolbox, microlmodels
+
 
 def test_chichi():
     magic_residuals = mock.MagicMock()
@@ -54,13 +53,13 @@ def test_error_flux_to_error_magnitude():
     error_magnitude = microltoolbox.error_flux_to_error_magnitude(error_flux, flux)
 
     assert len(error_magnitude) == len(error_flux)
-    assert np.allclose(error_magnitude, np.abs(np.array([-0.10857362, -0.03619121, -0.01085736])))
+    assert np.allclose(error_magnitude,
+                       np.abs(np.array([-0.10857362, -0.03619121, -0.01085736])))
 
 
 def test_align_the_data_to_the_reference_telescope():
     fit = mock.MagicMock()
     even = event.Event()
-
 
     telescope_0 = mock.MagicMock()
     telescope_0.name = 'Survey'
@@ -80,7 +79,14 @@ def test_align_the_data_to_the_reference_telescope():
     fit.event = even
     fit.model = model
 
-    expected_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit,0,[10,0.1,30,10,15,1.,25])
-
+    expected_lightcurves = microltoolbox.align_the_data_to_the_reference_telescope(fit,
+                                                                                   0,
+                                                                                   [10,
+                                                                                    0.1,
+                                                                                    30,
+                                                                                    10,
+                                                                                    15,
+                                                                                    1.,
+                                                                                    25])
 
     assert np.allclose(expected_lightcurves[0], even.telescopes[0].lightcurve_magnitude)
