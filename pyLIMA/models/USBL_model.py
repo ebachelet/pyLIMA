@@ -16,7 +16,6 @@ class USBLmodel(MLmodel):
                          blend_flux_parameter=blend_flux_parameter, origin=origin,
                          fancy_parameters=fancy_parameters)
 
-    @property
     def model_type(self):
 
         return 'USBL'

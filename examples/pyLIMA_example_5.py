@@ -253,11 +253,12 @@ if perform_long_fit is True:
 
 else:
     # Use the precomputed Differential Evolution (DE) results:
-    fit_2.fit_results['DE_population'] = np.load('results_USBL_DE_966.npy')
+    fit_2.fit_results['DE_population'] = np.load('./data/results_USBL_DE_966.npy')
     fit_2.fit_results['best_model'] = fit_2.fit_results['DE_population'][346501][0:-1]
     # fit_2.fit_results['best_model'] = [2457205.21, 0.0109583755, 1.78218726,
     # -2.89415218, 0.0475121003, -3.79996021, 2.25499875, 0.0227712230, -0.227192561]
 
+print('Best_model', fit_2.fit_results['best_model'])
 # Plot the best fit model and the corresponding geometrical configuration
 pyLIMA_plots.list_of_fake_telescopes = []
 pyLIMA_plots.plot_lightcurves(usbl, fit_2.fit_results['best_model'])

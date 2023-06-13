@@ -38,7 +38,7 @@ def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
 
     magnification_jacobian = np.array([dAdt0, dAdu0, dAdtE]).T
 
-    return magnification_jacobian, Amplification
+    return magnification_jacobian, Amplification[0]
 
 
 def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):

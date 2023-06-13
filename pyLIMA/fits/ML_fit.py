@@ -129,7 +129,7 @@ class MLfit(object):
                         new_bounds = np.sort(
                             self.model.pyLIMA_to_fancy[parameter](thebounds))
 
-                    except ValueError:
+                    except TypeError:
 
                         new_bounds = standard_parameters_boundaries[ind]
 
@@ -335,27 +335,27 @@ class MLfit(object):
             try:
                 # Estimate the Paczynski parameters
 
-                if self.model.model_type == 'PSPL':
+                if self.model.model_type() == 'PSPL':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_PSPL(
                             self.model.event)
 
-                if self.model.model_type == 'FSPL':
+                if self.model.model_type() == 'FSPL':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
-                if self.model.model_type == 'FSPLee':
+                if self.model.model_type() == 'FSPLee':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
-                if self.model.model_type == 'FSPLarge':
+                if self.model.model_type() == 'FSPLarge':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
-                if self.model.model_type == 'DSPL':
+                if self.model.model_type() == 'DSPL':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_DSPL(
                             self.model.event)
@@ -485,7 +485,7 @@ class MLfit(object):
                     setattr(x, parameter, value)
                     fit_parameters_guess[index] = self.model.pyLIMA_to_fancy[key](x)
 
-                except ValueError:
+                except IndexError:
 
                     pass
 
@@ -933,6 +933,8 @@ class MLfit(object):
         matplotlib_astrometry = None
         matplotlib_distribution = None
         bokeh_figure = None
+        bokeh_lightcurves = None
+        bokeh_astrometry = None
 
         if self.model.photometry:
             matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(

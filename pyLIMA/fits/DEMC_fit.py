@@ -88,7 +88,7 @@ class DEMCfit(MLfit):
                 pool.wait()
                 sys.exit(0)
 
-        except ValueError:
+        except ModuleNotFoundError:
 
             pass
 

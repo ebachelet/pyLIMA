@@ -315,7 +315,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                                                   index] + sign *
                                                               0.001 * derivative))
 
-                except ValueError:
+                except IndexError:
 
                     pass
 
@@ -333,7 +333,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                     bokeh_geometry.line(trajectory_x, trajectory_y,
                                         color=color, alpha=0.5)
 
-    if 'BL' in microlensing_model.model_type:
+    if 'BL' in microlensing_model.model_type():
 
         from pyLIMA.caustics import binary_caustics
 
@@ -434,7 +434,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
             plot_angle += pyLIMA_parameters.alpha
 
-        except ValueError:
+        except AttributeError:
 
             pass
 
@@ -496,7 +496,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
             handle.set_sizes([100])
 
-        except ValueError:
+        except AttributeError:
 
             pass
 
@@ -938,7 +938,7 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
         bokeh_lightcurves.legend.click_policy = "mute"
         #legend = bokeh_lightcurves.legend[0]
 
-    except ValueError:
+    except AttributeError:
 
         pass
 

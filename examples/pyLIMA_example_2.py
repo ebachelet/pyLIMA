@@ -18,10 +18,10 @@ from pyLIMA.models import FSPL_model
 from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.fits import TRF_fit
 ### Import fancy_parameters. This will allow us to change the definitions as required.
-from pyLIMA.models import fancy_parameters
+from pyLIMA.models import pyLIMA_fancy_parameters
 
 ### fancy_parameters already provides some commonly used options, for example:
-fancy_parameters.standard_fancy_parameters
+pyLIMA_fancy_parameters.standard_fancy_parameters
 
 ### Begin by create a new EVENT object and giving it a name, as in example 1.
 your_event = event.Event()
@@ -116,7 +116,7 @@ def t_star(x):
     return x.rho * x.tE
 
 
-setattr(fancy_parameters, 't_star', t_star)
+setattr(pyLIMA_fancy_parameters, 't_star', t_star)
 
 
 ### It is also necessary to define the inverse transformation from t_E --> t_star.
@@ -126,10 +126,10 @@ def tE(x):
     return x.t_star / 10 ** (x.log_rho)
 
 
-setattr(fancy_parameters, 'tE', tE)
+setattr(pyLIMA_fancy_parameters, 'tE', tE)
 
 ### Your new t_star definition is now part of fancy_parameters and you can use it.
-dir(fancy_parameters)
+dir(pyLIMA_fancy_parameters)
 
 ### Update the fancy parameter dictionary with the new definitions
 my_pars2 = {'log_rho': 'rho', 't_star': 'tE'}
