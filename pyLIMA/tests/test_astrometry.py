@@ -184,7 +184,7 @@ def test_PSPL_shifts_no_blend():
     assert np.allclose(shifts[1], np.array([16.68224299, -4.61770624]))
 
 
-def test_PSPL_shifts_no_blend():
+def test_PSPL_shifts_with_blend():
     source_x = np.array([0.1, -0.8])
     source_y = np.array([2.1, -10.8])
     theta_E = 51  # mas

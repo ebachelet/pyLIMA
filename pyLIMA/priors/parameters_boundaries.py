@@ -162,37 +162,45 @@ def parameters_boundaries(event, model_dictionnary):
     bounds = []
     telescopes_names = [i.name for i in event.telescopes]
 
+
     for key in model_dictionnary.keys():
+
+        arguments = []
 
         try:
 
-            function_name = key + '_boundaries()'
+            function_name = key + '_boundaries'
             if ('rho_' in key):
-                function_name = 'rho_boundaries()'
+                function_name = 'rho_boundaries'
 
             if ('q_flux' in key):
-                function_name = 'q_flux_boundaries()'
+                function_name = 'q_flux_boundaries'
 
             if ('fsource_' in key):
                 telescope_ind = \
-                np.where(key.split('fsource_')[1] == np.array(telescopes_names))[0][0]
+                    np.where(key.split('fsource_')[1] == np.array(telescopes_names))[0][
+                        0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
-                function_name = key.split('_')[0] + '_boundaries(flux)'
+                arguments=[flux]
+                function_name = key.split('_')[0] + '_boundaries'
 
             if ('fblend_' in key):
                 telescope_ind = \
-                np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][0]
+                    np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][
+                        0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
-                function_name = key.split('_')[0] + '_boundaries(flux)'
+                arguments=[flux]
+
+                function_name = key.split('_')[0] + '_boundaries'
 
             if ('gblend_' in key):
-                function_name = key.split('_')[0] + '_boundaries()'
+                function_name = key.split('_')[0] + '_boundaries'
 
             if 'logk_photometry' in key:
-                function_name = 'rescale_photometry_boundaries()'
+                function_name = 'rescale_photometry_boundaries'
 
             if 'logk_astrometry' in key:
-                function_name = 'rescale_astrometry_boundaries()'
+                function_name = 'rescale_astrometry_boundaries'
 
             if 'position_source' in key:
 
@@ -212,16 +220,16 @@ def parameters_boundaries(event, model_dictionnary):
 
                     if 'position_source_E' in key:
 
-                        function_name = 'position_ra_boundaries()'
+                        function_name = 'position_ra_boundaries'
 
                     else:
 
-                        function_name = 'position_dec_boundaries()'
+                        function_name = 'position_dec_boundaries'
 
 
                 else:
 
-                    function_name = 'position_pixel_boundaries()'
+                    function_name = 'position_pixel_boundaries'
 
             if 'position_blend' in key:
 
@@ -241,17 +249,18 @@ def parameters_boundaries(event, model_dictionnary):
 
                     if 'position_source_E' in key:
 
-                        function_name = 'position_ra_boundaries()'
+                        function_name = 'position_ra_boundaries'
 
                     else:
 
-                        function_name = 'position_dec_boundaries()'
+                        function_name = 'position_dec_boundaries'
 
                 else:
 
-                    function_name = 'position_pixel_boundaries()'
+                    function_name = 'position_pixel_boundaries'
 
-            bounds.append(eval(function_name))
+
+            bounds.append(eval(function_name)(*arguments))
 
         except AttributeError:
 

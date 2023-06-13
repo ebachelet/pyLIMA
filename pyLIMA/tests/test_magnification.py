@@ -133,11 +133,6 @@ def test_magnification_FSPLarge():
 
     assert magnification_fspl == 7.959307223839349
 
-    # sqrt_limb_darkening_coefficient = 0.13 #Broken in python VBB?
-    # magnification_fspl = magnification_VBB.magnification_FSPL(tau, uo, rho,
-    # limb_darkening_coefficient,
-    #                                                         sqrt_limb_darkening_coefficient=sqrt_limb_darkening_coefficient)
-
 
 def test_magnification_USBL():
     from pyLIMA.magnification import magnification_VBB

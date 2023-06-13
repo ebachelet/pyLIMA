@@ -330,8 +330,8 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True,
 
             if add_noise:
 
-                if exposure_times is not None:
-                    exp_time = exposure_times[ind]
+                #if exposure_times is not None:
+                #   exp_time = exposure_times[ind]
 
                 observed_flux, err_observed_flux = \
                     brightness_transformation.noisy_observations(

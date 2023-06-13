@@ -1,7 +1,6 @@
 import numpy as np
 from pyLIMA.caustics import binary_caustics
 from pyLIMA.magnification import magnification_VBB
-from pyLIMA.models import pyLIMA_fancy_parameters
 from pyLIMA.models.ML_model import MLmodel
 
 

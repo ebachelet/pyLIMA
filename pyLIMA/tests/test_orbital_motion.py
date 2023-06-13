@@ -19,8 +19,9 @@ def test_orbital_motion2D():
     ds_dt = 2.4  # mas/yr
 
     dseparation = orbital_motion.orbital_motion_2D.orbital_motion_2D_separation_shift(
-        time, t0_om, dalpha_dt)
-    assert np.allclose(dseparation, [0.0054757, 0.0109514])
+        time, t0_om, ds_dt)
+
+    assert np.allclose(dseparation, [0.00657084, 0.01314168])
 
 
 def test_orbital_motion_circular():
@@ -48,7 +49,7 @@ def test_orbital_motion_circular():
     assert np.allclose(dalpha, [-2.97786877, -0.00711841])
 
 
-def test_orbital_motion_circular():
+def test_orbital_motion_keplerian():
     time = np.array([2458555, 2459855])
 
     pyLIMA_parameters = collections.namedtuple('parameters',
