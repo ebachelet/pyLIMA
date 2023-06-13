@@ -18,15 +18,16 @@ JPL_HORIZONS_ID = {
 }
 
 def horizons_obscodes(observatory):
-    """Transform observatory names to JPL horizon codes.
-    Write by Tim Lister, thanks :)
+    """
+    Transform observatory names to JPL int codes
 
-    :param str observatory: the satellite name you would like to obtain ephemeris. As
-    to be in the dictionnary
-           JPL_HORIZONS_ID (exact name matching!).
+    Parameters
+    ----------
+    observatory : str, observatory name
 
-    :return: the JPL ID of your satellite.
-    :rtype: int
+    Returns
+    -------
+    OBSERVATORY_ID : str, the JPL code in str format
     """
 
     # Check if we were passed the JPL site code directly
@@ -41,7 +42,21 @@ def horizons_obscodes(observatory):
     return OBSERVATORY_ID
 
 
-def horizons_API(body, time_to_treat, observatory='ELP'):
+def horizons_API(body, time_to_treat, observatory='Geocentric'):
+    """
+    Find the satellite ephemerides at JPL
+
+    Parameters
+    ----------
+    body : str, the satellite name
+    time_to_treat : array, array of time to treat
+    observatory :  the reference frame
+
+    Returns
+    -------
+    flag : str, success flag
+    positions : array, [time,ra,dec,distance]
+    """
     OBSERVATORY_ID = horizons_obscodes(observatory)
     body = horizons_obscodes(body)
 

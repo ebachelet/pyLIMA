@@ -290,7 +290,7 @@ class MLmodel(object):
                     print(
                         'I skip the fancy parameter ' + parameter + ', as it is not '
                                                                     'part of model '
-                        + self.model_type)
+                        + self.model_type())
 
         self.define_model_parameters()
 

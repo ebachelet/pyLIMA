@@ -1,6 +1,7 @@
 import numpy as np
 
 
+### Define manual distribution objects are much faster than scipy.pdf....
 class UniformDistribution(object):
 
     def __init__(self, bound_min, bound_max):
@@ -28,18 +29,22 @@ class NormalDistribution(object):
 
     def pdf(self, x):
         probability = 1 / self.sigma / np.sqrt(2 * np.pi) * \
-                      np.exp(-0.5 * ((x -self.mean) / self.sigma) ** 2)
+                      np.exp(-0.5 * ((x - self.mean) / self.sigma) ** 2)
 
         return probability
 
 
 def default_parameters_priors(fit_parameters):
-    """ This function define the parameters boundaries for a specific model.
+    """
+    Function to return default priors on parameters (i.e. uniform)
 
-       :param object model: a microlmodels object.
+    Parameters
+    ----------
+    fit_parameters : dict, a dictionnary containing the parameters bounds
 
-       :return: parameters_boundaries, a list of tuple containing parameters limits
-       :rtype: list
+    Returns
+    -------
+    priors : dict, {'i':prior_i} for all i parameters
     """
 
     priors = {}

@@ -8,18 +8,20 @@ from pyLIMA.fits.LM_fit import LMfit
 
 class MINIMIZEfit(LMfit):
 
+    def __init__(self, model, telescopes_fluxes_method='fit', loss_function='chi2'):
+        """The fit class has to be intialized with an event object."""
+
+        super().__init__(model, telescopes_fluxes_method=telescopes_fluxes_method,
+                         loss_function=loss_function)
+
+        self.guess = []
     def fit_type(self):
 
         return "Minimize fit"
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = -self.model_likelihood(fit_process_parameters)
-
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += -priors
+        likelihood = self.standard_objective_function(fit_process_parameters)
 
         return likelihood
 
@@ -51,7 +53,6 @@ class MINIMIZEfit(LMfit):
         # jacobian_function = '2-point'
 
         minimize_fit = scipy.optimize.minimize(self.objective_function, self.guess,
-                                               method='Nelder-Mead',
                                                bounds=bounds, options={'maxiter': 50000,
                                                                        'disp': True}, )
 
@@ -70,7 +71,7 @@ class MINIMIZEfit(LMfit):
             covariance_matrix = np.cov(self.population[mask, :-1].T)
 
 
-        except ValueError:
+        except IndexError:
 
             covariance_matrix = np.zeros((len(self.fit_parameters),
                                           len(self.fit_parameters)))

@@ -3,20 +3,17 @@ import scipy.signal as ss
 
 
 def initial_guess_PSPL(event):
-    """Function to find initial PSPL guess for Levenberg-Marquardt solver (
-    method=='LM').
-       This assumes no blend.
+    """
+    Function to find initial PSPL guess. This assumes no blending.
 
-    :param object event: the event object on which you perform the fit on. More
-    details on the
-                            event module.
+    Parameters
+    ----------
+    event : object, an event object
 
-    :return: the PSPL guess for this event. A list of parameters associated to the
-    PSPL model + the source flux of
-    :return: the PSPL guess for this event. A list of parameters associated to the
-    PSPL model + the source flux of
-                the survey telescope.
-    :rtype: list,float
+    Returns
+    -------
+    guess_model : list, [t0,u0,tE] the PSPL guess
+    fs_guess : float, the source flux guess
     """
     import pyLIMA.toolbox.brightness_transformation
     # to estimation
@@ -229,18 +226,17 @@ def initial_guess_PSPL(event):
 
 
 def initial_guess_FSPL(event):
-    """Function to find initial FSPL guess for Levenberg-Marquardt solver (
-    method=='LM').
-       This assumes no blend.
+    """
+    Function to find initial FSPL guess, i.e. PSPL guess + rho = 0.05
 
-    :param object event: the event object on which you perform the fit on. More
-    details on the
-                            event module.
+    Parameters
+    ----------
+    event : object, an event object
 
-    :return: the FSPL guess for this event. A list of parameters associated to the
-    FSPL model + the source flux of
-                the survey telescope.
-    :rtype: list,float
+    Returns
+    -------
+    guess_model : list, [t0,u0,tE,rho] the FSPL guess
+    fs_guess : float, the source flux guess
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
     # Dummy guess
@@ -253,18 +249,17 @@ def initial_guess_FSPL(event):
 
 
 def initial_guess_DSPL(event):
-    """Function to find initial DSPL guess for Levenberg-Marquardt solver (
-    method=='LM').
-       This assumes no blend.
+    """
+    Function to find initial DSPL guess
 
-       :param object event: the event object on which you perform the fit on. More
-       details on the
-                            event module.
+    Parameters
+    ----------
+    event : object, an event object
 
-       :return: the DSPL guess for this event. A list of parameters associated to the
-       DSPL model + the source flux of
-                the survey telescope.
-       :rtype: list,float
+    Returns
+    -------
+    guess_model : list, [t0,u0,delta_t0,delta_u0,tE,q_flux] the DSPL guess
+    fs_guess : float, the source flux guess
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
 

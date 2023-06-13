@@ -10,24 +10,21 @@ from pyLIMA.toolbox import brightness_transformation
 
 def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
                                   dec=-30):
-    """ Simulate a microlensing event. More details in the event module.
-
-        :param str name:  the name of the event. Default is 'Microlensing pyLIMA
-        simulation'
-        :param float ra: the right ascension in degrees of your simulation. Default
-        is 270.
-        :param float dec: the declination in degrees of your simulation. Default is -30.
-
-
-        :return: a event object
-
-        :rtype: object
     """
+    Function to find initial DSPL guess
 
-    fake_event = event.Event()
+    Parameters
+    ----------
+    name : str, event name
+    ra : float, the event right ascension
+    dec : float, the event dec
+
+    Returns
+    -------
+    fake_event : object, an event object
+    """
+    fake_event = event.Event(ra=ra, dec=dec)
     fake_event.name = name
-    fake_event.ra = ra
-    fake_event.dec = dec
 
     return fake_event
 
@@ -42,6 +39,20 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
                          minimum_alt=20, moon_windows_avoidance=20,
                          maximum_moon_illumination=100.0, photometry=True,
                          astrometry=True, pixel_scale=1, ra=270, dec=-30):
+    """
+    Function to find initial DSPL guess
+
+    Parameters
+    ----------
+    name : str, event name
+    ra : float, the event right ascension
+    dec : float, the event dec
+
+    Returns
+    -------
+    fake_event : object, an event object
+    """
+
     """ Simulate a telescope. More details in the telescopes module. The observations
     simulation are made for the
         full time windows, then limitation are applied :
@@ -106,11 +117,13 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
             Moon_separation = target.separation(Moon)
 
             observing_windows = \
-            np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
-                     & (Sun.alt < -18 * astropy.units.deg)
-                     & (Moon_separation > moon_windows_avoidance * astropy.units.deg)
-                     & (Moon_illumination < maximum_moon_illumination)
-                     )[0]
+                np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
+                         & (Sun.alt < -18 * astropy.units.deg)
+                         & (
+                                     Moon_separation > moon_windows_avoidance *
+                                     astropy.units.deg)
+                         & (Moon_illumination < maximum_moon_illumination)
+                         )[0]
 
             time_of_observations = time_of_observations[observing_windows]
 
@@ -325,17 +338,17 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True,
         if telescope.lightcurve_flux is not None:
 
             theoritical_flux = \
-            model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[
-                'photometry']
+                model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[
+                    'photometry']
 
             if add_noise:
 
-                #if exposure_times is not None:
+                # if exposure_times is not None:
                 #   exp_time = exposure_times[ind]
 
                 observed_flux, err_observed_flux = \
                     brightness_transformation.noisy_observations(
-                    theoritical_flux, exposure_times)
+                        theoritical_flux, exposure_times)
 
             else:
 
@@ -367,7 +380,7 @@ def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
 
                 observed_flux, err_observed_flux = \
                     brightness_transformation.noisy_observations(
-                    theoritical_flux)
+                        theoritical_flux)
 
                 SNR = observed_flux / err_observed_flux
 

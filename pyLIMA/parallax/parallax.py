@@ -11,34 +11,41 @@ EARTH_RADIUS = astronomical_constants.R_earth.value
 
 
 def EN_trajectory_angle(piEN, piEE):
-    """Find the angle between the North vector and the lens trajectory (at t0par).
-    See Gould2004, RESOLUTION OF THE MACHO-LMC-5 PUZZLE: THE JERK-PARALLAX MICROLENS
-    DEGENERACY
-
-    :param float piEN: the North parallax component
-    :param float piEE: the East parallax component
-
-    :return: the angle in radians
-    :rtype: float
     """
+    Find the angle between the North vector and the lens trajectory (at t0par).
+    See https://ui.adsabs.harvard.edu/abs/2004ApJ...606..319G/abstract
 
+    Parameters
+    ----------
+    piEN : float, the North parallax component
+    piEE : float,  the East parallax component
+
+    Returns
+    -------
+    angle : float, the angle of the lens trajectory in radians
+    """
     angle = np.arctan2(piEE, piEN)
 
     return angle
 
 
 def compute_parallax_curvature(piE, delta_positions):
-    """ Compute the curvature induce by the parallax of from
-    deltas_positions of a telescope.
-
-    :param array_like piE: the microlensing parallax vector. Have a look :
-                           http://adsabs.harvard.edu/abs/2004ApJ...606..319G
-    :param array_like delta_positions: the delta_positions of the telescope. More
-    details in microlparallax module.
-    :return: delta_tau and delta_u, the shift introduce by parallax
-    :rtype: array_like,array_like
     """
+    Compute the curvature induce by the parallax of from deltas_positions of a
+    telescope.
+    See https://ui.adsabs.harvard.edu/abs/2004ApJ...606..319G/abstract
 
+
+    Parameters
+    ----------
+    piE : array, [piEN,piEE] the parallax vector
+    delta_positions : array, [d_N,d_E] the projected positions of the telescope
+
+    Returns
+    -------
+    delta_tau : array, the x shift induced by the parallax
+    delta_beta : array, the y shift induced by the parallax
+    """
     delta_tau = np.dot(piE, delta_positions)
     delta_beta = np.cross(piE, delta_positions.T)
 
@@ -46,18 +53,19 @@ def compute_parallax_curvature(piE, delta_positions):
 
 
 def parallax_combination(telescope, parallax_model, North_vector, East_vector):
-    """ Compute, and set, the deltas_positions attributes of the telescope object
-    inside the list of telescopes. deltas_positions is the offset between the
-    position of the
-    observatory at the time t, and the
-    center of the Earth at the date to_par. More details on each parallax functions.
-
-        :param object telescope:  a telescope object on which you want to set the
-        deltas_positions
-        due to parallax.
-
     """
+    Compute and set the deltas_positions attributes of the telescope object inside.
+    deltas_positions is the offset between the position of the observatory at the
+    time t, and the center of the Earth at the date t0_par.
+    See https://ui.adsabs.harvard.edu/abs/2004ApJ...606..319G/abstract
 
+    Parameters
+    ----------
+    telescope : object, a telescope object
+    parallax_model : list, [str,float] the parallax model considered
+    North_vector : array, the North projected vector in the plane of sky
+    East_vector : array, the East projected vector in the plane of sky
+    """
     for data_type in ['astrometry', 'photometry']:
 
         delta_North = 0
@@ -106,18 +114,17 @@ def parallax_combination(telescope, parallax_model, North_vector, East_vector):
 
 
 def Earth_ephemerides(time_to_treat):
-    """Compute the position shift due to the Earth movement. Please have a look on :
-    "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
-    Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
+    """
+    Compute the Earth positions and speeds
 
-    :param  time_to_treat: a numpy array containing the time where you want to
-    compute this
-    effect.
-    :return: the shift induce by the Earth motion around the Sun
-    :rtype: array_like
+    Parameters
+    ----------
+    time_to_treat : array, the time in JD to treat
 
-    **WARNING** : this is a geocentric point of view.
-                  slalib use MJD time definition, which is MJD = JD-2400000.5
+    Returns
+    -------
+    Earth_positions : array, the XYZ Earth positions
+    Earth_speeds : array, the XYZ Earth speeds
     """
     with solar_system_ephemeris.set('builtin'):
         Earth_ephemeris = astropy_ephemerides.Earth_ephemerides(time_to_treat)
@@ -128,25 +135,17 @@ def Earth_ephemerides(time_to_treat):
 
 
 def Earth_telescope_sidereal_times(time_to_treat, sidereal_type='mean'):
-    """ Compute the position shift due to the distance of the obervatories from the
-    Earth
-    center.
-    Please have a look on :
-    "Parallax effects in binary microlensing events"
-    Hardy, S.J and Walker, M.A. 1995. http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
-
-    :param  time_to_treat: a numpy array containing the time where you want to
-    compute this
-    effect.
-    :param altitude: the altitude of the telescope in meter
-    :param longitude: the longitude of the telescope in degree
-    :param latitude: the latitude of the telescope in degree
-    :return: the shift induce by the distance of the telescope to the Earth center.
-    :rtype: array_like
-
-    **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
     """
+    Compute the sidereal time for a given time
 
+    Parameters
+    ----------
+    time_to_treat : array, the time in JD to treat
+
+    Returns
+    -------
+    sidereal_time : array, the sidereal_time (angle with vernal point) at time t
+    """
     times = Time(time_to_treat, format='jd')
     sideral_times = times.sidereal_time(sidereal_type,
                                         'greenwich').value / 24 * 2 * np.pi
@@ -155,23 +154,21 @@ def Earth_telescope_sidereal_times(time_to_treat, sidereal_type='mean'):
 
 
 def space_ephemerides(telescope, time_to_treat, data_type='photometry'):
-    """ Compute the position shift due to the distance of the obervatories from the
-    Earth
-    center.
-    Please have a look on :
-    "Parallax effects in binary microlensing events"
-    Hardy, S.J and Walker, M.A. 1995. http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
-
-    :param  time_to_treat: a numpy array containing the time where you want to
-    compute this
-    effect.
-    :param satellite_name: the name of the observatory. Have to be recognize by JPL
-    HORIZON.
-    :return: the shift induce by the distance of the telescope to the Earth center.
-    :rtype: array_like
-    **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
     """
+    Compute the ephemerides of telescope in Space via JPL Horizons
 
+    Parameters
+    ----------
+    telescope : object, a telescope object
+    time_to_treat : array, the time in JD to treat
+    data_type : the type of data we treat in the telescope object
+
+    Returns
+    -------
+    satellite_positions : array, the [X,Y,Z] positions of the spacecraft relative to
+    Earth
+    spacecraft_positions : array, the [time,ra,dec,distance] position of the spacecraft
+    """
     satellite_name = telescope.spacecraft_name
 
     if len(telescope.spacecraft_positions[data_type]) != 0:
@@ -183,8 +180,8 @@ def space_ephemerides(telescope, time_to_treat, data_type='photometry'):
         # call JPL!
         from pyLIMA.parallax import JPL_ephemerides
         spacecraft_positions = \
-        JPL_ephemerides.horizons_API(satellite_name, time_to_treat,
-                                     observatory='Geocentric')[1]
+            JPL_ephemerides.horizons_API(satellite_name, time_to_treat,
+                                         observatory='Geocentric')[1]
 
     satellite_positions = np.array(spacecraft_positions)
     dates = satellite_positions[:, 0].astype(float)
@@ -209,20 +206,21 @@ def space_ephemerides(telescope, time_to_treat, data_type='photometry'):
 
 
 def annual_parallax(time_to_treat, earth_positions, t0_par):
-    """Compute the position shift due to the Earth movement. Please have a look on :
-    "Resolution of the MACHO-LMC-5 Puzzle: The Jerk-Parallax Microlens Degeneracy"
-    Gould, Andrew 2004. http://adsabs.harvard.edu/abs/2004ApJ...606..319G
-
-    :param  time_to_treat: a numpy array containing the time where you want to
-    compute this
-    effect.
-    :return: the shift induce by the Earth motion around the Sun
-    :rtype: array_like
-
-    **WARNING** : this is a geocentric point of view.
-                  slalib use MJD time definition, which is MJD = JD-2400000.5
     """
+    Compute the position shift due to the Earth movement.
+    See https://ui.adsabs.harvard.edu/abs/2004ApJ...606..319G/abstract
 
+    Parameters
+    ----------
+    time_to_treat : array, the time in JD to treat
+    earth_positions : array, the Earth ephemerides at time t
+    t0_par : the time of reference
+
+    Returns
+    -------
+    delta_Sun : array, the [X,Y,Z] position of the Sun relative to reference frame (
+    t0_par)
+    """
     Earth_position_time_reference = Earth_ephemerides(t0_par)
     Sun_position_time_reference = -Earth_position_time_reference[0]
     Sun_speed_time_reference = -Earth_position_time_reference[1]
@@ -235,25 +233,23 @@ def annual_parallax(time_to_treat, earth_positions, t0_par):
 
 
 def terrestrial_parallax(sidereal_times, altitude, longitude, latitude):
-    """ Compute the position shift due to the distance of the obervatories from the
-    Earth
-    center.
-    Please have a look on :
-    "Parallax effects in binary microlensing events"
-    Hardy, S.J and Walker, M.A. 1995. http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
-
-    :param  time_to_treat: a numpy array containing the time where you want to
-    compute this
-    effect.
-    :param altitude: the altitude of the telescope in meter
-    :param longitude: the longitude of the telescope in degree
-    :param latitude: the latitude of the telescope in degree
-    :return: the shift induce by the distance of the telescope to the Earth center.
-    :rtype: array_like
-
-    **WARNING** : slalib use MJD time definition, which is MJD = JD-2400000.5
     """
+    Compute the position shift due to the distance of the obervatories from the Earth
+    center.
+    See http://adsabs.harvard.edu/abs/1995MNRAS.276L..79H
 
+    Parameters
+    ----------
+    sidereal_times : array, the sidereal times of the telescope
+    altitude : float, the telescope altitude in meter
+    lontitude : float, the telescope longitude in degree
+    latitude : float, the telescope latitude in degree
+
+    Returns
+    -------
+    delta_telescope : array, the [X,Y,Z] position of the telescope relative to Earth
+    center
+    """
     radius = (EARTH_RADIUS + altitude) / AU
     Longitude = longitude * np.pi / 180.0
     Latitude = latitude * np.pi / 180.0

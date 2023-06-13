@@ -48,7 +48,7 @@ class BOOTSTRAPfit(MLfit):
 
             new_event.telescopes.append(new_telescope)
 
-        new_model = generate_model.create_model(self.model.model_type, new_event,
+        new_model = generate_model.create_model(self.model.model_type(), new_event,
                                                 parallax=self.model.parallax_model,
                                                 xallarap=self.model.xallarap_model,
                                                 orbital_motion=self.model.orbital_motion_model,

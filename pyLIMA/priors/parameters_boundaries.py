@@ -151,14 +151,18 @@ def u_center_boundaries():
 
 
 def parameters_boundaries(event, model_dictionnary):
-    """ This function define the parameters boundaries for a specific model.
-
-       :param object model: a microlmodels object.
-
-       :return: parameters_boundaries, a list of tuple containing parameters limits
-       :rtype: list
     """
+    Function to find initial DSPL guess
 
+    Parameters
+    ----------
+    event : object, an event object
+    model_dictionnary : dict, a dictionnary containing the parameetrs
+
+    Returns
+    -------
+    bounds : list, [[bound_min,bound_max]_i] for all i parameters
+    """
     bounds = []
     telescopes_names = [i.name for i in event.telescopes]
 
