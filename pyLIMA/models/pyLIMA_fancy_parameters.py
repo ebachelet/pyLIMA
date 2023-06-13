@@ -35,8 +35,7 @@ def mass_ratio(x):
     return 10 ** x.log_mass_ratio
 
 
-def t0(x):
-
+def _t_center_to_t0(x, x_center=0, y_center=0):
     try:
 
         alpha = x.alpha + np.pi
@@ -45,26 +44,16 @@ def t0(x):
 
         alpha = 0
 
-    try:
-
-        xcenter = x.x_center
-        ycenter = x.y_center
-
-    except AttributeError:
-
-        xcenter = 0
-        ycenter = 0
-
     rotation = np.array([np.cos(alpha), np.sin(alpha)])
 
-    tau_prime = -np.dot(rotation, [xcenter, ycenter])
+    tau_prime = -np.dot(rotation, [x_center, y_center])
 
     t_0 = float(x.t_center + tau_prime * x.tE)
-    # breakpoint()
+
     return t_0
 
 
-def u0(x):
+def _t0_to_t_center(x, x_center=0, y_center=0):
     try:
 
         alpha = x.alpha + np.pi
@@ -72,55 +61,17 @@ def u0(x):
     except AttributeError:
 
         alpha = 0
-
-    try:
-
-        xcenter = x.x_center
-        ycenter = x.y_center
-
-    except AttributeError:
-
-        xcenter = 0
-        ycenter = 0
-
-    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
-
-    u_prime = -np.dot(rotation, [xcenter,ycenter])
-
-    u_0 = float(x.u_center - u_prime)
-    # breakpoint()
-    return u_0
-
-
-def t_center(x):
-    try:
-
-        alpha = x.alpha + np.pi
-
-    except AttributeError:
-
-        alpha = 0
-
-    try:
-
-        xcenter = x.x_center
-        ycenter = x.y_center
-
-    except AttributeError:
-
-        xcenter = 0
-        ycenter = 0
 
     rotation = np.array([np.cos(alpha), np.sin(alpha)])
 
-    tau_prime = np.dot(rotation, [xcenter,ycenter])
+    tau_prime = np.dot(rotation, [x_center, y_center])
 
     t_center = float(x.t0 + tau_prime * x.tE)
 
     return t_center
 
 
-def u_center(x):
+def _u_center_to_u0(x, x_center=0, y_center=0):
     try:
 
         alpha = x.alpha + np.pi
@@ -129,23 +80,32 @@ def u_center(x):
 
         alpha = 0
 
+    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
+
+    u_prime = -np.dot(rotation, [x_center, y_center])
+
+    u_0 = float(x.u_center - u_prime)
+
+    return u_0
+
+
+def _u0_to_u_center(x, x_center=0, y_center=0):
     try:
 
-        xcenter = x.x_center
-        ycenter = x.y_center
+        alpha = x.alpha + np.pi
 
     except AttributeError:
 
-        xcenter = 0
-        ycenter = 0
+        alpha = 0
 
     rotation = np.array([-np.sin(alpha), np.cos(alpha)])
 
-    u_prime = np.dot(rotation, [xcenter, ycenter])
+    u_prime = np.dot(rotation, [x_center, y_center])
 
     u_center = float(x.u0 + u_prime)
 
     return u_center
+
 
 
 standard_fancy_parameters = {'log_tE': 'tE', 'log_rho': 'rho',

@@ -5,9 +5,8 @@ from collections import OrderedDict
 import numpy as np
 import pyLIMA.parallax.parallax
 import pyLIMA.priors.parameters_boundaries
-from pyLIMA.models import fancy_parameters
-
 from pyLIMA.magnification import magnification_Jacobian
+from pyLIMA.models import pyLIMA_fancy_parameters
 from pyLIMA.orbitalmotion import orbital_motion
 from pyLIMA.orbitalmotion import orbital_motion_3D
 
@@ -174,17 +173,43 @@ class MLmodel(object):
         return jacobi
 
     @abc.abstractmethod
+    def new_origin(self, pyLIMA_parameters=None):
+        """
+
+        """
+
+        x_center = self.origin[1][0]
+        y_center = self.origin[1][1]
+
+        return x_center, y_center
+
     def change_origin(self, pyLIMA_parameters):
         """
-        Add the new_origin to the pyLIMA_parameters object
+        Change the origin of the model, by modifying x_center and y_center in the
+        pyLIMA_parameters.
+        Depending of the model.origin[0]. Could be set to caustics, then it will
+        compute the origin close
+        to the central, wide of close caustics. Could be also primary or secondary,
+        the position of the primay and
+        secondary body.
 
         Parameters
         ----------
-        pyLIMA_parameters : a pyLIMA_parameters object
+         pyLIMA_parameters : a pyLIMA_parameters object
         """
-        if self.origin[0] != 'center_of_mass':
-            setattr(pyLIMA_parameters, 'x_center', self.origin[1][0])
-            setattr(pyLIMA_parameters, 'y_center', self.origin[1][1])
+
+        new_x_center, new_y_center = self.new_origin(pyLIMA_parameters)
+
+        t_0 = pyLIMA_fancy_parameters._t_center_to_t0(pyLIMA_parameters,
+                                                      x_center=new_x_center,
+                                                      y_center=new_y_center)
+
+        u_0 = pyLIMA_fancy_parameters._u_center_to_u0(pyLIMA_parameters,
+                                                      x_center=new_x_center,
+                                                      y_center=new_y_center)
+
+        setattr(pyLIMA_parameters, 't0', t_0)
+        setattr(pyLIMA_parameters, 'u0', u_0)
 
     def check_data_in_event(self):
         """
@@ -248,10 +273,16 @@ class MLmodel(object):
 
                     self.fancy_to_pyLIMA_dictionnary[key] = parameter
 
-                    self.pyLIMA_to_fancy[key] = pickle.loads(
-                        pickle.dumps(eval('fancy_parameters.' + key)))
-                    self.fancy_to_pyLIMA[parameter] = pickle.loads(
-                        pickle.dumps(eval('fancy_parameters.' + parameter)))
+                    try:
+                        self.pyLIMA_to_fancy[key] = pickle.loads(
+                            pickle.dumps(getattr(pyLIMA_fancy_parameters, key)))
+                        self.fancy_to_pyLIMA[parameter] = pickle.loads(
+                            pickle.dumps(getattr(pyLIMA_fancy_parameters, parameter)))
+
+                    except AttributeError:
+
+                        self.pyLIMA_to_fancy[key] = None
+                        self.fancy_to_pyLIMA[parameter] = None
 
                 else:
 
@@ -522,19 +553,19 @@ class MLmodel(object):
         setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
         setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
 
-    def find_telescopes_fluxes(self, fancy_parameters):
+    def find_telescopes_fluxes(self, parameters):
         """
         Find fsource and fblend for all telescope for a given fancy_parameter
 
         Parameters
         ----------
-        fancy_parameter :  list, a list of fancy parameters
+        parameters :  list, a list of parameters
 
         Returns
         -------
         thefluxes : dict, a dictionnary containing the fluxes of all telescopes
         """
-        pyLIMA_parameters = self.compute_pyLIMA_parameters(fancy_parameters)
+        pyLIMA_parameters = self.compute_pyLIMA_parameters(parameters)
 
         keys = []
         fluxes = []
@@ -598,9 +629,9 @@ class MLmodel(object):
 
         pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
             model_parameters)
-        self.change_origin(pyLIMA_parameters)
-        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
-            pyLIMA_parameters)
+
+        if self.origin[0] != 'center_of_mass':
+            self.change_origin(pyLIMA_parameters)
 
         if 'v_radial' in self.model_dictionnary.keys():
 
@@ -667,7 +698,7 @@ class MLmodel(object):
                     setattr(fancy_parameters, key_parameter,
                             self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
 
-                except ValueError:
+                except TypeError:
 
                     pass
 

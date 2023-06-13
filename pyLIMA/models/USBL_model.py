@@ -1,6 +1,7 @@
 import numpy as np
 from pyLIMA.caustics import binary_caustics
 from pyLIMA.magnification import magnification_VBB
+from pyLIMA.models import pyLIMA_fancy_parameters
 from pyLIMA.models.ML_model import MLmodel
 
 
@@ -67,20 +68,14 @@ class USBLmodel(MLmodel):
         else:
             return magnification_USBL
 
-    def change_origin(self, pyLIMA_parameters):
+    def new_origin(self, pyLIMA_parameters=None):
         """
-        Change the origin of the model, by modifying x_center and y_center in the
-        pyLIMA_parameters.
-        Depending of the model.origin[0]. Could be set to caustics, then it will
-        compute the origin close
-        to the central, wide of close caustics. Could be also primary or secondary,
-        the position of the primay and
-        secondary body.
 
-        Parameters
-        ----------
-         pyLIMA_parameters : a pyLIMA_parameters object
         """
+
+        x_center = 0
+        y_center = 0
+
         if 'caustic' in self.origin[0]:
 
             caustic_regime = binary_caustics.find_2_lenses_caustic_regime(
@@ -114,19 +109,23 @@ class USBLmodel(MLmodel):
             if (caustic_regime == 'close') & (self.origin[0] == 'third_caustic'):
                 caustic = caustics[caustics.imag.argmin()]
 
-            setattr(pyLIMA_parameters, 'x_center', caustic.real)
-            setattr(pyLIMA_parameters, 'y_center', caustic.imag)
+            x_center = caustic.real
+            y_center = caustic.imag
 
         if 'primary' in self.origin[0]:
             primary_location = -pyLIMA_parameters.separation * \
                                pyLIMA_parameters.mass_ratio / (
                                        1 + pyLIMA_parameters.mass_ratio)
 
-            setattr(pyLIMA_parameters, 'x_center', primary_location)
-            setattr(pyLIMA_parameters, 'y_center', 0)
+            x_center = primary_location
+            y_center = 0
 
         if 'secondary' in self.origin[0]:
             secondary_location = pyLIMA_parameters.separation / (
                     1 + pyLIMA_parameters.mass_ratio)
-            setattr(pyLIMA_parameters, 'x_center', secondary_location)
-            setattr(pyLIMA_parameters, 'y_center', 0)
+
+            x_center = secondary_location
+            y_center = 0
+
+        return x_center, y_center
+

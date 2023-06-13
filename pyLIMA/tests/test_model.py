@@ -1,9 +1,8 @@
 import unittest.mock as mock
-
 import numpy as np
-# from pyLIMA.models import DFSPLmodel, DSPLmodel, FSBLmodel, FSPLmodel,
-# FSPLargemodel, PSBLmodel, PSPLmodel, USBLmodel
-from pyLIMA.models import *
+
+from pyLIMA.models import DFSPLmodel, DSPLmodel, FSBLmodel, FSPLmodel, FSPLargemodel, \
+    PSBLmodel, PSPLmodel, USBLmodel
 from pyLIMA.toolbox import time_series
 
 
@@ -45,8 +44,8 @@ def test_initialize_model():
     assert Model.xallarap_model == ['None']
     assert Model.orbital_motion_model == ['None', 0.0]
     assert Model.blend_flux_parameter == 'fblend'
-    assert Model.photometry == True
-    assert Model.astrometry == False
+    assert Model.photometry is True
+    assert Model.astrometry is False
     assert dict(Model.model_dictionnary) == {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3,
                                              'fsource_Test': 4, 'fblend_Test': 5}
     assert dict(Model.pyLIMA_standards_dictionnary) == {'t0': 0, 'u0': 1, 'tE': 2,
@@ -105,24 +104,12 @@ def test_photometric_model_Jacobian():
     pym = Model.compute_pyLIMA_parameters(params)
     jacob = Model.photometric_model_Jacobian(event.telescopes[0], pym)
 
-    assert np.allclose(jacob, np.array([[ 2.61179660e+01, -3.90491801e-01],
-                                       [ 1.27978034e+02,  4.90617904e-02],
-                                       [-3.73113801e-01, -2.17559718e-01],
-                                       [ 3.72223348e+03, -3.44379393e-01],
-                                       [ 4.21617658e+01,  1.99919488e+00],
-                                       [ 1.00000000e+00,  1.00000000e+00]]))
-
-
-def test_change_origin():
-    event = _create_event()
-
-    Model = FSPLmodel(event, origin=['nothere', [9, 8]])
-
-    pym = mock.MagicMock()
-    Model.change_origin(pym)
-
-    assert pym.x_center == 9
-    assert pym.y_center == 8
+    assert np.allclose(jacob, np.array([[2.61179660e+01, -3.90491801e-01],
+                                        [1.27978034e+02, 4.90617904e-02],
+                                        [-3.73113801e-01, -2.17559718e-01],
+                                        [3.72223348e+03, -3.44379393e-01],
+                                        [4.21617658e+01, 1.99919488e+00],
+                                        [1.00000000e+00, 1.00000000e+00]]))
 
 
 def test_compute_the_microlensing_model():
@@ -206,10 +193,10 @@ def tE(x):
 
 
 def test_fancy_parameters():
-    from pyLIMA.models import fancy_parameters
+    from pyLIMA.models import pyLIMA_fancy_parameters
 
-    setattr(fancy_parameters, 't_star', t_star)
-    setattr(fancy_parameters, 'tE', tE)
+    setattr(pyLIMA_fancy_parameters, 't_star', t_star)
+    setattr(pyLIMA_fancy_parameters, 'tE', tE)
 
     my_pars2 = {'log_rho': 'rho', 't_star': 'tE'}
 
@@ -222,10 +209,10 @@ def test_fancy_parameters():
                                              'fblend_Test': 5}
     assert dict(fspl2.fancy_to_pyLIMA_dictionnary) == {'log_rho': 'rho', 't_star': 'tE'}
     assert dict(fspl2.pyLIMA_to_fancy_dictionnary) == {'rho': 'log_rho', 'tE': 't_star'}
-    assert fspl2.pyLIMA_to_fancy['log_rho'] == fancy_parameters.log_rho
+    assert fspl2.pyLIMA_to_fancy['log_rho'] == pyLIMA_fancy_parameters.log_rho
     assert fspl2.pyLIMA_to_fancy['t_star'] == t_star
-    assert fspl2.fancy_to_pyLIMA['rho'] == fancy_parameters.rho
-    assert fspl2.fancy_to_pyLIMA['tE'] == tE
+    assert fspl2.fancy_to_pyLIMA['rho'] == pyLIMA_fancy_parameters.rho
+    assert fspl2.fancy_to_pyLIMA['tE'] == pyLIMA_fancy_parameters.tE
 
 
 def test_DFSPL():
@@ -360,7 +347,7 @@ def test_USBL():
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert np.allclose(magi, [73.75028234,  2.12549786])
+    assert np.allclose(magi, [73.75028234, 2.12549786])
 
     event = _create_event()
 
@@ -369,6 +356,4 @@ def test_USBL():
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert pym.x_center == -0.0019814238930123684
-    assert pym.y_center == 0.0
-    assert np.allclose(magi,[76.16515049,  2.11882843])
+    assert np.allclose(magi, [76.16515049, 2.11882843])
