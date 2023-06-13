@@ -214,7 +214,7 @@ class Telescope(object):
                 photometry_mask]
 
             self.telescope_positions['photometry'] = \
-            self.telescope_positions['photometry'][photometry_mask]
+                self.telescope_positions['photometry'][photometry_mask]
 
         if astrometry_mask is not None:
             self.astrometry = self.astrometry[astrometry_mask]
@@ -227,7 +227,7 @@ class Telescope(object):
                 astrometry_mask]
 
             self.telescope_positions['astrometry'] = \
-            self.telescope_positions['astrometry'][astrometry_mask]
+                self.telescope_positions['astrometry'][astrometry_mask]
 
     def n_data(self, choice='magnitude'):
         """ Return the number of data points in the lightcurve.
@@ -388,7 +388,7 @@ class Telescope(object):
         err_mag = lightcurve['err_mag'].value
 
         flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(mag)
-        err_flux = pyLIMA.toolbox.brightness_transformation\
+        err_flux = pyLIMA.toolbox.brightness_transformation \
             .error_magnitude_to_error_flux(
             err_mag, flux)
         inv_err_flux = 1.0 / err_flux
@@ -417,7 +417,7 @@ class Telescope(object):
         err_flux = lightcurve['err_flux'].value
 
         mag = pyLIMA.toolbox.brightness_transformation.flux_to_magnitude(flux)
-        err_mag = pyLIMA.toolbox.brightness_transformation\
+        err_mag = pyLIMA.toolbox.brightness_transformation \
             .error_flux_to_error_magnitude(
             err_flux, flux)
         lightcurve_in_mag = construct_time_series(np.c_[time, mag, err_mag],
@@ -455,12 +455,16 @@ class Telescope(object):
             self.ld_a2 = 5 * self.ld_sigma / (4 + 2 * self.ld_gamma + self.ld_sigma)
 
     def hidden(self):
-        try:
-            import webbrowser
-            controller = webbrowser.get()
 
-            if self.name == 'Mexicola':
+        if self.name == 'Mexicola':
+
+            try:
+
+                import webbrowser
+                controller = webbrowser.get()
+
                 controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
-        except ValueError:
 
-            pass
+            except webbrowser.Error:
+
+                pass
