@@ -12,10 +12,10 @@ JPL_HORIZONS_ID = {
     'HST': '-48',
     'Gaia': '-139479',
     'New Horizons': '-98',
-    'L2': '32'
+    'L2': '32',
+    'TESS': '-95'
 
 }
-
 
 def horizons_obscodes(observatory):
     """Transform observatory names to JPL horizon codes.

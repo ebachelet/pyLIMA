@@ -50,8 +50,7 @@ def test_magnification_PSPL_Jacobian():
                                                                                  pym)
 
     assert np.allclose(jacobian, [-1.66561332e-01, -9.91248125e+01, 9.65572939e-04])
-    assert np.allclose(magnification[0], 10.02076281)
-    assert np.allclose(magnification[1], 0.10016789)
+    assert np.allclose(magnification, 10.02076281)
 
 
 def test_magnification_FSPL_Jacobian():
