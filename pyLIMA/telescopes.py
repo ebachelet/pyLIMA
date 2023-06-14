@@ -19,91 +19,44 @@ PYLIMA_LIGHTCURVE_FLUX_NAMES = ['time', 'flux', 'err_flux', 'inv_err_flux']
 
 class Telescope(object):
     """
-    ######## Telescope module ########
+    This class contains all information about a telescope (details, observations,
+    Earth ephmerides...)
 
-    This class create a telescope object.
-
-    Attributes :
-
-        location : The location of your observatory. Should be "Earth" (default) or
-        "Space".
-
-        altitude : Altitude in meter of the telescope. Default is 0.0 (sea level).
-
-        longitude : Longitude of the telescope in degrees. Default is 0.57.
-
-        latitude : Latitude in degrees. Default is 49.49 .
-
-        gamma : (Microlensing covention) Limb darkening coefficient :math:`\\Gamma`
-        associated to the filter.
-                 The classical (Milne definition) linear limb darkening coefficient
-                 can be found using:
-                 u=(3*gamma)/(2+gamma).
-                 Default is 0.0 (i.e uniform source brightness)
-
-        lightcurve_magnitude : a numpy array describing your data in magnitude.
-
-        lightcurve_magnitude_dictionnary : a python dictionnary to transform the
-        lightcurve_magnitude
-                                          input to pyLIMA convention.
-
-        lightcurve_flux : a numpy array describing your data in flux.
-
-        lightcurve_flux_dictionnary : a python dictionnary to transform the
-        lightcurve_flux input to pyLIMA convention.
-
-        reference_flux : a float used for the transformation of difference fluxes to
-        real fluxes. Default is 10000.0 .
-
-        deltas_positions : a list containing the position shift of this observatory
-        due to parallax.
-                           Default is an empty list. More details in microlparallax.
-
-    :param string name: name of the telescope. Default is 'NDG'
-
-    :param string camera_filter: telescope filter used. Should be a string which
-    follows the convention of :
-               " Gravity and limb-darkening coefficients for the Kepler, CoRoT,
-               Spitzer, uvby,
-               UBVRIJHK,
-               and Sloan photometric systems"
-               Claret, A. and Bloemen, S. 2011A&A...529A..75C. For example,
-               'I' (default) is
-               Johnson_Cousins I filter
-               and 'i'' is the SDSS-i' Sloan filter.
-
-
-    :param array_like light_curve_magnitude:  a numpy array with time, magnitude and
-    error in magnitude.
-                                              Default is an None.
-
-    :param dict light_curve_magnitude_dictionnary: a python dictionnary that informs
-    your columns convention. Used to
-                                                   translate to pyLIMA convention [
-                                                   time,mag,err_mag].
-                                                   Default is {'time': 0, 'mag' : 1,
-                                                   'err_mag' : 2 }
-
-
-    :param array-like light_curve_flux:  a numpy array with time, flux and error in
-    flux. Default is an None.
-
-    :param dict light_curve_flux_dictionnary: a python dictionnary that informs your
-    columns convention. Used to
-                                              translate to pyLIMA convention [time,
-                                              flux,err_flux].
-                                              Default is {'time': 0, 'flux' : 1,
-                                              'err_flux' : 2 }
-
-    :param float reference_flux: a float used for the transformation of difference
-    fluxes to real fluxes.
-                                 Default is 0.0 .
-
-    :param str clean_the_lightcurve : a string indicated if you want pyLIMA to clean
-    your lightcurves.
-                                      Highly recommanded!
+    Attributes
+    ----------
+    name : str, the telescope name (needs to be unique!)
+    filter : str, the filter used for observations
+    lightcurve_magnitude : array, the observed lightcurve in magnitude
+    [time,mag,err_mag]
+    lightcurve_flux : array, the observed lightcurve in flux
+    [time,flux,err_flux]
+    astrometry : array, the astrometric time series
+    [time,ra,err_ra,dec,err_dec], should be in degree or pixel
+    bad_data : dict, a dictionnary containing non-finite data and duplicates
+    location : str, 'Earth' or 'Space'
+    altitude : float, the telescope altitude in meter
+    longitude : float, the telescope longitude in degree
+    latitutde : float, the telescope latitude in degree
+    deltas_positions : array, the North and East projected into the plane of
+    sky positions of a telescope relative to Earth center (see parallax)
+    Earth_positions : dict, dictionnary orf array containing the XYZ positions of
+    Earth at time of observations
+    Earth_speeds : dict, dictionnary of array containing the XYZ speeds of
+    Earth at time of observations
+    sidereal_timesL dict, dictionnary of array containing the sidereal time (i.e.
+    angle) of a telescope on Earth
+    Earth_positions_projects : dict, dictionnary of array containing the projected
+    positions of Earth at time of observations
+    Earth_speeds_projects : dict, dictionnary of array containing the projected
+    speeds of Earth at time of observations
+    spacecraft_name : str, the name of the satellite for the JPL Horizons ephemrides
+    spacecraft_positions : dict, a dictionnary of arrays containing the positions of
+    the satellite
+    ld_gamma : float, the microlensing linear limb darkening coefficient
+    ld_sigma : float, the microlensing sqrt limb darkending coefficient
+    ld_a1 : float, the classic linear  limb darkening coefficient
+    ld_a2 : float, the classic sqrt  limb darkening coefficient
     """
-
     def __init__(self, name='NDG', camera_filter='I', pixel_scale=1, light_curve=None,
                  light_curve_names=None, light_curve_units=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None,
@@ -201,7 +154,14 @@ class Telescope(object):
         self.hidden()
 
     def trim_data(self, photometry_mask=None, astrometry_mask=None):
+        """
+        Prune the telescope observations
 
+        Parameters
+        ----------
+        photometry_mask : array, a boolean array to mask photometric data
+        astrmetry_mask : array, a boolean array to mask astrometric data
+        """
         if photometry_mask is not None:
             self.lightcurve_flux = self.lightcurve_flux[photometry_mask]
             self.lightcurve_magnitude = self.lightcurve_magnitude[photometry_mask]
@@ -230,13 +190,16 @@ class Telescope(object):
                 self.telescope_positions['astrometry'][astrometry_mask]
 
     def n_data(self, choice='magnitude'):
-        """ Return the number of data points in the lightcurve.
+        """
+        Returns the number of photometric data
 
-        :param string choice: 'magnitude' (default) or 'flux' The unit you want to
-        check data for.
+        Parameters
+        ----------
+        choice : str, 'flux' or 'magnitude'
 
-        :return: the size of the corresponding lightcurve
-        :rtype: int
+        Returns
+        -------
+        n_data : int, the number of data points
         """
         try:
             if choice == 'flux':
@@ -251,17 +214,14 @@ class Telescope(object):
 
     def find_gamma(self, star):
         """
-        Set the associated :math:`\\Gamma` linear limb-darkening coefficient
-        associated to the filter.
-
-
-        :param object star: a stars object.
-
+        NOT FUNCTIONNAL YET
         """
         self.ld_gamma = star.find_gamma(self.filter)
 
     def initialize_positions(self):
-
+        """
+        Compute the telescope positions relative to Earth center
+        """
         self.find_Earth_positions()
 
         if self.location == 'Space':
@@ -274,7 +234,9 @@ class Telescope(object):
             self.find_Earth_telescope_positions()
 
     def find_Earth_positions(self):
-
+        """
+        Find the Earh positions relative to photometric and astrometric data
+        """
         for data_type in ['astrometry', 'photometry']:
 
             if data_type == 'photometry':
@@ -293,7 +255,13 @@ class Telescope(object):
                 self.Earth_speeds[data_type] = earth_speeds
 
     def find_sidereal_time(self, sidereal_type='mean'):
+        """
+        Returns the sidereal time (angle to vernal point) for each observations
 
+        Parameters
+        ----------
+        sidereal_type : str, 'mean' or 'apparent' (much, much slower!)
+        """
         for data_type in ['astrometry', 'photometry']:
 
             if data_type == 'photometry':
@@ -313,7 +281,10 @@ class Telescope(object):
                 self.sidereal_times[data_type] = sidereal_times
 
     def find_Earth_telescope_positions(self):
-
+        """
+        Compute the telescope positions relative to Earth center based on altitude,
+        longitude and latitude
+        """
         for data_type in ['astrometry', 'photometry']:
 
             if data_type == 'photometry':
@@ -335,7 +306,9 @@ class Telescope(object):
                 self.telescope_positions[data_type] = telescope_positions
 
     def find_space_positions(self):
-
+        """
+        Compute the satellite positions relaitve to Earth center
+        """
         for data_type in ['astrometry', 'photometry']:
 
             if data_type == 'photometry':
@@ -356,12 +329,16 @@ class Telescope(object):
                 self.telescope_positions[data_type] = satellite_positions
                 self.spacecraft_positions[data_type] = space_positions
 
-    def compute_parallax(self, parallax_model, North_vector,
-                         East_vector):  # , right_ascension):
-        """ Compute and set the deltas_positions attribute due to the parallax.
+    def compute_parallax(self, parallax_model, North_vector, East_vector):
+        """
+        Compute and set the deltas_positions attributes according to the parallax model.
 
-        :param object event: a event object. More details in the event module.
-        :param list parallax: a list containing the parallax model and to_par. More
+        Parameters
+        ----------
+
+        parallax_model : list, [str,float] the parallax model and t0_par
+        North_vector: array, the projected North vector to project delta_position into
+        East_vector: array, the projected Eat vector to project delta_position into
         details in microlparallax module.
         """
         self.initialize_positions()
@@ -372,12 +349,7 @@ class Telescope(object):
 
     def lightcurve_in_flux(self):
         """
-        Transform magnitude to flux using m=27.4-2.5*log10(flux) convention.
-        Transform error bar
-        accordingly. More details in microltoolbox module.
-
-        :return: the lightcurve in flux, lightcurve_flux.
-        :rtype: array_like
+        Transform lightcurve magnitude to lightcurve flux
         """
         import pyLIMA.toolbox.brightness_transformation
 
@@ -401,12 +373,7 @@ class Telescope(object):
 
     def lightcurve_in_magnitude(self):
         """
-        Transform flux to magnitude using m = 27.4-2.5*log10(flux) convention.
-        Transform error bar
-        accordingly. More details in microltoolbox module.
-
-        :return: the lightcurve in magnitude, lightcurve_magnitude.
-        :rtype: array_like
+        Transform lightcurve flux to lightcurve  magnitude
         """
         import pyLIMA.toolbox.brightness_transformation
 
@@ -428,7 +395,14 @@ class Telescope(object):
         return lightcurve_in_mag
 
     def plot_data(self, choice='Mag'):
+        """
+        Plot the photometric data
 
+        Parameters
+        ----------
+
+        choice : str, 'Mag' or 'Flux'
+        """
         from pyLIMA.toolbox import plots
         import matplotlib.pyplot as plt
 
@@ -441,6 +415,9 @@ class Telescope(object):
             plt.gca().invert_yaxis()
 
     def define_limb_darkening_coefficients(self):
+        """
+        Transform ld_gamma to ld_a1 and/or vice-versa
+        """
 
         if self.ld_gamma == 0:
             self.ld_gamma = 10 * self.ld_a1 / (15 - 5 * self.ld_a1 - 3 * self.ld_a2)
