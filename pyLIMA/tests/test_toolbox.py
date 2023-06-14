@@ -21,7 +21,7 @@ def test_error_magnitude_to_error_flux():
 
     err_flux = brightness_transformation.error_magnitude_to_error_flux(err_mag, flux)
 
-    assert err_flux == 4.856704581546761
+    assert np.allclose(err_flux, 4.856704581546761)
 
 def test_error_flux_to_error_magnitude():
 
