@@ -6,12 +6,16 @@ EXPOSURE_TIME = 50  # s
 
 
 def magnitude_to_flux(magnitude):
-    """ Transform the injected magnitude to the the corresponding flux.
+    """
+    Return flux from magnitude
 
-    :param array_like magnitude: the magnitude you want to transform.
+    Parameters
+    ----------
+    magnitude : array, an array of magnitudes
 
-    :return: the transformed magnitude in flux unit
-    :rtype: array_like
+    Returns
+    -------
+    flux : array, the corresponding fluxes
     """
 
     flux = 10 ** ((ZERO_POINT - magnitude) / 2.5)
@@ -20,28 +24,34 @@ def magnitude_to_flux(magnitude):
 
 
 def flux_to_magnitude(flux):
-    """ Transform the injected flux to the the corresponding magnitude.
-
-    :param array_like flux: the flux you want to transform.
-
-    :return: the transformed magnitude
-    :rtype: array_like
     """
+    Return magnitude from fluxes
 
+    Parameters
+    ----------
+    flux : array, the corresponding fluxes
+
+    Returns
+    -------
+    magnitude : array, an array of magnitudes
+    """
     mag = ZERO_POINT - 2.5 * np.log10(flux)
 
     return mag
 
 
 def error_magnitude_to_error_flux(error_magnitude, flux):
-    """ Transform the injected magnitude error to the the corresponding error in flux.
+    """
+    Return error in fluxes from error in magnitudes and fluxes
 
-    :param array_like error_magnitude: the magnitude errors measurements you want to
-    transform.
-    :param array_like flux: the fluxes corresponding to these errors
+    Parameters
+    ----------
+    error_magnitude: array, the error in magnitudes
+    flux : array, the corresponding fluxes
 
-    :return: the transformed errors in flux units
-    :rtype: array_like
+    Returns
+    -------
+    error_flux : array, an array of errors in flux
     """
 
     error_flux = np.abs(error_magnitude * flux * np.log(10) / 2.5)
@@ -50,13 +60,17 @@ def error_magnitude_to_error_flux(error_magnitude, flux):
 
 
 def error_flux_to_error_magnitude(error_flux, flux):
-    """ Transform the injected flux error to the the corresponding error in magnitude.
+    """
+    Return error in magnitudes from error in flux and fluxes
 
-    :param array_like error_flux: the flux errors measurements you want to transform.
-    :param array_like flux: the fluxes corresponding to these errors
+    Parameters
+    ----------
+    error_flux : array, an array of errors in flux
+    flux : array, the corresponding fluxes
 
-    :return: the transformed errors in magnitude
-    :rtype: array_like
+    Returns
+    -------
+    error_magnitude: array, the error in magnitudes
     """
     error_magnitude = np.abs(2.5 * error_flux / (flux * np.log(10)))
 
@@ -64,15 +78,18 @@ def error_flux_to_error_magnitude(error_flux, flux):
 
 
 def noisy_observations(flux, exp_time=None):
-    """Add Poisson noise to observations.
+    """
+    Add Poisson noise to observations
 
-        :param array_like flux: the observed flux
-        :param array_like error_flux: the error on observed flux
+    Parameters
+    ----------
+    flux : array, the corresponding fluxes
+    exp_time : float, the exposure time in seconds
 
-        :return: a numpy array which represents the observed noisy flux
-
-        :rtype: array_like
-
+    Returns
+    -------
+    flux_observed : array, the observed flux
+    err_flux_observed : array, the corresponding uncertainties
     """
 
     if exp_time is not None:

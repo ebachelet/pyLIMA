@@ -6,7 +6,6 @@ Created on Thu Aug 27 16:39:32 2015
 """
 
 import sys
-
 import numpy as np
 
 
@@ -16,44 +15,21 @@ class EventException(Exception):
 
 class Event(object):
     """
-    ######## Event module ########
+    This class contains all information relative to a microlensing event, including
+    position in the sky, telescopes that observed etc...
 
-    This module create an event object with the informations (attributes) needed for
-    the fits.
+    Attributes
+    ----------
 
-    Attributes :
-
-         kind : type of event. In general, should be 'Microlensing' (default)
-
-         name : name of the event. Should be a string. Default is 'Sagittarius A*'
-
-         ra : right ascension of the event (J2000). Should be a float in degree
-         between 0.0 and
-         360.0. Default is ra of Sagittarius A, :math:`\\alpha` = 266.416792 from
-         Baker & Sramek
-         1999ApJ...524..805B
-
-         dec : declination of the event (J2000). Should be a float in degree between
-         -90 and 90.
-         Default is dec of Sagittarius A, :math:`\\delta` = -29.007806 from Baker &
-         Sramek
-         1999ApJ...524..805B
-
-         Teff : effective temperature of the star in Kelvin. Should be a float.
-         Default is 5000.0 K
-
-         log_g : surface gravity in log10 cgs unit. Should be a float. Default is 4.5
-
-         telescopes : list of telescopes names (strings). Default is an empty list.
-         Have to be
-         fill with some telescopes class instances.
-
-         survey : the reference telescope. Has to be a string, default is 'None'.
-
-         fits : list of microlfits objects.
-         
+    kind : str, the type of event (i.e. Microlensing)
+    name : str, the event name
+    ra : float, the right ascension in degree
+    dec : float, the declination in degree
+    North : array, the North vector projected in the plane of sky
+    East : array, the East vector projected in the plane of sky
+    telescopes : list, a list of telescope object
+    survey : str, the survey associated to the event, to align plot to
     """
-
     def __init__(self, ra=266.416792, dec=-29.007806):
         """ Initialization of the attributes described above. """
 
@@ -69,21 +45,14 @@ class Event(object):
         self.North_East_vectors()
 
     def telescopes_names(self):
-        """Print the the telescope's names contain in the event.
+        """
+        Print the telescopes names
         """
         print([self.telescopes[i].name for i in range(len(self.telescopes))])
 
     def check_event(self):
-        """Function to check if everything is correctly set before the fit.
-        An ERROR is returned if the check is not successful
-        Should be used before any event_fit function calls
-
-        First check if the event name is a string.
-        Then check if the right ascension (event.ra) is between 0 and 360 degrees.
-        Then check if the declination (event.dec) is between -90 and 90 degrees.
-        Then check if you have any telescopes ingested.
-        Finally check if your telescopes have a lightcurve attributes different from
-        None.
+        """
+        Check some basics informations.
         """
         for telescope in self.telescopes:
 
@@ -135,12 +104,12 @@ class Event(object):
         print(sys._getframe().f_code.co_name, ' : Everything looks fine...')
 
     def find_survey(self, choice=None):
-        """Function to find the survey telescope in the telescopes list,
-        and put it on the first place (useful for some fits functions).
+        """
+        Find the survey telescope and place it first in the telescopes list
 
-        :param choice: the name of the telescope choosing as the survey. Has to be a
-        string.
-                           Default is the first telescope.
+        Parameters
+        ----------
+        choice : str, the survey name
         """
         self.survey = choice or self.telescopes[0].name
 
@@ -158,33 +127,25 @@ class Event(object):
             print('ERROR : There is no telescope names containing ' + self.survey)
             return
 
-    def lightcurves_in_flux(self, choice='Yes'):
-        """ Transform all telescopes magnitude lightcurves in flux units.
-
-
-            :param choice: to clean your lightcurve or not. Has to be a string 'Yes'
-            or 'No'.
-            Defaul is 'Yes'. More details in the telescope module
-        """
-
-        for telescope in self.telescopes:
-            telescope.lightcurve_flux = telescope.lightcurve_in_flux(choice)
-
     def compute_parallax_all_telescopes(self, parallax_model):
-        """ Compute the parallax displacement for all the telescopes, if this is
-        desired in
-        the second order parameter.
+        """
+        Launch the parallax computation for all telescopes
+
+        Parameters
+        ----------
+        parallax_model : list, [str,float] the parallax model
         """
 
         for telescope in self.telescopes:
             telescope.compute_parallax(parallax_model, self.North, self.East)
 
     def total_number_of_data_points(self):
-        """ Compute the parallax displacement for all the telescopes, if this is
-        desired in
-            the second order parameter.
-            :return: n_data, the total number of points
-            :rtype: float
+        """
+        Return the total number of photometric observations
+
+        Returns
+        -------
+        n_data : float, the total number of data points
         """
         n_data = 0.0
 
@@ -194,9 +155,8 @@ class Event(object):
         return n_data
 
     def North_East_vectors(self):
-        """This function define the North and East vectors projected on the sky plane
-        perpendicular to the line
-        of sight (i.e the line define by RA,DEC of the event).
+        """
+        Compute the North,East vectors in the sky
         """
         target_angles_in_the_sky = [self.ra * np.pi / 180, self.dec * np.pi / 180]
         Target = np.array(

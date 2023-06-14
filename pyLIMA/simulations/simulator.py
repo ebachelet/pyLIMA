@@ -30,65 +30,48 @@ def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
 
 
 def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.25,
-                         location=
-                         'Earth', filter='I', uniform_sampling=False,
-                         timestamps=[], altitude=0, longitude=0, latitude=0,
+                         uniform_sampling=False, timestamps=[], location='Earth',
                          spacecraft_name=None,
                          spacecraft_positions={'astrometry': [], 'photometry': []},
+                         camera_filter='I',  altitude=0, longitude=0, latitude=0,
                          bad_weather_percentage=0.0,
                          minimum_alt=20, moon_windows_avoidance=20,
                          maximum_moon_illumination=100.0, photometry=True,
-                         astrometry=True, pixel_scale=1, ra=270, dec=-30):
+                         astrometry=True, pixel_scale=100, ra=270, dec=-30):
     """
-    Function to find initial DSPL guess
+    Simulate a telescope. Can mimic real observations (Moon and Sun avoidance,
+    bad weather etc...), having uniform sampling or custom timerange.
 
     Parameters
     ----------
     name : str, event name
-    ra : float, the event right ascension
-    dec : float, the event dec
+    time_start : float, the JD time start of observations
+    time_end : float, the JD time end of observations
+    sampling : float, the sampling rate (in days)
+    uniform_sampling : bool, turn on/off any observational constraints
+    timestamps : array, an array of time
+    location : str, Earth or Space
+    spacecraft_name : str, the name of the satellite
+    spacecraft_positions : dict, give the JPL Horizons positions
+    camera_filter : str, the filter of observations
+    altitude : float, the telescope altitude in m
+    longitude : float, the telescope longitude
+    latitude : float, the telescope latitde
+    bad_weather_percentage : float, fraction of nights lost due to bad weather
+    minimum_alt : float, minimum altitude of observations in degrees
+    moon_windows_avoidance : float, minimum distance to the Moon in degrees
+    maximum_moon_illumination : float, maximum allowed Moon brightness
+    photometry : bool, simulate photometric observations
+    astrometry : bool, simulate astrometric observations
+    pixel_scale : float, the pixel scale of the camera in mas/pix
+    ra : float, right ascension of the target in degrees
+    dec : float, declination of the target in degrees
 
     Returns
     -------
-    fake_event : object, an event object
+    telescope : object, a telescope object
     """
-
-    """ Simulate a telescope. More details in the telescopes module. The observations
-    simulation are made for the
-        full time windows, then limitation are applied :
-            - Sun has to be below horizon : Sun< -18
-            - Moon has to be more than the moon_windows_avoidance distance from the
-            target
-            - Observations altitude of the target have to be bigger than minimum_alt
-
-    :param str name:  the name of the telescope.
-    :param object event: the microlensing event you look at
-    :param float time_start: the start of observations in JD
-    :param float time_end: the end of observations in JD
-    :param float sampling: the hour sampling.
-    :param str location: the location of the telescope.
-    :param str filter: the filter used for observations
-    :param boolean uniform_sampling: set it to True if you want no bad weather,
-    no moon avoidance etc....
-
-    :param float altitude: the altitude in meters if the telescope
-    :param float longitude: the longitude in degree of the telescope location
-    :param float latitude: the latitude in degree of the telescope location
-
-    :param str spacecraft_name: the name of your satellite according to JPL horizons
-
-    :param float bad_weather_percentage: the percentage of bad nights
-    :param float minimum_alt: the minimum altitude ini degrees that your telescope
-    can go to.
-    :param float moon_windows_avoidance: the minimum distance in degrees accepted
-    between the target and the Moon
-    :param float maximum_moon_illumination: the maximum Moon brightness you allow in
-    percentage
-    :return: a telescope object
-    :rtype: object
-    """
-
-    if timestamps == []:
+    if len(timestamps) == 0:
 
         if (uniform_sampling is False) & (location != 'Space'):
 
@@ -145,6 +128,7 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
 
         lightcurveflux = None
 
+
     if astrometry:
 
         astrometry = np.ones((len(time_of_observations), 5)) * 42
@@ -154,7 +138,7 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
 
         astrometry = None
 
-    telescope = telescopes.Telescope(name=name, camera_filter=filter,
+    telescope = telescopes.Telescope(name=name, camera_filter=camera_filter,
                                      pixel_scale=pixel_scale,
                                      light_curve=lightcurveflux,
                                      light_curve_names=['time', 'flux', 'err_flux'],
@@ -170,19 +154,18 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
 
 
 def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
-    """ Simulate observing time during the observing windows, rejecting windows with
-    bad weather.
-
-    :param float time_start: the start of observations in JD
-    :param float time_end: the end of observations in JD
-    :param float sampling: the number of points observed per hour.
-    :param float bad_weather_percentage: the percentage of bad nights
-
-    :return: a numpy array which represents the time of observations
-
-    :rtype: array_like
-
     """
+    Simulate the timestamps
+
+    Parameters
+    ----------
+    time_start : float, the JD time start of observations
+    time_end : float, the JD time end of observations
+    bad_weather_percentage : float, fraction of nights lost due to bad weather
+
+    Returns
+    -------
+    time_of_observations : array, an array of time     """
 
     time_initial = np.arange(time_start, time_end, sampling / 24.)
     total_number_of_days = int(time_end - time_start)
@@ -211,15 +194,18 @@ def time_simulation(time_start, time_end, sampling, bad_weather_percentage):
 
 
 def moon_illumination(sun, moon):
-    """The moon illumination expressed as a percentage.
+    """
+    Compute the Moon illuminations
 
-            :param astropy sun: the sun ephemeris
-            :param astropy moon: the moon ephemeris
+    Parameters
+    ----------
+    sun : array, SkyCoord of the Sun
+    moono : array, SkyCoord of the Moon
 
-            :return: a numpy array indicated the moon illumination.
 
-            :rtype: array_like
-
+    Returns
+    -------
+    illumniation : array, the Moon illumination
     """
 
     geocentric_elongation = sun.separation(moon).rad
@@ -233,18 +219,17 @@ def moon_illumination(sun, moon):
 
 
 def simulate_microlensing_model_parameters(model):
-    """ Simulate parameters given the desired model. Parameters are selected in
-    uniform distribution inside
-        parameters_boundaries given by the microlguess modules. The exception is 'to'
-        where it is selected
-        to enter inside telescopes observations.
+    """
+    Given a microlensing model, compute a random parameters (uniform distribution in
+    the bounds)
 
-        :param object event: the microlensing event you look at. More details in
-        event module
+    Parameters
+    ----------
+    model : object, a microlensing model
 
-
-        :return: fake_parameters, a set of parameters
-        :rtype: list
+    Returns
+    -------
+    fake_parameters : list, a list of simulated parameters
     """
 
     model.define_model_parameters()
@@ -286,7 +271,13 @@ def simulate_microlensing_model_parameters(model):
             mins_time.append(np.min(telescope.astrometry['time'].value))
             maxs_time.append(np.max(telescope.astrometry['time'].value))
 
-    fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
+    try:
+
+        fake_parameters[0] = np.random.uniform(np.min(mins_time), np.max(maxs_time))
+
+    except ValueError:
+
+        pass
 
     if model.parallax_model[0] != 'None':
         fake_parameters[0] = np.random.uniform(model.parallax_model[1] - 1,
@@ -297,16 +288,19 @@ def simulate_microlensing_model_parameters(model):
 
 def simulate_fluxes_parameters(list_of_telescopes, source_magnitude=[10, 20],
                                blend_magnitude=[10, 20]):
-    """ Simulate flux parameters (magnitude_source , g) for the telescopes. More
-    details in microlmodels module
-
-    :param list list_of_telescopes: a list of telescopes object
-
-    :return: fake_fluxes parameters, a set of fluxes parameters
-    :rtype: list
-
     """
+    Compute the source and blend fluxes for a list of telescopes
 
+    Parameters
+    ----------
+    list_of_telescopes : list, a list of telescope objects
+    source_magnitude : list, [mag_min,max_max] range of the source magnitudes
+    blend_magnitude : list, [mag_min,max_max] range of the blend magnitudes
+
+    Returns
+    -------
+    fake_fluxes_telescopes : list, a list of 2*Ntelescopes fluxes
+    """
     fake_fluxes_parameters = []
 
     for telescope in list_of_telescopes:
@@ -322,15 +316,15 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude=[10, 20],
     return fake_fluxes_parameters
 
 
-def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True,
-                             exposure_times=None):
-    """ Simulate the flux of telescopes given a model and a set of parameters.
-    It updates straight the telescopes object inside the given model.
+def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
+    """
+    Simulate the fluxes in the telescopes according to the model and parameters
 
-    :param object model: the microlensing model you desire. More detail in microlmodels.
-    :param object pyLIMA_parameters: the parameters used to simulate the flux.
-    :param str red_noise_apply: to include or not red_noise
-
+    Parameters
+    ----------
+    model : object, a microlensing model object
+    pyLIMA_parameters : dict, a pyLIMA_parameters object
+    add_noise : bool, adding Poisson noise or not
     """
 
     for ind, telescope in enumerate(model.event.telescopes):
@@ -348,7 +342,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True,
 
                 observed_flux, err_observed_flux = \
                     brightness_transformation.noisy_observations(
-                        theoritical_flux, exposure_times)
+                        theoritical_flux)
 
             else:
 
@@ -363,6 +357,14 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True,
 
 def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
     """
+    Simulate the astrometric signal in the telescopes according to the model and
+    parameters
+
+    Parameters
+    ----------
+    model : object, a microlensing model object
+    pyLIMA_parameters : dict, a pyLIMA_parameters object
+    add_noise : bool, adding Poisson noise or not
     """
     from astropy import units as unit
 

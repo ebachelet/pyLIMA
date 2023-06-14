@@ -3,6 +3,20 @@ from astropy.table import QTable
 
 
 def clean_time_series(data):
+    """
+    Check an array of non-finite and duplicates values
+
+    Parameters
+    ----------
+    data : array, the array to clean
+
+    Returns
+    -------
+    good_lines : list, the list of index containing correct values
+    non_finite_lines : list, the list of index containing non-finite values
+    non_unique_lines : list, the list of index containing duplicate values
+    """
+
     dataset = [data[key].value for key in data.columns.keys()]
     dataset = np.c_[dataset].T
 
@@ -29,6 +43,19 @@ def clean_time_series(data):
 
 
 def construct_time_series(data, columns_names, column_units):
+    """
+    Construct an astropy table based on data, column names and columns units
+
+    Parameters
+    ----------
+    data : array, the array containing data
+    columns_names : array, the columns names
+    columns_units : array,the columns units
+
+    Returns
+    -------
+    table : array, the astropy table
+    """
     table = QTable(data, names=columns_names, units=column_units)
 
     return table

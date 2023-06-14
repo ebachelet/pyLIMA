@@ -115,7 +115,7 @@ class Telescope(object):
 
         self.name = name
         self.filter = camera_filter
-        self.pixel_scale = pixel_scale
+        self.pixel_scale = pixel_scale #mas/pix
         self.lightcurve_magnitude = None
         self.lightcurve_flux = None
         self.astrometry = None
