@@ -1,5 +1,5 @@
 import numpy as np
-from pyLIMA.toolbox import brightness_transformation, fake_telescopes
+from pyLIMA.toolbox import brightness_transformation
 
 def test_magnitude_to_flux():
 
