@@ -38,4 +38,3 @@ def test_noisy_observations():
     flux_obs = brightness_transformation.noisy_observations(flux, exp_time=None)
 
     assert flux_obs != flux
-breakpoint()
