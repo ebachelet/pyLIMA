@@ -44,4 +44,3 @@ def test_event():
 
     assert np.allclose(ev.North, [0.3213938 , 0.11697778, 0.93969262])
     assert np.allclose(ev.East, [-0.34202014,  0.93969262,  0.        ])
-    breakpoint()
