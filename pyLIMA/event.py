@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Aug 27 16:39:32 2015
-
-@author: ebachelet
-"""
-
 import sys
 import numpy as np
 
@@ -29,9 +22,9 @@ class Event(object):
     East : array, the East vector projected in the plane of sky
     telescopes : list, a list of telescope object
     survey : str, the survey associated to the event, to align plot to
+
     """
     def __init__(self, ra=266.416792, dec=-29.007806):
-        """ Initialization of the attributes described above. """
 
         self.kind = 'Microlensing'
         self.name = 'Sagittarius A*'
