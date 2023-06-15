@@ -416,7 +416,8 @@ class Telescope(object):
 
     def define_limb_darkening_coefficients(self):
         """
-        Transform ld_gamma to ld_a1 and/or vice-versa
+        Transform ld_gamma and ld_sigma to ld_a1 and ld_a2,  and/or vice-versa.
+        See https://iopscience.iop.org/article/10.1086/378196/pdf
         """
 
         if self.ld_gamma == 0:

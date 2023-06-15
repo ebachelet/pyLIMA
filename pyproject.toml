@@ -23,6 +23,6 @@ dependencies=[
     "VBBinaryLensing>=3.6",
 
 ]
-dynamic=["version"]  # Version is taken from setuptools_scm
+version="1.9" # Version is taken from setuptools_scm
 
 
