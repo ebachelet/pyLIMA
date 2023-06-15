@@ -14,15 +14,15 @@ You probably need to start with the :ref:`installation` step and then run some :
 You can also have a look to pyLIMA's :ref:`conventions`.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    source/Installation
    source/Conventions
    source/Examples
-     
+   
 
 pyLIMA modules details
-----------------------
+======================
 
 Here is the (hopefully up-to-date) documentation
 for all submodules.
@@ -30,5 +30,5 @@ for all submodules.
 .. toctree::
    :maxdepth: 1
 
-   source/pyLIMA
+   source/pyLIMAModules  
 

@@ -4,7 +4,7 @@ from pyLIMA.models.ML_model import MLmodel
 
 
 class DSPLmodel(MLmodel):
-    @property
+
     def model_type(self):
 
         return 'DSPL'

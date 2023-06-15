@@ -11,8 +11,9 @@ class FSBLmodel(USBLmodel):
                             return_impact_parameter=None):
         """
         The magnification associated to a FSBL model, that includes limb-darkening.
-        See https://ui.adsabs.harvard.edu/abs/2010MNRAS.408.2188B/abstract
-            https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
+        See
+        https://ui.adsabs.harvard.edu/abs/2010MNRAS.408.2188B/abstract
+        https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
         """
 
         if telescope.lightcurve_flux is not None:

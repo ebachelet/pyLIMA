@@ -4,7 +4,6 @@ from pyLIMA.models.DSPL_model import DSPLmodel
 
 
 class DFSPLmodel(DSPLmodel):
-    @property
     def model_type(self):
 
         return 'DFSPL'
