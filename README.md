@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/ebachelet/pyLIMA/actions/workflows/actions_unit_tests.yaml/badge.svg)
+[![Build Status](https://github.com/ebachelet/pyLIMA/actions/workflows/actions_unit_tests.yaml/badge.svg)]
 [![Coverage Status](https://coveralls.io/repos/github/ebachelet/pyLIMA/badge.svg?branch=master)](https://coveralls.io/github/ebachelet/pyLIMA?branch=master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.997468.svg)](https://doi.org/10.5281/zenodo.997468)
 
