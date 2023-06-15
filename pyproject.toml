@@ -14,6 +14,7 @@ dependencies=[
     "astroquery",
     "bokeh < 3",
     "emcee",
+    "importlib-metadata",
     "kepler.py",
     "numpy >= 1.7",
     "pygtc",
