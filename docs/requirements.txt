@@ -1,11 +1,6 @@
-sphinx<7
-pandoc
-jupyter
 numpy
-setuptools>=40.6.0
-setuptools_scm
-sphinx-autoapi
 scipy
 VBBinaryLensing
 astropy
 matplotlib
+sphinx_rtd_theme
