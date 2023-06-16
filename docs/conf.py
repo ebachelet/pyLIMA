@@ -11,8 +11,8 @@ import sys
 
 
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('.'))
-
+sys.path.insert(0, os.path.abspath('../pyLIMA/'))
+sys.path.insert(0, os.path.abspath('./pyLIMA/'))
 
 project = 'pyLIMA'
 copyright = '2023, Etienne Bachelet & Friends'
