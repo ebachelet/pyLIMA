@@ -11,7 +11,7 @@ import sys
 
 
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../pyLIMA/'))
+sys.path.insert(0, os.path.abspath('.'))
 
 
 project = 'pyLIMA'
@@ -31,11 +31,10 @@ extensions = [
 
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store','*/test_*.py']
-autoapi_dirs = ['../pyLIMA', './source']
+exclude_patterns = ['_build', '*/test_*.py']
 root_doc = 'index'
 master_doc = 'index'
-autoapi_add_toctree_entry = False
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
