@@ -1,3 +1,9 @@
 from importlib.metadata import version
 
-__version__ = version('pyLIMA')
+try:
+
+    __version__ = version('pyLIMA')
+
+except ImportError:
+
+    pass
