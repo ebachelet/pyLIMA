@@ -34,6 +34,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store','*/test_*.py']
 autoapi_dirs = ['../pyLIMA', './source']
 root_doc = 'index'
+master_doc = 'index'
 autoapi_add_toctree_entry = False
 
 # -- Options for HTML output -------------------------------------------------
