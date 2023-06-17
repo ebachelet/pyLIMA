@@ -995,13 +995,8 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
 
         if tel.lightcurve_flux is not None:
 
-            model = microlensing_model.compute_the_microlensing_model(tel,
-                                                                      pyLIMA_parameters)
-
-            # magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
-            #            np.log10(
-            #                model['photometry'])
             magni = microlensing_model.model_magnification(tel, pyLIMA_parameters)
+            microlensing_model.derive_telescope_flux(tel, pyLIMA_parameters, magni)
 
             f_source = getattr(pyLIMA_parameters, 'fsource_' + tel.name)
             f_blend = getattr(pyLIMA_parameters, 'fblend_' + tel.name)
@@ -1107,13 +1102,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
             model_flux = reference_source * ref_magnification[ref_index][
                 time_mask] + reference_blend
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
-                        np.log10(
-                            model_flux)
-
-            delta_mag = -2.5 * np.log10(
-                reference_source + reference_blend) + 2.5 * np.log10(
-                ref_fluxes[ref_index][0] + ref_fluxes[ref_index][1])
-            # magnitude += delta_mag
+                        np.log10(model_flux)
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
