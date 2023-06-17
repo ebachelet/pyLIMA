@@ -13,7 +13,6 @@ class FSPLmodel(MLmodel):
                          blend_flux_parameter=blend_flux_parameter,
                          fancy_parameters=fancy_parameters)
 
-    @property
     def model_type(self):
 
         return 'FSPL'

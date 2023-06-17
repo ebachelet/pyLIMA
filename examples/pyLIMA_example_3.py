@@ -38,7 +38,7 @@ your_event.name = 'My simulated event'
 # cycle.
 CTIO_I = simulator.simulate_a_telescope(name='CTIO_I', time_start=2457365.5,
                                         time_end=2457965.5, sampling=4,
-                                        location='Earth', filter='I',
+                                        location='Earth', camera_filter='I',
                                         uniform_sampling=True, astrometry=False)
 
 ### Similar to tutorial 1, we need to associate this telescopee with the event we
@@ -114,7 +114,7 @@ your_event2.name = 'My simulated event 2'
 
 SAAO_I = simulator.simulate_a_telescope(name='SAAO_I', time_start=2457575.5,
                                         time_end=2457625.5, sampling=2.5,
-                                        location='Earth', filter='I',
+                                        location='Earth', camera_filter='I',
                                         uniform_sampling=False, altitude=400,
                                         longitude=20.659279,
                                         latitude=-32.3959,
@@ -124,7 +124,7 @@ SAAO_I = simulator.simulate_a_telescope(name='SAAO_I', time_start=2457575.5,
 
 SSO_I = simulator.simulate_a_telescope('SSO_I', time_start=2457535.5,
                                        time_end=2457645.5, sampling=2.5,
-                                       location='Earth', filter='I',
+                                       location='Earth', camera_filter='I',
                                        uniform_sampling=False, altitude=1165,
                                        longitude=149.0685,
                                        latitude=-31.2749,
@@ -134,7 +134,7 @@ SSO_I = simulator.simulate_a_telescope('SSO_I', time_start=2457535.5,
 
 CTIO_I = simulator.simulate_a_telescope('CTIO_I', time_start=2457365.5,
                                         time_end=2457965.5, sampling=4.5,
-                                        location='Earth', filter='I',
+                                        location='Earth', camera_filter='I',
                                         uniform_sampling=False, altitude=1000,
                                         longitude=-109.285399,
                                         latitude=-27.130,
@@ -144,7 +144,7 @@ CTIO_I = simulator.simulate_a_telescope('CTIO_I', time_start=2457365.5,
 
 CTIO_V = simulator.simulate_a_telescope('CTIO_V', time_start=2457365.5,
                                         time_end=2457965.5, sampling=24.5,
-                                        location='Earth', filter='V',
+                                        location='Earth', camera_filter='V',
                                         uniform_sampling=False, altitude=1000,
                                         longitude=-109.285399,
                                         latitude=-27.130,
