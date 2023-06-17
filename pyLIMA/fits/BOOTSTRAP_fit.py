@@ -2,10 +2,11 @@ import copy
 import time as python_time
 
 import numpy as np
-from pyLIMA import event
 from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.models import generate_model
 from tqdm import tqdm
+
+from pyLIMA import event
 
 
 class BOOTSTRAPfit(MLfit):

@@ -44,7 +44,7 @@ def test_astrometric_position_of_the_source():
 
     position_ra, position_dec = \
         astrometric_positions.astrometric_positions_of_the_source(
-        telescope, pyparams, time_ref=None)
+            telescope, pyparams, time_ref=None)
 
     assert np.allclose(position_ra, np.array([182.4999991, 182.49999831]))
     assert np.allclose(position_dec, np.array([10.10999957, 10.11000041]))
@@ -76,8 +76,8 @@ def test_astrometric_position_of_the_source():
     time_ref = 2459800
     position_ra, position_dec = \
         astrometric_positions.astrometric_positions_of_the_source(
-        telescope, pyparams,
-        time_ref=time_ref)
+            telescope, pyparams,
+            time_ref=time_ref)
 
     assert np.allclose(position_ra, np.array([12.06689281, 11.33070522]))
     assert np.allclose(position_dec, np.array([2.48459055, 4.97002628]))

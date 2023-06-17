@@ -17,6 +17,7 @@ JPL_HORIZONS_ID = {
 
 }
 
+
 def horizons_obscodes(observatory):
     """
     Transform observatory names to JPL int codes

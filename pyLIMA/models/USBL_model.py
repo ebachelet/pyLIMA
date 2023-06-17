@@ -126,4 +126,3 @@ class USBLmodel(MLmodel):
             y_center = 0
 
         return x_center, y_center
-

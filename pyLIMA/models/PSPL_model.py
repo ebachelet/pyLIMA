@@ -113,7 +113,7 @@ class PSPLmodel(MLmodel):
                     self, telescope,
                     pyLIMA_parameters)
             amplification = self.model_magnification(telescope, pyLIMA_parameters,
-                                                     return_impact_parameter=True)
+                                                     return_impact_parameter=False)
 
         return magnification_jacobian, amplification
 

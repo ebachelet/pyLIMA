@@ -166,7 +166,6 @@ def parameters_boundaries(event, model_dictionnary):
     bounds = []
     telescopes_names = [i.name for i in event.telescopes]
 
-
     for key in model_dictionnary.keys():
 
         arguments = []
@@ -185,7 +184,7 @@ def parameters_boundaries(event, model_dictionnary):
                     np.where(key.split('fsource_')[1] == np.array(telescopes_names))[0][
                         0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
-                arguments=[flux]
+                arguments = [flux]
                 function_name = key.split('_')[0] + '_boundaries'
 
             if ('fblend_' in key):
@@ -193,7 +192,7 @@ def parameters_boundaries(event, model_dictionnary):
                     np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][
                         0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
-                arguments=[flux]
+                arguments = [flux]
 
                 function_name = key.split('_')[0] + '_boundaries'
 
@@ -262,7 +261,6 @@ def parameters_boundaries(event, model_dictionnary):
                 else:
 
                     function_name = 'position_pixel_boundaries'
-
 
             bounds.append(eval(function_name)(*arguments))
 

@@ -26,7 +26,6 @@ def test_magnification_FSPL_Yoo():
 
 def test_magnification_PSPL_Jacobian():
     from pyLIMA.magnification import magnification_Jacobian
-    import pyLIMA.event
     import pyLIMA.telescopes
     from pyLIMA.models import PSPLmodel
 
@@ -55,7 +54,6 @@ def test_magnification_PSPL_Jacobian():
 
 def test_magnification_FSPL_Jacobian():
     from pyLIMA.magnification import magnification_Jacobian
-    import pyLIMA.event
     import pyLIMA.telescopes
     from pyLIMA.models import FSPLmodel
 
@@ -81,7 +79,6 @@ def test_magnification_FSPL_Jacobian():
 
 def test_magnification_numerical_Jacobian():
     from pyLIMA.magnification import magnification_Jacobian
-    import pyLIMA.event
     import pyLIMA.telescopes
     from pyLIMA.models import FSPLmodel
 

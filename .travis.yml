@@ -1,30 +1,30 @@
 language: python
-cache : pip
+cache: pip
 python:
-    - 3.6
-    - 3.7
+  - 3.6
+  - 3.7
 
 
 matrix:
-    include:
-        #MacOs currently not supported by TRAVIS
-        - name: "Python 3.7.4 on Windows"
-          os: windows           # Windows 10.0.17134 N/A Build 17134
-          language: shell     
-          before_install:
-           - choco install python --version 3.7.4
-           - python --version
-           - python -m pip install --upgrade pip
-           - pip3 install --upgrade pytest
-           - pip3 install codecov
-           - pip3 install -r requirements.txt
-          env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
-          after_success: python 3 -m codecov
+  include:
+    #MacOs currently not supported by TRAVIS
+    - name: "Python 3.7.4 on Windows"
+      os: windows           # Windows 10.0.17134 N/A Build 17134
+      language: shell
+      before_install:
+        - choco install python --version 3.7.4
+        - python --version
+        - python -m pip install --upgrade pip
+        - pip3 install --upgrade pytest
+        - pip3 install codecov
+        - pip3 install -r requirements.txt
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      after_success: python 3 -m codecov
 before_install:
-   - pip install -r requirements.txt
+  - pip install -r requirements.txt
 
 script:
-    coverage run --source=. setup.py tests
+  coverage run --source=. setup.py tests
 
 after_success:
-    coveralls
+  coveralls

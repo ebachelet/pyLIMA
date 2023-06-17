@@ -1,4 +1,5 @@
 import sys
+
 import numpy as np
 
 
@@ -24,6 +25,7 @@ class Event(object):
     survey : str, the survey associated to the event, to align plot to
 
     """
+
     def __init__(self, ra=266.416792, dec=-29.007806):
 
         self.kind = 'Microlensing'

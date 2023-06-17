@@ -453,27 +453,26 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         North = np.dot(rota_mat, North)
 
         plt.annotate('',
-                             xy=(origin_t0par[0] + east[0], origin_t0par[1] + east[1]),
-                             xytext=(origin_t0par[0], origin_t0par[1]),
-                             arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
+                     xy=(origin_t0par[0] + east[0], origin_t0par[1] + east[1]),
+                     xytext=(origin_t0par[0], origin_t0par[1]),
+                     arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
         plt.annotate('E', xy=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
-                         xytext=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
-                         weight='bold', alpha=0.5, ha='center', va='center',
-                         rotation=np.rad2deg(plot_angle))
+                     xytext=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
+                     weight='bold', alpha=0.5, ha='center', va='center',
+                     rotation=np.rad2deg(plot_angle))
 
         plt.annotate('', xy=(
             origin_t0par[0] + north[0], origin_t0par[1] + north[1]),
-                             xytext=(origin_t0par[0], origin_t0par[1]),
-                             arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
+                     xytext=(origin_t0par[0], origin_t0par[1]),
+                     arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
         plt.annotate('N',
-                         xy=(origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
-                         xytext=(
-                             origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
-                         weight='bold', alpha=0.5, ha='center', va='center',
-                         rotation=np.rad2deg(plot_angle))
+                     xy=(origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
+                     xytext=(
+                         origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
+                     weight='bold', alpha=0.5, ha='center', va='center',
+                     rotation=np.rad2deg(plot_angle))
 
         if bokeh_geometry is not None:
-
             bokeh_geometry.add_layout(
                 Arrow(end=OpenHead(line_color="grey", line_width=1),
                       x_start=origin_t0par[0], y_start=origin_t0par[1],
@@ -514,7 +513,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     figure_axes.axis([-2, 2, -2, 2])
     # figure_axes.axis('scaled')
-    #title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
+    # title = microlensing_model.event.name + ' : ' + microlensing_model.model_type
     # figure_trajectory.suptitle(title, fontsize=30 * fig_size[0] / len(title))
 
     return figure_trajectory, bokeh_geometry
@@ -601,7 +600,7 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
                             bokeh_plots=[bokeh_main, bokeh_res_x, bokeh_res_y])
 
     ax_main.legend(shadow=True, fontsize='large', bbox_to_anchor=(1.05, 0.25),
-                            loc="center left", borderaxespad=0, ncol=2)
+                   loc="center left", borderaxespad=0, ncol=2)
 
     ax_main.invert_xaxis()
     ax_res_x.set_xticklabels([])
@@ -831,7 +830,7 @@ def plot_astrometric_data(figure_ax, microlensing_model, bokeh_plot=None):
             err_dec = tel.astrometry['err_dec'].value
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
-            #marker = str(MARKER_SYMBOLS[0][ind])
+            # marker = str(MARKER_SYMBOLS[0][ind])
 
             figure_ax.errorbar(delta_ra, delta_dec, xerr=err_ra, yerr=err_dec, fmt='.',
                                ecolor=color, color=color,
@@ -930,13 +929,13 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
     mat_figure_axes[0].invert_yaxis()
     mat_figure_axes[1].invert_yaxis()
     mat_figure_axes[0].legend(shadow=True, fontsize='large',
-                                       bbox_to_anchor=(0, 1.02, 1, 0.2),
-                                       loc="lower left",
-                                       mode="expand", borderaxespad=0, ncol=3)
+                              bbox_to_anchor=(0, 1.02, 1, 0.2),
+                              loc="lower left",
+                              mode="expand", borderaxespad=0, ncol=3)
 
     try:
         bokeh_lightcurves.legend.click_policy = "mute"
-        #legend = bokeh_lightcurves.legend[0]
+        # legend = bokeh_lightcurves.legend[0]
 
     except AttributeError:
 
@@ -999,9 +998,11 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
             model = microlensing_model.compute_the_microlensing_model(tel,
                                                                       pyLIMA_parameters)
 
-            magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
-                        np.log10(
-                            model['photometry'])
+            # magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
+            #            np.log10(
+            #                model['photometry'])
+            magni = microlensing_model.model_magnification(tel, pyLIMA_parameters)
+
             f_source = getattr(pyLIMA_parameters, 'fsource_' + tel.name)
             f_blend = getattr(pyLIMA_parameters, 'fblend_' + tel.name)
 
@@ -1010,9 +1011,12 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
                 ref_blend = f_blend
                 index += 1
 
-            delta_mag = -2.5 * np.log10(f_source + f_blend) + 2.5 * np.log10(
-                ref_source + ref_blend)
-            magnitude -= delta_mag
+            magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
+                        np.log10(ref_source * magni + ref_blend)
+
+            # delta_mag = -2.5 * np.log10(f_source + f_blend) + 2.5 * np.log10(
+            ##     ref_source + ref_blend)
+            # magnitude -= delta_mag
 
             name = tel.name
 
@@ -1098,8 +1102,10 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
                                           'time'].value == time)[0][0]
                 time_mask.append(time_index)
 
-            model_flux = ref_fluxes[ref_index][0] * ref_magnification[ref_index][
-                time_mask] + ref_fluxes[ref_index][1]
+            # model_flux = ref_fluxes[ref_index][0] * ref_magnification[ref_index][
+            #    time_mask] + ref_fluxes[ref_index][1]
+            model_flux = reference_source * ref_magnification[ref_index][
+                time_mask] + reference_blend
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
                         np.log10(
                             model_flux)
@@ -1107,7 +1113,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
             delta_mag = -2.5 * np.log10(
                 reference_source + reference_blend) + 2.5 * np.log10(
                 ref_fluxes[ref_index][0] + ref_fluxes[ref_index][1])
-            magnitude += delta_mag
+            # magnitude += delta_mag
 
             color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
@@ -1233,7 +1239,7 @@ def plot_parameters_table(samples, parameters_names=None, bokeh_plot=None):
 
             last_color = 'dodgerblue'
 
-    #column_labels = ['Parameters', 'Values']
+    # column_labels = ['Parameters', 'Values']
 
     fig_size = [10, 7.5]
     figure_table = plt.figure(figsize=(fig_size[0], fig_size[1]), dpi=75)

@@ -91,21 +91,20 @@ def test_all_parameters_boundaries():
                                 (0.0, 10.0), (0.0, 1.0), (-1, 1), (-10.0, 10.0),
                                 (-10.0, 10.0), (-10.0, 10.0)])
 
-def test_parameters_boundaries():
 
+def test_parameters_boundaries():
     event = _create_event()
     dico = {'t0': 0, 'delta_t0': 1, 'piEN': 2}
 
-    limits = parameters_boundaries.parameters_boundaries(event,dico)
-    assert np.allclose(limits,[(2400000, 2500000), (-150, 150), (-1.0, 1.0)])
+    limits = parameters_boundaries.parameters_boundaries(event, dico)
+    assert np.allclose(limits, [(2400000, 2500000), (-150, 150), (-1.0, 1.0)])
+
 
 def test_default_priors():
-
-    dico = {'t0': [0,[0,10]], 'delta_t0': [1,[-1,1]], 'piEN': [2,[-5,5]]}
+    dico = {'t0': [0, [0, 10]], 'delta_t0': [1, [-1, 1]], 'piEN': [2, [-5, 5]]}
 
     priors = parameters_priors.default_parameters_priors(dico)
 
-    assert np.allclose(priors['t0'].pdf(5),0.1)
-    assert np.allclose(priors['delta_t0'].pdf(0.5),0.5)
-    assert np.allclose(priors['piEN'].pdf(0.0),0.1)
-
+    assert np.allclose(priors['t0'].pdf(5), 0.1)
+    assert np.allclose(priors['delta_t0'].pdf(0.5), 0.5)
+    assert np.allclose(priors['piEN'].pdf(0.0), 0.1)

@@ -8,8 +8,8 @@ def test_find_2_lenses_caustics_and_critical_curves():
 
     regime, caustics, crit_curve = \
         binary_caustics.find_2_lenses_caustics_and_critical_curves(
-        separation, mass_ratio,
-        resolution=5)
+            separation, mass_ratio,
+            resolution=5)
     assert regime == 'close'
 
     assert np.allclose(caustics[0], np.array(
@@ -92,8 +92,8 @@ def test_sort_2lenses_wide_caustics():
 
     central_caustic, wide_caustic, central_cc, wide_cc = \
         binary_caustics.sort_2lenses_wide_caustics(
-        caustic_points,
-        critical_curves_points)
+            caustic_points,
+            critical_curves_points)
 
     assert np.allclose(central_caustic, np.array([0.4 + 0.4j, 0. + 1.j]))
     assert np.allclose(wide_caustic, np.array([2.5 - 3.8j, 0. + 1.j]))

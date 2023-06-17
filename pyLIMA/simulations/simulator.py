@@ -2,10 +2,11 @@ import astropy
 import numpy as np
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun, get_moon
 from astropy.time import Time
-from pyLIMA import event
-from pyLIMA import telescopes
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.toolbox import brightness_transformation
+
+from pyLIMA import event
+from pyLIMA import telescopes
 
 
 def simulate_a_microlensing_event(name='Microlensing pyLIMA simulation', ra=270,
@@ -33,7 +34,7 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
                          uniform_sampling=False, timestamps=[], location='Earth',
                          spacecraft_name=None,
                          spacecraft_positions={'astrometry': [], 'photometry': []},
-                         camera_filter='I',  altitude=0, longitude=0, latitude=0,
+                         camera_filter='I', altitude=0, longitude=0, latitude=0,
                          bad_weather_percentage=0.0,
                          minimum_alt=20, moon_windows_avoidance=20,
                          maximum_moon_illumination=100.0, photometry=True,
@@ -103,8 +104,8 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
                 np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
                          & (Sun.alt < -18 * astropy.units.deg)
                          & (
-                                     Moon_separation > moon_windows_avoidance *
-                                     astropy.units.deg)
+                                 Moon_separation > moon_windows_avoidance *
+                                 astropy.units.deg)
                          & (Moon_illumination < maximum_moon_illumination)
                          )[0]
 
@@ -127,7 +128,6 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
     else:
 
         lightcurveflux = None
-
 
     if astrometry:
 

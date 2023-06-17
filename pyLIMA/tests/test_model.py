@@ -1,6 +1,6 @@
 import unittest.mock as mock
-import numpy as np
 
+import numpy as np
 from pyLIMA.models import DFSPLmodel, DSPLmodel, FSBLmodel, FSPLmodel, FSPLargemodel, \
     PSBLmodel, PSPLmodel, USBLmodel
 from pyLIMA.toolbox import time_series
@@ -59,7 +59,7 @@ def test_initialize_model():
                                                     (0.1, 500), (5e-05, 0.05),
                                                     (0.0, 200.0), (-200.0, 200.0)]
     assert Model.origin == ['center_of_mass', [0, 0]]
-    assert Model.model_type == 'FSPL'
+    assert Model.model_type() == 'FSPL'
 
 
 def test_model_magnification():
@@ -322,6 +322,7 @@ def test_PSPL():
     assert np.allclose(magi, [75.14196484, 2.13609124])
 
     jacobi, magi = Model.model_magnification_Jacobian(event.telescopes[0], pym)
+
     assert np.allclose(jacobi,
                        np.array([[-1.46870667e+02, -8.48324973e+02, 1.93250878e+00],
                                  [9.08176526e-02, -1.34503272e-02, 4.66037954e-02]]))

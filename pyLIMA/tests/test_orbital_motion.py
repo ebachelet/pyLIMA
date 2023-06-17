@@ -85,12 +85,12 @@ def test_orbital_parameters_from_position_and_velocities():
     v_radial = 1.45
     t0_om = 2459855
 
-    outputs = orbital_motion.orbital_motion_3D\
+    outputs = orbital_motion.orbital_motion_3D \
         .orbital_parameters_from_position_and_velocities(
         separation_0, r_s, a_s, v_para, v_perp, v_radial, t0_om)
     assert np.allclose(outputs[:-3], (
-    0.2622029190714234, 1.8293736686171367, -1.5463618954109095, 2.1002142747824566,
-    0.7585218053347751, 0.7979704741126448, 2.3559427181074657, 2459575.707195252))
+        0.2622029190714234, 1.8293736686171367, -1.5463618954109095, 2.1002142747824566,
+        0.7585218053347751, 0.7979704741126448, 2.3559427181074657, 2459575.707195252))
 
     assert np.allclose(outputs[-3], [-0.04266437, 0.25322504, -0.96646616])
     assert np.allclose(outputs[-2], [0.96715238, 0.25309756, 0.02361975])
@@ -114,8 +114,8 @@ def test_state_orbital_elements():
     assert np.allclose(outputs[2], [1.25, 0., 1.225])
     assert np.allclose(outputs[3], [0.3125, -0.4125, 1.8125])
     assert np.allclose(outputs[4:], (
-    1.7501785623187138, 1.225, 2.1002142747824566, 5.329996919004271,
-    0.7585218053347751))
+        1.7501785623187138, 1.225, 2.1002142747824566, 5.329996919004271,
+        0.7585218053347751))
 
 
 def test_eccentric_anomaly_function():

@@ -39,8 +39,7 @@ def test_event():
                        np.array([[-6.68645090e-03, -6.11752451e+00],
                                  [-4.33482159e-03, -3.26412162e+01]]))
 
-
     assert ev.total_number_of_data_points() == 4
 
-    assert np.allclose(ev.North, [0.3213938 , 0.11697778, 0.93969262])
-    assert np.allclose(ev.East, [-0.34202014,  0.93969262,  0.        ])
+    assert np.allclose(ev.North, [0.3213938, 0.11697778, 0.93969262])
+    assert np.allclose(ev.East, [-0.34202014, 0.93969262, 0.])

@@ -107,7 +107,6 @@ def _u0_to_u_center(x, x_center=0, y_center=0):
     return u_center
 
 
-
 standard_fancy_parameters = {'log_tE': 'tE', 'log_rho': 'rho',
                              'log_separation': 'separation',
                              'log_mass_ratio': 'mass_ratio'}

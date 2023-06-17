@@ -9,7 +9,6 @@
 import os
 import sys
 
-
 sys.path.insert(0, os.path.abspath('../'))
 
 project = 'pyLIMA'
@@ -25,18 +24,16 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    ]
-
+]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', '*/test_*.py']
 root_doc = 'index'
 master_doc = 'index'
 
-
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static','source/_static']
+html_static_path = ['_static', 'source/_static']
 html_logo = "source/_static/pyLIMA_logo.png"

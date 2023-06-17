@@ -15,6 +15,7 @@ class MINIMIZEfit(LMfit):
                          loss_function=loss_function)
 
         self.guess = []
+
     def fit_type(self):
 
         return "Minimize fit"

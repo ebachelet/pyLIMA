@@ -12,13 +12,14 @@ parametrization.
 ### First import the required libraries as before.
 import matplotlib.pyplot as plt
 import numpy as np
-from pyLIMA import event
-from pyLIMA import telescopes
-from pyLIMA.models import FSPL_model
-from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.fits import TRF_fit
+from pyLIMA.models import FSPL_model
 ### Import fancy_parameters. This will allow us to change the definitions as required.
 from pyLIMA.models import pyLIMA_fancy_parameters
+from pyLIMA.outputs import pyLIMA_plots
+
+from pyLIMA import event
+from pyLIMA import telescopes
 
 ### fancy_parameters already provides some commonly used options, for example:
 pyLIMA_fancy_parameters.standard_fancy_parameters
@@ -76,7 +77,6 @@ your_event.telescopes[1].ld_gamma = 0.5
 ### For this particular transformation, i.e. from tE to log(tE), pyLIMA already
 # provides the necessary functions to convert back and forth:
 my_pars = {'log_tE': 'tE'}
-
 
 fspl = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars)
 

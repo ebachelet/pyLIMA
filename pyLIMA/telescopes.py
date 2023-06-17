@@ -57,6 +57,7 @@ class Telescope(object):
     ld_a1 : float, the classic linear  limb darkening coefficient
     ld_a2 : float, the classic sqrt  limb darkening coefficient
     """
+
     def __init__(self, name='NDG', camera_filter='I', pixel_scale=1, light_curve=None,
                  light_curve_names=None, light_curve_units=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None,
@@ -68,7 +69,7 @@ class Telescope(object):
 
         self.name = name
         self.filter = camera_filter
-        self.pixel_scale = pixel_scale #mas/pix
+        self.pixel_scale = pixel_scale  # mas/pix
         self.lightcurve_magnitude = None
         self.lightcurve_flux = None
         self.astrometry = None

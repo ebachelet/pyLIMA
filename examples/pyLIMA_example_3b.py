@@ -8,12 +8,12 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 
 ### Import the required libraries.
 import matplotlib.pyplot as plt
-
-from pyLIMA import event
 from pyLIMA.models import PSPL_model
 from pyLIMA.outputs import pyLIMA_plots
 ### Import the simulator to be used for generating the simulated light curve
 from pyLIMA.simulations import simulator
+
+from pyLIMA import event
 
 ### Create a new EVENT object and give it a name.
 ### You can also set the coordinates for an event.

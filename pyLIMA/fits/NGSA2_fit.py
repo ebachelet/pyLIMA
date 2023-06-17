@@ -1,4 +1,4 @@
-#import time as python_time
+# import time as python_time
 import numpy as np
 
 from pyLIMA.fits.ML_fit import MLfit
@@ -58,7 +58,7 @@ class NGSA2fit(MLfit):
 
     def fit(self, computational_pool=None):
 
-        #starting_time = python_time.time()
+        # starting_time = python_time.time()
 
         from pymoo.algorithms.moo.nsga2 import NSGA2
 
@@ -90,13 +90,13 @@ class NGSA2fit(MLfit):
                        verbose=True)
 
         print(res)
-       # X = res.X
-       # F = res.F
-       # n_evals = np.array([e.evaluator.n_eval for e in res.history])
-       # opt = np.array([e.opt[0].F for e in res.history])
+        # X = res.X
+        # F = res.F
+        # n_evals = np.array([e.evaluator.n_eval for e in res.history])
+        # opt = np.array([e.opt[0].F for e in res.history])
 
         # mask =np.argmin((F[:,0]/F[:,0].max())**2+(F[:,1]/F[:,1].max())**2)
-        #computation_time = python_time.time() - start_time
+        # computation_time = python_time.time() - start_time
 
         ###NOT COMPLETE
         breakpoint()

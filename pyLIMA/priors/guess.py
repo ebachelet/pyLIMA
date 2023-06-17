@@ -31,8 +31,8 @@ def initial_guess_PSPL(event):
 
                 # only the best photometry
                 good_photometry_indexes = \
-                np.where((lightcurve_magnitude['err_mag'].value <
-                          max(0.1, mean_error_magnitude)))[0]
+                    np.where((lightcurve_magnitude['err_mag'].value <
+                              max(0.1, mean_error_magnitude)))[0]
                 lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
 
                 lightcurve_bis['time'] = lightcurve_bis['time'][
@@ -177,7 +177,7 @@ def initial_guess_PSPL(event):
     # Method 2 : flux(t_E) = fs_guess * (uo^+3)/[(uo^2+1)^0.5*(uo^2+5)^0.5]
 
     amplification_tE = (uo_guess ** 2 + 3) / (
-                (uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
+            (uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
     flux_tE = fs_guess * amplification_tE
 
     index_tE_plus = np.where((flux < flux_tE) & (time > to))[0]
@@ -200,9 +200,9 @@ def initial_guess_PSPL(event):
     # approximation ot tE.
 
     index_tE_baseline_plus = \
-    np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+        np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
     index_tE_baseline_moins = \
-    np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+        np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
 
     if len(index_tE_baseline_plus) != 0:
         tEPlus = time[index_tE_baseline_plus[0]] - to_guess

@@ -3,24 +3,24 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name="pyLIMA"
+name = "pyLIMA"
 description = "Microlsening analysis package."
-version="1.9"
-keywords=['Microlsening analysis package']
+version = "1.9"
+keywords = ['Microlsening analysis package']
 authors = [
-    {name = "Etienne Bachelet", email = "etibachelet@gmail.com"},
+    { name = "Etienne Bachelet", email = "etibachelet@gmail.com" },
 ]
-license = {text = "GPL-3.0"}
-requires-python=">=3.6,<4"
+license = { text = "GPL-3.0" }
+requires-python = ">=3.6,<4"
 readme = "README.md"
-classifiers=[
+classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     'Programming Language :: Python :: 3',
 ]
-dependencies=[
+dependencies = [
     "astropy",
     "astroquery",
     "bokeh < 3",
@@ -33,7 +33,6 @@ dependencies=[
     "scipy >= 1.0",
     "tqdm >= 4.0",
     "VBBinaryLensing>=3.6",
-
 ]
 
 [project.urls]

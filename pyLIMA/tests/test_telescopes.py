@@ -112,12 +112,11 @@ def test_compute_parallax():
 
     assert np.allclose(delta_pos, [np.array([[-1.47564979e-04, -5.96912587e+00],
                                              [-7.86600785e-05, -1.76877826e+01]]),
-                                   np.array([[-1.47564979e-04,-5.96912587e+00],
+                                   np.array([[-1.47564979e-04, -5.96912587e+00],
                                              [-7.86600785e-05, -1.76877826e+01]])])
 
 
 def test_define_limb_darkening_coefficients():
-
     telo = simulate_telescope()
 
     telo.ld_gamma = 0.25
@@ -135,4 +134,3 @@ def test_define_limb_darkening_coefficients():
 
     assert np.allclose(telo.ld_gamma, 0.21910604732690622)
     assert np.allclose(telo.ld_sigma, 0.8203330411919368)
-

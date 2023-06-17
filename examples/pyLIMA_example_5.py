@@ -8,18 +8,19 @@ The event is OB150966 and the relevant publication is:
 Please take some time to familiarize yourself with the pyLIMA documentation.
 '''
 
+import multiprocessing as mul
+
 import matplotlib.pyplot as plt
 ### First import the required libraries
 import numpy as np
-import multiprocessing as mul
+from pyLIMA.fits import DE_fit
+from pyLIMA.fits import TRF_fit
+from pyLIMA.models import PSPL_model
+from pyLIMA.models import USBL_model, fancy_parameters
+from pyLIMA.outputs import pyLIMA_plots
 
 from pyLIMA import event
 from pyLIMA import telescopes
-from pyLIMA.outputs import pyLIMA_plots
-from pyLIMA.models import PSPL_model
-from pyLIMA.fits import TRF_fit
-from pyLIMA.fits import DE_fit
-from pyLIMA.models import USBL_model, fancy_parameters
 
 ### Create a new EVENT object and give it a name.
 # Here RA and DEC matter (because the event has a strong parallax signal) !!!

@@ -57,6 +57,7 @@ class FSPLmodel(MLmodel):
         """
         [dA(t)/dt0,dA(t)/du0,dA(t)/dtE,dA(t)/drho]
         """
+
         if self.Jacobian_flag == 'Analytical':
 
             magnification_jacobian = magnification_Jacobian.magnification_FSPL_Jacobian(

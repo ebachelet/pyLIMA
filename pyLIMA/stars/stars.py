@@ -105,6 +105,6 @@ class Star(object):
                                                        self.turbulent_velocity)
 
         gamma = 2 * linear_limb_darkening_coefficient / (
-                    3 - linear_limb_darkening_coefficient)
+                3 - linear_limb_darkening_coefficient)
 
         return gamma

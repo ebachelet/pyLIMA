@@ -1,6 +1,7 @@
 import numpy as np
-from pyLIMA import telescopes
 from pyLIMA.parallax import astropy_ephemerides, JPL_ephemerides, parallax
+
+from pyLIMA import telescopes
 
 
 def test_astropy_ephemerides():
@@ -184,4 +185,3 @@ def test_terrestrial_parallax():
                                          2.38834620e-06],
                                         [2.99339070e-05, -3.02898120e-05,
                                          2.38834620e-06]]))
-

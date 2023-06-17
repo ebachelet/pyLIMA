@@ -188,8 +188,8 @@ def test_simulate_lightcurve_flux():
     pym = Model.compute_pyLIMA_parameters(params)
 
     simulator.simulate_lightcurve_flux(Model, pym, add_noise=False)
-    assert np.allclose( telo.lightcurve_flux['time'].value,
-                        [2458679.  , 2458680.23, 2458681.46])
+    assert np.allclose(telo.lightcurve_flux['time'].value,
+                       [2458679., 2458680.23, 2458681.46])
 
     assert np.allclose(telo.lightcurve_flux['flux'].value,
                        [55840.55482067, 55849.73925348, 55837.17788889])
@@ -202,10 +202,11 @@ def test_simulate_lightcurve_flux():
                        [2458679., 2458680.23, 2458681.46])
 
     assert np.all(telo.lightcurve_flux['flux'].value !=
-                       [55840.55482067, 55849.73925348, 55837.17788889])
+                  [55840.55482067, 55849.73925348, 55837.17788889])
 
     assert np.all(telo.lightcurve_flux['err_flux'].value !=
-                       [236.30606175, 236.32549429, 236.29891639])
+                  [236.30606175, 236.32549429, 236.29891639])
+
 
 def test_simulate_astrometry():
     from pyLIMA.models import PSPLmodel
@@ -236,7 +237,7 @@ def test_simulate_astrometry():
                        [2458679., 2458680.23, 2458681.46])
 
     assert np.allclose(telo.astrometry['ra'].value,
-                       [75.9629745 , 75.96297447, 75.96297443])
+                       [75.9629745, 75.96297447, 75.96297443])
 
     assert np.allclose(telo.astrometry['err_ra'].value,
                        [0.75962975, 0.75962974, 0.75962974])
@@ -252,16 +253,14 @@ def test_simulate_astrometry():
     assert np.allclose(telo.astrometry['time'].value,
                        [2458679., 2458680.23, 2458681.46])
 
-    assert np.all(telo.astrometry['ra'].value!=
-                       [75.9629745, 75.96297447, 75.96297443])
+    assert np.all(telo.astrometry['ra'].value !=
+                  [75.9629745, 75.96297447, 75.96297443])
 
     assert np.all(telo.astrometry['err_ra'].value !=
-                       [0.75962975, 0.75962974, 0.75962974])
+                  [0.75962975, 0.75962974, 0.75962974])
 
     assert np.all(telo.astrometry['dec'].value !=
-                       [-27.60811665, -27.60811667, -27.60811669])
+                  [-27.60811665, -27.60811667, -27.60811669])
 
     assert np.all(telo.astrometry['err_dec'].value !=
-                       [-0.27608117, -0.27608117, -0.27608117])
-
-
+                  [-0.27608117, -0.27608117, -0.27608117])

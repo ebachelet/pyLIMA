@@ -13,11 +13,11 @@ import matplotlib.pyplot as plt
 ### Import the required libraries.
 import numpy as np
 import scipy.optimize as so
+from pyLIMA.models import FSPL_model
+from pyLIMA.outputs import pyLIMA_plots
 
 from pyLIMA import event
 from pyLIMA import telescopes
-from pyLIMA.models import FSPL_model
-from pyLIMA.outputs import pyLIMA_plots
 
 ### Create a new EVENT object and give it a name.
 your_event = event.Event()
