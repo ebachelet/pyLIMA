@@ -4,15 +4,18 @@ from scipy.optimize._numdiff import approx_derivative
 
 def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
     """
-    The Jacobian of the PSPL magnification
+    The Jacobian of the PSPL magnification, i.e. [dA(t)/dt0, dA(t)/du0,dA(t)/dtE]
 
-    :param object pspl_model: a PSPL model object
-    :param object telescope: a telescope object
-    :param object pyLIMA_parameters: a dictionnary containing the microlensing
-    parameters
+    Parameters
+    ----------
+    pspl_model : object, a PSPL model object
+    telescope : object, a telescope object
+    pyLIMA_parameters : dict, a dictionnary containing the microlensing parameters
 
-    :return: the jacobian of the magnification, the magnification, the impact parameter
-    :rtype: array_like, array_like, array_like
+    Returns
+    -------
+    magnification_jacobian : array, the magnification Jacobian
+    Amplification : array, the magnification associated
     """
     time = telescope.lightcurve_flux['time'].value
 
@@ -43,15 +46,18 @@ def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
 
 def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):
     """
-    The Jacobian of the FSPL magnification
+    The Jacobian of the FSPL magnification, i.e. [dA(t)/dt0, dA(t)/du0,dA(t)/dtE,
+    dA(t0/drho]
 
-    :param object fspl_model: a FSPL model object
-    :param object telescope: a telescope object
-    :param object pyLIMA_parameters: a dictionnary containing the microlensing
-    parameters
+    Parameters
+    ----------
+    fspl_model : object, a FSPL model object
+    telescope : object, a telescope object
+    pyLIMA_parameters : dict, a dictionnary containing the microlensing parameters
 
-    :return: the jacobian of the magnification
-    :rtype: array_like
+    Returns
+    -------
+    magnification_jacobian : array, the magnification Jacobian
     """
 
     from pyLIMA.models import PSPL_model
@@ -128,13 +134,15 @@ def magnification_numerical_Jacobian(microlensing_model, telescope, pyLIMA_param
     """
     The Jacobian of the any models, based on scipy approx_fprime
 
-    :param objectmicrolensing_model: a microlensing model object
-    :param object telescope: a telescope object
-    :param object pyLIMA_parameters: a dictionnary containing the microlensing
-    parameters
+    Parameters
+    ----------
+    microlensing_model : object, a microlensing model object
+    telescope : object, a telescope object
+    pyLIMA_parameters : dict, a dictionnary containing the microlensing parameters
 
-    :return: the jacobian of the magnification,
-    :rtype: array_like
+    Returns
+    -------
+    magnification_jacobian_numerical : array, the numerical Jacobian
     """
 
     x = [getattr(pyLIMA_parameters, key) for key in pyLIMA_parameters._fields if key

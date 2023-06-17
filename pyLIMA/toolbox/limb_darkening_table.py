@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Aug 27 16:39:32 2015
-
-@author: ebachelet
-"""
 import collections
 import contextlib
 

@@ -6,13 +6,18 @@ def xy_shifts_to_NE_shifts(xy_shifts, piEN, piEE):
     Transform the x,y positions into the North, East reference,
     i.e. rotate by phi = np.arctan2(piEE,piEN)
 
-    :param array xy_shifts: the x and y positions
-    :param float piEN : the North component of the parallax vector
-    :param float piEE: a list of [string,float] indicating the xallarap model
+    Parameters
+    ----------
+    xy_shifts : array, the x and y positions
+    piEN : float, the North component of the parallax vector
+    piEE : float, a list of [string,float] indicating the xallarap model
 
-    :return: Delta_ra, Delta_dec position in North and East
-    :rtype: tuple, tuple of two array_like
+    Returns
+    -------
+    Detlta_ra : array, the astrometric shift in North
+    Detlta_dec : array, the astrometric shift in East
     """
+
     centroid_x = xy_shifts[0]
     centroid_y = xy_shifts[1]
 
@@ -25,18 +30,20 @@ def xy_shifts_to_NE_shifts(xy_shifts, piEN, piEE):
 
 
 def astrometric_positions_of_the_source(telescope, pyLIMA_parameters, time_ref=None):
-    """ The source astrometric positions without astrometric shifts
-
-        :param object telescope: the telescope object containing astrometric data
-        :param dictionnary pyLIMA_parameters : the dictionnary containing the model
-        parameters
-        :param float time_ref: time of reference chosen, default is t0
-
-        :return: position_ra, position_dec astrometric position in North and East, units
-        depend of the data units (pixels or degrees)
-        :rtype: tuple, tuple of two array_like
     """
+    The source astrometric positions without astrometric shifts
 
+    Parameters
+    ----------
+    telescope : object, the telescope object containing astrometric data
+    pyLIMA_parameters : dict, the dictionnary containing the model parameters
+    time_ref : float, time of reference chosen, default is t0
+
+    Returns
+    -------
+    position_ra : array, the astrometric position in North, degree or pixels
+    position_dec : array, the astrometric position in East, degree or pixels
+    """
     time = telescope.astrometry['time'].value
 
     if time_ref is None:
@@ -72,20 +79,22 @@ def astrometric_positions_of_the_source(telescope, pyLIMA_parameters, time_ref=N
 
 def source_astrometric_positions(telescope, pyLIMA_parameters, shifts=None,
                                  time_ref=None):
-    """ The source astrometric positions with or without astrometric shifts
-
-        :param object telescope: the telescope object containing astrometric data
-        :param dictionnary pyLIMA_parameters : the dictionnary containing the model
-        parameters
-        :param array shifts : arrays of North and East astrometric shifts in mas or
-        pixel
-        :param float time_ref: time of reference chosen, default is t0
-
-        :return: position_ra, position_dec, astrometric position of the source in North
-        and East, units depend of the data units (pixels or degrees)
-        :rtype: tuple, tuple of two array_like
     """
+    The source astrometric positions with or without astrometric shifts
 
+
+    Parameters
+    ----------
+    telescope : object, the telescope object containing astrometric data
+    pyLIMA_parameters : dict, the dictionnary containing the model parameters
+    shifts : array, North and East astrometric shifts in mas or pixel
+    time_ref : float, time of reference chosen, default is t0
+
+    Returns
+    -------
+    position_ra : array, the astrometric position in North, degree or pixels
+    position_dec : array, the astrometric position in East, degree or pixels
+    """
     if shifts is None:
         shifts = np.zeros(2)
 
@@ -107,18 +116,21 @@ def source_astrometric_positions(telescope, pyLIMA_parameters, shifts=None,
 
 
 def lens_astrometric_positions(model, telescope, pyLIMA_parameters, time_ref=None):
-    """ The lens astrometric positions
+    """
+    The lens astrometric positions
 
-        :param object model: the microlensing model object to compute the source
-        trajectory relative to lens
-        :param object telescope: the telescope object containing astrometric data
-        :param dictionnary pyLIMA_parameters : the dictionnary containing the model
-        parameters
-        :param float time_ref: time of reference chosen, default is t0
+    Parameters
+    ----------
+    model : object, the microlensing model object to compute the source trajectory
+     relative to lens
+    telescope : object, the telescope object containing astrometric data
+    pyLIMA_parameters : dict, the dictionnary containing the model parameters
+    time_ref : float, time of reference chosen, default is t0
 
-        :return: position_ra, position_dec astrometric position of the lens in North
-        and East, units depend of the data units (pixels or degrees)
-        :rtype: tuple, tuple of two array_like
+    Returns
+    -------
+    position_ra : array, the astrometric position in North, degree or pixels
+    position_dec : array, the astrometric position in East, degree or pixels
     """
     source_EN = source_astrometric_positions(telescope, pyLIMA_parameters, shifts=None,
                                              time_ref=time_ref)

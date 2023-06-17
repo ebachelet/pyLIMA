@@ -2,35 +2,41 @@ import numpy as np
 
 
 def PSPL_shifts_no_blend(source_x, source_y, theta_E):
-    """ The PSPL astreomtric shifts without blend, see https: // arxiv.org / pdf /
+    """
+    The PSPL astreomtric shifts without blend, see https: // arxiv.org / pdf /
     1705.01767.pdf
 
-           :param array source_x: the positions of the source in x
-           :param array source_y: the positions of the source in y
-           :param float theta_E: the angular Einsteing ring radius in mas
+    Parameters
+    ----------
+    source_x : array, the positions of the source in x
+    source_y: array, the positions of the source in y
+    theta_E : float, the angular Einsteing ring radius in mas
 
-           :return: the astrometric shifts, in x and y
-           :rtype: tuple, tuple of two array_like
+    Returns
+    -------
+    shifts : array,the astrometric shifts, in x and y
     """
-
     shifts = (source_x, source_y) / (source_x ** 2 + source_y ** 2 + 2) * theta_E
 
     return shifts
 
 
 def PSPL_shifts_with_blend(source_x, source_y, theta_E, g_blend):
-    """ The PSPL astreomtric shifts with blend, see https: // arxiv.org / pdf /
+    """
+    The PSPL astreomtric shifts with blend, see https: // arxiv.org / pdf /
     1705.01767.pdf
 
-           :param array source_x: the positions of the source in x
-           :param array source_y: the positions of the source in y
-           :param float theta_E: the angular Einsteing ring radius in mas
-           :param float g_blend: the blend ratio, i.e. f_source/f_blend
+    Parameters
+    ----------
+    source_x : array, the positions of the source in x
+    source_y: array, the positions of the source in y
+    theta_E : float, the angular Einsteing ring radius in mas
+    g_Blend : float, the blend_ratio, i.e. f_blend/f_source
 
-           :return: the astrometric shifts, in x and y
-           :rtype: tuple, tuple of two array_like
+    Returns
+    -------
+    shifts : array,the astrometric shifts, in x and y
     """
-
     u_square = source_x ** 2 + source_y ** 2
     factor = (4 + u_square) ** 0.5
 

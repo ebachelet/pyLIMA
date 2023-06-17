@@ -9,23 +9,25 @@ VBB.RelTol = 0.001
 VBB.minannuli = 2  # stabilizing for rho>>caustics
 
 
-def magnification_FSPL(tau, uo, rho, limb_darkening_coefficient,
+def magnification_FSPL(tau, beta, rho, limb_darkening_coefficient,
                        sqrt_limb_darkening_coefficient=None):
     """
     The VBB FSPL for large source. Faster than the numba implementations...
     Much slower than Yoo et al. but valid for all rho, all u_o
-    :param array_like tau: the tau define for example in
-                               http://adsabs.harvard.edu/abs/2015ApJ...804...20C
-    :param array_like uo: the uo define for example in
-                             http://adsabs.harvard.edu/abs/2015ApJ...804...20C
-    :param float rho: the normalised angular source star radius
-    :param float limb_darkening_coefficient: the linear limb-darkening coefficient (
-    ~gamma)
-    :param float sqrt_limb_darkening_coefficient: the square-root limb-darkening
-    coefficient (~sigma)
 
-    :return: the FSPL magnification A_FSPL(t) for large sources
-    :rtype: array_like
+    Parameters
+    ----------
+    tau : array, (t-t0)/tE
+    beta : array, [u0]*len(t)
+    rho : float, the normalized angular source radius
+    limb_darkening_coefficient: the linear limb-darkening coefficient (a1)
+    sqrt_limb_darkening_coefficient: the square-root limb-darkening
+    coefficient (a2)
+
+    Returns
+    -------
+    magnification_fspl : array, A(t) for FSPL
+    impact_parameter : array, u(t)
     """
     VBB.LoadESPLTable(
         os.path.dirname(VBBinaryLensing.__file__) + '/VBBinaryLensing/data/ESPL.tbl')
@@ -40,7 +42,7 @@ def magnification_FSPL(tau, uo, rho, limb_darkening_coefficient,
     import pyLIMA.magnification.impact_parameter
 
     impact_parameter = pyLIMA.magnification.impact_parameter.impact_parameter(tau,
-                                                                              uo)  #
+                                                                              beta)  #
     # u(t)
 
     for ind, u in enumerate(impact_parameter):
@@ -54,24 +56,21 @@ def magnification_FSPL(tau, uo, rho, limb_darkening_coefficient,
 def magnification_USBL(separation, mass_ratio, x_source, y_source, rho):
     """
     The Uniform Source Binary Lens magnification, based on the work of Valerio Bozza,
-    thanks :)
-    "Microlensing with an advanced contour integration algorithm: Green's theorem to
-    third order, error control,
-    optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper
-    if you used this.
-    http://mnras.oxfordjournals.org/content/408/4/2188
+    thanks :) Please cite the paper if you used this.
+    See http://mnras.oxfordjournals.org/content/408/4/2188
 
-    :param array_like separation: the projected normalised angular distance between
+    Parameters
+    ----------
+    separation : array, the projected normalised angular distance between
     the two bodies
-    :param float mass_ratio: the mass ratio of the two bodies
-    :param array_like x_source: the horizontal positions of the source center in the
-    source plane
-    :param array_like y_source: the vertical positions of the source center in the
-    source plane
-    :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
+    mass_ratio : float, the mass ratio of the two bodies
+    x_source : array, the horizontal positions of the source center in the source plane
+    y_source : array, the vertical positions of the source center in the source plane
+    rho : float, the normalized angular source radius
 
-    :return: the USBL magnification A_USBL(t)
-    :rtype: array_like
+    Returns
+    -------
+    magnification_usbl : array, the USBL magnification
     """
 
     magnification_usbl = []
@@ -88,25 +87,22 @@ def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho,
                        limb_darkening_coefficient):
     """
     The Finite Source Binary Lens magnification, including limb-darkening, based on
-    the work of Valerio Bozza, thanks :)
-    "Microlensing with an advanced contour integration algorithm: Green's theorem to
-    third order, error control,
-    optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper
-    if you used this.
-    http://mnras.oxfordjournals.org/content/408/4/2188
+    the work of Valerio Bozza, thanks :)  Please cite the paper if you used this.
+    See http://mnras.oxfordjournals.org/content/408/4/2188
 
-    :param array_like separation: the projected normalised angular distance between
+    Parameters
+    ----------
+    separation : array, the projected normalised angular distance between
     the two bodies
-    :param float mass_ratio: the mass ratio of the two bodies
-    :param array_like x_source: the horizontal positions of the source center in the
-    source plane
-    :param array_like y_source: the vertical positions of the source center in the
-    source plane
-    :param float rho: the normalised (to :math:`\\theta_E') angular source star radius
-    :param float limb_darkening_coefficient: the linear limb-darkening coefficient
+    mass_ratio : float, the mass ratio of the two bodies
+    x_source : array, the horizontal positions of the source center in the source plane
+    y_source : array, the vertical positions of the source center in the source plane
+    rho : float, the normalized angular source radius
+    limb_darkening_coefficient: the linear limb-darkening coefficient (a1)
 
-    :return: the FSBL magnification A_FSBL(t)
-    :rtype: array_like
+    Returns
+    -------
+    magnification_fsbl : array, the FSBL magnification
     """
 
     magnification_fsbl = []
@@ -122,24 +118,21 @@ def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho,
 
 def magnification_PSBL(separation, mass_ratio, x_source, y_source):
     """
-    The Point Source Binary Lens magnification, based on the work of Valerio Bozza,
-    thanks :)
-    "Microlensing with an advanced contour integration algorithm: Green's theorem to
-    third order, error control,
-    optimal sampling and limb darkening ",Bozza, Valerio 2010. Please cite the paper
-    if you used this.
-    http://mnras.oxfordjournals.org/content/408/4/2188
+    The Point Source Binary Lens magnification,, including limb-darkening, based on
+    the work of Valerio Bozza, thanks :)  Please cite the paper if you used this.
+    See http://mnras.oxfordjournals.org/content/408/4/2188
 
-    :param array_like separation: the projected normalised angular distance between
+    Parameters
+    ----------
+    separation : array, the projected normalised angular distance between
     the two bodies
-    :param float mass_ratio: the mass ratio of the two bodies
-    :param array_like x_source: the horizontal positions of the source center in the
-    source plane
-    :param array_like y_source: the vertical positions of the source center in the
-    source plane
+    mass_ratio : float, the mass ratio of the two bodies
+    x_source : array, the horizontal positions of the source center in the source plane
+    y_source : array, the vertical positions of the source center in the  source plane
 
-    :return: the PSBL magnification A_PSBL(t)
-    :rtype: array_like
+    Returns
+    -------
+    magnification_psbl : array, the PSBL magnification
     """
 
     magnification_psbl = []

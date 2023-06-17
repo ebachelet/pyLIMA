@@ -1,23 +1,23 @@
-"""
-Created on Thu Apr 20 11:19:38 2017
-
-@author: ebachelet
-"""
-
 import numpy as np
 import scipy.spatial as ss
 
 
 def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolution=1000):
-    """  Find and sort caustics for a binary lens
+    """
+    Find and sort caustics for a binary lens
 
-        :param float separation: the projected normalised angular distance between
+    Parameters
+    ----------
+    separation : float, the projected normalised angular distance between
         the two bodies
-        :param float mass_ratio: the mass ratio of the two bodies
-        :param int resolution: number of points desired in the caustic computation.
+    mass_ratio : float, the mass ratio of the two bodies
+    resolution : int, number of points desired in the caustic computation.
 
-        :return: the caustic regime,  the sorted caustics and the critical curve
-        :rtype: str, list of array_like, list of array_like
+    Returns
+    -------
+    caustic regime : str, the caustic regime (Close, Resonant or Wide)
+    caustics : list, list of caustics
+    critical_curve : list, list of critical curves
     """
 
     close_top_caustic = None
@@ -59,6 +59,19 @@ def find_2_lenses_caustics_and_critical_curves(separation, mass_ratio, resolutio
 
 
 def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
+    """
+    Sort the caustic points to have regular resonant caustic
+
+    Parameters
+    ----------
+    caustic_points : array, the points of the caustics, in complex notation
+    critical_curves_points : array, the points of the critical curve,
+
+    Returns
+    -------
+    resonant_caustic : array, the resonant caustic
+    resonant_cc : array, the resonant critical curve
+    """
     """ Sort the caustic points to have regular resonant caustic
 
         :param array caustic_points: the points of the caustics, in complex notation
@@ -114,16 +127,22 @@ def sort_2lenses_resonant_caustic(caustic_points, critical_curves_points):
 
 
 def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
-    """ Sort the caustic points to have one central caustic and two "planetary" caustics
+    """
+    Sort the caustic points to have one central caustic and two "planetary" caustics
 
-        :param array caustic_points: the points of the caustics, in complex notation
-        :param array critical_curves_points: the points of the critical curve,
-        in complex notation
+    Parameters
+    ----------
+    caustic_points : array, the points of the caustics, in complex notation
+    critical_curves_points : array, the points of the critical curve,
 
-        :return: the central caustic,  the top planetary caustic, the bottom
-        planetary caustic,
-        the central critical curve, the top critical curve, the bottom critical curve
-        :rtype:  array, array, array, array, array, array
+    Returns
+    -------
+    central_caustic : array, the central caustic
+    close_top_caustic : array, the top planetary caustic
+    close_bottom_caustic : array, the bottom planetary caustic
+    central_cc : array, the central critical curve
+    close_top_cc : array, the top planetary critical curve
+    close_bottom_cc : array, the bottom planetary critical curve
     """
 
     try:
@@ -193,16 +212,20 @@ def sort_2lenses_close_caustics(caustic_points, critical_curves_points):
 
 
 def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
-    """ Sort the caustic points to have one central caustic and one "planetary" caustics
+    """
+    Sort the caustic points to have one central caustic and one "planetary" caustics
 
-        :param array caustic_points: the points of the caustics, in complex notation
-        :param array critical_curves_points: the points of the critical curve,
-        in complex notation
+    Parameters
+    ----------
+    caustic_points : array, the points of the caustics, in complex notation
+    critical_curves_points : array, the points of the critical curve,
 
-        :return: the central caustic,  the  planetary caustic, the central critical
-        curve,
-        the planetary critical curve
-        :rtype:  array, array, array, array
+    Returns
+    -------
+    central_caustic : array, the central caustic
+    wide_caustic : array, the wide planetary caustic
+    central_cc : array, the central critical curve
+    wide_cc : array, the wide planetary critical curve
     """
     try:
 
@@ -256,23 +279,25 @@ def sort_2lenses_wide_caustics(caustic_points, critical_curves_points):
 
 
 def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
-    """  Find the critical curve points and caustics points associated to a binary
-    lens. See :
-        "On the Minimum Magnification Between Caustic Crossings for Microlensing by
-        Binary and Multiple Stars"
-        Witt and Mao 1995 http://adsabs.harvard.edu/abs/1995ApJ...447L.105W
-        "Investigation of high amplification events in light curves of
-        gravitationally lensed quasars"
-        Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
-
-        :param float separation: the projected normalised angular distance between
-        the two bodies
-        :param float mass_ratio: the mass ratio of the two bodies
-        :param int resolution: number of points desired in the caustic computation.
-
-        :return: caustic_points, cc_points
-        :rtype:  array, array
     """
+    Find the critical curve points and caustics points associated to a binary
+    lens.
+    See http://adsabs.harvard.edu/abs/1995ApJ...447L.105W
+    http://adsabs.harvard.edu/abs/1990A%26A...236..311W
+
+    Parameters
+    ----------
+    separation : float, the projected normalised angular distance between
+        the two bodies
+    mass_ratio : float, the mass ratio of the two bodies
+    resolution : int, number of points desired in the caustic computation.
+
+    Returns
+    -------
+    caustics : array, the complex caustic points
+    critical_curves : array, the complex critical curves points
+    """
+
     caustics = []
     critical_curves = []
 
@@ -356,20 +381,21 @@ def compute_2_lenses_caustics_points(separation, mass_ratio, resolution=1000):
 
 
 def find_2_lenses_caustic_regime(separation, mass_ratio):
-    """  Find the caustic regime.
-        "An alternative parameterisation for binary-lens caustic-crossing events"
-        Cassan A.2008 http://adsabs.harvard.edu/abs/2008A%26A...491..587C
-        "Speeding up Low-mass Planetary Microlensing Simulations and Modeling: The
-        Caustic Region Of INfluence"
-        Penny M.2014 http://adsabs.harvard.edu/abs/2014ApJ...790..142P
+    """
+    Find the caustic regime.
+    See http://adsabs.harvard.edu/abs/2008A%26A...491..587C
+    http://adsabs.harvard.edu/abs/2014ApJ...790..142P
 
-       :param float separation: the projected normalised angular distance between the
-       two bodies
-       :param float mass_ratio: the mass ratio of the two bodies
+    Parameters
+    ----------
+    separation : float, the projected normalised angular distance between
+    the two bodies
+    mass_ratio : float, the mass ratio of the two bodies
 
-       :return: caustic_regime: close, wide or resonant
-       :rtype: str
-   """
+    Returns
+    -------
+    caustic_regime : str, close, wide or resonant
+    """
 
     caustic_regime = 'resonant'
 
@@ -390,18 +416,20 @@ def find_2_lenses_caustic_regime(separation, mass_ratio):
 
 
 def poly_binary_eiphi_0(separation, mass_ratio):
-    """  Build the polynomial associated to phi=0 binary caustics.
-        "Investigation of high amplification events in light curves of
-        gravitationally lensed quasars"
-        Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
+    """
+    Build the polynomial associated to phi=0 binary caustics.
+    See http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
-       :param float separation: the projected normalised angular distance between the
-       two bodies
-       :param float mass_ratio: the mass ratio of the two bodies
+    Parameters
+    ----------
+    separation : float, the projected normalised angular distance between
+    the two bodies
+    mass_ratio : float, the mass ratio of the two bodies
 
-       :return: polynomial coefficients
-       :rtype: array
-   """
+    Returns
+    -------
+    polynomial_coefficients : array, the associated polynomial coefficients
+    """
 
     s = separation
     q = mass_ratio
@@ -421,17 +449,19 @@ def poly_binary_eiphi_0(separation, mass_ratio):
 
 
 def caustic_points_at_phi_0(separation, mass_ratio):
-    """ Find caustics points at phi=0 binary caustics.
-           "Investigation of high amplification events in light curves of
-           gravitationally lensed quasars"
-           Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
+    """
+    Find caustics points at phi=0 binary caustics.
+    See http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
-          :param float separation: the projected normalised angular distance between
-          the two bodies
-          :param float mass_ratio: the mass ratio of the two bodies
+    Parameters
+    ----------
+    separation : float, the projected normalised angular distance between
+    the two bodies
+    mass_ratio : float, the mass ratio of the two bodies
 
-          :return: caustic points
-          :rtype: array
+    Returns
+    -------
+    caustic_points : array, the complex caustic points at phi=0
     """
 
     polynomial_coefficients = poly_binary_eiphi_0(separation, mass_ratio)
@@ -450,17 +480,19 @@ def caustic_points_at_phi_0(separation, mass_ratio):
 
 
 def lens_equation(z, lenses_mass, lenses_pos):
-    """ The complex lens equation
-           "Investigation of high amplification events in light curves of
-           gravitationally lensed quasars"
-           Witt H.J 1990 http://adsabs.harvard.edu/abs/1990A%26A...236..311W
+    """
+    The complex lens equation
+    See http://adsabs.harvard.edu/abs/1990A%26A...236..311W
 
-          :param array z: the complex position in the image plane
-          :param array lenses_mass: the masses of the lenses (scale to 1)
-          :param array lenses_pos: the complex position of the lenses
+    Parameters
+    ----------
+    z : array, the complex position in the image plane
+    lenses_mass : array, the masses of the lenses (scale to 1)
+    lenses_pos : array, the complex position of the lenses
 
-          :return: zeta, the associated complex position in the source plane
-          :rtype: array
+    Returns
+    -------
+    zeta : array, the associated complex position in the source plane
     """
 
     zeta = np.array(
