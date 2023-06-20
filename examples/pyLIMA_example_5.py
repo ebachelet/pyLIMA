@@ -16,7 +16,7 @@ import numpy as np
 from pyLIMA.fits import DE_fit
 from pyLIMA.fits import TRF_fit
 from pyLIMA.models import PSPL_model
-from pyLIMA.models import USBL_model, fancy_parameters
+from pyLIMA.models import USBL_model, pyLIMA_fancy_parameters
 from pyLIMA.outputs import pyLIMA_plots
 
 from pyLIMA import event
@@ -205,7 +205,7 @@ plt.show()
 ### and blending)
 
 # Use the default fancy parameters log(tE), log(rho), log(s), log(q)
-fancy = fancy_parameters.standard_fancy_parameters
+fancy = pyLIMA_fancy_parameters.standard_fancy_parameters
 usbl = USBL_model.USBLmodel(your_event, fancy_parameters=fancy,
                             parallax=['Full', 2457205.5])
 ### t0par = 2457265.5
@@ -217,7 +217,6 @@ usbl = USBL_model.USBLmodel(your_event, fancy_parameters=fancy,
 
 ### Specify the fitting algorithm. This time go for a differential evolution search of 
 ### the parameter space. 
-
 fit_2 = DE_fit.DEfit(usbl, telescopes_fluxes_method='polyfit', DE_population_size=10,
                      max_iteration=10000, display_progress=True)
 
