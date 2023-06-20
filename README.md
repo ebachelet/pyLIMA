@@ -37,8 +37,8 @@ print(pyLIMA.__version__)
 
 Examples can be found in the pyLIMA directory after cloning this repository. More details can be found in the [Documentation](https://pylima.readthedocs.io/en/latest/)
 There is two version for each examples, one
-using [Jupyter notebook](https://jupyter.org/) (*.ipynb) or
-classic Python file (*.py).
+using [Jupyter notebook](https://jupyter.org/) or
+classic Python file.
 
 Example_1 : [HOW TO FIT MY DATA?](https://github.com/ebachelet/pyLIMA/tree/master/examples)
 
