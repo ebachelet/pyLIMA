@@ -28,22 +28,18 @@ your_event = event.Event(ra=270, dec=-30)
 your_event.name = 'My simulated event'
 
 ### Create some telescope(s) to observe the event from. The function we will use will
-# create
-### a generic telescope class (see pyLIMA documentation for details). We will need to
-# create
-### a new telescope for each observatory, telescope, filter combination. Let us start
-# simple
-### and generate a single telescope first. We will also set uniform_sampling=True,
-# which will
-### make sure the light curve generated will not have any gaps due to the night/day
-# cycle.
+### create a generic telescope class (see pyLIMA documentation for details). We will 
+### need to create a new telescope for each observatory, telescope, filter combination.
+### Let us start simple and generate a single telescope first. We will also set 
+### uniform_sampling=True, which will make sure the light curve generated will not 
+### have any gaps due to the night/day cycle.
 CTIO_I = simulator.simulate_a_telescope(name='CTIO_I', time_start=2457365.5,
                                         time_end=2457965.5, sampling=4,
                                         location='Earth', camera_filter='I',
                                         uniform_sampling=True, astrometry=False)
 
 ### Similar to tutorial 1, we need to associate this telescopee with the event we
-# created:
+### created:
 your_event.telescopes.append(CTIO_I)
 
 ### Run a quick sanity check on your input.
@@ -67,16 +63,14 @@ print(pspl_parameters)
 pspl.model_dictionnary
 
 ### Transform the parameters into a pyLIMA class object. See the documentation for
-# details.
+### details.
 pyLIMA_parameters_1 = pspl.compute_pyLIMA_parameters(pspl_parameters)
 
 ### Now we have defined the MODEL we want to simulate, we have defined the telescope
-# details,
-### so we just inject these into our simulator to produce a light curve:
+### details, so we just inject these into our simulator to produce a light curve:
 simulator.simulate_lightcurve_flux(pspl, pyLIMA_parameters_1)
 
 #### Let's plot our simulated light curve using the pyLIMA plotter (recommended)!
-
 pyLIMA_plots.plot_lightcurves(pspl, pspl_parameters)
 plt.show()
 
@@ -92,26 +86,22 @@ plt.show()
 
 ### OK, so now we want to simulate something more complicated. 
 ### Say, we have multiple telescopes around the world imaging the event in different
-# bands and
-### at different time intervals.
+### bands and at different time intervals.
 ### In addition, we also want to simulate bad weather, avoid pointing too close to
-# the moon,
-### and also account for observing limitations due to the location of the target in
-# the sky relative
-### to the Sun. (For a full list of the options available please consult the
-# documentation!)
+### the moon, and also account for observing limitations due to the location of the
+### target in the sky relative to the Sun. 
+### (For a full list of the options available please consult the documentation!)
 
 ### Let's create a new event to observe:
 your_event2 = event.Event(ra=264, dec=-28)
 your_event2.name = 'My simulated event 2'
 
-### We will simulate telescopes in South Africa (SAAO),  Chile (CTIO) and Australia (
-# SSO).
+### We will simulate telescopes in South Africa (SAAO),  Chile (CTIO) and Australia 
+### (SSO).
 ### For observing bands, we're simulate I-band for all sites, and also add a daily
-# V-band observation
-### from CTIO. Each observing band counts as a seperate telescope, so we will need to
-# create
-### _four_ telescope objects:
+### V-band observation from CTIO. 
+### Each observing band counts as a seperate telescope, so we will need to
+###create _four_ telescope objects:
 
 SAAO_I = simulator.simulate_a_telescope(name='SAAO_I', time_start=2457575.5,
                                         time_end=2457625.5, sampling=2.5,
@@ -156,8 +146,8 @@ CTIO_V = simulator.simulate_a_telescope('CTIO_V', time_start=2457365.5,
 ### The meaning of the parameters, in this example, for the SAAO_I data set are:
 ### Name = 'SAAO_I', location = 'Earth', start_obs =2457585.5, end_obs = 2457615.5,
 ### sampling(hours) = 2, location='Earth', filter = 'I', uniform_sampling=True,
-# altitude = 400 m,
-### longitude = 20.659279, latitude = -32.3959, bad_weather_percentage = 20%, 
+### altitude = 400 m, longitude = 20.659279, latitude = -32.3959, 
+### bad_weather_percentage = 20%, 
 ### moon_windows_avoidance (degrees)=20, minimum_alt=15, astrometry=False)
 
 ### Associate these telescopes with the event we created:
@@ -191,27 +181,23 @@ print(dspl_parameters)
 print(dspl.model_dictionnary)
 
 ### pyLIMA has provided some random values for the fluxes drawn from uniform
-# distributions.
+### distributions. 
 ### These do not represent any physical system and are likely off for the
-# telescope/filter
-### combination that you as a user have defined, but they can be used as placeholders
-# for you
-### to define your own values. We will see how to do that later.
+### telescope/filter combination that you as a user have defined, but they 
+### can be used as placeholders for you to define your own values. We will 
+### see how to do that later.
 ### For now, just use these temporary values for the simulation.
 
 ### Transform the parameters into pyLIMA standards:
 pyLIMA_parameters = dspl.compute_pyLIMA_parameters(dspl_parameters)
 
 ### Now we have defined the MODEL we want to simulate, we have defined the telescopes
-# and
-### fluxes in each observing band, so we just inject these into our simulator to
-# produce
-### a light curve:
+### and fluxes in each observing band, so we just inject these into our simulator to
+### produce a light curve:
 simulator.simulate_lightcurve_flux(dspl, pyLIMA_parameters)
 
-#### Let's plot our simulated light curve!
+### Let's plot our simulated light curve!
 ### Plot with pyLIMA plotter (recommended):
-
 pyLIMA_plots.list_of_fake_telescopes = []  # cleaning previous plots
 
 pyLIMA_plots.plot_lightcurves(dspl, dspl_parameters)
@@ -229,20 +215,19 @@ plt.legend()
 plt.show()
 
 ### Say you want to define your own values to use, instead of having the pyLIMA
-# simulators randomly guess.
+### simulators randomly guess.
 ### Here's how you can do that. Let's fix the DSPL parameters to some values where
-# the binary source model
-### produces two clear peaks, and then just adjust the flux parameters.
+### the binary source model produces two clear peaks, and then just adjust the flux 
+### parameters.
 dspl_parameters[0:7] = [2457760.216627234, 0.8605811108889658, 143.4484970433387,
                         -0.6046788112617074, 116.43231096591524, 0.15157064165919296,
                         0.18958495421162946]
 
 ### The order of the parameters is:
-dspl.model_dictionnary
+print(dspl.model_dictionnary)
 
 ### ... and we will replace all source and blend flux elements with our own values.
-# We can assume
-### the fluxes are calibrated. Set up the magnitude values you want:
+### We can assume the fluxes are calibrated. Set up the magnitude values you want:
 magsource_CTIO_I = 17.32
 magblend_CTIO_I = 20.89
 magsource_SAAO_I = 17.32
