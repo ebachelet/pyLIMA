@@ -3,7 +3,7 @@
 Conventions
 ===========
 
-The time given in observations is expected to be in JD.
+The time given in observations is expected to be in JD. This is not that crucial as long as parallax, and more generally ephemerides, is not considered.
 
 Following the idea of uniform notations in the field, pyLIMA is based on `Gould 2000 <http://adsabs.harvard.edu/abs/2000ApJ...542..785G/>`_. 
 
