@@ -54,6 +54,19 @@ and is accessible with:
    
 For orbital motion, we used the formalism described in `Bozza 2021 <https://arxiv.org/pdf/2011.04780.pdf>`_ (but also have a look to the excellent `Skowron 2011 <https://iopscience.iop.org/article/10.1088/0004-637X/738/1/87/pdf>`_).
 
+Astrometry
+----------
+
+For the time been, astrometry is implemented only for PSPL model without blending. Including astrometry add the following parameters to the models:
+
+-  :math:`\theta_E` [mas]  is the angular Einstein ring radius.
+-  :math:`\pi_{source}` [mas] is the parallax of the source
+-  :math:`\mu_{source_N}` [x/year] the proper motion of the source in North, in deg/yr or pix/yr depending of the astrometric data unit.
+-  :math:`\mu_{source_E}` [x/year] the proper motion of the source in East, in deg/yr or pix/yr depending of the astrometric data unit.
+-  :math:`position\_source\_N\_tel` [x] the position of the source in North at t0par seen by the telescope tel, in degree or pixels depending of the astrometric data unit.
+-  :math:`position\_source\_E\_tel` [x] the position of the source in East at t0par seen by the telescope tel, in degree or pixels depending of the astrometric data unit.
+
+
 For more details on other second order effects and models, please have a look to :ref:`pyLIMAModules`.
 
 

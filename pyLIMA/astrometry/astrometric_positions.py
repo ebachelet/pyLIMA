@@ -55,7 +55,7 @@ def astrometric_positions_of_the_source(telescope, pyLIMA_parameters, time_ref=N
     mu_E = pyLIMA_parameters.mu_source_E
 
     earth_vector = telescope.Earth_positions_projected['astrometry']
-    parallax_source = pyLIMA_parameters.parallax_source
+    parallax_source = pyLIMA_parameters.pi_source
     Earth_projected = earth_vector * parallax_source  # mas
 
     if telescope.astrometry['ra'].unit == 'deg':

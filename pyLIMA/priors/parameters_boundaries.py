@@ -118,7 +118,7 @@ def rescale_astrometry_boundaries():
     return (-5, 5)
 
 
-def parallax_source_boundaries():
+def pi_source_boundaries():
     return (0.01, 10)  # mas
 
 

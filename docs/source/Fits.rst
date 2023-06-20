@@ -88,7 +88,7 @@ Fitting algorithms have default loss functions described in :ref:`pyLIMAModules`
 Advices on fitting binary lightcurves
 -------------------------------------
 
-For fitting binary models, DE has proven to be reliable to locate global minima. However, we recommand to explore  :math:`s\le1` and :math:`s\ge1` separetely, especially to explore carefully the close/wide degeneracy (`see <https://ui.adsabs.harvard.edu/abs/1999A%26A...349..108D/abstract>`_). One the minimas are found, each of them should be explored using MCMC.
+For fitting binary models, DE has proven to be reliable to locate global minima. However, we recommand to explore  :math:`s\le1` and :math:`s\ge1` separetely, to explore carefully the close/wide degeneracy (`see <https://ui.adsabs.harvard.edu/abs/1999A%26A...349..108D/abstract>`_). One the minimas are found, each of them should be explored using MCMC.
 
 We note that some wide binary systems can be hard, if not impossible, to model with the default pyLIMA settings. `OGLE-2015-BLG-0060 <https://ui.adsabs.harvard.edu/abs/2019MNRAS.487.4603T/abstract>`_ is a good example. In this case, it is recomanded to change the origin of the system, for example to the primary body:
 

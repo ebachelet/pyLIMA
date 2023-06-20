@@ -328,7 +328,7 @@ class MLmodel(object):
                     # telescope.lightcurve_flux['time'].value)]
 
                 model_dictionnary['theta_E'] = len(model_dictionnary)
-                model_dictionnary['parallax_source'] = len(model_dictionnary)
+                model_dictionnary['pi_source'] = len(model_dictionnary)
                 model_dictionnary['mu_source_N'] = len(model_dictionnary)
                 model_dictionnary['mu_source_E'] = len(model_dictionnary)
 
