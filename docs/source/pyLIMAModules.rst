@@ -9,6 +9,7 @@ pyLIMA Modules
    ./Astrometry
    ./Caustics
    ./Event
+   ./Fits
    ./Magnification   
    ./Models
    ./OrbitalMotion   

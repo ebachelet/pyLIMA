@@ -10,6 +10,7 @@ from pyLIMA import event
 
 
 class BOOTSTRAPfit(MLfit):
+    """Under Construction"""
 
     def __init__(self, model, bootstrap_fitter='TRF', telescopes_fluxes_method='fit'):
         """The fit class has to be intialized with an event object."""

@@ -16,48 +16,31 @@ class FitException(Exception):
 
 class MLfit(object):
     """
-    ######## Fitter module ########
-
     This class contains the method to fit the event with the selected attributes.
 
-    **WARNING**: All fits (and so results) are made using data in flux.
+    **WARNING**: All fits (and so results) are made using data in flux in the
+    lightcurves.
 
-    Attributes :
-
-        event : the event object on which you perform the fit on. More details on the
-        event module.
-
-        model : The microlensing model you want to fit. Has to be an object define in
-                microlmodels module.
-                More details on the microlmodels module.
-
-        method : The fitting method you want to use for the fit.
-
-        guess : The guess you can give to the fit or the guess return by the
-        initial_guess function.
-
-        fit_results : the fit parameters returned by method LM and DE.
-
-        fit_covariance : the fit parameters covariance matrix returned by method LM
-        and DE.
-
-        fit_time : the time needed to fit.
-
-        MCMC_chains : the MCMC chains returns by the MCMC method
-
-        MCMC_probabilities : the objective function computed for each chains of the
-        MCMC method
-
-        fluxes_MCMC_method : a string describing how you want to estimate the model
-        fluxes for the MCMC method.
-
-        outputs : the standard pyLIMA outputs. More details in the microloutputs module.
-
-    :param object event: the event object on which you perform the fit on. More
-    details on the
-                         event module.
-
-
+    Attributes
+    ----------
+    model : object, a microlensing model
+    rescale_photometry : bool, turns on to rescale the photometric data
+    rescale_astrometry : bool, turns on to rescale the astrometric data
+    telescopes_fluxes_method : str, if not 'fit', then telescopes fluxes are
+    estimated via np.polyfit
+    loss_function : str, the loss_function used ('chi2','likelihood' or 'soft_l1')
+    fit_parameters : dict, dictionnary containing the parameters name and boundaries
+    fit_results : dict, dictionnary containing the fit results
+    priors : list, a list of parameters priors (None by default)
+    trials : list, a Manager().list() to collect all algorithm fit trials
+    model_parameters_guess : list, a list containing the parameters guess
+    rescale_photometry_parameters_guess : list, contains guess on rescaling photometry
+    rescale_astrometry_parameters_guess : list, contains guess on rescaling astrometry
+    telescopes_fluxes_parameters_guess : list, contains guess on telescopes fluxes
+    model_parameters_index : list, indexes of models parameters
+    rescale_photometry_parameters_index : list, indexes of photometry rescaling
+    parameters
+    rescale_astrometry_parameters_index : list, indexes of astrometry rescaling
     """
 
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
@@ -78,6 +61,7 @@ class MLfit(object):
         self.loss_function = loss_function
 
         self.fit_parameters = []
+        self.priors_parameters = []
         self.fit_results = {}
         self.priors = None
         self.trials = Manager().list()  # to be recognize by all process during
@@ -96,7 +80,22 @@ class MLfit(object):
         self.define_priors_parameters()
 
     def define_parameters(self, include_telescopes_fluxes=True):
+        """
+        Define the parameters to fit and the indexes
 
+        Parameters
+        ----------
+        include_telescopes_fluxes : bool, telescopes fluxes are part of the fit or not
+
+        Returns
+        -------
+        fit_parameters : dict, a dictionnary with the parameters to fit and limits
+        model_parameters_index : list, a list with the parameters indexes
+        rescale_photometry_parameters_index : list, a list with indexes of photometry
+        rescaling parameters
+        rescale_astrometry_parameters_index : list, a list with indexes of astrometry
+        rescaling parameters
+        """
         standard_parameters_dictionnary = self.model.pyLIMA_standards_dictionnary.copy()
         standard_parameters_boundaries = \
             self.model.standard_parameters_boundaries.copy()
@@ -235,7 +234,22 @@ class MLfit(object):
             rescale_photometry_parameters_index, rescale_astrometry_parameters_index
 
     def define_fit_parameters(self):
+        """
+        Define the parameters to fit
 
+        Parameters
+        ----------
+        include_telescopes_fluxes : bool, telescopes fluxes are part of the fit or not
+
+        Returns
+        -------
+        fit_parameters : dict, a dictionnary with the parameters to fit and limits
+        model_parameters_index : list, a list with the parameters indexes
+        rescale_photometry_parameters_index : list, a list with indexes of photometry
+        rescaling parameters
+        rescale_astrometry_parameters_index : list, a list with indexes of astrometry
+        rescaling parameters
+        """
         if self.telescopes_fluxes_method == 'fit':
 
             include_fluxes = True
@@ -254,7 +268,9 @@ class MLfit(object):
         self.rescale_astrometry_parameters_index = rescale_astrometry_parameters_index
 
     def define_priors_parameters(self):
-
+        """
+        Define the priors parameters to fit
+        """
         include_fluxes = True
 
         fit_parameters, model_parameters_index, rescale_photometry_parameters_index, \
@@ -264,7 +280,18 @@ class MLfit(object):
         self.priors_parameters = fit_parameters
 
     def standard_objective_function(self, fit_process_parameters):
+        """
+        Compute the objective function based on the model and fit_process_parameters
 
+        Parameters
+        ----------
+        fit_process_parameters : list, list containing the fit parameters
+
+        Returns
+        -------
+
+        objective : float, the value of the objective function
+        """
         if self.loss_function == 'likelihood':
             likelihood, pyLIMA_parameters = self.model_likelihood(
                 fit_process_parameters)
@@ -297,7 +324,17 @@ class MLfit(object):
         return objective
 
     def get_priors_probability(self, pyLIMA_parameters):
+        """
+        Transform the prior probability to ln space
 
+        Parameters
+        ----------
+        pyLIMA_parameters : dict, a pyLIMA_parameters object
+
+        Returns
+        -------
+        ln_likelihood : float, the value to add to the ln_likelihood from the priors
+        """
         ln_likelihood = 0
 
         if self.priors is not None:
@@ -321,12 +358,8 @@ class MLfit(object):
         return ln_likelihood
 
     def model_guess(self):
-        """Try to estimate the microlensing parameters. Only use for PSPL and FSPL
-           models. More details on microlguess module.
-
-           :return guess_parameters: a list containing parameters guess related to
-           the model.
-           :rtype: list
+        """
+        Try to estimate the microlensing parameters.
         """
         import pyLIMA.priors.guess
 
@@ -390,7 +423,9 @@ class MLfit(object):
                                            self.model_parameters_guess]
 
     def telescopes_fluxes_guess(self):
-
+        """
+        Estimate the telescopes fluxes guesses
+        """
         if self.telescopes_fluxes_method == 'fit':
 
             if self.telescopes_fluxes_parameters_guess == []:
@@ -409,7 +444,9 @@ class MLfit(object):
             self.telescopes_fluxes_parameters_guess = []
 
     def rescale_photometry_guess(self):
-
+        """
+        Estimate the photometric rescaling guesses
+        """
         if self.rescale_photometry:
 
             if self.rescale_photometry_parameters_guess == []:
@@ -431,7 +468,9 @@ class MLfit(object):
             self.rescale_photometry_parameters_guess = []
 
     def rescale_astrometry_guess(self):
-
+        """
+        Estimate the astrometric rescaling guesses
+        """
         if self.rescale_astrometry:
 
             if self.rescale_astrometry_parameters_guess == []:
@@ -454,7 +493,13 @@ class MLfit(object):
             self.rescale_astrometry_parameters_guess = []
 
     def initial_guess(self):
+        """
+        Estimate the fit guesses
 
+        Returns
+        -------
+        fit_parameters_guess : list, a list of the parameters guess
+        """
         self.model_guess()
         self.telescopes_fluxes_guess()
         self.rescale_photometry_guess()
@@ -520,7 +565,21 @@ class MLfit(object):
 
     def model_residuals(self, pyLIMA_parameters, rescaling_photometry_parameters=None,
                         rescaling_astrometry_parameters=None):
+        """
+        Given a set of parameters, estimate the photometric and astrometric residuals
 
+        Parameters
+        ----------
+        pyLIMA_parameters : dict, a pyLIMA_parameters object
+        rescaling_photometry_parameters : bool, if the photometry is rescaled
+        rescaling_astrometry_parameters : boold, if tje astrometry is rescaled
+
+        Returns
+        -------
+        residus : array, an array containing the residuals , i.e. [res_photometry,
+        res_astrometry]
+        errors : array, an array containing the corresponding errors
+        """
         if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
 
             pass
@@ -558,7 +617,20 @@ class MLfit(object):
 
     def photometric_model_residuals(self, pyLIMA_parameters,
                                     rescaling_photometry_parameters=None):
+        """
+        Given a set of parameters, estimate the photometric residuals
 
+        Parameters
+        ----------
+        pyLIMA_parameters : dict, a pyLIMA_parameters object
+        rescaling_photometry_parameters : bool, if the photometry is rescaled
+
+        Returns
+        -------
+        residus_photometry : array, an array containing the photometry residuals ,
+        i.e. [res_photometry_i] of telescope i
+        errflux_photometry : array, an array containing the corresponding errors in flux
+        """
         if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
 
             pass
@@ -581,7 +653,20 @@ class MLfit(object):
 
     def astrometric_model_residuals(self, pyLIMA_parameters,
                                     rescaling_astrometry_parameters=None):
+        """
+        Given a set of parameters, estimate the astrometric residuals
 
+        Parameters
+        ----------
+        pyLIMA_parameters : dict, a pyLIMA_parameters object
+        rescaling_astrometry_parameters : bool, if the astrometry is rescaled
+
+        Returns
+        -------
+        residus_astrometry : array, an array containing the photometry residuals ,
+        i.e. [res_ra_i,res_dec_i] of telescope i
+        err_astrometry : array, an array containing the corresponding errors
+        """
         if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
 
             pass
@@ -603,7 +688,18 @@ class MLfit(object):
         return [residus_ra, residus_dec], [err_ra, err_dec]
 
     def model_chi2(self, parameters):
+        """
+        Given a set of parameters, estimate the chi^2, the sum of normalised residuals
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        chi2 : float, the chi-square
+        pyLIMA_parameters : dict, an updated pyLIMA_parameters object
+        """
         if type(parameters) is type:  # it is a pyLIMA_parameters object
 
             pyLIMA_parameters = parameters
@@ -659,7 +755,18 @@ class MLfit(object):
         return chi2, pyLIMA_parameters
 
     def model_likelihood(self, parameters):
+        """
+        Given a set of parameters, estimate the ln-likelihood, including priors if any
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        ln_likelihood : float, the ln-likelihood
+        pyLIMA_parameters : dict, an updated pyLIMA_parameters object
+        """
         if type(parameters) is type:  # it is a pyLIMA_parameters object
 
             pyLIMA_parameters = parameters
@@ -722,7 +829,19 @@ class MLfit(object):
         return ln_likelihood, pyLIMA_parameters
 
     def model_soft_l1(self, parameters):
+        """
+        Given a set of parameters, estimate the soft_l1 metric:
+        soft_1 = 2 * np.sum(((1 + res**2 / errors**2) ** 0.5 - 1))
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        soft_l1 : float, the soft_l1 metric
+        pyLIMA_parameters : dict, an updated pyLIMA_parameters object
+        """
         if type(parameters) is type:  # it is a pyLIMA_parameters object
 
             pyLIMA_parameters = parameters
@@ -778,7 +897,18 @@ class MLfit(object):
         return soft_l1, pyLIMA_parameters
 
     def chi2_photometry(self, parameters):
+        """
+        Given a set of parameters, estimate the photometric chi^2, the sum of
+        normalised residuals
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        chi2 : float, the chi-square
+        """
         residus, errors = self.photometric_model_residuals(parameters)
         residuals = np.concatenate(residus) ** 2
         errors = np.concatenate(errors) ** 2
@@ -788,7 +918,17 @@ class MLfit(object):
         return chi2
 
     def likelihood_photometry(self, parameters):
+        """
+        Given a set of parameters, estimate the photometric ln-likelihood
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        ln_likeihood: float, the ln_likelihood
+        """
         residus, errors = self.photometric_model_residuals(parameters)
 
         residuals = np.concatenate(residus) ** 2
@@ -800,7 +940,18 @@ class MLfit(object):
         return ln_likelihood
 
     def chi2_astrometry(self, parameters):
+        """
+        Given a set of parameters, estimate the astrometric chi^2, the sum of
+        normalised residuals
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        chi2 : float, the chi-square
+        """
         residus, errors = self.astrometric_model_residuals(parameters)
 
         residus = [np.concatenate((i[0], i[1])) for i in residus]
@@ -814,7 +965,17 @@ class MLfit(object):
         return chi2
 
     def likelihood_astrometry(self, parameters):
+        """
+        Given a set of parameters, estimate the astrometric ln-likelihood
 
+        Parameters
+        ----------
+        parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        ln_likeihood: float, the ln_likelihood
+        """
         residus, errors = self.astrometric_model_residuals(parameters)
 
         residus = [np.concatenate((i[0], i[1])) for i in residus]
@@ -829,7 +990,19 @@ class MLfit(object):
         return ln_likelihood
 
     def residuals_Jacobian(self, fit_process_parameters):
+        """
+        Given a set of parameters, estimate the Jacobian of residuals (no astrometry
+        yet)
 
+        Parameters
+        ----------
+        fit_process_parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        photometric_jacobian : array, an array containing the derivative of the
+        residuals
+        """
         photometric_jacobian = self.photometric_residuals_Jacobian(
             fit_process_parameters)
 
@@ -838,13 +1011,16 @@ class MLfit(object):
         return photometric_jacobian
 
     def photometric_residuals_Jacobian(self, fit_process_parameters):
-        """Return the analytical Jacobian matrix, if requested by method LM.
-        Available only for PSPL and FSPL without second_order.
-        :param list fit_process_parameters: the model parameters ingested by the
-        correpsonding
-                                            fitting routine.
-        :return: a numpy array which represents the jacobian matrix
-        :rtype: array_like
+        """
+        Given a set of parameters, estimate the Jacobian of photometric residuals
+
+        Parameters
+        ----------
+        fit_process_parameters : , a pyLIMA_parameters object or an array of parameters
+
+        Returns
+        -------
+        jacobi : array, an array containing the derivative of the residuals
         """
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(fit_process_parameters)
@@ -890,20 +1066,17 @@ class MLfit(object):
         return jacobi.T
 
     def check_telescopes_fluxes_limits(self, telescopes_fluxes):
-        """Find telescopes flux associated (fs,g) to the model. Used for
-        initial_guess and LM
-        method.
-
-        :param list fit_process_parameters: the model parameters ingested by the
-        correpsonding fitting
-                                       routine.
-        :param object model: a microlmodels which you want to compute the fs,
-        g parameters.
-
-        :return: a list of tuple with the (fs,g) telescopes flux parameters.
-        :rtype: list
         """
+        Check,or set, the telescopes fluxes to the limits
 
+        Parameters
+        ----------
+        telescopes_fluxes : dict, a dictionnary containing the telescopes fluxes values
+
+        Returns
+        -------
+        new_fluxes : list, a list of the updated fluxes
+        """
         new_fluxes = []
 
         for ind, key in enumerate(telescopes_fluxes._fields):
@@ -927,7 +1100,26 @@ class MLfit(object):
         return new_fluxes
 
     def fit_outputs(self, bokeh_plot=None):
+        """
+        Produce the standard plots output
 
+        Parameters
+        ----------
+        bokeh_plot : bool, to obtain a bokeh plot or not
+
+        Returns
+        -------
+        matplotlib_lightcurves : matplotlib.fit, a matplotlib figure with the
+        lightcurves
+        matplotlib_geometry : matplotlib.fig, a matplotlib figure with the
+        geometry
+        matplotlib_astrometry : matotlib.fig, a matplotlib figure with the
+        astrometry
+        matplotlib_distribution : matplotlib.fig, a figure containing the parameters
+        matplotlib_table : matplotlig.fig, a figure containing parameters table (not
+        implemented yet)
+        bokeh_figure : bokehh.fig, a bokeh.figure containing all the above
+        """
         matplotlib_lightcurves = None
         matplotlib_geometry = None
         matplotlib_astrometry = None

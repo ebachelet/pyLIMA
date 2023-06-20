@@ -9,7 +9,18 @@ from tqdm import tqdm
 
 
 class GRIDfit(MLfit):
+    """
+    Performs fits on fix grids of parameters, fitting left parameters with DE.
+    Standard way to find preliminary binary models. Efficient but slow...
 
+    Attributes
+    ----------
+    DE_population_size : int, the scale of the population, i.e. the number
+    of DE individuals = DE_population_size*len(fit_parameters)
+    max_iteration : int, the total number of iteration
+    fix_parameters : dict, the parameters that are set on the grid
+    grid_resolution : int, the resolution of the grid for each grid parameters
+    """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=2,
                  max_iteration=2000,
@@ -148,7 +159,3 @@ class GRIDfit(MLfit):
                                 'fit_time': computation_time,
                                 'GRIDS_population': GRIDS_population}
 
-    def fit_outputs(self):
-
-        pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
-        pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])

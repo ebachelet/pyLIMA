@@ -7,7 +7,15 @@ from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.priors import parameters_priors
 
 class MCMCfit(MLfit):
+    """
+    Monte-Carlo Markov Chain using emcee
+    https://emcee.readthedocs.io/en/stable/
 
+    Attributes
+    -----------
+    MCMC_walkers : int, the number of walkers = number_of_walkers*len(fit_parameters)
+    MCMC_links : int, the total number of iteration
+    """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', loss_function='likelihood',
                  MCMC_walkers=2, MCMC_links=5000):

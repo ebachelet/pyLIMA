@@ -8,7 +8,9 @@ from pyLIMA.outputs import pyLIMA_plots
 
 
 class DEMCfit(MLfit):
-
+    """
+    Under Construction
+    """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', loss_function='likelihood',
                  DEMC_walkers=2, DEMC_links=5000):

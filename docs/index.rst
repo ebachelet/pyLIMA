@@ -63,7 +63,7 @@ User Guide
    source/Installation
    source/Conventions
    source/Examples
-   source/Fits
+   source/NotesOnFits
 
 pyLIMA modules details
 ----------------------

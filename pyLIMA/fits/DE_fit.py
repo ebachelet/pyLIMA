@@ -8,12 +8,22 @@ from tqdm import tqdm
 
 
 class DEfit(MLfit):
+    """
+    Differential Evolution from Storn & Price. Please cite the paper :
+    https://link.springer.com/article/10.1023/A:1008202821328
 
+    Attributes
+    -----------
+    DE_population_size : int, the scale of the population, i.e. the number
+    of DE individuals = DE_population_size*len(fit_parameters)
+    max_iteration : int, the total number of iteration
+    display_progress : bool, turns on to display progress
+    strategy : str, 'best1bin' or 'rand1bin' (default)
+    """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', loss_function='likelihood',
                  DE_population_size=10, max_iteration=10000,
                  display_progress=False, strategy='rand1bin'):
-        """The fit class has to be intialized with an event object."""
 
         super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry,
@@ -97,7 +107,9 @@ class DEfit(MLfit):
 
 
 class DEfitnew(MLfit):
-
+    """
+    Under Construction
+    """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', DE_population_size=10,
                  max_iteration=10000,

@@ -7,7 +7,13 @@ from pyLIMA.fits.ML_fit import MLfit
 
 
 class LMfit(MLfit):
+    """
+    Standard Levenberg-Marquardt fit
 
+    Attributes
+    -----------
+    guess : list, the starting point of the fit
+    """
     def __init__(self, model, telescopes_fluxes_method='fit', loss_function='chi2'):
         """The fit class has to be intialized with an event object."""
 

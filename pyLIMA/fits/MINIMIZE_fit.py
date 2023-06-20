@@ -7,7 +7,9 @@ from pyLIMA.fits.LM_fit import LMfit
 
 
 class MINIMIZEfit(LMfit):
-
+    """
+    Under Construction
+    """
     def __init__(self, model, telescopes_fluxes_method='fit', loss_function='chi2'):
         """The fit class has to be intialized with an event object."""
 
