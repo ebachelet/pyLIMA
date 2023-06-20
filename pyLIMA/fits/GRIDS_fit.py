@@ -4,7 +4,6 @@ import time as python_time
 import numpy as np
 import scipy.optimize as so
 from pyLIMA.fits.ML_fit import MLfit
-from pyLIMA.outputs import pyLIMA_plots
 from tqdm import tqdm
 
 
