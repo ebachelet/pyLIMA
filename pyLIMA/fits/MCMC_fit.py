@@ -4,7 +4,7 @@ import time as python_time
 import emcee
 import numpy as np
 from pyLIMA.fits.ML_fit import MLfit
-
+from pyLIMA.priors import parameters_priors
 
 class MCMCfit(MLfit):
 
@@ -20,17 +20,12 @@ class MCMCfit(MLfit):
 
         self.MCMC_walkers = MCMC_walkers  # times number of dimension!
         self.MCMC_links = MCMC_links
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
     def fit_type(self):
         return "Monte Carlo Markov Chain (Affine Invariant)"
 
     def objective_function(self, fit_process_parameters):
-
-        for ind, parameter in enumerate(self.fit_parameters.keys()):
-
-            if (fit_process_parameters[ind] < self.fit_parameters[parameter][1][0]) | (
-                    fit_process_parameters[ind] > self.fit_parameters[parameter][1][1]):
-                return -np.inf
 
         objective = self.standard_objective_function(fit_process_parameters)
         return -objective

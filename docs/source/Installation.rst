@@ -5,7 +5,7 @@ Installation
 ============
 
 
-PIP
+pip
 ---
 
 The last stable version can be installed via pip:
@@ -14,8 +14,9 @@ The last stable version can be installed via pip:
 
     python -m pip install -U pip
     pip install -U pyLIMA
+    
 
-From Source
+From source
 -----------
     
 You can also get the development version on GitHub:
@@ -23,14 +24,12 @@ You can also get the development version on GitHub:
 .. code-block:: bash
 
     git clone https://github.com/ebachelet/pyLIMA.git
-    python setup.py -U install
-    pip install -r requirements.txt
+    pip install .
 
 You can also setup a virtualenv.
 
 Virtual Environments
 --------------------
-
 
 You can use a virtual environment to run pyLIMA (and to run other packages). 
 `Here <https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/>`_ is a quick guide to virtual environements.

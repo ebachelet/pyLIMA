@@ -20,7 +20,7 @@ PYLIMA_LIGHTCURVE_FLUX_NAMES = ['time', 'flux', 'err_flux', 'inv_err_flux']
 class Telescope(object):
     """
     This class contains all information about a telescope (details, observations,
-    Earth ephmerides...)
+    Earth ephemerides...)
 
     Attributes
     ----------
