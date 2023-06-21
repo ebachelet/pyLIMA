@@ -20,6 +20,12 @@ class UniformDistribution(object):
 
             return 0
 
+    def rvs(self, size):
+
+        sample = np.random.uniform(0, 1, size)
+        samples = self.bound_min+sample*(self.bound_max-self.bound_min)
+
+        return samples
 
 class NormalDistribution(object):
 
@@ -33,6 +39,11 @@ class NormalDistribution(object):
 
         return probability
 
+    def rvs(self, size):
+
+        samples = np.random.normal(self.mean, self.sigma, size)
+
+        return samples
 
 def default_parameters_priors(fit_parameters):
     """

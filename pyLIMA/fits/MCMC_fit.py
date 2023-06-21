@@ -92,15 +92,13 @@ class MCMCfit(MLfit):
             with pool:
 
                 sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters,
-                                                self.objective_function,
-                                                a=2.0, pool=pool)
+                                                self.objective_function, pool=pool)
 
                 sampler.run_mcmc(population, nlinks, progress=True)
         else:
 
             sampler = emcee.EnsembleSampler(nwalkers, number_of_parameters,
-                                            self.objective_function,
-                                            a=2.0, pool=pool)
+                                            self.objective_function, pool=pool)
 
             sampler.run_mcmc(population, nlinks, progress=True)
 
