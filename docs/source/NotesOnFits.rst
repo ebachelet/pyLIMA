@@ -3,7 +3,7 @@
 Notes on fits
 =============
 
-Below are some notes, details and advices about the fits. Most of the fits methods relies on `scipy <https://scipy.org/>`_. While several algorithms are implemented, see `here <https://github.com/ebachelet/pyLIMA/tree/Rebranding/pyLIMA/fits>`_, pyLIMA relies mainly of three main fitting methods. 
+Below are some notes, details and advices about the fits. Most of the fits methods relies on `scipy <https://scipy.org/>`_. While several algorithms are implemented, see `here <https://github.com/ebachelet/pyLIMA/tree/master/pyLIMA/fits>`_, pyLIMA relies mainly of three main fitting methods. 
 
 Differential Evolution (DE)
 ---------------------------
@@ -37,7 +37,7 @@ DE and MCMC methods can significantly be speed-up by implementing a pool of work
     
 Priors
 ------
-pyLIMA now includes the possibility to add user-defined priors. While they are no priors by default, uniform and gaussian priors are `available <https://github.com/ebachelet/pyLIMA/blob/Rebranding/pyLIMA/priors/parameters_priors.py>`_. Users can also define their own functions as long as they return a pdf for a given parameters as well as a rvs method, for example with a Cauchy distribution:
+pyLIMA now includes the possibility to add user-defined priors. While they are no priors by default, uniform and gaussian priors are `available <https://github.com/ebachelet/pyLIMA/blob/master/pyLIMA/priors/parameters_priors.py>`_. Users can also define their own functions as long as they return a pdf for a given parameters as well as a rvs method, for example with a Cauchy distribution:
 
 
 .. code-block:: python
