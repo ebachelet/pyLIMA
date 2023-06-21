@@ -556,6 +556,10 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     ax_res_x.get_shared_x_axes().join(ax_res_x, ax_res_y)
     # ax_main.get_shared_y_axes().join(ax_main, ax_res_y)
+    ax_res_y.xaxis.set_major_locator(MaxNLocator(4))
+    ax_res_x.xaxis.set_major_locator(MaxNLocator(4))
+
+    ax_res_y.ticklabel_format(useOffset=False, style='plain')
 
     unit = 'deg'
     for tel in microlensing_model.event.telescopes:
@@ -607,8 +611,11 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     ax_main.set_xlabel(r'$E~[' + str(unit) + ']$', fontsize=4 * fig_size[0] * 3 / 4.0)
     ax_main.set_ylabel(r'$N~[' + str(unit) + ']$', fontsize=4 * fig_size[0] * 3 / 4.0)
+
     ax_res_y.set_ylabel(r'$\Delta E~[' + str(unit) + ']$',
                         fontsize=4 * fig_size[0] * 3 / 4.0)
+    ax_res_y.set_xlabel('$JD$',  x=0.75,fontsize=4 * fig_size[0] * 3 / 4.0)
+
     ax_res_x.set_ylabel(r'$\Delta N~[' + str(unit) + ']$',
                         fontsize=4 * fig_size[0] * 3 / 4.0)
 

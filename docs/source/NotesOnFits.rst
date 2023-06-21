@@ -37,7 +37,7 @@ DE and MCMC methods can significantly be speed-up by implementing a pool of work
     
 Priors
 ------
-pyLIMA now includes the possibility to add user-defined priors. While they are no priors by default, uniform and gaussian priors are `available <https://github.com/ebachelet/pyLIMA/blob/Rebranding/pyLIMA/priors/parameters_priors.py>`_. Users can also define their own functions as long as they return a pdf for a given parameters, for example a Cauchy distribution:
+pyLIMA now includes the possibility to add user-defined priors. While they are no priors by default, uniform and gaussian priors are `available <https://github.com/ebachelet/pyLIMA/blob/Rebranding/pyLIMA/priors/parameters_priors.py>`_. Users can also define their own functions as long as they return a pdf for a given parameters as well as a rvs method, for example with a Cauchy distribution:
 
 
 .. code-block:: python
@@ -55,6 +55,14 @@ pyLIMA now includes the possibility to add user-defined priors. While they are n
             probability = 1 / denominator
             
             return probability
+        
+        def rvs(self, size):
+        
+            sample = np.random.standard_cauchy(size)
+
+            samples = self.mean+self.gamma*sample
+            
+            return samples
     
     from pyLIMA.models import PSPLmodel
     from pyLIMA.fits import DEfit
