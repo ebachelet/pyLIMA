@@ -1,184 +1,162 @@
 '''
-Welcome to pyLIMA tutorial!
+Welcome to pyLIMA (v2) tutorial 2!
 
-This second example will give you some basics about parameters change.
-
-If you do not like the pyLIMA standard parameters, this is made for you.
-
-We gonna fit the same lightcurves but using different parametrization.
-WARNING : this is alpha version, no guarantee
+This second tutorial will give you some basics about how to reconfigure your input
+parameters.
+If you do not like the standard pyLIMA parameters, this is made for you. We will
+demonstrate how to
+replace them with parameters of your choice using the fancy_parameters module.
+We are going to fit the same light curves as in tutorial 1, but using different
+parametrization.
 '''
-
-
-### First import the required libraries
-
-import numpy as np
+### First import the required libraries as before.
 import matplotlib.pyplot as plt
-import os, sys
+import numpy as np
+from pyLIMA.fits import TRF_fit
+from pyLIMA.models import FSPL_model
+### Import fancy_parameters. This will allow us to change the definitions as required.
+from pyLIMA.models import pyLIMA_fancy_parameters
+from pyLIMA.outputs import pyLIMA_plots
 
 from pyLIMA import event
 from pyLIMA import telescopes
-from pyLIMA import microlmodels
 
-### Create an event object. You can choose the name and RA,DEC in degrees :
+### fancy_parameters already provides some commonly used options, for example:
+pyLIMA_fancy_parameters.standard_fancy_parameters
 
+### Begin by create a new EVENT object and giving it a name, as in example 1.
 your_event = event.Event()
-your_event.name = 'your choice'
-your_event.ra = 269.39166666666665 
-your_event.dec = -29.22083333333333
+your_event.name = 'My event name'
 
-### Now we need some observations. That's good, we obtain some data on two
-### telescopes. Both are in I band and magnitude units :
+### Associate some data sets with this EVENT. 
+### Again, you will use simulated I-band data sets from two telescopes, OGLE and LCO.
+### The data sets are pre-formatted: column 1 is the date, column 2 the magnitude and
+# column 3
+### the uncertainty in the magnitude.
 
-data_1 = np.loadtxt('./Survey_1.dat')
-telescope_1 = telescopes.Telescope(name='OGLE', camera_filter='I', light_curve_magnitude=data_1)
+### Load up the data:
+data_1 = np.loadtxt('./data/Survey_1.dat')
+telescope_1 = telescopes.Telescope(name='OGLE',
+                                   camera_filter='I',
+                                   light_curve=data_1.astype(float),
+                                   light_curve_names=['time', 'mag', 'err_mag'],
+                                   light_curve_units=['JD', 'mag', 'mag'])
 
-data_2 = np.loadtxt('./Followup_1.dat')
-telescope_2 = telescopes.Telescope(name='LCOGT', camera_filter='I', light_curve_magnitude=data_2)
+data_2 = np.loadtxt('./data/Followup_1.dat')
+telescope_2 = telescopes.Telescope(name='LCO',
+                                   camera_filter='I',
+                                   light_curve=data_2.astype(float),
+                                   light_curve_names=['time', 'mag', 'err_mag'],
+                                   light_curve_units=['JD', 'mag', 'mag'])
 
-### Add the telescopes to your event :
+### Append these two telescope data sets to your EVENT object.
 your_event.telescopes.append(telescope_1)
 your_event.telescopes.append(telescope_2)
 
-### Find the survey telescope :
+### Define the survey telescope that you want to use to align all other data sets to.
+### We recommend using the data set with the most measurements covering the gretest 
+### time span of observations:
 your_event.find_survey('OGLE')
 
-### Sanity check
+### Run a quick sanity check on your input.
 your_event.check_event()
 
+### If necessary, set the microlensing limb-darkening coefficients (gamma) for each
+# telescope.
+### We already saw in example 1 that setting limb darkening coefficients improves the
+# fit for this event,
+### so we set them again:
+your_event.telescopes[0].ld_gamma = 0.5
+your_event.telescopes[1].ld_gamma = 0.5
 
-### set gamma for each telescopes :
+### Define the model and fit method (as in example 1) and let it know that you will
+# be using alternative parameters.
+### To do this, set the option fancy_parameters when you define the model. We will
+# replace just one parameter, tE with log_tE.
+### In essence, we need to define a transformation function within pyLIMA.
+### For this particular transformation, i.e. from tE to log(tE), pyLIMA already
+# provides the necessary functions to convert back and forth:
+my_pars = {'log_tE': 'tE'}
 
-your_event.telescopes[0].gamma = 0.5
-your_event.telescopes[1].gamma = 0.5
+fspl = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars)
+
+### We now want to fit this FSPL model to the data using the Trust Region Reflective
+# (TRF) algorithm, but we have set it to
+### use different parameters for the fit. Instead of tE, we have now set it to use
+# log_tE.
+### We can make this faster by using the results we obtained in example 1: [t0, u0,
+# tE, rho] = [79.9, 0.008, 10.1, 0.023].
+### Since the results in example 1 were given in the standard format, we need to
+# adjust them so they match the new definition.
+guess_parameters = [79.9, 0.008, np.log10(10.1), 0.023]
+
+### Import the TRF fitting algorithm and fit
+
+my_fit = TRF_fit.TRFfit(fspl)
+my_fit.model_parameters_guess = guess_parameters
+my_fit.fit()
+
+### Let's see the plot. Zoom close to the peak again to see what is going on.
 
 
-### Let's go basic for FSPL :
-model_1 = microlmodels.create_model('FSPL', your_event)
-
-### Let's cheat and use the results from example_1 :
-
-model_1.parameters_guess = [79.9, 0.008, 10.1, 0.023]
-
-your_event.fit(model_1,'LM')
-
-### Plot the results
-
-your_event.fits[-1].produce_outputs()
-print ('Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi)
-print ('Fit parameters : ', your_event.fits[-1].fit_results)
+pyLIMA_plots.plot_lightcurves(fspl, my_fit.fit_results['best_model'])
 plt.show()
 
 
-### All right, look OK. But let's say you dislike the rho parameter. Let's assume you prefer fitting using log(rho). Let's see.
+### So this works as expected!
 
-### We need to tell pyLIMA what kind of change we want :
+### OK, let's try something more complicated now: define t_star = rho*tE and use
+# log_rho = log(rho).
+### The log_rho definition is already provided by pyLIMA, but t_star isn't. 
+### So we need to tell pyLIMA what kind of changes we want by defining them:
 
-model_1.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho'} 
+### Define the transformation from t_star --> t_E. This uses the default
+# parameterisation.
+def t_star(x):
+    return x.rho * x.tE
 
-# This means we change rho by log(rho) in the fitting process.
-import pickle
-def logrho(x): return np.log10(x.rho)
-def rho(x): return 10**x.logrho
 
-model_1.pyLIMA_to_fancy = {'logrho':pickle.loads(pickle.dumps(logrho))}
+setattr(pyLIMA_fancy_parameters, 't_star', t_star)
 
-### We also need to explain the inverse mathematical transformation :
 
-model_1.fancy_to_pyLIMA = {'rho': pickle.loads(pickle.dumps(rho))}
+### It is also necessary to define the inverse transformation from t_E --> t_star.
+### Note that the inverse transformation needs to be defined using the new
+# parameterisation!
+def tE(x):
+    return x.t_star / 10 ** (x.log_rho)
 
-### Change rho boundaries to logrho boundaries (i.e [log10(rhomin), log10(rhomax)]) :
-model_1.parameters_boundaries[3] = [-5, -1]
 
-### Give some guess for LM
-model_1.parameters_guess = [79.9309216918228, 0.008144421578161223, 10.110761974783646, np.log10(0.02259887495966877)]
+setattr(pyLIMA_fancy_parameters, 'tE', tE)
 
-### That's it, let's fit!
-your_event.fit(model_1,'LM')
+### Your new t_star definition is now part of fancy_parameters and you can use it.
+dir(pyLIMA_fancy_parameters)
 
-your_event.fits[-1].produce_outputs()
-print ('Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi)
-print ('Log rho : ',your_event.fits[-1].outputs.fit_parameters.logrho)
-print ('Corresponding rho : ',10**your_event.fits[-1].outputs.fit_parameters.logrho)
+### Update the fancy parameter dictionary with the new definitions
+my_pars2 = {'log_rho': 'rho', 't_star': 'tE'}
+fspl2 = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars2)
 
+### Give it the guess parameters we obtained from example 1, formatted using the new
+# definitions.
+### t_star = rho * tE so in our example that is 10.1 * 0.023:
+guess_parameters2 = [79.9, 0.008, 10.1 * 0.023, np.log10(0.023)]
+
+### Perform the fit using the new parameter definitions:
+my_fit2 = TRF_fit.TRFfit(fspl2)
+my_fit2.model_parameters_guess = guess_parameters2
+my_fit2.fit()
+
+### To call all standard plotting options you can also use the fit_outputs module.
+### If you want just the light curve, you can use plot_lightcurves as in example 1.
+my_fit2.fit_outputs()
 plt.show()
 
+### Let's look at the optimized parameters and the chi^2 of the fit:
+print("fit results: ", my_fit2.fit_results['best_model'])
+print("chi2: ", my_fit2.fit_results['chi2'])
 
-### It works great! 
+### If you have forgotten the order of the parameters, do:
+my_fit2.fit_parameters.keys()
 
-### OK, you want something more complicated  now : tstar = rho.tE, logrho = log(rho).
+### Note that the results now are displayed with our newly defined parameters.
 
-### We need to tell pyLIMA what kind of change we want :
-
-model_1.fancy_to_pyLIMA_dictionnary = {'logrho': 'rho', 'tstar':'tE'} 
-
-# This means we change rho by log(rho) and tE by tstar in the fitting process.
-
-### We need now to explain the mathematical transformation :
-def logrho(x): return np.log10(x.rho)
-def rho(x): return 10**x.logrho
-
-def tstar(x): return x.rho*x.tE
-def tE(x): return x.tstar/10**x.logrho
-
-model_1.pyLIMA_to_fancy = {'logrho':pickle.loads(pickle.dumps(logrho)),'tstar':pickle.loads(pickle.dumps(tstar))}
-
-### We also need to explain the inverse mathematical transformation :
-
-model_1.fancy_to_pyLIMA = {'rho': pickle.loads(pickle.dumps(rho)),'tE': pickle.loads(pickle.dumps(tE))}
-
-### Change tE boundaries to tstar boundaries (i.e [log10(rhomin)*tEmin, log10(rhomax)*tEmax]) :
-model_1.parameters_boundaries[2] = [10**-5, 300 ]
-
-### Change rho boundaries to logrho boundaries (i.e [log10(rhomin), log10(rhomax)]) :
-model_1.parameters_boundaries[3] = [-5, -1]
-
-### Give some guess for LM
-model_1.parameters_guess = [79.93092292215124, 0.008144793661913143, 0.22, -1.6459136264565297]
-
-### That's it, let's fit!
-your_event.fit(model_1,'LM')
-
-your_event.fits[-1].produce_outputs()
-print('Chi2_LM :',your_event.fits[-1].outputs.fit_parameters.chichi)
-print('tstar : ',your_event.fits[-1].outputs.fit_parameters.tstar)
-print('Corresponding tE: ',your_event.fits[-1].outputs.fit_parameters.tstar/10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-print('Log rho : ',your_event.fits[-1].outputs.fit_parameters.logrho)
-print('Corresponding rho : ',10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-plt.show()
-
-### And what about the DE method? ### Let's try it!:
-your_event.fit(model_1,'DE')
-
-
-your_event.fits[-1].produce_outputs()
-
-print('Chi2_DE :',your_event.fits[-1].outputs.fit_parameters.chichi)
-
-print('tstar : ',your_event.fits[-1].outputs.fit_parameters.tstar)
-
-print('Corresponding tE: ',your_event.fits[-1].outputs.fit_parameters.tstar/10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-
-
-print('Log rho : ',your_event.fits[-1].outputs.fit_parameters.logrho)
-
-print('Corresponding rho : ',10**your_event.fits[-1].outputs.fit_parameters.logrho)
-
-
-plt.show()
-
-# Bonus Track #
-### Let's win some times by injecting some previous results
-
-model_1.parameters_guess = [79.9, 0.008, 0.22849, -1.6459]
-
-### Fit again, but using MCMC now. TAKE A WHILE....Wait until figures pop up.
-your_event.fit(model_1,'MCMC',flux_estimation_MCMC='MCMC')
-print('The fitting process is finished now, let produce some outputs....')
-
-your_event.fits[-1].produce_outputs()
-
-plt.show()
+### This concludes tutorial 2.

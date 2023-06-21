@@ -1,4 +1,9 @@
-"""
+from importlib.metadata import version
 
-@author: mnorbury
-"""
+try:
+
+    __version__ = version('pyLIMA')
+
+except ImportError:
+
+    pass
