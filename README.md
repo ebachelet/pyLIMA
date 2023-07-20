@@ -1,6 +1,12 @@
 ![Build Status](https://github.com/ebachelet/pyLIMA/actions/workflows/actions_unit_tests.yaml/badge.svg)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.997468.svg)](https://doi.org/10.5281/zenodo.997468)
 
+# Multiprocessing in pyLIMA (Warning)
+
+The latest version of pyLIMA applies the multiprocessing library to parallelize aspects of its model fitting processes in order to optimize for speed. This has been tested and works under Ubuntu Linux with Python 3.11.
+Users should be aware that the multiprocessing library uses a different method ('spawn') to start threads on the Mac and Windows platforms compared to the method used on Linux ('fork'), as the fork method is considered to be unsafe on these platforms. Unfortunately, this has meant that pyLIMA crashes if run under the latest version of Python (3.11) under a Mac (and likely under Windows), due to the outstanding issue with the multiprocessing library.
+We are currently investigating a fix for this issue. In the interim we recommend using an earlier version of Python with the latest pyLIMA.
+
 # pyLIMA
 
 Authors : Etienne Bachelet (etibachelet@gmail.com), Rachel Street (rstreet@lcogt.net),
