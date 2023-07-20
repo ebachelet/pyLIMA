@@ -1,6 +1,11 @@
 ![Build Status](https://github.com/ebachelet/pyLIMA/actions/workflows/actions_unit_tests.yaml/badge.svg)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.997468.svg)](https://doi.org/10.5281/zenodo.997468)
 
+
+# WARNING
+
+We are aware of crashes when pyLIMA is called with python3.11+ using MAC (and potentially Windows). This is due to the multiprocessing module and we are currently working on a fix. Meanwhile, please try to use lower version of python with these OS.
+
 # pyLIMA
 
 Authors : Etienne Bachelet (etibachelet@gmail.com), Rachel Street (rstreet@lcogt.net),
