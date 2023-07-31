@@ -165,12 +165,20 @@ class MLmodel(object):
             dfluxdg = [getattr(pyLIMA_parameters, 'fsource_' + telescope.name)] * len(
                 amplification)
 
+            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdg].T
+
         if self.blend_flux_parameter == 'fblend':
             dfluxdfs = (amplification)
             dfluxdg = [1] * len(amplification)
 
-        # breakpoint()
-        jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdg].T
+            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdg].T
+
+        if self.blend_flux_parameter == 'noblend':
+            dfluxdfs = (amplification)
+
+            jacobi = np.c_[magnification_jacobian, dfluxdfs].T
+
+        print(jacobi)
         return jacobi
 
     @abc.abstractmethod
