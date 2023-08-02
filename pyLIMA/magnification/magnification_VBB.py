@@ -76,10 +76,21 @@ def magnification_USBL(separation, mass_ratio, x_source, y_source, rho):
     magnification_usbl = []
 
     for xs, ys, s in zip(x_source, y_source, separation):
-        magnification_VBB = VBB.BinaryMag2(s, mass_ratio, xs, ys, rho)
+       # print(s, mass_ratio, xs, ys, rho)
+        magnification_vbb = VBB.BinaryMag2(s, mass_ratio, xs, ys, rho)
 
-        magnification_usbl.append(magnification_VBB)
+        magnification_usbl.append(magnification_vbb)
+        #import decimal
+        #print(decimal.Decimal.from_float(s))
+        #print(decimal.Decimal.from_float(mass_ratio))
+        #print(decimal.Decimal.from_float(xs))
+        #print(decimal.Decimal.from_float(ys))
+        #print(decimal.Decimal.from_float(rho))
+        #print(decimal.Decimal.from_float(magnification_vbb))
+        #print('####')
 
+        #if magnification_vbb<0:
+         #       breakpoint()
     return np.array(magnification_usbl)
 
 
