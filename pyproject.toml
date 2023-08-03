@@ -32,7 +32,7 @@ dependencies = [
     "pymoo",
     "scipy >= 1.0",
     "tqdm >= 4.0",
-    "VBBinaryLensing>=3.6.1",
+    "VBBinaryLensing>=3.6.2",
 ]
 
 [project.urls]
