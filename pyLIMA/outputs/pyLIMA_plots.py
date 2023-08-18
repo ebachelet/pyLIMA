@@ -42,20 +42,9 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
         # Photometry first
         Earth = True
 
-        for tel in microlensing_model.event.telescopes:
+        for index,tel in enumerate(microlensing_model.event.telescopes):
 
             if tel.lightcurve_flux is not None:
-
-                if tel.location == 'Space':
-                    model_time = np.arange(
-                        np.min(tel.lightcurve_magnitude['time'].value),
-                        np.max(tel.lightcurve_magnitude['time'].value),
-                        0.1).round(2)
-
-                    model_time = np.r_[
-                        model_time, tel.lightcurve_magnitude['time'].value]
-
-                    model_time.sort()
 
                 if Earth and tel.location == 'Earth':
 
@@ -89,46 +78,42 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time.sort()
 
-                if (tel.location == 'Space') | (Earth and tel.location == 'Earth'):
-
                     model_time = np.unique(model_time)
 
-                    model_lightcurve = np.c_[
-                        model_time, [0] * len(model_time), [0.1] * len(model_time)]
-                    model_telescope = fake_telescopes.create_a_fake_telescope(
-                        light_curve=model_lightcurve)
-
-                    model_telescope.name = tel.name
-                    model_telescope.filter = tel.filter
-                    model_telescope.location = tel.location
-                    model_telescope.ld_gamma = tel.ld_gamma
-                    model_telescope.ld_sigma = tel.ld_sigma
-                    model_telescope.ld_a1 = tel.ld_a1
-                    model_telescope.ld_a2 = tel.ld_a2
-                    model_telescope.location = tel.location
-
-                    if tel.location == 'Space':
-                        model_telescope.spacecraft_name = tel.spacecraft_name
-                        model_telescope.spacecraft_positions = tel.spacecraft_positions
-
-                    if microlensing_model.parallax_model[0] != 'None':
-                        model_telescope.initialize_positions()
-
-                        model_telescope.compute_parallax(
-                            microlensing_model.parallax_model,
-                            microlensing_model.event.North
-                            ,
-                            microlensing_model.event.East)  # ,
-                        # microlensing_model.event.ra/180*np.pi)
+                    model_telescope = fake_telescopes.replicate_a_telescope(
+                        microlensing_model, index,
+                        light_curve_time=model_time,
+                        astrometry_curve_time=None)
 
                     list_of_fake_telescopes.append(model_telescope)
 
-                    if tel.location == 'Earth' and Earth:
-                        Earth = False
+                if tel.location == 'Space':
+                    model_time = np.arange(
+                        np.min(tel.lightcurve_magnitude['time'].value),
+                        np.max(tel.lightcurve_magnitude['time'].value),
+                        0.1).round(2)
+
+                    model_time = np.r_[
+                        model_time, tel.lightcurve_magnitude['time'].value]
+
+                    model_time.sort()
+
+                    model_time = np.unique(model_time)
+
+                    model_telescope = fake_telescopes.replicate_a_telescope(
+                            microlensing_model, index,
+                            light_curve_time=model_time,
+                            astrometry_curve_time=None)
+
+                    list_of_fake_telescopes.append(model_telescope)
+
+                if tel.location == 'Earth' and Earth:
+                    Earth = False
+
 
         # Astrometry
 
-        for tel in microlensing_model.event.telescopes:
+        for index,tel in enumerate(microlensing_model.event.telescopes):
 
             if tel.astrometry is not None:
 
@@ -161,34 +146,10 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     model_time.sort()
 
                 model_time = np.unique(model_time)
-                model_astrometry = np.c_[
-                    model_time, [0] * len(model_time), [0.1] * len(model_time), [
-                        0] * len(model_time), [0.1] * len(model_time)]
-                model_telescope = fake_telescopes.create_a_fake_telescope(
-                    astrometry_curve=model_astrometry,
-                    astrometry_unit=tel.astrometry['ra'].unit)
-
-                model_telescope.name = tel.name
-                model_telescope.filter = tel.filter
-                model_telescope.location = tel.location
-                model_telescope.ld_gamma = tel.ld_gamma
-                model_telescope.ld_sigma = tel.ld_sigma
-                model_telescope.ld_a1 = tel.ld_a1
-                model_telescope.ld_a2 = tel.ld_a2
-                model_telescope.pixel_scale = tel.pixel_scale
-
-                if tel.location == 'Space':
-                    model_telescope.spacecraft_name = tel.spacecraft_name
-                    model_telescope.spacecraft_positions = tel.spacecraft_positions
-
-                if microlensing_model.parallax_model[0] != 'None':
-                    model_telescope.initialize_positions()
-
-                    model_telescope.compute_parallax(microlensing_model.parallax_model,
-                                                     microlensing_model.event.North
-                                                     ,
-                                                     microlensing_model.event.East)  # ,
-                    # microlensing_model.event.ra / 180)# * np.pi)
+                model_telescope = fake_telescopes.replicate_a_telescope(
+                    microlensing_model, index,
+                    light_curve_time=None,
+                    astrometry_curve_time=model_time)
 
                 list_of_fake_telescopes.append(model_telescope)
 

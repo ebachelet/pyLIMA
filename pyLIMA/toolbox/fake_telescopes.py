@@ -1,5 +1,5 @@
+import numpy as np
 from pyLIMA import telescopes
-
 
 def create_a_fake_telescope(light_curve=None, astrometry_curve=None,
                             name='A Fake Telescope', astrometry_unit='deg'):
@@ -18,7 +18,7 @@ def create_a_fake_telescope(light_curve=None, astrometry_curve=None,
     telescope : object, a telescope object
     """
 
-    telescope = telescopes.Telescope(name=name, light_curve=light_curve,
+    fake_telescope = telescopes.Telescope(name=name, light_curve=light_curve,
                                      light_curve_names=['time', 'mag', 'err_mag'],
                                      light_curve_units=['JD', 'mag', 'mag'],
                                      astrometry=astrometry_curve,
@@ -28,4 +28,51 @@ def create_a_fake_telescope(light_curve=None, astrometry_curve=None,
                                                        astrometry_unit, astrometry_unit,
                                                        astrometry_unit])
 
-    return telescope
+    return fake_telescope
+
+
+def replicate_a_telescope(microlensing_model, telescope_index, light_curve_time=None,
+                          astrometry_curve_time=None):
+
+    original_telescope = microlensing_model.event.telescopes[telescope_index]
+
+    if light_curve_time is not None:
+
+        model_time = light_curve_time
+        model_lightcurve = np.c_[
+            model_time, [0] * len(model_time), [0.1] * len(model_time)]
+    else:
+
+        model_lightcurve = None
+
+    if astrometry_curve_time is not None:
+
+        model_time = astrometry_curve_time
+        model_astrometry = np.c_[
+            model_time, [0] * len(model_time), [0.1] * len(model_time), [
+                0] * len(model_time), [0.1] * len(model_time)]
+
+        unit_astrometry = original_telescope.astrometry['ra'].unit
+    else:
+
+        model_astrometry = None
+        unit_astrometry='deg'
+
+    model_telescope = create_a_fake_telescope(light_curve=model_lightcurve,
+                            astrometry_curve=model_astrometry,
+                            name=original_telescope.name,
+                            astrometry_unit=unit_astrometry)
+
+    attributes_to_copy = ['name','filter','location','ld_gamma','ld_sigma','ld_a1',
+                          'ld_a2', 'location','spacecraft_name','pixel_scale']
+
+    for key in  attributes_to_copy:
+
+       setattr(model_telescope, key, getattr(original_telescope, key))
+
+    if microlensing_model.parallax_model[0] != 'None':
+        model_telescope.initialize_positions()
+        model_telescope.compute_parallax(microlensing_model.parallax_model,
+                                     microlensing_model.event.North,
+                                     microlensing_model.event.East)  # ,
+    return model_telescope

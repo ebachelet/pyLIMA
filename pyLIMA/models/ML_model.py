@@ -178,7 +178,6 @@ class MLmodel(object):
 
             jacobi = np.c_[magnification_jacobian, dfluxdfs].T
 
-        print(jacobi)
         return jacobi
 
     @abc.abstractmethod
@@ -857,3 +856,5 @@ class MLmodel(object):
         source_trajectory_y = -lens_trajectory_y
 
         return source_trajectory_x, source_trajectory_y, dseparation, dalpha
+
+
