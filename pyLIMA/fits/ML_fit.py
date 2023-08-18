@@ -550,14 +550,22 @@ class MLfit(object):
         for ind, param in enumerate(self.fit_parameters.keys()):
 
             if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):
-                fit_parameters_guess[ind] = self.fit_parameters[param][1][0]
-                print('WARNING: Setting the ' + param + ' to the lower limit ' + str(
-                    fit_parameters_guess[ind]))
+
+                fit_parameters_guess = None
+                print('WARNING: ' + param + ' is out of the parameters boundaries, '
+                                             'abord fitting ')
+
+                print(sys._getframe().f_code.co_name,
+                      ' : Initial parameters guess FAIL')
+                return fit_parameters_guess
 
             if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
-                fit_parameters_guess[ind] = self.fit_parameters[param][1][1]
-                print('WARNING: Setting the ' + param + ' to the upper limit ' + str(
-                    fit_parameters_guess[ind]))
+                fit_parameters_guess = None
+                print('WARNING: ' + param + ' is out of the parameters boundaries, '
+                                            'abord fitting ')
+                print(sys._getframe().f_code.co_name,
+                     ' : Initial parameters guess FAIL')
+                return fit_parameters_guess
 
         print(sys._getframe().f_code.co_name, ' : Initial parameters guess SUCCESS')
         print('Using guess: ', fit_parameters_guess)
@@ -1046,20 +1054,34 @@ class MLfit(object):
         # The objective function is : (data-model)/errors
 
         _jacobi = -_jacobi
-        jacobi = _jacobi[:-2]
         # Split the fs and g derivatives in several columns correpsonding to
         # each observatories
         start_index = 0
-        dresdfs = _jacobi[-2]
-        dresdg = _jacobi[-1]
+
+        if self.model.blend_flux_parameter != 'noblend':
+            jacobi = _jacobi[:-2]
+            dresdfs = _jacobi[-2]
+            dresdg = _jacobi[-1]
+
+        else:
+            jacobi = _jacobi[:-1]
+
+            dresdfs = _jacobi[-1]
+            dresdg = None
 
         for telescope in self.model.event.telescopes:
             derivative_fs = np.zeros((len(dresdfs)))
-            derivative_g = np.zeros((len(dresdg)))
             index = np.arange(start_index, start_index + len(telescope.lightcurve_flux))
-            derivative_fs[index] = dresdfs[index]
-            derivative_g[index] = dresdg[index]
-            jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
+
+            if self.model.blend_flux_parameter != 'noblend':
+                derivative_g = np.zeros((len(dresdg)))
+
+                derivative_fs[index] = dresdfs[index]
+                derivative_g[index] = dresdg[index]
+                jacobi = np.r_[jacobi, np.array([derivative_fs, derivative_g])]
+            else:
+                derivative_fs[index] = dresdfs[index]
+                jacobi = np.r_[jacobi, [derivative_fs]]
 
             start_index = index[-1] + 1
 

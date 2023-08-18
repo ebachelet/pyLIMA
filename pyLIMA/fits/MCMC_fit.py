@@ -46,6 +46,9 @@ class MCMCfit(MLfit):
 
             best_solution = self.initial_guess()
 
+            if best_solution is None:
+                return
+
             number_of_parameters = len(best_solution)
             nwalkers = self.MCMC_walkers * number_of_parameters
 

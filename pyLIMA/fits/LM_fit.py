@@ -71,6 +71,10 @@ class LMfit(MLfit):
         # algorithm find it.
         self.guess = self.initial_guess()
 
+        if self.guess is None:
+            return
+
+
         n_data = 0
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')

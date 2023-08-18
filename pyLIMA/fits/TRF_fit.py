@@ -20,6 +20,10 @@ class TRFfit(LMfit):
         # else let the
         # algorithm find it.
         self.guess = self.initial_guess()
+
+        if self.guess is None:
+            return
+
         bounds_min = [self.fit_parameters[key][1][0] for key in
                       self.fit_parameters.keys()]
         bounds_max = [self.fit_parameters[key][1][1] for key in
