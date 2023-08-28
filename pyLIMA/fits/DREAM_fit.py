@@ -4,6 +4,7 @@ import time as python_time
 import numpy as np
 from pyLIMA.fits.ML_fit import MLfit
 from tqdm import tqdm
+from pyLIMA.priors import parameters_priors
 
 
 class DREAMfit(MLfit):
@@ -22,20 +23,16 @@ class DREAMfit(MLfit):
         self.population = []  # to be recognize by all process during parallelization
         self.DEMC_population_size = DEMC_population_size  # Times number of dimensions!
         self.max_iteration = max_iteration
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
     def fit_type(self):
         return "Differential Evolution Markov Chain"
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = -self.model_likelihood(fit_process_parameters)
+        objective = self.standard_objective_function(fit_process_parameters)
+        return objective
 
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += -priors
-
-        return likelihood
 
     ### From scipy.DE
     def unscale_parameters(self, trial):
@@ -79,7 +76,7 @@ class DREAMfit(MLfit):
         mutate = np.random.uniform(0, 1, len(parent0[:-1])) < crossover
         # breakpoint()
         # mutate = np.random.uniform(0, 1, len(parent1[:-1])) < -1
-        if np.all(mutate is False):
+        if np.all(mutate==False):
             rand = np.random.randint(0, len(mutate))
             mutate[rand] = True
 
@@ -89,8 +86,11 @@ class DREAMfit(MLfit):
 
         mutation = np.random.uniform(1 - eps1, 1 + eps1, len(parent0[:-1]))
         shifts = np.random.normal(0, eps2, len(parent0[:-1]))  # *self.scale
+        try:
+            gamma = 2.38 / (2 * len(parent0[:-1][mutate])) ** 0.5  # *self.scale
+        except:
+            breakpoint()
 
-        gamma = 2.38 / (2 * len(parent0[:-1][mutate])) ** 0.5  # *self.scale
         # gamma = 2.38 / (2 * len(index1[::2]) * len(parent1[:-1][mutate])) ** 0.5
         jumping_nodes = np.random.randint(0, 10)
 
@@ -343,7 +343,7 @@ class DREAMfit(MLfit):
 
             all_population.append(loop_population)
             all_acceptance.append(acceptance)
-            breakpoint()
+            #breakpoint()
 
             if loop % 10 == 0:
                 Z += loop_population.tolist()

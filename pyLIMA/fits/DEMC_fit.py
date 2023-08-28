@@ -5,6 +5,7 @@ import emcee
 import numpy as np
 from pyLIMA.fits.ML_fit import MLfit
 from pyLIMA.outputs import pyLIMA_plots
+from pyLIMA.priors import parameters_priors
 
 
 class DEMCfit(MLfit):
@@ -24,6 +25,7 @@ class DEMCfit(MLfit):
         self.DEMC_walkers = DEMC_walkers  # times number of dimension!
         self.DEMC_links = DEMC_links
         self.DEMC_chains = []
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
     def fit_type(self):
         return "Monte Carlo Markov Chain (Affine Invariant)"
@@ -42,6 +44,8 @@ class DEMCfit(MLfit):
     def fit(self, initial_population=[], computational_pool=False):
 
         start_time = python_time.time()
+        # Safety, recompute in case user changes boundaries after init
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
         number_of_parameters = len(self.fit_parameters)
         nwalkers = self.DEMC_walkers * number_of_parameters

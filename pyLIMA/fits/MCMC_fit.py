@@ -41,6 +41,8 @@ class MCMCfit(MLfit):
     def fit(self, initial_population=[], computational_pool=False):
 
         start_time = python_time.time()
+        #Safety, recompute in case user changes boundaries after init
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
         if initial_population == []:
 
