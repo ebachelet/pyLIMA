@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 import pyLIMA.parallax.parallax
+import pyLIMA.xallarap.xallarap
 import pyLIMA.priors.parameters_boundaries
 from pyLIMA.magnification import magnification_Jacobian
 from pyLIMA.models import pyLIMA_fancy_parameters
@@ -375,6 +376,14 @@ class MLmodel(object):
             model_dictionnary['piEE'] = len(model_dictionnary)
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
+
+        if self.xallarap_model[0] != 'None':
+            jack = 'Numerical'
+            model_dictionnary['xiEN'] = len(model_dictionnary)
+            model_dictionnary['xiEE'] = len(model_dictionnary)
+            model_dictionnary['xi_period'] = len(model_dictionnary)
+            model_dictionnary['xi_phase'] = len(model_dictionnary)
+            model_dictionnary['xi_inclination'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == '2D':
             jack = 'Numerical'
@@ -798,34 +807,18 @@ class MLmodel(object):
                 pass
 
         # Xallarap?
-        if 'XiEN' in pyLIMA_parameters._fields:
-            # XiE = np.array([pyLIMA_parameters.XiEN, pyLIMA_parameters.XiEE])
-            # ra = pyLIMA_parameters.ra_xallarap
-            # dec = pyLIMA_parameters.dec_xallarap
-            # period = pyLIMA_parameters.period_xallarap
+        if 'xiEN' in pyLIMA_parameters._fields:
+            xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
+            xallarap_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
+                self.xallarap_model, time, pyLIMA_parameters)
+            xallarap_delta_tau, xallarap_delta_beta = (
+                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
+                                                                    xallarap_positions))
+            #breakpoint()
 
-            # if 'eccentricity_xallarap' in pyLIMA_parameters._fields:
-            #    eccentricity = pyLIMA_parameters.eccentricity_xallarap
-            #    t_periastron = pyLIMA_parameters.t_periastron_xallarap
+            tau += xallarap_delta_tau
+            beta += xallarap_delta_beta
 
-            #    orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec,
-            #    period, eccentricity, t_periastron]
-            #    xallarap_delta_tau, xallarap_delta_beta =
-            #    microlxallarap.compute_xallarap_curvature(XiE,
-            #      orbital_elements,
-            #      mode='elliptic')
-            # else:
-
-            #    orbital_elements = [telescope.lightcurve_flux[:, 0], ra, dec, period]
-            #    xallarap_delta_tau, xallarap_delta_beta =
-            #    microlxallarap.compute_xallarap_curvature(XiE,
-            #    orbital_elements)
-
-            # tau += xallarap_delta_tau
-            # beta += xallarap_delta_beta
-
-            ### To be implemented
-            pass
         if 'alpha' in pyLIMA_parameters._fields:
 
             alpha = pyLIMA_parameters.alpha
@@ -856,5 +849,3 @@ class MLmodel(object):
         source_trajectory_y = -lens_trajectory_y
 
         return source_trajectory_x, source_trajectory_y, dseparation, dalpha
-
-

@@ -399,8 +399,9 @@ class MLfit(object):
                 if 'piEN' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
 
-                if 'XiEN' in self.fit_parameters.keys():
-                    guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+                if 'xiEN' in self.fit_parameters.keys():
+                    guess_paczynski_parameters = guess_paczynski_parameters + [0, 0,
+                                                                               1,0,0]
 
                 if 'dsdt' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]

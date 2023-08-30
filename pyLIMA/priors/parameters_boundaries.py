@@ -149,6 +149,16 @@ def t_center_boundaries():
 def u_center_boundaries():
     return (-1, 1)
 
+def xiEN_boundaries():
+    return (-0.25, 0.25)
+def xiEE_boundaries():
+    return (-0.25, 0.25)
+def xi_period_boundaries():
+    return (0.001, 10) #yr
+def xi_phase_boundaries():
+    return (0.0, 2*np.pi)
+def xi_inclination_boundaries():
+    return (-np.pi/2, np.pi/2) #yr
 
 def parameters_boundaries(event, model_dictionnary):
     """
