@@ -76,7 +76,8 @@ class DREAMfit(MLfit):
         mutate = np.random.uniform(0, 1, len(parent0[:-1])) < crossover
         # breakpoint()
         # mutate = np.random.uniform(0, 1, len(parent1[:-1])) < -1
-        if np.all(mutate==False):
+        if True not in mutate:
+
             rand = np.random.randint(0, len(mutate))
             mutate[rand] = True
 
@@ -86,10 +87,8 @@ class DREAMfit(MLfit):
 
         mutation = np.random.uniform(1 - eps1, 1 + eps1, len(parent0[:-1]))
         shifts = np.random.normal(0, eps2, len(parent0[:-1]))  # *self.scale
-        try:
-            gamma = 2.38 / (2 * len(parent0[:-1][mutate])) ** 0.5  # *self.scale
-        except:
-            breakpoint()
+
+        gamma = 2.38 / (2 * len(parent0[:-1][mutate])) ** 0.5  # *self.scale
 
         # gamma = 2.38 / (2 * len(index1[::2]) * len(parent1[:-1][mutate])) ** 0.5
         jumping_nodes = np.random.randint(0, 10)
