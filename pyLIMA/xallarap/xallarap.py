@@ -4,13 +4,15 @@ def xallarap_shifts(xallarap_model, time, pyLIMA_parameters):
 
     if xallarap_model[0] == 'Circular':
 
-        xi_period = 10**pyLIMA_parameters.xi_period
+        xi_period = 10**pyLIMA_parameters.xi_period*pyLIMA_parameters.tE
         xi_phase = pyLIMA_parameters.xi_phase
         xi_inclination = pyLIMA_parameters.xi_inclination
         
         separation_1, separation_2 = circular_xallarap(time, xallarap_model[1],
                                                       xi_period, xi_phase,
                                                       xi_inclination)
+
+
 
     return np.array([separation_1, separation_2])
 
@@ -19,7 +21,7 @@ def circular_xallarap(time, t0_xi, xi_period, xi_phase,
                       xi_inclination):
 
 
-    angular_velocity = 2*np.pi/xi_period/365.25
+    angular_velocity = 2*np.pi/xi_period
     omega = angular_velocity*(time-t0_xi)+xi_phase
 
     separation_1 = np.cos(omega)-np.cos(xi_phase)

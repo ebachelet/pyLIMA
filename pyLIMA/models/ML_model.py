@@ -384,6 +384,7 @@ class MLmodel(object):
             model_dictionnary['xi_period'] = len(model_dictionnary)
             model_dictionnary['xi_phase'] = len(model_dictionnary)
             model_dictionnary['xi_inclination'] = len(model_dictionnary)
+            model_dictionnary['xi_mass_ratio'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == '2D':
             jack = 'Numerical'
