@@ -413,11 +413,12 @@ class MLfit(object):
                         guess_paczynski_parameters)]):
 
                     if (guess_paczynski_parameters[ind] < self.fit_parameters[param][
-                        1][0]) | (guess_paczynski_parameters[ind] > self.fit_parameters[param][1][1]):
+                        1][0]) | (guess_paczynski_parameters[ind] >
+                                  self.fit_parameters[param][1][1]):
 
                         guess_paczynski_parameters[ind] = 0.5*self.fit_parameters[
                             param][1][1]
-                
+
                 self.model_parameters_guess = guess_paczynski_parameters
 
 
