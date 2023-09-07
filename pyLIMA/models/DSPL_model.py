@@ -13,7 +13,12 @@ class DSPLmodel(MLmodel):
         """
         [t0,u0,delta_t0,delta_u0,q_flux_i]
         """
-        model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3, 'tE': 4}
+        if self.xallarap_model == []:
+
+            model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3, 'tE': 4}
+        else:
+
+            model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2}
 
         filters = [telescope.filter for telescope in self.event.telescopes]
 
@@ -80,6 +85,7 @@ class DSPLmodel(MLmodel):
         source2_trajectory_x : the x coordinates of source 2
         source2_trajectory_y : the y coordinates of source 2
         """
+
         source1_trajectory_x, source1_trajectory_y, _, _ = self.source_trajectory(
             telescope, pyLIMA_parameters,
             data_type='photometry')
@@ -88,12 +94,14 @@ class DSPLmodel(MLmodel):
 
         pyLIMA_parameters_2 = self.compute_pyLIMA_parameters(parameters)
 
-        pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0 + pyLIMA_parameters_2.delta_t0
-        pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0 + pyLIMA_parameters_2.delta_u0
+        if self.xallarap_model == []:
+
+            pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0 + pyLIMA_parameters_2.delta_t0
+            pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0 + pyLIMA_parameters_2.delta_u0
 
         source2_trajectory_x, source2_trajectory_y, _, _ = self.source_trajectory(
             telescope, pyLIMA_parameters_2,
-            data_type='photometry')
+            data_type='photometry',body='secondary')
 
         return source1_trajectory_x, source1_trajectory_y, source2_trajectory_x, \
             source2_trajectory_y

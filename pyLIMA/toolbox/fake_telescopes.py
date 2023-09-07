@@ -64,12 +64,15 @@ def replicate_a_telescope(microlensing_model, telescope_index, light_curve_time=
                             astrometry_unit=unit_astrometry)
 
     attributes_to_copy = ['name','filter','location','ld_gamma','ld_sigma','ld_a1',
-                          'ld_a2', 'location','spacecraft_name','pixel_scale']
+                          'ld_a2', 'ld_gamma1','ld_gamma2','location','spacecraft_name',
+                          'pixel_scale']
 
     for key in  attributes_to_copy:
 
-       setattr(model_telescope, key, getattr(original_telescope, key))
-
+        try:
+            setattr(model_telescope, key, getattr(original_telescope, key))
+        except:
+            pass
     if microlensing_model.parallax_model[0] != 'None':
         model_telescope.initialize_positions()
         model_telescope.compute_parallax(microlensing_model.parallax_model,

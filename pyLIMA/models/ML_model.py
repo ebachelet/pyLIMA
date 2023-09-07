@@ -384,6 +384,7 @@ class MLmodel(object):
             model_dictionnary['xi_period'] = len(model_dictionnary)
             model_dictionnary['xi_phase'] = len(model_dictionnary)
             model_dictionnary['xi_inclination'] = len(model_dictionnary)
+            model_dictionnary['xi_mass_ratio'] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == '2D':
             jack = 'Numerical'
@@ -745,7 +746,8 @@ class MLmodel(object):
 
         return pyLIMA_parameters
 
-    def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None):
+    def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None,
+                          body='primary'):
         """
         Compute the microlensing source trajectory associated to a telescope for the
         given parameters for the photometry
@@ -766,7 +768,6 @@ class MLmodel(object):
         dalpha : array, the modification of the lens trajectory angle due to the
         orbital motion of the lens
         """
-        # Linear basic trajectory
 
         if data_type == 'photometry':
 
@@ -774,7 +775,7 @@ class MLmodel(object):
             time = lightcurve['time'].value
 
             if 'piEN' in pyLIMA_parameters._fields:
-                delta_positions = telescope.deltas_positions['photometry']
+                parallax_delta_positions = telescope.deltas_positions['photometry']
 
         if data_type == 'astrometry':
 
@@ -782,7 +783,7 @@ class MLmodel(object):
             time = astrometry['time'].value
 
             if 'piEN' in pyLIMA_parameters._fields:
-                delta_positions = telescope.deltas_positions['astrometry']
+                parallax_delta_positions = telescope.deltas_positions['astrometry']
 
         tau = (time - pyLIMA_parameters.t0) / pyLIMA_parameters.tE
         beta = np.array([pyLIMA_parameters.u0] * len(tau))
@@ -792,32 +793,23 @@ class MLmodel(object):
 
         if 'piEN' in pyLIMA_parameters._fields:
 
-            try:
+            parallax_delta_tau, parallax_delta_beta = (
+                    self.parallax_trajectory_shifts(parallax_delta_positions,
+                                                 pyLIMA_parameters))
 
-                piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
-                parallax_delta_tau, parallax_delta_beta = \
-                    pyLIMA.parallax.parallax.compute_parallax_curvature(
-                        piE, delta_positions)
+        else:
 
-                tau += parallax_delta_tau
-                beta += parallax_delta_beta
-
-            except ValueError:
-
-                pass
+            parallax_delta_tau, parallax_delta_beta = 0,0
 
         # Xallarap?
         if 'xiEN' in pyLIMA_parameters._fields:
-            xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
-            xallarap_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
-                self.xallarap_model, time, pyLIMA_parameters)
-            xallarap_delta_tau, xallarap_delta_beta = (
-                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
-                                                                    xallarap_positions))
-            #breakpoint()
 
-            tau += xallarap_delta_tau
-            beta += xallarap_delta_beta
+            xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
+                time , pyLIMA_parameters,body=body)
+
+        else:
+
+            xallarap_delta_tau, xallarap_delta_beta = 0,0
 
         if 'alpha' in pyLIMA_parameters._fields:
 
@@ -835,12 +827,16 @@ class MLmodel(object):
                 self.orbital_motion_model,
                 telescope.lightcurve_flux['time'].value,
                 pyLIMA_parameters)
+
             alpha += dalpha
 
         else:
 
             dseparation = np.array([0] * len(tau))
             dalpha = np.array([0] * len(tau))
+
+        tau += parallax_delta_tau+xallarap_delta_tau
+        beta += parallax_delta_beta+xallarap_delta_beta
 
         lens_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
         lens_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
@@ -849,3 +845,32 @@ class MLmodel(object):
         source_trajectory_y = -lens_trajectory_y
 
         return source_trajectory_x, source_trajectory_y, dseparation, dalpha
+
+    def parallax_trajectory_shifts(self, parallax_delta_positions, pyLIMA_parameters):
+
+        piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
+
+        parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(
+            piE, parallax_delta_positions)
+
+        return parallax_delta_tau, parallax_delta_beta
+
+    def xallarap_trajectory_shifts(self, time, pyLIMA_parameters, body='primary'):
+
+        xallarap_delta_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
+            self.xallarap_model, time, pyLIMA_parameters)
+
+        xallarap_delta_positions *= (pyLIMA_parameters.xi_mass_ratio /
+                                     (1 + pyLIMA_parameters.xi_mass_ratio))
+
+        if body !='primary':
+            xallarap_delta_positions *= -1/(pyLIMA_parameters.xi_mass_ratio)
+
+
+        xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
+
+        xallarap_delta_tau, xallarap_delta_beta = (
+            pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
+                                                                xallarap_delta_positions))
+
+        return xallarap_delta_tau, xallarap_delta_beta
