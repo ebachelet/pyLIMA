@@ -268,7 +268,8 @@ class DREAMfit(MLfit):
 
         else:
 
-            pass
+            Z = [self.scale_parameters(i[:-1]).tolist() + [i[-1]] for i in
+                 + initial_population]
 
         initial_population = np.array(Z[-number_of_walkers:])
 

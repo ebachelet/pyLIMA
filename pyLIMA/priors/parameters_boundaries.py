@@ -162,6 +162,9 @@ def xi_inclination_boundaries():
 def xi_mass_ratio_boundaries():
     return (0.0001,1) #yr
 
+def xi_mass_ratio_boundaries():
+    return (0.0001,1) #yr
+
 def parameters_boundaries(event, model_dictionnary):
     """
     Function to find initial DSPL guess

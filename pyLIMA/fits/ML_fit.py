@@ -409,7 +409,19 @@ class MLfit(object):
                 if 'spot_size' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
+                for ind, param in enumerate(list(self.fit_parameters.keys())[:len(
+                        guess_paczynski_parameters)]):
+
+                    if (guess_paczynski_parameters[ind] < self.fit_parameters[param][
+                        1][0]) | (guess_paczynski_parameters[ind] >
+                                  self.fit_parameters[param][1][1]):
+
+                        guess_paczynski_parameters[ind] = 0.5*self.fit_parameters[
+                            param][1][1]
+
                 self.model_parameters_guess = guess_paczynski_parameters
+
+
 
             except ValueError:
 
