@@ -850,8 +850,9 @@ class MLmodel(object):
 
         piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
 
-        parallax_delta_tau, parallax_delta_beta = pyLIMA.parallax.parallax.compute_parallax_curvature(
-            piE, parallax_delta_positions)
+        parallax_delta_tau, parallax_delta_beta = (
+            pyLIMA.parallax.parallax.compute_parallax_curvature(piE,
+                                                                parallax_delta_positions))
 
         return parallax_delta_tau, parallax_delta_beta
 

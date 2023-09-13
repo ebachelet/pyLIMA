@@ -99,8 +99,10 @@ class DSPLmodel(MLmodel):
 
         if self.xallarap_model == []:
 
-            pyLIMA_parameters_2.t0 = pyLIMA_parameters_2.t0 + pyLIMA_parameters_2.delta_t0
-            pyLIMA_parameters_2.u0 = pyLIMA_parameters_2.u0 + pyLIMA_parameters_2.delta_u0
+            pyLIMA_parameters_2.t0 = (pyLIMA_parameters_2.t0 +
+                                      pyLIMA_parameters_2.delta_t0)
+            pyLIMA_parameters_2.u0 = (pyLIMA_parameters_2.u0 +
+                                      pyLIMA_parameters_2.delta_u0)
 
         source2_trajectory_x, source2_trajectory_y, _, _ = self.source_trajectory(
             telescope, pyLIMA_parameters_2,

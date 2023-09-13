@@ -849,7 +849,8 @@ class MLfit(object):
             residuals = np.concatenate(residuals)
             errors = np.concatenate(errors)
 
-            ln_likelihood += np.sum(residuals / errors + np.log(errors) + np.log(2 * np.pi))
+            ln_likelihood += np.sum(residuals / errors + np.log(errors) +
+                                    np.log(2 * np.pi))
 
             ln_likelihood *= 0.5
 

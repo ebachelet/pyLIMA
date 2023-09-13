@@ -71,7 +71,7 @@ def replicate_a_telescope(microlensing_model, telescope_index, light_curve_time=
 
         try:
             setattr(model_telescope, key, getattr(original_telescope, key))
-        except:
+        except KeyError:
             pass
     if microlensing_model.parallax_model[0] != 'None':
         model_telescope.initialize_positions()
