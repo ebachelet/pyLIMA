@@ -864,9 +864,20 @@ class MLmodel(object):
                                      (1 + pyLIMA_parameters.xi_mass_ratio))
 
         if body !='primary':
-            xallarap_delta_positions *= -1/(pyLIMA_parameters.xi_mass_ratio)
 
+      #      xallarap_delta_positions += pyLIMA.xallarap.xallarap.xallarap_shifts(
+      #          self.xallarap_model,
+      #          time+pyLIMA_parameters.xi_period*pyLIMA_parameters.tE/2,
+      #          pyLIMA_parameters)
 
+             xallarap_delta_positions *= -1/pyLIMA_parameters.xi_mass_ratio
+
+        xallarap_delta_positions -= pyLIMA.xallarap.xallarap.xallarap_shifts(
+                self.xallarap_model,
+                np.array([self.xallarap_model[1]]),
+                pyLIMA_parameters)*(pyLIMA_parameters.xi_mass_ratio /
+                                     (1 + pyLIMA_parameters.xi_mass_ratio))
+        #breakpoint()
         xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
 
         xallarap_delta_tau, xallarap_delta_beta = (

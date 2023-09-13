@@ -57,17 +57,24 @@ class DFSPLmodel(DSPLmodel):
             source2_magnification = magnification_FSPL.magnification_FSPL_Yoo(
                 source2_trajectory_x,
                 source2_trajectory_y,
-                pyLIMA_parameters.rho_2, telescope.ld_gamma2,
+                pyLIMA_parameters.rho_2,
+                telescope.ld_gamma2,
                 return_impact_parameter)
+            #breakpoint()
 
             blend_magnification_factor = getattr(pyLIMA_parameters,
                                                  'q_flux_' + telescope.filter)
+            #blend_magnification_factor =pyLIMA_parameters.xi_mass_ratio**4
+            #effective_magnification = (
+            #                                  source1_magnification +
+            #                                  source2_magnification *
+            #                                  blend_magnification_factor) / (
+            #                                  1 + blend_magnification_factor)
 
             effective_magnification = (
-                                              source1_magnification +
-                                              source2_magnification *
-                                              blend_magnification_factor) / (
-                                              1 + blend_magnification_factor)
+                    source1_magnification +
+                    source2_magnification *
+                    blend_magnification_factor)
 
             magnification = effective_magnification
 

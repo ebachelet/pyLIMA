@@ -23,7 +23,7 @@ class DEfit(MLfit):
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
                  telescopes_fluxes_method='polyfit', loss_function='likelihood',
                  DE_population_size=10, max_iteration=10000,
-                 display_progress=False, strategy='best1bin'):
+                 display_progress=False, strategy='rand1bin'):
 
         super().__init__(model, rescale_photometry=rescale_photometry,
                          rescale_astrometry=rescale_astrometry,

@@ -34,7 +34,7 @@ class MCMCfit(MLfit):
         return "Monte Carlo Markov Chain (Affine Invariant)"
 
     def objective_function(self, fit_process_parameters):
-
+        print(fit_process_parameters)
         objective = self.standard_objective_function(fit_process_parameters)
         return -objective
 

@@ -55,12 +55,15 @@ class DSPLmodel(MLmodel):
             blend_magnification_factor = getattr(pyLIMA_parameters,
                                                  'q_flux_' + telescope.filter)
 
+            #effective_magnification = (
+             #                                 source1_magnification +
+             #                                 source2_magnification *
+             #                                 blend_magnification_factor) / (
+              #                                1 + blend_magnification_factor)
             effective_magnification = (
-                                              source1_magnification +
-                                              source2_magnification *
-                                              blend_magnification_factor) / (
-                                              1 + blend_magnification_factor)
-
+                    source1_magnification +
+                    source2_magnification *
+                    blend_magnification_factor)
             magnification = effective_magnification
 
         else:

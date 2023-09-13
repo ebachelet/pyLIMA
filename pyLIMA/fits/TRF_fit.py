@@ -45,7 +45,7 @@ class TRFfit(LMfit):
         if self.loss_function == 'soft_l1':
 
             loss = 'soft_l1'
-            jacobian_function = '2-point'
+            #jacobian_function = '2-point'
 
         else:
 
