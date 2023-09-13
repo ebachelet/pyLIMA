@@ -14,6 +14,7 @@ def _create_event(JD=0, astrometry=False):
         np.array([[JD + 0, 10, 2], [JD + 20, 200, 3]]), ['time', 'flux', 'err_flux'],
         ['JD', 'W/m^2', 'W/m^2'])
 
+    event.telescopes[0].deltas_positions = {}
     if astrometry:
         event.telescopes[0].astrometry = time_series.construct_time_series(
             np.array([[JD + 0, 10, 2, 10, 2], [JD + 20, 200, 3, 200, 3]]),
@@ -24,9 +25,13 @@ def _create_event(JD=0, astrometry=False):
             0].Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
         event.telescopes[
             0].Earth_positions_projected.__iter__.side_effect = dico.__iter__
+        event.telescopes[0].deltas_positions['astrometry'] = np.zeros((2, 2))
+        event.telescopes[0].deltas_positions['photometry'] = np.zeros((2, 2))
 
     else:
         event.telescopes[0].astrometry = None
+        event.telescopes[0].deltas_positions['astrometry'] = []
+        event.telescopes[0].deltas_positions['photometry'] = np.zeros((2, 2))
 
     event.telescopes[0].filter = 'I'
     event.telescopes[0].ld_gamma = 0.5
@@ -222,25 +227,25 @@ def test_DFSPL():
     Model.event.telescopes[0].ld_gamma1 = 0.25
     Model.event.telescopes[0].ld_gamma2 = 0.25
 
-    assert dict(Model.model_dictionnary) == {'t0': 0, 'delta_t0': 2, 'u0': 1,
+    assert dict(Model.model_dictionnary) == {'t0': 0, 'u0': 1, 'delta_t0': 2,
                                              'delta_u0': 3, 'tE': 4, 'rho_1': 5,
                                              'rho_2': 6, 'q_flux_I': 7,
                                              'fsource_Test': 8, 'fblend_Test': 9}
+
 
     params = [0.5, 0.002, 0.1, 0.14, 35, 0.05, 0.007, 0.25]
 
     pym = Model.compute_pyLIMA_parameters(params)
 
     magi = Model.model_magnification(event.telescopes[0], pym)
+    assert np.allclose(magi, [42.42126683,  2.48813695])
 
-    assert np.allclose(magi, [33.93701346, 1.99050956])
 
 
 def test_DSPL():
     event = _create_event()
 
     Model = DSPLmodel(event)
-
     assert dict(Model.model_dictionnary) == {'t0': 0, 'u0': 1, 'delta_t0': 2,
                                              'delta_u0': 3, 'tE': 4,
                                              'q_flux_I': 5, 'fsource_Test': 6,
@@ -251,7 +256,7 @@ def test_DSPL():
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert np.allclose(magi, [66.36341157, 1.99537759])
+    assert np.allclose(magi, [69.68158215,  2.09514647])
 
     source1x, source1y, source2x, source2y = Model.sources_trajectory(
         event.telescopes[0], pym)
@@ -333,6 +338,7 @@ def test_PSPL():
     params = [0.5, 0.002, 38, 1, 0.1, 4.8, 5.2, 100, 150, 1.25, 0.22]
 
     pym = Model.compute_pyLIMA_parameters(params)
+
     shifts = Model.model_astrometry(event.telescopes[0], pym)
 
     assert np.allclose(shifts, np.array([[149.99999998, 150.00000005],

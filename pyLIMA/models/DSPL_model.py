@@ -13,12 +13,14 @@ class DSPLmodel(MLmodel):
         """
         [t0,u0,delta_t0,delta_u0,q_flux_i]
         """
-        if self.xallarap_model == []:
-
-            model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3, 'tE': 4}
-        else:
+        if self.xallarap_model[0] == 'Circular':
 
             model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2}
+
+
+        else:
+
+            model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3, 'tE': 4}
 
         filters = [telescope.filter for telescope in self.event.telescopes]
 
@@ -97,7 +99,7 @@ class DSPLmodel(MLmodel):
 
         pyLIMA_parameters_2 = self.compute_pyLIMA_parameters(parameters)
 
-        if self.xallarap_model == []:
+        if self.xallarap_model[0] != 'Circular':
 
             pyLIMA_parameters_2.t0 = (pyLIMA_parameters_2.t0 +
                                       pyLIMA_parameters_2.delta_t0)

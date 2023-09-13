@@ -13,14 +13,15 @@ class DFSPLmodel(DSPLmodel):
         [t0,u0,delta_t0,delta_u0,tE,rho_1,rho_2,q_flux_i]
         """
 
-        if self.xallarap_model == []:
+        if self.xallarap_model[0] == 'Circular':
 
-            model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3, 'tE': 4,
-                            'rho_1': 5, 'rho_2': 6}
+            model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho_1': 3, 'rho_2': 4}
+
+
         else:
 
-            model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2,
-                            'rho_1': 3, 'rho_2': 4}
+            model_dictionary = {'t0': 0, 'u0': 1, 'delta_t0': 2, 'delta_u0': 3,
+                                'tE': 4, 'rho_1': 5, 'rho_2': 6}
 
 
         filters = [telescope.filter for telescope in self.event.telescopes]
