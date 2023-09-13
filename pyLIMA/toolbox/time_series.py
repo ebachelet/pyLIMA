@@ -56,6 +56,9 @@ def construct_time_series(data, columns_names, column_units):
     -------
     table : array, the astropy table
     """
-    table = QTable(data, names=columns_names, units=column_units)
 
-    return table
+
+    table = QTable(data, names=columns_names, units=column_units)
+    time_sorted_table = table[table['time'].argsort()]
+
+    return time_sorted_table
