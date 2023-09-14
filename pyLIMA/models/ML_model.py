@@ -368,7 +368,8 @@ class MLmodel(object):
         model_dictionnary : dict the updated model dictionnary
 
         """
-        jack = np.copy(self.Jacobian_flag)
+        import copy
+        jack = copy.copy(self.Jacobian_flag)
 
         if self.parallax_model[0] != 'None':
             jack = 'Numerical'
