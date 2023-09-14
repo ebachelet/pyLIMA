@@ -50,7 +50,7 @@ class TRFfit(LMfit):
         else:
 
             loss = 'linear'
-
+        breakpoint()
         trf_fit = scipy.optimize.least_squares(self.objective_function, self.guess,
                                                method='trf',
                                                bounds=(bounds_min, bounds_max),
