@@ -150,10 +150,10 @@ class GRIDfit(MLfit):
             best_model_index = GRIDS_population[:, -1].argmin()
 
             print('best_model:', GRIDS_population[best_model_index, :-1],
-                  '-ln(likelihood)', GRIDS_population[best_model_index, -1])
+                  self.loss_function, GRIDS_population[best_model_index, -1])
 
             self.fit_results = {'best_model': GRIDS_population[best_model_index, :-1],
-                                '-(ln_likelihood)': GRIDS_population[
+                                self.loss_function: GRIDS_population[
                                     best_model_index, -1],
                                 'fit_time': computation_time,
                                 'GRIDS_population': GRIDS_population}

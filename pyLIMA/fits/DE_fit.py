@@ -73,7 +73,7 @@ class DEfit(MLfit):
             bounds=bounds,
             mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
             maxiter=self.max_iteration, tol=0.00,
-            atol=1.0, strategy=self.strategy,
+            atol=1, strategy=self.strategy,
             recombination=0.5, polish=False, init=init,
             disp=self.display_progress, workers=worker)
 
@@ -214,10 +214,10 @@ class DEfitnew(MLfit):
         DE_population[:, :, :-1] = pop
         DE_population[:, :, -1] = pop_energies
 
-        print('best_model:', fit_results, '-ln(likelihood)', fit_log_likelihood)
+        print('best_model:', fit_results, self.loss_function, fit_log_likelihood)
 
         self.fit_results = {'best_model': fit_results,
-                            '-(ln_likelihood)': fit_log_likelihood,
+                            self.loss_function: fit_log_likelihood,
                             'fit_time': computation_time,
                             'DE_population': DE_population}
 

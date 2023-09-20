@@ -1129,14 +1129,7 @@ class MLfit(object):
             if (flux <= self.fit_parameters[key][1][0]) | (
                     flux > self.fit_parameters[key][1][1]):
 
-                if 'fsource' in key:
-
-                    flux = np.max(self.fit_parameters[key][1])
-
-                else:
-
-                    flux = 0
-
+                flux = np.mean( self.fit_parameters[key][1])
             new_fluxes.append(flux)
 
         return new_fluxes

@@ -21,6 +21,8 @@ MAX_PLOT_TICKS = 2
 MARKER_SYMBOLS = np.array(
     [['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10])
 
+MARKERS_COLORS = plt.rcParams["axes.prop_cycle"]
+
 # this is a pointer to the module object instance itself.
 thismodule = sys.modules[__name__]
 
@@ -229,7 +231,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                     telescope, pyLIMA_parameters,
                     data_type='photometry')
 
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index]
+            color = MARKERS_COLORS.by_key()["color"][telescope_index]
             figure_axes.plot(trajectory_x, trajectory_y,
                              c=color,
                              label=platform, linestyle=linestyle)
@@ -356,7 +358,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                 rho = 10 ** -5
 
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][telescope_index]
+            color = MARKERS_COLORS.by_key()["color"][telescope_index]
 
             patches = [plt.Circle((x, y), rho, color=color,
                                   alpha=0.2) for x, y in
@@ -610,7 +612,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters,
             name = tel.name
 
             index_color = np.where(name == telescopes_names)[0][0]
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][index_color]
+            color = MARKERS_COLORS.by_key()["color"][index_color]
 
             figure_axes[0].plot(astrometric_model[0], astrometric_model[1], c=color)
 
@@ -727,7 +729,7 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters,
             delta_dec = tel.astrometry['dec'].value
             err_dec = tel.astrometry['err_dec'].value
 
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
+            color = MARKERS_COLORS.by_key()["color"][ind]
 
             model = microlensing_model.compute_the_microlensing_model(tel,
                                                                       pyLIMA_parameters)
@@ -797,7 +799,7 @@ def plot_astrometric_data(figure_ax, microlensing_model, bokeh_plot=None):
             delta_dec = tel.astrometry['dec'].value
             err_dec = tel.astrometry['err_dec'].value
 
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
+            color = MARKERS_COLORS.by_key()["color"][ind]
             # marker = str(MARKER_SYMBOLS[0][ind])
 
             figure_ax.errorbar(delta_ra, delta_dec, xerr=err_ra, yerr=err_dec, fmt='.',
@@ -984,7 +986,7 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
             name = tel.name
 
             index_color = np.where(name == telescopes_names)[0][0]
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][index_color]
+            color = MARKERS_COLORS.by_key()["color"][index_color]
 
             if tel.location == 'Earth':
 
@@ -1072,7 +1074,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
                         np.log10(model_flux)
 
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
+            color = MARKERS_COLORS.by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
 
             plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,
@@ -1118,7 +1120,7 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
                 pyLIMA.fits.objective_functions.photometric_residuals_in_magnitude(
                     tel, microlensing_model, pyLIMA_parameters)
 
-            color = plt.rcParams["axes.prop_cycle"].by_key()["color"][ind]
+            color = MARKERS_COLORS.by_key()["color"][ind]
             marker = str(MARKER_SYMBOLS[0][ind])
 
             plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,

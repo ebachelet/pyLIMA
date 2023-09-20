@@ -123,10 +123,10 @@ class MCMCfit(MLfit):
         fit_log_likelihood = MCMC_chains[
             np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], -1]
 
-        print('best_model:', fit_results, 'ln(likelihood)', fit_log_likelihood)
+        print('best_model:', fit_results, self.loss_function, fit_log_likelihood)
 
         self.fit_results = {'best_model': fit_results,
-                            'ln(likelihood)': fit_log_likelihood,
+                            self.loss_function: fit_log_likelihood,
                             'MCMC_chains': MCMC_chains,
                             'MCMC_chains_with_fluxes': MCMC_chains_with_fluxes,
                             'fit_time': computation_time}

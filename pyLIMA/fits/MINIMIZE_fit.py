@@ -85,8 +85,8 @@ class MINIMIZEfit(LMfit):
         computation_time = python_time.time() - starting_time
 
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
-        print('best_model:', fit_results, ' likelihood:', fit_chi2)
+        print('best_model:', fit_results, self.loss_function, fit_chi2)
 
-        self.fit_results = {'best_model': fit_results, 'likelihood': fit_chi2,
+        self.fit_results = {'best_model': fit_results, self.loss_function: fit_chi2,
                             'fit_time': computation_time,
                             'covariance_matrix': covariance_matrix}
