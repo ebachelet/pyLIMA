@@ -4,7 +4,6 @@ def xallarap_shifts(xallarap_model, time, pyLIMA_parameters):
 
     if xallarap_model[0] == 'Circular':
 
-
         xi_period = pyLIMA_parameters.xi_period*pyLIMA_parameters.tE#/365.25
 
         xi_phase = pyLIMA_parameters.xi_phase

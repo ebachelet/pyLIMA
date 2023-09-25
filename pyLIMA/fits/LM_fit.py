@@ -90,17 +90,23 @@ class LMfit(MLfit):
         if self.loss_function == 'soft_l1':
 
             loss = 'soft_l1'
-            jacobian_function = '2-point'
+            #jacobian_function = '2-point'
 
         else:
 
             loss = 'linear'
 
+        bounds_min = [self.fit_parameters[key][1][0] for key in
+                      self.fit_parameters.keys()]
+        bounds_max = [self.fit_parameters[key][1][1] for key in
+                      self.fit_parameters.keys()]
+
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess,
                                               method='lm', max_nfev=50000,
                                               jac=jacobian_function, loss=loss,
                                               xtol=10 ** -10, ftol=10 ** -10,
-                                              gtol=10 ** -10)
+                                              gtol=10 ** -10,
+                                              x_scale=(np.array(bounds_max)-bounds_min)/2)
 
         fit_results = lm_fit['x'].tolist()
         fit_chi2 = lm_fit['cost'] * 2  # chi2

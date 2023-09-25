@@ -55,8 +55,9 @@ class TRFfit(LMfit):
                                                method='trf',
                                                bounds=(bounds_min, bounds_max),
                                                max_nfev=50000, jac=jacobian_function,
-                                               loss=loss, xtol=10 ** -10,
-                                               ftol=10 ** -10, gtol=10 ** -10)
+                                               loss=loss, xtol=10**-10, ftol=10**-10,
+                                               gtol=10**-10,
+                                               x_scale=(np.array(bounds_max)-bounds_min)/2)
 
         fit_results = trf_fit['x'].tolist()
         fit_chi2 = trf_fit['cost'] * 2  # chi2

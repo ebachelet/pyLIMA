@@ -95,10 +95,10 @@ class Telescope(object):
 
         # Microlensing LD coefficients
         self.ld_gamma = 0
-        self.ld_sigma = 0
+        self.ld_sigma = None
         # Classical LD coefficients
         self.ld_a1 = 0
-        self.ld_a2 = 0
+        self.ld_a2 = None
 
         if light_curve is not None:
 
@@ -415,35 +415,46 @@ class Telescope(object):
 
             plt.gca().invert_yaxis()
 
-    def define_limb_darkening_coefficients(self):
-        """
-        Transform ld_gamma and ld_sigma to ld_a1 and ld_a2,  and/or vice-versa.
-        See https://iopscience.iop.org/article/10.1086/378196/pdf
-        """
+    def define_microlensing_limb_darkening_coefficients(self, a1=0, a2=0):
 
-        if self.ld_gamma == 0:
+        ld_gamma = 10 * a1 / (15 - 5 * a1 - 3 * a2)
+
+        ld_sigma = 12 * a2 / (15 - 5 * a1 - 3 * a2)
+
+        return ld_gamma, ld_sigma
+    def define_linear_limb_darkening_coefficients(self,gamma=0,sigma=0):
+
+        ld_a1 = 6 * gamma / (4 + 2 * gamma + sigma)
+
+        ld_a2 = 5 * sigma / (4 + 2 * gamma + sigma)
+
+        return ld_a1,ld_a2
+
+    def define_limb_darkening_coefficients(self):
+            """
+            Transform ld_gamma and ld_sigma to ld_a1 and ld_a2,  and/or vice-versa.
+            See https://iopscience.iop.org/article/10.1086/378196/pdf
+            """
+
             self.ld_gamma = 10 * self.ld_a1 / (15 - 5 * self.ld_a1 - 3 * self.ld_a2)
 
-        if self.ld_sigma == 0:
             self.ld_sigma = 12 * self.ld_a2 / (15 - 5 * self.ld_a1 - 3 * self.ld_a2)
 
-        if self.ld_a1 == 0:
             self.ld_a1 = 6 * self.ld_gamma / (4 + 2 * self.ld_gamma + self.ld_sigma)
 
-        if self.ld_a2 == 0:
             self.ld_a2 = 5 * self.ld_sigma / (4 + 2 * self.ld_gamma + self.ld_sigma)
 
     def hidden(self):
 
-        if self.name == 'Mexicola':
+            if self.name == 'Mexicola':
 
-            try:
+                try:
 
-                import webbrowser
-                controller = webbrowser.get()
+                    import webbrowser
+                    controller = webbrowser.get()
 
-                controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
+                    controller.open("https://www.youtube.com/watch?v=GcQdU2qA7D4&t=1684s")
 
-            except webbrowser.Error:
+                except webbrowser.Error:
 
-                pass
+                    pass
