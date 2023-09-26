@@ -293,7 +293,7 @@ def test_FSPL():
 def test_FSPLarge():
     event = _create_event()
     event.telescopes[0].ld_a1 = 0.28
-    event.telescopes[0].ld_a2 = None
+    event.telescopes[0].ld_a2 = 0
 
     Model = FSPLargemodel(event)
     params = [0.5, 0.002, 38, 6]

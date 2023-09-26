@@ -101,12 +101,17 @@ class LMfit(MLfit):
         bounds_max = [self.fit_parameters[key][1][1] for key in
                       self.fit_parameters.keys()]
 
+        scaling = (np.array(bounds_max)-bounds_min)/2
+        eps = 10**-5
+        mask = np.abs(scaling)<eps
+        scaling[mask] = eps
+
         lm_fit = scipy.optimize.least_squares(self.objective_function, self.guess,
                                               method='lm', max_nfev=50000,
                                               jac=jacobian_function, loss=loss,
                                               xtol=10 ** -10, ftol=10 ** -10,
                                               gtol=10 ** -10,
-                                              x_scale=(np.array(bounds_max)-bounds_min)/2)
+                                              x_scale=scaling)
 
         fit_results = lm_fit['x'].tolist()
         fit_chi2 = lm_fit['cost'] * 2  # chi2

@@ -122,7 +122,6 @@ def test_define_limb_darkening_coefficients():
     telo.ld_gamma = 0.25
     telo.ld_sigma = 0.78
     telo.define_limb_darkening_coefficients()
-
     assert np.allclose(telo.ld_a1, 0.28409090909090906)
     assert np.allclose(telo.ld_a2, 0.7386363636363636)
 

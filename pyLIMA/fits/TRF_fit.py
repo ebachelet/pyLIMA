@@ -28,6 +28,10 @@ class TRFfit(LMfit):
                       self.fit_parameters.keys()]
         bounds_max = [self.fit_parameters[key][1][1] for key in
                       self.fit_parameters.keys()]
+        scaling = (np.array(bounds_max)-bounds_min)/2
+        eps = 10**-5
+        mask = np.abs(scaling)<eps
+        scaling[mask] = eps
 
         n_data = 0
 
@@ -57,7 +61,7 @@ class TRFfit(LMfit):
                                                max_nfev=50000, jac=jacobian_function,
                                                loss=loss, xtol=10**-10, ftol=10**-10,
                                                gtol=10**-10,
-                                               x_scale=(np.array(bounds_max)-bounds_min)/2)
+                                               x_scale=scaling)
 
         fit_results = trf_fit['x'].tolist()
         fit_chi2 = trf_fit['cost'] * 2  # chi2

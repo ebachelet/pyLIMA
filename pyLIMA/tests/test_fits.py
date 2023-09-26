@@ -39,7 +39,7 @@ def test_LM():
 
     pspl = pymod.FSPLmodel(eve)
 
-    my_fit = pyfit.LMfit(pspl)
+    my_fit = pyfit.TRFfit(pspl)
     my_fit.fit()
 
     values = [my_fit.fit_results[key] for key in my_fit.fit_results.keys()]
@@ -50,7 +50,6 @@ def test_LM():
          92640.22522809621, 49189.89910261785]))
 
     assert np.allclose(values[1], 3851.0557824024704)
-
     assert np.allclose(values[3],
                        np.array([[6.49257550e-07, 1.40782955e-07, -1.97323807e-06,
                                   -3.70762247e-08, 9.85490647e-04, -9.76448768e-04,
