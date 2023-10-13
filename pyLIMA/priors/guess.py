@@ -3,7 +3,8 @@ import scipy.signal as ss
 
 def check_signal_in_lightcurve(magnitude,err_magnitude):
 
-    chichidof = np.sum((magnitude-np.median(magnitude))**2/err_magnitude**2)/len(magnitude)
+    chichidof = np.sum((magnitude-np.median(magnitude))**2/
+                       err_magnitude**2)/len(magnitude)
 
     if chichidof<1.1:
 
