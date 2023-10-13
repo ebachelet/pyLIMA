@@ -89,8 +89,9 @@ def initial_guess_PSPL(event):
                         indexes = \
                             np.where((flux_clean[good_points] > np.median(
                                 flux_clean[good_points])) & (
-                                             errmag[good_points] <= max(0.1, 2.0 * np.mean(
-                                         errmag[good_points]))))[0]
+                                             errmag[good_points] <=
+                                             max(0.1, 2.0 *
+                                                 np.mean(errmag[good_points]))))[0]
 
                         if len(indexes) < 1:
 
@@ -100,13 +101,6 @@ def initial_guess_PSPL(event):
 
                             good_points = good_points[indexes]
 
-                            # gravity = (
-                            #   np.median(time[good_points]), np.median(flux_clean[
-                            #   good_points]),
-                            #    np.mean(errmag[good_points]))
-
-                            # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 /
-                            # gravity[0] ** 2)
 
                     to = np.median(time[good_points])
                     max_flux = max(flux[good_points])
@@ -125,8 +119,8 @@ def initial_guess_PSPL(event):
 
     try:
 
-        to_guess = sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) / sum(
-            1 / np.array(errors_magnitude) ** 2)
+        to_guess = (sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) /
+                    sum(1 / np.array(errors_magnitude) ** 2))
 
         n_data = [len(event.telescopes[i].lightcurve_magnitude) for i in index_surveys]
 
@@ -146,7 +140,8 @@ def initial_guess_PSPL(event):
                                                        np.argmin(
             event.telescopes[0].lightcurve_magnitude['mag'])]['flux']))]
         survey =  event.telescopes[0]
-        print('Selecting '+event.telescopes[0].name+' to estimate t0,u0, tE and fs as I can not find good signal....')
+        print('Selecting '+event.telescopes[0].name+
+              ' to estimate t0,u0, tE and fs as I can not find good signal....')
 
     lightcurve = survey.lightcurve_magnitude
 

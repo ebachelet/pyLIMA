@@ -319,8 +319,10 @@ class MLfit(object):
                             fluxes.append(np.nan)
                         else:
 
-                            fluxes.append(getattr(pyLIMA_parameters, 'fsource_' + tel.name))
-                            fluxes.append(getattr(pyLIMA_parameters, 'fblend_' + tel.name))
+                            fluxes.append(getattr(pyLIMA_parameters,
+                                                  'fsource_' + tel.name))
+                            fluxes.append(getattr(pyLIMA_parameters,
+                                                  'fblend_' + tel.name))
 
             self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
 
