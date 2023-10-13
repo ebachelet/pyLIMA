@@ -1,6 +1,6 @@
 import numpy as np
 import pkg_resources
-from scipy import interpolate, misc
+from scipy import interpolate
 
 resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
 template = pkg_resources.resource_filename('pyLIMA', resource_path)
@@ -20,9 +20,11 @@ b1 = b0b1[:, 2]
 
 interpol_b0 = interpolate.interp1d(zz, b0, kind='linear')
 interpol_b1 = interpolate.interp1d(zz, b1, kind='linear')
-
-dB0 = misc.derivative(lambda x: interpol_b0(x), zz[1:-1], dx=10 ** -4, order=3)
-dB1 = misc.derivative(lambda x: interpol_b1(x), zz[1:-1], dx=10 ** -4, order=3)
+#dB0 = misc.derivative(lambda x: interpol_b0(x), zz[1:-1], dx=10 ** -4, order=3)
+#dB1 = misc.derivative(lambda x: interpol_b1(x), zz[1:-1], dx=10 ** -4, order=3)
+epsilon = 10**-6
+dB0 = (interpol_b0(zz[1:-1]+epsilon)-interpol_b0(zz[1:-1]-epsilon))/epsilon/2
+dB1 = (interpol_b1(zz[1:-1]+epsilon)-interpol_b1(zz[1:-1]-epsilon))/epsilon/2
 dB0 = np.append(2.0, dB0)
 dB0 = np.concatenate([dB0, [dB0[-1]]])
 dB1 = np.append((2.0 - 3 * np.pi / 4), dB1)

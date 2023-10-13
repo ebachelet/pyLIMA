@@ -34,7 +34,7 @@ class MCMCfit(MLfit):
         return "Monte Carlo Markov Chain (Affine Invariant)"
 
     def objective_function(self, fit_process_parameters):
-        print(fit_process_parameters)
+
         objective = self.standard_objective_function(fit_process_parameters)
         return -objective
 
@@ -136,37 +136,57 @@ class MCMCfit(MLfit):
         rangei, rangej, rangek = mcmc_samples.shape
 
         if self.telescopes_fluxes_method == 'polyfit':
+            Rangei,Rangej = self.trials.shape
+            MCMC_chains_with_fluxes = np.zeros((rangei,rangej,Rangej))
 
-            unique_mcmc = np.unique(mcmc_prob, return_index=True, return_inverse=True,
-                                    return_counts=True)
-            unique_trials = np.unique(self.trials[:, -1], return_index=True,
-                                      return_inverse=True, return_counts=True)
+            for j in range(rangej):
 
-            trials_index = []
+                    unique_sample = np.unique(mcmc_samples[:,j],return_inverse=True,
+                                              axis=0)
 
-            for value in unique_mcmc[0]:
-                indices = np.where(unique_trials[0] == value)[0][0]
-                trials_index.append(indices)
+                    unique_trials = []
+                    for unique_values in unique_sample[0]:
 
-            pre_chains = self.trials[unique_trials[1]][trials_index][
-                unique_mcmc[2]].reshape(rangei, rangej, self.trials.shape[1])
+                        index = np.where(self.trials[:,:len(self.fit_parameters)][:,-1]
+                                         ==unique_values[-1])[0][0]
+                        unique_trials.append(self.trials[index].tolist())
+                    MCMC_chains_with_fluxes[:,j] = np.array(unique_trials)[
+                        unique_sample[1]]
+                    #breakpoint()
+                    #index = np.where(mcmc_samples[i,j]==self.trials[:,
+                    #                                   :len(self.fit_parameters)])[
+                    #                                   0][0]
+                    #MCMC_chains_with_fluxes[i,j] = self.trials[index]
+            #unique_mcmc = np.unique(mcmc_prob, return_index=True, return_inverse=True,
+            #                        return_counts=True)
+            #unique_trials = np.unique(self.trials[:, -1], return_index=True,
+            #                          return_inverse=True, return_counts=True)
 
-            MCMC_chains_with_fluxes = pre_chains.copy()
+            #trials_index = []
+            #breakpoint()
+            #for value in unique_mcmc[0]:
+            #    indices = np.where(unique_trials[0] == value)[0][0]
+            #    trials_index.append(indices)
 
-            index_fluxes_start = [i for i in self.fit_parameters.items()][-1][1][0] + 1
+            #pre_chains = self.trials[unique_trials[1]][trials_index][
+            #    unique_mcmc[2]].reshape(rangei, rangej, self.trials.shape[1])
 
-            for ind, key in enumerate(self.priors_parameters.keys()):
+            #MCMC_chains_with_fluxes = pre_chains.copy()
 
-                try:
+            #index_fluxes_start = [i for i in self.fit_parameters.items()][-1][1][0] + 1
 
-                    index = self.fit_parameters[key][0]
-                    MCMC_chains_with_fluxes[:, :, ind] = mcmc_samples[:, :, index]
+ #           for ind, key in enumerate(self.priors_parameters.keys()):
 
-                except KeyError:
+ #               try:
 
-                    MCMC_chains_with_fluxes[:, :, ind] = pre_chains[:, :,
-                                                         index_fluxes_start]
-                    index_fluxes_start += 1
+ #                   index = self.fit_parameters[key][0]
+ #                   MCMC_chains_with_fluxes[:, :, ind] = mcmc_samples[:, :, index]
+
+ #               except KeyError:
+
+ #                  MCMC_chains_with_fluxes[:, :, ind] = pre_chains[:, :,
+                     #                                    index_fluxes_start]
+ #                   index_fluxes_start += 1
 
         else:
 

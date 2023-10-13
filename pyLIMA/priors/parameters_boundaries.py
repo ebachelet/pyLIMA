@@ -153,8 +153,8 @@ def xiEN_boundaries():
     return (-0.25, 0.25)
 def xiEE_boundaries():
     return (-0.25, 0.25)
-def xi_period_boundaries():
-    return (0.001, 10) #yr
+def xi_angular_velocity_boundaries():
+    return (0.00001, 1000) #yr
 def xi_phase_boundaries():
     return (0.0, 2*np.pi)
 def xi_inclination_boundaries():

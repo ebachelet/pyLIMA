@@ -37,10 +37,9 @@ def _create_event(JD=0, astrometry=False):
 
 def test_initial_guess_PSPL():
     event = _create_event()
-
     theguess = guess.initial_guess_PSPL(event)
 
-    assert np.allclose(theguess[0], [10.0, 0.5631843966084606, 13.105408879743047])
+    assert np.allclose(theguess[0], [0.0, 1.6735571651998717, 17.540988328240694])
     assert np.allclose(theguess[1], 46056.54738747334)
 
 
@@ -50,7 +49,7 @@ def test_initial_guess_FSPL():
     theguess = guess.initial_guess_FSPL(event)
 
     assert np.allclose(theguess[0],
-                       [10.0, 0.5631843966084606, 13.105408879743047, 0.05])
+                       [0.0, 1.6735571651998717, 17.540988328240694, 0.05])
     assert np.allclose(theguess[1], 46056.54738747334)
 
 
@@ -59,8 +58,9 @@ def test_initial_guess_DSPL():
 
     theguess = guess.initial_guess_DSPL(event)
 
+
     assert np.allclose(theguess[0],
-                       [10.0, 0.5631843966084606, 5, 0.01, 13.105408879743047, 0.5])
+                       [0.0, 1.6735571651998717, 5, 0.01, 17.540988328240694, 0.5])
     assert np.allclose(theguess[1], 46056.54738747334)
 
 
@@ -90,9 +90,9 @@ def test_all_parameters_boundaries():
                                 (2400000, 2500000), (0.1, 500), (2400000, 2500000),
                                 (0.0, 10.0), (0.0, 1.0), (-1, 1), (-10.0, 10.0),
                                 (-10.0, 10.0), (-10.0, 10.0), (-0.25, 0.25),
-                                (-0.25, 0.25),
+                                (-0.25, 0.25), (0.00001,1000),
                                 (-1.5707963267948966, 1.5707963267948966),
-                                (0.0001, 1),(0.001, 10),
+                                (0.0001, 1),
                                 (0.0, 6.283185307179586)])
 
 

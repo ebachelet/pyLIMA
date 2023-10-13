@@ -312,8 +312,15 @@ class MLfit(object):
             for tel in self.model.event.telescopes:
 
                 if tel.lightcurve_flux is not None:
-                    fluxes.append(getattr(pyLIMA_parameters, 'fsource_' + tel.name))
-                    fluxes.append(getattr(pyLIMA_parameters, 'fblend_' + tel.name))
+
+                        if np.isinf(objective):
+
+                            fluxes.append(np.nan)
+                            fluxes.append(np.nan)
+                        else:
+
+                            fluxes.append(getattr(pyLIMA_parameters, 'fsource_' + tel.name))
+                            fluxes.append(getattr(pyLIMA_parameters, 'fblend_' + tel.name))
 
             self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
 

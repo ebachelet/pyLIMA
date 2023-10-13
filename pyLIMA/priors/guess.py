@@ -1,6 +1,27 @@
 import numpy as np
 import scipy.signal as ss
 
+def check_signal_in_lightcurve(magnitude,err_magnitude):
+
+    chichidof = np.sum((magnitude-np.median(magnitude))**2/err_magnitude**2)/len(magnitude)
+
+    if chichidof<1.1:
+
+        return False
+
+    else:
+
+        return True
+
+    #signal = np.diff(np.percentile(magnitude,[16,84]))/2
+
+    #if signal<1*np.median(err_magnitude):
+
+    #    return False
+
+    #else:
+
+    #    return True
 
 def initial_guess_PSPL(event):
     """
@@ -15,13 +36,17 @@ def initial_guess_PSPL(event):
     guess_model : list, [t0,u0,tE] the PSPL guess
     fs_guess : float, the source flux guess
     """
+
+    #THIS NEEDS TO BE REWRITTEN
+
     import pyLIMA.toolbox.brightness_transformation
     # to estimation
     to_estimations = []
     maximum_flux_estimations = []
     errors_magnitude = []
+    index_surveys = []
 
-    for telescope in event.telescopes:
+    for ind, telescope in enumerate(event.telescopes):
 
         if telescope.lightcurve_magnitude is not None:
             # Lot of process here, if one fails, just skip
@@ -52,54 +77,77 @@ def initial_guess_PSPL(event):
                     mag_clean)
                 errmag = lightcurve_bis['err_mag'].value
 
-                flux_source = min(flux_clean)
-                good_points = np.where(flux_clean > flux_source)[0]
+                signal_in_data = check_signal_in_lightcurve(mag_clean,errmag)
 
-                while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
+                if signal_in_data:
 
-                    indexes = \
-                        np.where((flux_clean[good_points] > np.median(
-                            flux_clean[good_points])) & (
-                                         errmag[good_points] <= max(0.1, 2.0 * np.mean(
-                                     errmag[good_points]))))[0]
+                    flux_source = min(flux_clean)
+                    good_points = np.where(flux_clean > flux_source)[0]
 
-                    if len(indexes) < 1:
+                    while (np.std(time[good_points]) > 5) | (len(good_points) > 100):
 
-                        break
+                        indexes = \
+                            np.where((flux_clean[good_points] > np.median(
+                                flux_clean[good_points])) & (
+                                             errmag[good_points] <= max(0.1, 2.0 * np.mean(
+                                         errmag[good_points]))))[0]
 
-                    else:
+                        if len(indexes) < 1:
 
-                        good_points = good_points[indexes]
+                            break
 
-                        # gravity = (
-                        #   np.median(time[good_points]), np.median(flux_clean[
-                        #   good_points]),
-                        #    np.mean(errmag[good_points]))
+                        else:
 
-                        # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 /
-                        # gravity[0] ** 2)
+                            good_points = good_points[indexes]
 
-                to = np.median(time[good_points])
-                max_flux = max(flux[good_points])
-                to_estimations.append(to)
-                maximum_flux_estimations.append(max_flux)
-                errors_magnitude.append(
-                    np.mean(lightcurve_bis[good_points]['err_mag'].value))
+                            # gravity = (
+                            #   np.median(time[good_points]), np.median(flux_clean[
+                            #   good_points]),
+                            #    np.mean(errmag[good_points]))
+
+                            # distances = np.sqrt((time[good_points] - gravity[0]) ** 2 /
+                            # gravity[0] ** 2)
+
+                    to = np.median(time[good_points])
+                    max_flux = max(flux[good_points])
+                    to_estimations.append(to)
+                    maximum_flux_estimations.append(max_flux)
+                    errors_magnitude.append(
+                        np.mean(lightcurve_bis[good_points]['err_mag'].value))
+                    index_surveys.append(ind)
+
+                else:
+
+                    pass
 
             except ValueError:
+               pass
 
-                time = lightcurve_magnitude['time'].value
-                flux = pyLIMA.toolbox.brightness_transformation.magnitude_to_flux(
-                    lightcurve_magnitude['mag'].value)
-                to = np.median(time)
-                max_flux = max(flux)
-                to_estimations.append(to)
-                maximum_flux_estimations.append(max_flux)
+    try:
 
-                errors_magnitude.append(mean_error_magnitude)
-    to_guess = sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) / sum(
-        1 / np.array(errors_magnitude) ** 2)
-    survey = event.telescopes[0]
+        to_guess = sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) / sum(
+            1 / np.array(errors_magnitude) ** 2)
+
+        n_data = [len(event.telescopes[i].lightcurve_magnitude) for i in index_surveys]
+
+        index_survey = index_surveys[np.argmax(n_data)]
+
+        survey = event.telescopes[index_survey]
+
+
+        print('Selecting '+survey.name+' to estimate u0, tE and fs')
+
+    except ZeroDivisionError:
+
+        to_guess = float(np.array(event.telescopes[0].lightcurve_magnitude[np.argmin(
+            event.telescopes[0].lightcurve_magnitude['mag'])]['time']))
+
+        maximum_flux_estimations = [float(np.array(event.telescopes[0].lightcurve_flux[
+                                                       np.argmin(
+            event.telescopes[0].lightcurve_magnitude['mag'])]['flux']))]
+        survey =  event.telescopes[0]
+        print('Selecting '+event.telescopes[0].name+' to estimate t0,u0, tE and fs as I can not find good signal....')
+
     lightcurve = survey.lightcurve_magnitude
 
     lightcurve = lightcurve[lightcurve['time'].value.argsort()]
@@ -180,8 +228,8 @@ def initial_guess_PSPL(event):
             (uo_guess ** 2 + 1) ** 0.5 * np.sqrt(uo_guess ** 2 + 5))
     flux_tE = fs_guess * amplification_tE
 
-    index_tE_plus = np.where((flux < flux_tE) & (time > to))[0]
-    index_tE_moins = np.where((flux < flux_tE) & (time < to))[0]
+    index_tE_plus = np.where((flux < flux_tE) & (time > to_guess))[0]
+    index_tE_moins = np.where((flux < flux_tE) & (time < to_guess))[0]
 
     if len(index_tE_moins) != 0:
         index_tE_moins = index_tE_moins[-1]
@@ -200,9 +248,9 @@ def initial_guess_PSPL(event):
     # approximation ot tE.
 
     index_tE_baseline_plus = \
-        np.where((time > to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+        np.where((time > to_guess) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
     index_tE_baseline_moins = \
-        np.where((time < to) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
+        np.where((time < to_guess) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
 
     if len(index_tE_baseline_plus) != 0:
         tEPlus = time[index_tE_baseline_plus[0]] - to_guess

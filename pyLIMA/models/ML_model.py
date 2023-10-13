@@ -382,7 +382,7 @@ class MLmodel(object):
             jack = 'Numerical'
             model_dictionnary['xiEN'] = len(model_dictionnary)
             model_dictionnary['xiEE'] = len(model_dictionnary)
-            model_dictionnary['xi_period'] = len(model_dictionnary)
+            model_dictionnary['xi_angular_velocity'] = len(model_dictionnary)
             model_dictionnary['xi_phase'] = len(model_dictionnary)
             model_dictionnary['xi_inclination'] = len(model_dictionnary)
             model_dictionnary['xi_mass_ratio'] = len(model_dictionnary)
@@ -554,7 +554,6 @@ class MLmodel(object):
 
                 else:
 
-                    # breakpoint()
                     f_source, f_blend = np.polyfit(magnification, flux, 1,
                                                    w=1 / err_flux)
 
@@ -571,6 +570,7 @@ class MLmodel(object):
 
         setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
         setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
+        setattr(pyLIMA_parameters, 'gblend_' + telescope.name, f_blend/f_source)
 
     def find_telescopes_fluxes(self, parameters):
         """
@@ -867,11 +867,6 @@ class MLmodel(object):
 
         if body !='primary':
 
-      #      xallarap_delta_positions += pyLIMA.xallarap.xallarap.xallarap_shifts(
-      #          self.xallarap_model,
-      #          time+pyLIMA_parameters.xi_period*pyLIMA_parameters.tE/2,
-      #          pyLIMA_parameters)
-
              xallarap_delta_positions *= -1/pyLIMA_parameters.xi_mass_ratio
 
         xallarap_delta_positions -= pyLIMA.xallarap.xallarap.xallarap_shifts(
@@ -879,7 +874,6 @@ class MLmodel(object):
                 np.array([self.xallarap_model[1]]),
                 pyLIMA_parameters)*(pyLIMA_parameters.xi_mass_ratio /
                                      (1 + pyLIMA_parameters.xi_mass_ratio))
-        #breakpoint()
         xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
 
         xallarap_delta_tau, xallarap_delta_beta = (
