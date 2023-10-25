@@ -38,7 +38,7 @@ class TRFfit(LMfit):
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
-        if self.model.Jacobian_flag != 'No Way':
+        if self.model.Jacobian_flag != 'Numerical':
 
             jacobian_function = self.residuals_Jacobian
 
@@ -62,6 +62,7 @@ class TRFfit(LMfit):
                                                loss=loss, xtol=10**-10, ftol=10**-10,
                                                gtol=10**-10,
                                                x_scale=scaling)
+
         fit_results = trf_fit['x'].tolist()
         fit_chi2 = trf_fit['cost'] * 2  # chi2
 

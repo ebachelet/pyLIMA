@@ -4,6 +4,18 @@ from pyLIMA.models.FSPL_model import FSPLmodel
 
 class FSPLargemodel(FSPLmodel):
 
+    def model_type(self):
+
+        return 'FSPLarge'
+
+    def paczynski_model_parameters(self):
+        """
+        [to,u0,tE,rho]
+        """
+        model_dictionary = {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3}
+        self.Jacobian_flag = 'Numerical'
+
+        return model_dictionary
     def model_magnification(self, telescope, pyLIMA_parameters,
                             return_impact_parameter=False):
         """

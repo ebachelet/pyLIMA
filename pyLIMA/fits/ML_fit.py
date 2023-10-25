@@ -394,7 +394,7 @@ class MLfit(object):
 
                 if self.model.model_type() == 'FSPLarge':
                     guess_paczynski_parameters, f_source = \
-                        pyLIMA.priors.guess.initial_guess_FSPL(
+                        pyLIMA.priors.guess.initial_guess_FSPLarge(
                             self.model.event)
 
                 if self.model.model_type() == 'DSPL':
@@ -541,9 +541,11 @@ class MLfit(object):
 
                 try:
 
-                    index = np.where(
-                        self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(
-                            list_of_keys))[0][0]
+                   # index = np.where(
+                   #     self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(
+                   #         list_of_keys))[0][0]
+
+                    index = np.where(key == np.array(list_of_keys))[0][0]
 
                     parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
                     value = fit_parameters_guess[index]
