@@ -73,7 +73,7 @@ class MLmodel(object):
         self.pyLIMA_to_fancy = {}
         self.fancy_to_pyLIMA = {}
 
-        self.Jacobian_flag = 'OK'
+        self.Jacobian_flag = 'Numerical'
         self.standard_parameters_boundaries = []
 
         self.origin = origin
@@ -341,7 +341,7 @@ class MLmodel(object):
                 model_dictionnary['mu_source_E'] = len(model_dictionnary)
 
                 parameter += 1
-                self.Jacobian_flag = 'No Way'
+                self.Jacobian_flag = 'Numerical'
 
             if (telescope.astrometry is not None) & (parameter == 1):
                 model_dictionnary['position_source_N_' + telescope.name] = len(
@@ -406,8 +406,7 @@ class MLmodel(object):
             model_dictionnary['r_s'] = len(model_dictionnary)
             model_dictionnary['a_s'] = len(model_dictionnary)
 
-        if self.Jacobian_flag != 'No Way':
-            self.Jacobian_flag = jack
+        self.Jacobian_flag = jack
 
         return model_dictionnary
 
@@ -454,7 +453,7 @@ class MLmodel(object):
 
         if len(self.pyLIMA_to_fancy) != 0:
 
-            self.Jacobian_flag = 'No Way'
+            self.Jacobian_flag = 'Numerical'
 
             for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
 

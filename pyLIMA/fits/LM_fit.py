@@ -79,7 +79,7 @@ class LMfit(MLfit):
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
 
-        if self.model.Jacobian_flag != 'No Way':
+        if self.model.Jacobian_flag != 'Numerical':
 
             jacobian_function = self.residuals_Jacobian
 
@@ -90,7 +90,6 @@ class LMfit(MLfit):
         if self.loss_function == 'soft_l1':
 
             loss = 'soft_l1'
-            #jacobian_function = '2-point'
 
         else:
 

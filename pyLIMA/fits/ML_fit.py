@@ -523,15 +523,7 @@ class MLfit(object):
         fit_parameters_guess : list, a list of the parameters guess
         """
         self.model_guess()
-        self.telescopes_fluxes_guess()
-        self.rescale_photometry_guess()
-        self.rescale_astrometry_guess()
-
-        fit_parameters_guess = self.model_parameters_guess + \
-                               self.telescopes_fluxes_parameters_guess + \
-                               self.rescale_photometry_parameters_guess + \
-                               self.rescale_astrometry_parameters_guess
-        fit_parameters_guess = [float(i) for i in fit_parameters_guess]
+        fit_parameters_guess = self.model_parameters_guess.copy()
 
         if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
 
@@ -540,10 +532,6 @@ class MLfit(object):
             for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
 
                 try:
-
-                   # index = np.where(
-                   #     self.model.fancy_to_pyLIMA_dictionnary[key] == np.array(
-                   #         list_of_keys))[0][0]
 
                     index = np.where(key == np.array(list_of_keys))[0][0]
 
@@ -557,6 +545,17 @@ class MLfit(object):
                 except IndexError:
 
                     pass
+
+        self.model_parameters_guess = fit_parameters_guess
+        self.telescopes_fluxes_guess()
+        self.rescale_photometry_guess()
+        self.rescale_astrometry_guess()
+
+        fit_parameters_guess = self.model_parameters_guess + \
+                               self.telescopes_fluxes_parameters_guess + \
+                               self.rescale_photometry_parameters_guess + \
+                               self.rescale_astrometry_parameters_guess
+        fit_parameters_guess = [float(i) for i in fit_parameters_guess]
 
         if self.priors is not None:
 
@@ -1173,6 +1172,8 @@ class MLfit(object):
         bokeh_figure = None
         bokeh_lightcurves = None
         bokeh_astrometry = None
+
+        pyLIMA_plots.update_matplotlib_colors(self.model.event)
 
         if self.model.photometry:
             matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(

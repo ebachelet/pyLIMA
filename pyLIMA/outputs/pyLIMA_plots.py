@@ -29,6 +29,20 @@ thismodule = sys.modules[__name__]
 thismodule.list_of_fake_telescopes = []
 thismodule.saved_model = None
 
+def update_matplotlib_colors(event):
+    # Change matplotlib default colors
+    n_telescopes = len(event.telescopes)
+    color = plt.cm.jet(
+        np.linspace(0.01, 0.99, n_telescopes))  # This returns RGBA; convert:
+    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255,
+    # rgb[2] * 255),
+    #                tuple(color[:, 0:-1]))
+    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255),
+                                                                     'x').zfill(2) +
+                format(int(i[2] * 255), 'x').zfill(2) for i in color]
+
+    thismodule.MARKERS_COLORS = cycler.cycler(color=hexcolor)
+
 
 def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
     if microlensing_model == thismodule.saved_model:
@@ -169,18 +183,6 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     trajectory
     """
 
-    # Change matplotlib default colors
-    n_telescopes = len(microlensing_model.event.telescopes)
-    color = plt.cm.jet(
-        np.linspace(0.01, 0.99, n_telescopes))  # This returns RGBA; convert:
-    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255,
-    # rgb[2] * 255),
-    #                tuple(color[:, 0:-1]))
-    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255),
-                                                                     'x').zfill(2) +
-                format(int(i[2] * 255), 'x').zfill(2) for i in color]
-
-    matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
     pyLIMA_parameters = microlensing_model.compute_pyLIMA_parameters(model_parameters)
 
@@ -483,18 +485,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
 
 def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
-    # Change matplotlib default colors
-    n_telescopes = len(microlensing_model.event.telescopes)
-    color = plt.cm.jet(
-        np.linspace(0.01, 0.99, n_telescopes))  # This returns RGBA; convert:
-    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255,
-    # rgb[2] * 255),
-    #                tuple(color[:, 0:-1]))
-    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255),
-                                                                     'x').zfill(2) +
-                format(int(i[2] * 255), 'x').zfill(2) for i in color]
 
-    matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
     # Set up the geometry of the three plots
     main_plot = [0.12, 0.12, 0.48, 0.48]
@@ -837,18 +828,6 @@ def plot_astrometric_data(figure_ax, microlensing_model, bokeh_plot=None):
 
 
 def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
-    # Change matplotlib default colors
-    n_telescopes = len(microlensing_model.event.telescopes)
-    color = plt.cm.jet(
-        np.linspace(0.01, 0.99, n_telescopes))  # This returns RGBA; convert:
-    # hexcolor = map(lambda rgb: '#%02x%02x%02x' % (rgb[0] * 255, rgb[1] * 255,
-    # rgb[2] * 255),
-    #                tuple(color[:, 0:-1]))
-    hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255),
-                                                                     'x').zfill(2) +
-                format(int(i[2] * 255), 'x').zfill(2) for i in color]
-
-    matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
 
     mat_figure, mat_figure_axes = initialize_light_curves_plot(
         event_name=microlensing_model.event.name)
