@@ -405,7 +405,8 @@ class MLfit(object):
                 else:
                     raise NotImplementedError(
                         "Guessing initial parameters for "
-                        f"{self.model.model_type} is not yet supported."
+                        f"{self.model.model_type} is not yet supported. "
+                        "This model requires manually setting initial parameters."
                     )
 
                 if 'theta_E' in self.fit_parameters.keys():
