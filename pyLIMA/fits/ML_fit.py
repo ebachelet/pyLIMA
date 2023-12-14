@@ -382,25 +382,31 @@ class MLfit(object):
                         pyLIMA.priors.guess.initial_guess_PSPL(
                             self.model.event)
 
-                if self.model.model_type() == 'FSPL':
+                elif self.model.model_type() == 'FSPL':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
-                if self.model.model_type() == 'FSPLee':
+                elif self.model.model_type() == 'FSPLee':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
-                if self.model.model_type() == 'FSPLarge':
+                elif self.model.model_type() == 'FSPLarge':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPLarge(
                             self.model.event)
 
-                if self.model.model_type() == 'DSPL':
+                elif self.model.model_type() == 'DSPL':
                     guess_paczynski_parameters, f_source = \
                         pyLIMA.priors.guess.initial_guess_DSPL(
                             self.model.event)
+                
+                else:
+                    raise NotImplementedError(
+                        "Guessing initial parameters for "
+                        f"{self.model.model_type} is not yet supported."
+                    )
 
                 if 'theta_E' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [1.0]
