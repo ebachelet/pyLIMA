@@ -5,6 +5,7 @@ Notes on fits
 
 Below are some notes, details and advices about the fits. Most of the fits methods relies on `scipy <https://scipy.org/>`_. While several algorithms are implemented, see `here <https://github.com/ebachelet/pyLIMA/tree/master/pyLIMA/fits>`_, pyLIMA relies mainly of three main fitting methods. 
 
+
 Differential Evolution (DE)
 ---------------------------
 
@@ -21,6 +22,40 @@ MCMC
 ----
 
 MCMC is implemeented via the awesome `emcee <https://emcee.readthedocs.io/en/stable/>`_ package. The number of walkers and links can be adjusted. Uniform priors at the parameters boundaries are set by default.
+
+Fancy parameters
+----------------
+
+Modeling performance can be significantly improved by exploring the parameter space in log-space. This is especially recommended for the modeling of binary lenses. While users can pass their own fancy parameters, pyLIMA includes an option to use :math:`log_{10}(t_E)`, :math:`log_{10}(\rho)`, :math:`log_{10}(s)` and :math:`log_{10}(q)`:
+
+  
+.. code-block:: python
+    
+    from pyLIMA.models import USBL_model, pyLIMA_fancy_parameters
+    from pyLIMA.fits import DE_fit
+    
+    fancy_parameters = pyLIMA_fancy_parameters.standard_fancy_parameters
+
+    usbl = USBL_model.USBLmodel(current_event, fancy_parameters=fancy_parameters)
+    
+    de = DE_fit.DEfit(usbl)
+    de.fit()
+    
+The boundaries are automatically adjusted to the new parameters. However, the parameters guess (for gradient-like and MCMC methods) still needs to be done in the original scale:
+
+.. code-block:: python
+
+    from pyLIMA.models import USBL_model, pyLIMA_fancy_parameters
+    from pyLIMA.fits import TRF_fit
+
+    fancy_parameters = pyLIMA_fancy_parameters.standard_fancy_parameters
+
+    usbl = USBL_model.USBLmodel(current_event, fancy_parameters=fancy_parameters)
+
+    trf = TRF_fit.TRFfit(usbl)
+    trf.model_parameters_guess = [ 2.45986449e+06,  -1.81080674e-01,  10**2.63277601e+00, 10**-1.45312165e+00,   10**-1.85934608e-01,10**-3.12504456e+00,  5.42587262e+00 ,0,0]
+    trf.fit()  
+    
 
 Parallelization
 ---------------
