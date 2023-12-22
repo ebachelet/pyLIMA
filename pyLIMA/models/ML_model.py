@@ -293,6 +293,24 @@ class MLmodel(object):
                         self.pyLIMA_to_fancy[key] = None
                         self.fancy_to_pyLIMA[parameter] = None
 
+                    if key == 't_center':
+
+                        self.pyLIMA_to_fancy[key] = pickle.loads(
+                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
+                                             '_t0_to_t_center')))
+                        self.fancy_to_pyLIMA[parameter] = pickle.loads(
+                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
+                                             '_t_center_to_t0')))
+
+                    if key == 'u_center':
+
+                        self.pyLIMA_to_fancy[key] = pickle.loads(
+                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
+                                             '_u0_to_u_center')))
+                        self.fancy_to_pyLIMA[parameter] = pickle.loads(
+                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
+                                             '_u_center_to_u0')))
+
                 else:
 
                     self.fancy_to_pyLIMA_dictionnary.pop(key)

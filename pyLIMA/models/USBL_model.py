@@ -109,6 +109,7 @@ class USBLmodel(MLmodel):
 
             x_center = caustic.real
             y_center = caustic.imag
+            return x_center, y_center
 
         if 'primary' in self.origin[0]:
             primary_location = -pyLIMA_parameters.separation * \
@@ -117,6 +118,7 @@ class USBLmodel(MLmodel):
 
             x_center = primary_location
             y_center = 0
+            return x_center, y_center
 
         if 'secondary' in self.origin[0]:
             secondary_location = pyLIMA_parameters.separation / (
@@ -124,5 +126,9 @@ class USBLmodel(MLmodel):
 
             x_center = secondary_location
             y_center = 0
+            return x_center, y_center
+
+        x_center = self.origin[1][0]
+        y_center = self.origin[1][1]
 
         return x_center, y_center

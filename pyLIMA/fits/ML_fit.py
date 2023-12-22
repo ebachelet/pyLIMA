@@ -122,13 +122,12 @@ class MLfit(object):
                 if key in self.model.fancy_to_pyLIMA.keys():
 
                     parameter = self.model.pyLIMA_to_fancy_dictionnary[key]
-
                     try:
 
                         new_bounds = np.sort(
                             self.model.pyLIMA_to_fancy[parameter](thebounds))
 
-                    except TypeError:
+                    except (TypeError, AttributeError) as error:
 
                         new_bounds = standard_parameters_boundaries[ind]
 
@@ -525,25 +524,20 @@ class MLfit(object):
         self.model_guess()
         fit_parameters_guess = self.model_parameters_guess.copy()
 
+        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.model_parameters_guess)
+
         if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
 
             list_of_keys = [i for i in self.fit_parameters.keys()]
-
             for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
 
                 try:
 
                     index = np.where(key == np.array(list_of_keys))[0][0]
+                    fit_parameters_guess[index] = getattr( pyLIMA_parameters,key)
 
-                    parameter = self.model.fancy_to_pyLIMA_dictionnary[key]
-                    value = fit_parameters_guess[index]
-                    x = namedtuple('parameters', parameter)
-
-                    setattr(x, parameter, value)
-                    fit_parameters_guess[index] = self.model.pyLIMA_to_fancy[key](x)
-
-                except IndexError:
-
+                except (IndexError, AttributeError) as error:
+                    breakpoint()
                     pass
 
         self.model_parameters_guess = fit_parameters_guess

@@ -36,9 +36,11 @@ def mass_ratio(x):
 
 
 def _t_center_to_t0(x, x_center=0, y_center=0):
+    #CROIN : https://iopscience.iop.org/article/10.1088/0004-637X/790/2/142/pdf
+
     try:
 
-        alpha = x.alpha + np.pi
+        alpha = x.alpha
 
     except AttributeError:
 
@@ -48,7 +50,7 @@ def _t_center_to_t0(x, x_center=0, y_center=0):
 
     tau_prime = -np.dot(rotation, [x_center, y_center])
 
-    t_0 = float(x.t_center + tau_prime * x.tE)
+    t_0 = float(x.t_center - tau_prime * x.tE)
 
     return t_0
 
@@ -56,7 +58,7 @@ def _t_center_to_t0(x, x_center=0, y_center=0):
 def _t0_to_t_center(x, x_center=0, y_center=0):
     try:
 
-        alpha = x.alpha + np.pi
+        alpha = x.alpha
 
     except AttributeError:
 
@@ -64,7 +66,7 @@ def _t0_to_t_center(x, x_center=0, y_center=0):
 
     rotation = np.array([np.cos(alpha), np.sin(alpha)])
 
-    tau_prime = np.dot(rotation, [x_center, y_center])
+    tau_prime = -np.dot(rotation, [x_center, y_center])
 
     t_center = float(x.t0 + tau_prime * x.tE)
 
@@ -74,7 +76,7 @@ def _t0_to_t_center(x, x_center=0, y_center=0):
 def _u_center_to_u0(x, x_center=0, y_center=0):
     try:
 
-        alpha = x.alpha + np.pi
+        alpha = x.alpha
 
     except AttributeError:
 
@@ -82,7 +84,7 @@ def _u_center_to_u0(x, x_center=0, y_center=0):
 
     rotation = np.array([-np.sin(alpha), np.cos(alpha)])
 
-    u_prime = -np.dot(rotation, [x_center, y_center])
+    u_prime = np.dot(rotation, [x_center, y_center])
 
     u_0 = float(x.u_center - u_prime)
 
@@ -92,7 +94,7 @@ def _u_center_to_u0(x, x_center=0, y_center=0):
 def _u0_to_u_center(x, x_center=0, y_center=0):
     try:
 
-        alpha = x.alpha + np.pi
+        alpha = x.alpha
 
     except AttributeError:
 

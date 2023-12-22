@@ -284,7 +284,8 @@ def initial_guess_FSPL(event):
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
     # Dummy guess
-    rho_guess = 0.05
+    rho_guess = np.min((np.abs(PSPL_guess[1]),0.05))
+    
     FSPL_guess = PSPL_guess + [rho_guess]
 
     # [to,uo,tE,rho], fsource
