@@ -417,17 +417,32 @@ class MLfit(object):
                 if 'spot_size' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
+
+                pyLIMA_parameters = self.model.compute_pyLIMA_parameters(
+                    guess_paczynski_parameters, fancy_parameters=False)
+
+                final_guess_paczynski_parameters = []
+
                 for ind, param in enumerate(list(self.fit_parameters.keys())[:len(
                         guess_paczynski_parameters)]):
 
-                    if (guess_paczynski_parameters[ind] < self.fit_parameters[param][
-                        1][0]) | (guess_paczynski_parameters[ind] >
+                    param_value = getattr(pyLIMA_parameters, param)
+
+                    if (param_value < self.fit_parameters[param][
+                        1][0]) | (param_value >
                                   self.fit_parameters[param][1][1]):
 
-                        guess_paczynski_parameters[ind] = 0.5*self.fit_parameters[
-                            param][1][1]
+                        new_value = (np.sign(self.fit_parameters[
+                            param][1][1])-0.5)*np.abs(self.fit_parameters[
+                            param][1][1])
 
-                self.model_parameters_guess = guess_paczynski_parameters
+                        final_guess_paczynski_parameters.append(new_value)
+
+                    else:
+
+                        final_guess_paczynski_parameters.append(param_value)
+
+                self.model_parameters_guess = final_guess_paczynski_parameters
 
 
 
@@ -522,27 +537,9 @@ class MLfit(object):
         fit_parameters_guess : list, a list of the parameters guess
         """
         self.model_guess()
-        fit_parameters_guess = self.model_parameters_guess.copy()
+        #fit_parameters_guess = self.model_parameters_guess.copy()
 
-        pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.model_parameters_guess)
-        breakpoint()
-
-        if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
-
-            list_of_keys = [i for i in self.fit_parameters.keys()]
-            for key in self.model.fancy_to_pyLIMA_dictionnary.keys():
-
-                try:
-
-                    index = np.where(key == np.array(list_of_keys))[0][0]
-                    fit_parameters_guess[index] = getattr( pyLIMA_parameters,key)
-
-                except (IndexError, AttributeError) as error:
-
-                    print(error)
-                    pass
-
-        self.model_parameters_guess = fit_parameters_guess
+        #self.model_parameters_guess = fit_parameters_guess
         self.telescopes_fluxes_guess()
         self.rescale_photometry_guess()
         self.rescale_astrometry_guess()

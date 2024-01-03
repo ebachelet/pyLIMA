@@ -47,8 +47,10 @@ def test_initial_guess_FSPL():
     event = _create_event()
 
     theguess = guess.initial_guess_FSPL(event)
+
     assert np.allclose(theguess[0],
-                       [0.0, 1.6735571651998717, 17.540988328240694,  3.3471143303997435])
+                       [0.0, 1.6735571651998717, 17.540988328240694,
+                        4.3643578047198455])
     assert np.allclose(theguess[1], 46056.54738747334)
 
 

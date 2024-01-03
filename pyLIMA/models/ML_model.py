@@ -635,36 +635,206 @@ class MLmodel(object):
 
         return thefluxes
 
-    def compute_pyLIMA_parameters(self, fancy_parameters):
+    #def compute_pyLIMA_parameters(self, fancy_parameters):
+    #    """
+    #    Realize the transformation between the fancy parameters to fit to the
+    #    standard pyLIMA parameters needed to compute a model.
+
+    #    Parameters
+    #    ----------
+    #    fancy_parameter :  list, a list of fancy parameters
+
+    #    Returns
+    #    -------
+    #    pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
+    #    """
+
+    #    model_parameters = collections.namedtuple('parameters',
+    #                                              self.model_dictionnary.keys())
+
+    #    for key_parameter in self.model_dictionnary.keys():
+
+    #        try:
+
+    #            setattr(model_parameters, key_parameter,
+    #                    fancy_parameters[self.model_dictionnary[key_parameter]])
+
+    #        except IndexError:
+
+    #            setattr(model_parameters, key_parameter, None)
+
+    #    pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
+    #        model_parameters)
+
+    #    if self.origin[0] != 'center_of_mass':
+    #        self.change_origin(pyLIMA_parameters)
+
+    #    if 'v_radial' in self.model_dictionnary.keys():
+
+    #        v_para = pyLIMA_parameters.v_para
+    #        v_perp = pyLIMA_parameters.v_perp
+    #        v_radial = pyLIMA_parameters.v_radial
+    #        separation = pyLIMA_parameters.separation
+
+    #        if self.orbital_motion_model[0] == 'Circular':
+
+    #            try:
+
+    #                r_s = -v_para / v_radial
+
+    #            except ValueError:
+
+    #                v_radial = np.sign(v_radial) * 10 ** -20
+
+    #                r_s = -v_para / v_radial
+
+    #            a_s = 1
+
+    #        else:
+
+    #            r_s = pyLIMA_parameters.r_s
+    #            a_s = pyLIMA_parameters.a_s
+
+    #        longitude_ascending_node, inclination, omega_peri, a_true, \
+    #            orbital_velocity, eccentricity, true_anomaly, t_periastron, x, y, z = \
+    #            orbital_motion_3D.orbital_parameters_from_position_and_velocities(
+    #                separation, r_s, a_s, v_para, v_perp, v_radial,
+    #                self.orbital_motion_model[1])
+
+    #        Rmatrix = np.c_[x[:2], y[:2]]
+
+    #        setattr(pyLIMA_parameters, 'Rmatrix', Rmatrix)
+    #        setattr(pyLIMA_parameters, 'a_true', a_true)
+    #        setattr(pyLIMA_parameters, 'eccentricity', eccentricity)
+    #        setattr(pyLIMA_parameters, 'orbital_velocity', orbital_velocity)
+    #        setattr(pyLIMA_parameters, 't_periastron', t_periastron)
+
+    #    return pyLIMA_parameters
+
+    def fancy_parameters_to_pyLIMA_standard_parameters(self, pyLIMA_parameters):
         """
-        Realize the transformation between the fancy parameters to fit to the
-        standard pyLIMA parameters needed to compute a model.
+        Transform the fancy parameters to the pyLIMA standards. The output got all
+        the necessary standard attributes, example t0, u0, tE...
 
         Parameters
         ----------
-        fancy_parameter :  list, a list of fancy parameters
+        fancy_parameters :  a pyLIMA_parameters object
 
         Returns
         -------
-        pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
+        fancy_parameters : dict, an updated dictionnary the pyLIMA parameters
         """
 
-        model_parameters = collections.namedtuple('parameters',
-                                                  self.model_dictionnary.keys())
+        if len(self.fancy_to_pyLIMA) != 0:
 
-        for key_parameter in self.model_dictionnary.keys():
+            list_of_keys = (list(pyLIMA_parameters._fields) +
+                            [key for key in self.fancy_to_pyLIMA.keys()])
+
+            new_pyLIMA_parameters = collections.namedtuple('parameters',
+                                                           list_of_keys)
+
+            for key_parameter in pyLIMA_parameters._fields:
+                param_value = getattr(pyLIMA_parameters, key_parameter)
+
+                setattr(new_pyLIMA_parameters, key_parameter,
+                        param_value)
+
+            for key_parameter in self.fancy_to_pyLIMA.keys():
+                setattr(new_pyLIMA_parameters, key_parameter,
+                        self.fancy_to_pyLIMA[key_parameter](pyLIMA_parameters))
+        else:
+
+            new_pyLIMA_parameters = pyLIMA_parameters
+
+        return new_pyLIMA_parameters
+
+
+    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
+        """
+        Transform the pyLIMA standards parameters to the fancy parameters. The output
+        got all
+        the necessary fancy attributes.
+
+        Parameters
+        ----------
+        pyLIMA_parameter :  a pyLIMA parameter object
+
+        :Returns
+        -------
+        pyLIMA_parameters : dict, the updated pyLIMA parameter containing the fancy
+        parameters
+        """
+
+        if len(self.pyLIMA_to_fancy) != 0:
+
+            list_of_keys = (list(pyLIMA_parameters._fields) +
+                            [key for key in self.pyLIMA_to_fancy.keys()])
+
+            new_pyLIMA_parameters = collections.namedtuple('parameters',
+                                                           list_of_keys)
+
+            for key_parameter in pyLIMA_parameters._fields:
+
+                param_value = getattr(pyLIMA_parameters, key_parameter)
+
+                setattr(new_pyLIMA_parameters, key_parameter,
+                       param_value)
+
+            for key_parameter in self.pyLIMA_to_fancy.keys():
+
+                setattr(new_pyLIMA_parameters, key_parameter,
+                        self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
+        else:
+
+            new_pyLIMA_parameters = pyLIMA_parameters
+
+        return new_pyLIMA_parameters
+
+    def compute_pyLIMA_parameters(self, model_parameters, fancy_parameters=True):
+        """
+         Realize the transformation between the fancy parameters to fit to the
+         standard pyLIMA parameters needed to compute a model.
+
+         Parameters
+         ----------
+         fancy_parameter :  list, a list of fancy parameters
+
+         Returns
+         -------
+         pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
+         """
+
+        if fancy_parameters:
+
+            parameter_dictionnary = self.model_dictionnary.copy()
+
+        else:
+
+            parameter_dictionnary = self.pyLIMA_standards_dictionnary.copy()
+
+        pyLIMA_parameters = collections.namedtuple('parameters',
+                                                       parameter_dictionnary.keys())
+
+        for key_parameter in pyLIMA_parameters._fields:
 
             try:
 
-                setattr(model_parameters, key_parameter,
-                        fancy_parameters[self.model_dictionnary[key_parameter]])
+                setattr(pyLIMA_parameters, key_parameter,
+                        model_parameters[parameter_dictionnary[key_parameter]])
 
             except IndexError:
 
-                setattr(model_parameters, key_parameter, None)
+                setattr(pyLIMA_parameters, key_parameter, None)
 
-        pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
-            model_parameters)
+        if fancy_parameters:
+
+            pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
+                                pyLIMA_parameters)
+
+        else:
+
+            pyLIMA_parameters = self.pyLIMA_standard_parameters_to_fancy_parameters(
+                                pyLIMA_parameters)
 
         if self.origin[0] != 'center_of_mass':
             self.change_origin(pyLIMA_parameters)
@@ -708,59 +878,6 @@ class MLmodel(object):
             setattr(pyLIMA_parameters, 'eccentricity', eccentricity)
             setattr(pyLIMA_parameters, 'orbital_velocity', orbital_velocity)
             setattr(pyLIMA_parameters, 't_periastron', t_periastron)
-
-        return pyLIMA_parameters
-
-    def fancy_parameters_to_pyLIMA_standard_parameters(self, fancy_parameters):
-        """
-        Transform the fancy parameters to the pyLIMA standards. The output got all
-        the necessary standard attributes, example t0, u0, tE...
-
-        Parameters
-        ----------
-        fancy_parameters :  a pyLIMA_parameters object
-
-        Returns
-        -------
-        fancy_parameters : dict, an updated dictionnary the pyLIMA parameters
-        """
-
-        if len(self.fancy_to_pyLIMA) != 0:
-
-            for key_parameter in self.fancy_to_pyLIMA.keys():
-
-                try:
-
-                    setattr(fancy_parameters, key_parameter,
-                            self.fancy_to_pyLIMA[key_parameter](fancy_parameters))
-
-                except TypeError:
-
-                    pass
-
-        return fancy_parameters
-
-    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
-        """
-        Transform the pyLIMA standards parameters to the fancy parameters. The output
-        got all
-        the necessary fancy attributes.
-
-        Parameters
-        ----------
-        pyLIMA_parameter :  a pyLIMA parameter object
-
-        :Returns
-        -------
-        pyLIMA_parameters : dict, the updated pyLIMA parameter containing the fancy
-        parameters
-        """
-
-        if len(self.pyLIMA_to_fancy) != 0:
-
-            for key_parameter in self.pyLIMA_to_fancy.keys():
-                setattr(pyLIMA_parameters, key_parameter,
-                        self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
 
         return pyLIMA_parameters
 
