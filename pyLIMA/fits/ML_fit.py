@@ -525,6 +525,7 @@ class MLfit(object):
         fit_parameters_guess = self.model_parameters_guess.copy()
 
         pyLIMA_parameters = self.model.compute_pyLIMA_parameters(self.model_parameters_guess)
+        breakpoint()
 
         if len(self.model.fancy_to_pyLIMA_dictionnary) != 0:
 
