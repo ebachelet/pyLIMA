@@ -31,8 +31,8 @@ class TRFfit(LMfit):
         scaling = (np.array(bounds_max)-bounds_min)/2
         eps = 10**-5
         mask = np.abs(scaling)<eps
-        scaling[mask] = eps
 
+        scaling[mask] = eps
         n_data = 0
 
         for telescope in self.model.event.telescopes:

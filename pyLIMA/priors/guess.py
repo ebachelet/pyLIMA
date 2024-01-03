@@ -306,8 +306,10 @@ def initial_guess_FSPLarge(event):
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
 
-    Amax = np.array(event.telescopes[0].lightcurve_flux['flux'].max())/fs_guess
-    rho_guess = 2/(Amax**2-1)**0.5
+    #Amax = np.array(event.telescopes[0].lightcurve_flux['flux'].max())/fs_guess
+    u0 = PSPL_guess[1]
+    Amax = (u0**2+2)/(u0*(u0**4+4)**0.5)
+    rho_guess = np.max((2/(Amax**2-1)**0.5,2*np.abs(u0)))
 
     FSPL_guess = PSPL_guess + [rho_guess]
 
