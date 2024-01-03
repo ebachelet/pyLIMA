@@ -284,8 +284,15 @@ def initial_guess_FSPL(event):
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
     # Dummy guess
-    rho_guess = np.min((np.abs(PSPL_guess[1]),0.05))
-    
+    #rho_guess = np.min((np.abs(PSPL_guess[1]),0.05))
+
+    Amax = np.array(event.telescopes[0].lightcurve_flux['flux'].max()) / fs_guess
+    rho_guess = 2 / (Amax ** 2 - 1) ** 0.5
+
+    if np.isnan(rho_guess):
+
+        rho_guess = 2*PSPL_guess[1]
+
     FSPL_guess = PSPL_guess + [rho_guess]
 
     # [to,uo,tE,rho], fsource
@@ -310,6 +317,10 @@ def initial_guess_FSPLarge(event):
     u0 = PSPL_guess[1]
     Amax = (u0**2+2)/(u0*(u0**4+4)**0.5)
     rho_guess = np.max((2/(Amax**2-1)**0.5,2*np.abs(u0)))
+
+    if np.isnan(rho_guess):
+
+        rho_guess = 2*PSPL_guess[1]
 
     FSPL_guess = PSPL_guess + [rho_guess]
 

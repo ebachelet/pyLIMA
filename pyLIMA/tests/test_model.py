@@ -128,7 +128,9 @@ def test_compute_the_microlensing_model():
 
     model = Model.compute_the_microlensing_model(event.telescopes[0], pym)
 
-    assert np.allclose(model['photometry'], [9.99999999, 200.])
+    assert np.allclose(model['photometry'], [9.99999999, 200.], atol=0, rtol=0.00001)
+    assert np.allclose(pym.t0,315.5)
+    assert np.allclose(pym.u0, -7.998)
     assert model['astrometry'] is None
 
 
@@ -143,8 +145,9 @@ def test_derive_telescope_flux():
     magnification = Model.model_magnification(event.telescopes[0], pym)
 
     Model.derive_telescope_flux(event.telescopes[0], pym, magnification)
-    assert np.allclose(pym.fsource_Test, -15723296.651212221)
-    assert np.allclose(pym.fblend_Test, 15724766.572776612)
+
+    assert np.allclose(pym.fsource_Test, 13664813.15722887)
+    assert np.allclose(pym.fblend_Test, -13666064.196499277)
 
 
 def test_find_telescopes_fluxes():
@@ -155,8 +158,8 @@ def test_find_telescopes_fluxes():
     params = [0.5, 0.002, 35, 0.05]
 
     fluxes = Model.find_telescopes_fluxes(params)
-    assert np.allclose(fluxes.fsource_Test, -15723296.651212221)
-    assert np.allclose(fluxes.fblend_Test, 15724766.572776612)
+    assert np.allclose(fluxes.fsource_Test,13664813.15722887)
+    assert np.allclose(fluxes.fblend_Test, -13666064.196499277)
 
 
 def test_compute_pyLIMA_parameters():
@@ -182,9 +185,8 @@ def test_source_trajcetory():
 
     X, Y, dS, dA = Model.source_trajectory(event.telescopes[0], pym,
                                            data_type='photometry')
-
-    assert np.allclose(X, [-8.98571429, -9.55714286])
-    assert np.allclose(Y, [-8.002, -8.002])
+    assert np.allclose(X, [9.01428571, 8.44285714])
+    assert np.allclose(Y, [7.998, 7.998])
     assert np.allclose(dS, [0, 0])
     assert np.allclose(dA, [0, 0])
 

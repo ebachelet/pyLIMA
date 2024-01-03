@@ -41,7 +41,7 @@ Modeling performance can be significantly improved by exploring the parameter sp
     de = DE_fit.DEfit(usbl)
     de.fit()
     
-The boundaries are automatically adjusted to the new parameters. However, the parameters guess (for gradient-like and MCMC methods) still needs to be done in the original scale:
+The boundaries are automatically adjusted to the new parameters. However, the parameters guess (for gradient-like and MCMC methods) still needs to be given in the original scale:
 
 .. code-block:: python
 

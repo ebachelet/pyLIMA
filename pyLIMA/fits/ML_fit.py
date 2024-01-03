@@ -128,7 +128,7 @@ class MLfit(object):
                             self.model.pyLIMA_to_fancy[parameter](thebounds))
 
                     except (TypeError, AttributeError) as error:
-
+                        print(error)
                         new_bounds = standard_parameters_boundaries[ind]
 
                     thekey = parameter
@@ -537,7 +537,8 @@ class MLfit(object):
                     fit_parameters_guess[index] = getattr( pyLIMA_parameters,key)
 
                 except (IndexError, AttributeError) as error:
-                    breakpoint()
+
+                    print(error)
                     pass
 
         self.model_parameters_guess = fit_parameters_guess
