@@ -451,8 +451,6 @@ class MLfit(object):
 
                 self.model_parameters_guess = final_guess_paczynski_parameters
 
-
-
             except ValueError:
 
                 raise FitException(

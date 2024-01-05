@@ -41,19 +41,20 @@ Modeling performance can be significantly improved by exploring the parameter sp
     de = DE_fit.DEfit(usbl)
     de.fit()
     
-The boundaries are automatically adjusted to the new parameters. However, the parameters guess (for gradient-like and MCMC methods) still needs to be given in the original scale:
+The boundaries are automatically adjusted to the new parameters. However, the parameters guess (for gradient-like and MCMC methods) needs to be given in the new scale:
 
 .. code-block:: python
 
     from pyLIMA.models import USBL_model, pyLIMA_fancy_parameters
     from pyLIMA.fits import TRF_fit
 
-    fancy_parameters = pyLIMA_fancy_parameters.standard_fancy_parameters
+    fancy_parameters = pyLIMA_fancy_parameters.standard_fancy_parameters.copy()
 
     usbl = USBL_model.USBLmodel(current_event, fancy_parameters=fancy_parameters)
 
     trf = TRF_fit.TRFfit(usbl)
-    trf.model_parameters_guess = [ 2.45986449e+06,  -1.81080674e-01,  10**2.63277601e+00, 10**-1.45312165e+00,   10**-1.85934608e-01,10**-3.12504456e+00,  5.42587262e+00 ,0,0]
+    # t0, u0, log10(tE),log10(rho),log10(s),log10(q),alpha
+    trf.model_parameters_guess = [ 2.45986449e+06,  -1.81080674e-01,  2.63277601e+00, -1.45312165e+00, -1.85934608e-01,-3.12504456e+00,  5.42587262e+00]
     trf.fit()  
     
 
