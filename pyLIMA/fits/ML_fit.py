@@ -6,7 +6,6 @@ import numpy as np
 import pyLIMA.fits.objective_functions as objective_functions
 from bokeh.layouts import gridplot
 from bokeh.plotting import output_file, save
-from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.priors import parameters_boundaries
 
 
@@ -1163,6 +1162,8 @@ class MLfit(object):
         implemented yet)
         bokeh_figure : bokehh.fig, a bokeh.figure containing all the above
         """
+        from pyLIMA.outputs import pyLIMA_plots
+
         matplotlib_lightcurves = None
         matplotlib_geometry = None
         matplotlib_astrometry = None
