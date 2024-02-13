@@ -101,11 +101,12 @@ class PointBrowser:
 
 if __name__ == '__main__':
     if len(argv) != 2:
-        print('Usage: python examine_lightcurve.py <datafile>.dat')
+        print('Usage: python examine_lightcurve.py /path/to/<datafile>.csv')
         exit()
 
     datafile = argv[1]
     try:
+        # Skip the column descriptions in the first row
         try:
             hjd, mag, merr = np.loadtxt(datafile, delimiter=',', skiprows=1, usecols=(0, 1, 2), 
                                         dtype=float, unpack=True)
