@@ -2,7 +2,6 @@ import numpy as np
 import unittest
 from unittest.mock import MagicMock, Mock
 from pyLIMA.toolbox import brightness_transformation
-from pyLIMA.toolbox import brightness_transformation
 from pyLIMA.toolbox.examine_lightcurve import PointBrowser  # Adjust the import path as needed
 from pyLIMA.toolbox.bin_lightcurve import weighted_mean, get_sigma, bin_data  # Adjust the import path as needed
 
