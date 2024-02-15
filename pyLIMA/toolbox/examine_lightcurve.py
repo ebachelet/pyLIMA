@@ -100,6 +100,7 @@ class PointBrowser:
         self.fig.canvas.draw()
 
 if __name__ == '__main__':
+    print('Assumes the first line of the .csv file contains the column headings.')
     if len(argv) != 2:
         print('Usage: python examine_lightcurve.py /path/to/<datafile>.csv')
         exit()
@@ -110,7 +111,7 @@ if __name__ == '__main__':
         try:
             hjd, mag, merr = np.loadtxt(datafile, delimiter=',', skiprows=1, usecols=(0, 1, 2), 
                                         dtype=float, unpack=True)
-        except:
+        except ValueError:
             hjd, mag, merr = np.loadtxt(datafile, delimiter=',', skiprows=1, usecols=(0, 2, 3), 
                                         dtype=float, unpack=True)
         idx = np.arange(len(hjd))
