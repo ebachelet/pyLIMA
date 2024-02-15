@@ -8,6 +8,8 @@ import speclite
 import speclite.filters
 from astropy.table import QTable
 
+from pyLIMA.priors.parameters_priors import UniformDistribution
+
 ISOCHRONES_HEADER = ['Fe', 'logAge', 'logMass', 'logL', 'logTe', 'logg', 'mbolmag',
                      'Umag', 'Bmag', 'Vmag', 'Rmag', 'Imag', 'Jmag', 'Hmag', 'Kmag',
                      'umag', 'gmag', 'rmag', 'imag', 'zmag', 'Gmag', 'G_BPmag',
@@ -46,6 +48,7 @@ class SourceLensProbabilities(object):
 
         self.default_observables = {'log10(M_s)': None,
                                     'log10(D_s)': None,
+                                    'log10(pi_s)': None,
                                     'log10(Teff_s)': None,
                                     'Fe_s': None,
                                     'logg_s': None,
@@ -58,6 +61,7 @@ class SourceLensProbabilities(object):
                                     'log10(M_l)': None,
                                     'log10(epsilon_D_l)': None,
                                     'log10(D_l)': None,
+                                    'log10(pi_l)': None,
                                     'log10(Teff_l)': None,
                                     'Fe_l': None,
                                     'logg_l': None,
@@ -110,6 +114,24 @@ class SourceLensProbabilities(object):
                        self.log10_Mass_bounds, self.log10_epsilon,
                        self.log10_Teff_bounds, self.Fe_bounds, self.logg_bounds,
                        self.muN_bounds, self.muE_bounds, self.log10_epsilon]
+
+
+        self.priors = [None, UniformDistribution(0,100),
+                       None, None, None, UniformDistribution(-20,20),
+                       UniformDistribution(-20,20),
+                       UniformDistribution(0,10),
+                       None, UniformDistribution(0,1),None, None,
+                       None,UniformDistribution(-20,20),
+                       UniformDistribution(-20,20),
+                       UniformDistribution(0,1)]
+
+        if stellar_lens is False:
+
+            self.priors[8] = UniformDistribution(0, 100)
+            self.priors[10] = UniformDistribution(1000, 100000)
+            self.priors[11] = UniformDistribution(-2,0.5)
+            self.priors[12] = UniformDistribution(0,8)
+
 
         self.load_isochrones()
 
@@ -510,6 +532,7 @@ class SourceLensProbabilities(object):
 
         observables = {'log10(M_s)': log10_M_s,
                        'log10(D_s)': log10_D_s,
+                       'log10(pi_s)': -log10_D_s,
                        'log10(Teff_s)': np.log10(Teffs),
                        'Fe_s': Fe_s,
                        'logg_s': logg_s,
@@ -522,6 +545,7 @@ class SourceLensProbabilities(object):
                        'log10(M_l)': log10_M_l,
                        'log10(epsilon_D_l)': log10_epsilon_D_l,
                        'log10(D_l)': np.log10(Dl),
+                       'log10(pi_l)': -np.log10(Dl),
                        'log10(Teff_l)': np.log10(Teffl),
                        'Fe_l': Fe_l,
                        'logg_l': logg_l,
@@ -628,27 +652,37 @@ class SourceLensProbabilities(object):
         # breakpoint()
         score = self.gm.score([to_compare_with_gm])  # log-likelihood
 
+        return score, observed
+
+    def priors_proba(self, observed):
+
         dist_s, dist_l = self.isochrones_score(observed)
 
-        score_tot = np.copy(score)
-
-        # print (score,dist_s,dist_l)
-
         if dist_s is not None:
-            score_tot -= (dist_s.min() * 100)
+            score_prior = -(dist_s.min() * 100)
             # score_tot -= np.mean(np.sort(dist_s)[:10])*1000
 
         else:
             return -np.inf
 
         if dist_l is not None:
-            score_tot -= (dist_l.min() * 100)
-            # score_tot -= np.mean(np.sort(dist_l)[:10])*1000
+            score_prior -= (dist_l.min() * 100)
 
-        # else:
-        #    return -np.inf
+        params = [10 ** observed['log10(M_s)'], 10 ** observed['log10(D_s)'],
+                  observed['log10(Teff_s)'], observed['Fe_s'], observed['logg_s'],
+                  observed['mu_sN'],observed['mu_sE'],10**observed['log10(Av_s)'],
+                  10 ** observed['log10(M_l)'], 10 ** observed['log10(epsilon_D_l)'],
+                  10**observed['log10(Teff_l)'], observed['Fe_l'], observed['logg_l'],
+                  observed['mu_lN'],observed['mu_lE'],
+                  10**observed['log10(epsilon_Av_l)']]
 
-        return score_tot
+        for ind,prior in enumerate(self.priors):
+
+            if prior is not None:
+
+                score_prior += np.log(prior.pdf(params[ind]))
+
+        return score_prior
 
     def isochrones_score(self, observed):
 
@@ -695,7 +729,12 @@ class SourceLensProbabilities(object):
 
     def objective(self, parameters):
 
-        obj = self.GM_proba(parameters)
+        obj,observed = self.GM_proba(parameters)
+
+        obj_priors = self.priors_proba(observed)
+
+        obj += obj_priors
+
         return -obj
 
     def objective_mcmc(self, parameters):
@@ -705,7 +744,11 @@ class SourceLensProbabilities(object):
             if (param < self.bounds[ind][0]) | (param > self.bounds[ind][1]):
                 return -np.inf
 
-        obj = self.GM_proba(parameters)
+        obj, observed = self.GM_proba(parameters)
+
+        obj_priors = self.priors_proba(observed)
+        obj += obj_priors
+
         return obj
 
     def mcmc(self, seeds, n_walkers=2, n_chains=10000):
