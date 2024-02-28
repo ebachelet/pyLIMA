@@ -46,16 +46,43 @@ class USBLmodel(MLmodel):
 
             # self.u0_t0_from_uc_tc(pyLIMA_parameters)
 
-            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters,
-                                                        data_type='photometry')
+          
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
 
-            separation = source_trajectoire[2] + pyLIMA_parameters.separation
-            magnification_USBL = \
-                magnification_VBB.magnification_USBL(separation,
+            separation = dseparation[2] + pyLIMA_parameters.separation
+
+
+            source1_magnification = magnification_VBB.magnification_USBL(separation,
                                                      pyLIMA_parameters.mass_ratio,
-                                                     source_trajectoire[0],
-                                                     source_trajectoire[1],
+                                                     source1_trajectory_x,
+                                                     source1_trajectory_y,
                                                      pyLIMA_parameters.rho)
+
+            if source2_trajectory_x is not None:
+
+                source2_magnification = magnification_VBB.magnification_USBL(separation,
+                                                         pyLIMA_parameters.mass_ratio,
+                                                         source1_trajectory_x,
+                                                         source1_trajectory_y,
+                                                         pyLIMA_parameters.rho_2)
+
+                blend_magnification_factor = getattr(pyLIMA_parameters,
+                                                     'q_flux_' + telescope.filter)
+                effective_magnification = (
+                        source1_magnification +
+                        source2_magnification *
+                        blend_magnification_factor)
+
+                magnification_USBL = effective_magnification
+
+            else:
+
+                magnification_USBL = source1_magnification
+
         else:
 
             magnification_USBL = None

@@ -1,6 +1,18 @@
 import numpy as np
 
-def xallarap_shifts(xallarap_model, time, pyLIMA_parameters):
+def xallarap_shifts(xallarap_model, time, pyLIMA_parameters, body='primary'):
+
+    if xallarap_model[0] == 'Static':
+
+        if body != 'primary':
+
+            separation_1 = pyLIMA_parameters.delta_t0/pyLIMA_parameters.tE
+            separation_2 = pyLIMA_parameters.delta_u0
+
+        else:
+
+            separation_1 = 0
+            separation_2 = 0
 
     if xallarap_model[0] == 'Circular':
 
@@ -9,9 +21,28 @@ def xallarap_shifts(xallarap_model, time, pyLIMA_parameters):
         xi_phase = pyLIMA_parameters.xi_phase
         xi_inclination = pyLIMA_parameters.xi_inclination
         
-        separation_1, separation_2 = circular_xallarap(time, xallarap_model[1],
+        xallarap_delta_positions = circular_xallarap(time, xallarap_model[1],
                                                       xi_angular_velocity, xi_phase,
                                                       xi_inclination)
+        xallarap_delta_positions *= (pyLIMA_parameters.xi_mass_ratio /
+                                     (1 + pyLIMA_parameters.xi_mass_ratio))
+
+        if body != 'primary':
+
+            xallarap_delta_positions *= -1 / pyLIMA_parameters.xi_mass_ratio
+
+        xallarap_delta_positions_0 = circular_xallarap(xallarap_model[1],
+                                                       xallarap_model[1],
+                                                      xi_angular_velocity, xi_phase,
+                                                      xi_inclination)
+
+        xallarap_delta_positions_0 *= (pyLIMA_parameters.xi_mass_ratio /
+          (1 + pyLIMA_parameters.xi_mass_ratio))
+
+        separation_1, separation_2 = xallarap_delta_positions
+
+        separation_1[0] = -xallarap_delta_positions_0[0]
+        separation_1[1] = -xallarap_delta_positions_0[1]
 
 
     return np.array([separation_1, separation_2])
@@ -28,7 +59,7 @@ def circular_xallarap(time, t0_xi, xi_angular_velocity, xi_phase,
     separation_1 = np.cos(omega)#-np.cos(xi_phase)
     separation_2 = np.sin(xi_inclination)*(np.sin(omega))#-np.sin(xi_phase))
 
-    return separation_1, separation_2
+    return np.array([separation_1, separation_2])
 
 
 def compute_xallarap_curvature(xiE, delta_positions):

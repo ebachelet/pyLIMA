@@ -567,7 +567,6 @@ class MLfit(object):
                     samples = prior_pdf.rvs(1000)
 
                     fit_parameters_guess[ind] = np.median(samples)
-
         for ind, param in enumerate(self.fit_parameters.keys()):
 
             if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):
@@ -581,6 +580,7 @@ class MLfit(object):
                 return fit_parameters_guess
 
             if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
+
                 fit_parameters_guess = None
                 print('WARNING: ' + param + ' is out of the parameters boundaries, '
                                             'abord fitting ')

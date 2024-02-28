@@ -160,7 +160,7 @@ def xi_phase_boundaries():
 def xi_inclination_boundaries():
     return (-np.pi/2, np.pi/2)
 def xi_mass_ratio_boundaries():
-    return (0.0001,1) #yr
+    return (0.1,10)
 
 
 def parameters_boundaries(event, model_dictionnary):

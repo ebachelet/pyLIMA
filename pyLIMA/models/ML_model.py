@@ -396,7 +396,12 @@ class MLmodel(object):
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
 
-        if self.xallarap_model[0] != 'None':
+        if self.xallarap_model[0] == 'Static':
+            jack = 'Numerical'
+            model_dictionnary['delta_t0'] = len(model_dictionnary)
+            model_dictionnary['delta_u0'] = len(model_dictionnary)
+
+        if self.xallarap_model[0] == 'Circular':
             jack = 'Numerical'
             model_dictionnary['xiEN'] = len(model_dictionnary)
             model_dictionnary['xiEE'] = len(model_dictionnary)
@@ -404,6 +409,19 @@ class MLmodel(object):
             model_dictionnary['xi_phase'] = len(model_dictionnary)
             model_dictionnary['xi_inclination'] = len(model_dictionnary)
             model_dictionnary['xi_mass_ratio'] = len(model_dictionnary)
+
+        if self.xallarap_model[0] != 'None':
+            jack = 'Numerical'
+
+            if 'rho' in model_dictionnary.keys():
+                model_dictionnary['rho_2'] = len(model_dictionnary)
+
+            filters = [telescope.filter for telescope in self.event.telescopes]
+
+            unique_filters = np.unique(filters)
+
+            for filter in unique_filters:
+                model_dictionnary['q_flux_' + filter] = len(model_dictionnary)
 
         if self.orbital_motion_model[0] == '2D':
             jack = 'Numerical'
@@ -584,7 +602,6 @@ class MLmodel(object):
 
                 f_source = 0.0
                 f_blend = 0.0
-
         setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
         setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
         setattr(pyLIMA_parameters, 'gblend_' + telescope.name, f_blend/f_source)
@@ -635,81 +652,6 @@ class MLmodel(object):
 
         return thefluxes
 
-    #def compute_pyLIMA_parameters(self, fancy_parameters):
-    #    """
-    #    Realize the transformation between the fancy parameters to fit to the
-    #    standard pyLIMA parameters needed to compute a model.
-
-    #    Parameters
-    #    ----------
-    #    fancy_parameter :  list, a list of fancy parameters
-
-    #    Returns
-    #    -------
-    #    pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
-    #    """
-
-    #    model_parameters = collections.namedtuple('parameters',
-    #                                              self.model_dictionnary.keys())
-
-    #    for key_parameter in self.model_dictionnary.keys():
-
-    #        try:
-
-    #            setattr(model_parameters, key_parameter,
-    #                    fancy_parameters[self.model_dictionnary[key_parameter]])
-
-    #        except IndexError:
-
-    #            setattr(model_parameters, key_parameter, None)
-
-    #    pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
-    #        model_parameters)
-
-    #    if self.origin[0] != 'center_of_mass':
-    #        self.change_origin(pyLIMA_parameters)
-
-    #    if 'v_radial' in self.model_dictionnary.keys():
-
-    #        v_para = pyLIMA_parameters.v_para
-    #        v_perp = pyLIMA_parameters.v_perp
-    #        v_radial = pyLIMA_parameters.v_radial
-    #        separation = pyLIMA_parameters.separation
-
-    #        if self.orbital_motion_model[0] == 'Circular':
-
-    #            try:
-
-    #                r_s = -v_para / v_radial
-
-    #            except ValueError:
-
-    #                v_radial = np.sign(v_radial) * 10 ** -20
-
-    #                r_s = -v_para / v_radial
-
-    #            a_s = 1
-
-    #        else:
-
-    #            r_s = pyLIMA_parameters.r_s
-    #            a_s = pyLIMA_parameters.a_s
-
-    #        longitude_ascending_node, inclination, omega_peri, a_true, \
-    #            orbital_velocity, eccentricity, true_anomaly, t_periastron, x, y, z = \
-    #            orbital_motion_3D.orbital_parameters_from_position_and_velocities(
-    #                separation, r_s, a_s, v_para, v_perp, v_radial,
-    #                self.orbital_motion_model[1])
-
-    #        Rmatrix = np.c_[x[:2], y[:2]]
-
-    #        setattr(pyLIMA_parameters, 'Rmatrix', Rmatrix)
-    #        setattr(pyLIMA_parameters, 'a_true', a_true)
-    #        setattr(pyLIMA_parameters, 'eccentricity', eccentricity)
-    #        setattr(pyLIMA_parameters, 'orbital_velocity', orbital_velocity)
-    #        setattr(pyLIMA_parameters, 't_periastron', t_periastron)
-
-    #    return pyLIMA_parameters
 
     def fancy_parameters_to_pyLIMA_standard_parameters(self, pyLIMA_parameters):
         """
@@ -881,6 +823,119 @@ class MLmodel(object):
 
         return pyLIMA_parameters
 
+    def sources_trajectory(self, telescope, pyLIMA_parameters,  data_type=None):
+        """
+        Compute the trajectories of the two sources, if needed
+
+        Parameters
+        ----------
+        telescope :  a telescope object
+        pyLIMA_parameters : a pyLIMA_parameters objecr
+
+        Returns
+        -------
+        source1_trajectory_x : the x coordinates of source 1
+        source1_trajectory_y : the y coordinates of source 1
+        source2_trajectory_x : the x coordinates of source 2
+        source2_trajectory_y : the y coordinates of source 2
+        """
+
+
+
+        if data_type == 'photometry':
+
+            lightcurve = telescope.lightcurve_flux
+            time = lightcurve['time'].value
+
+            if 'piEN' in pyLIMA_parameters._fields:
+                parallax_delta_positions = telescope.deltas_positions['photometry']
+
+        if data_type == 'astrometry':
+
+            astrometry = telescope.astrometry
+            time = astrometry['time'].value
+
+            if 'piEN' in pyLIMA_parameters._fields:
+                parallax_delta_positions = telescope.deltas_positions['astrometry']
+
+        tau = (time - pyLIMA_parameters.t0) / pyLIMA_parameters.tE
+        beta = np.array([pyLIMA_parameters.u0] * len(tau))
+
+        if 'alpha' in pyLIMA_parameters._fields:
+
+            alpha = pyLIMA_parameters.alpha
+
+        else:
+
+            alpha = 0
+
+        if self.parallax_model[0] != 'None':
+
+            parallax_delta_tau, parallax_delta_beta = (
+                self.parallax_trajectory_shifts(parallax_delta_positions,
+                                                pyLIMA_parameters))
+
+        else:
+
+            parallax_delta_tau, parallax_delta_beta = 0, 0
+
+        if self.orbital_motion_model[0] != 'None':
+
+            dseparation, dalpha = orbital_motion.orbital_motion_shifts(
+                self.orbital_motion_model,
+                telescope.lightcurve_flux['time'].value,
+                pyLIMA_parameters)
+
+            alpha += dalpha
+
+        else:
+
+            dseparation = np.array([0] * len(tau))
+            dalpha = np.array([0] * len(tau))
+
+        tau += parallax_delta_tau
+        beta += parallax_delta_beta
+
+
+        # Xallarap?
+        if self.xallarap_model[0] != 'None': #then we have two sources
+
+            xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
+                time, pyLIMA_parameters, body='primary')
+
+            tau1 = tau+xallarap_delta_tau
+            beta1 = beta+xallarap_delta_beta
+
+            lens_trajectory_x1 = tau1 * np.cos(alpha) - beta1 * np.sin(alpha)
+            lens_trajectory_y1 = tau1 * np.sin(alpha) + beta1 * np.cos(alpha)
+
+            source1_trajectory_x = -lens_trajectory_x1
+            source1_trajectory_y = -lens_trajectory_y1
+
+            xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
+                time, pyLIMA_parameters, body='secondary')
+
+            tau2 = tau + xallarap_delta_tau
+            beta2 = beta + xallarap_delta_beta
+
+            lens_trajectory_x2 = tau2 * np.cos(alpha) - beta2 * np.sin(alpha)
+            lens_trajectory_y2 = tau2 * np.sin(alpha) + beta2 * np.cos(alpha)
+
+            source2_trajectory_x = -lens_trajectory_x2
+            source2_trajectory_y = -lens_trajectory_y2
+
+
+        else:
+
+            xallarap_delta_tau, xallarap_delta_beta = 0, 0
+            source2_trajectory_x, source2_trajectory_y = None, None
+
+
+
+        return (source1_trajectory_x, source1_trajectory_y,
+                source2_trajectory_x, source2_trajectory_y,
+                dseparation, dalpha)
+
     def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None,
                           body='primary'):
         """
@@ -994,20 +1049,8 @@ class MLmodel(object):
     def xallarap_trajectory_shifts(self, time, pyLIMA_parameters, body='primary'):
 
         xallarap_delta_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
-            self.xallarap_model, time, pyLIMA_parameters)
-
-        xallarap_delta_positions *= (pyLIMA_parameters.xi_mass_ratio /
-                                     (1 + pyLIMA_parameters.xi_mass_ratio))
-
-        if body !='primary':
-
-             xallarap_delta_positions *= -1/pyLIMA_parameters.xi_mass_ratio
-
-        xallarap_delta_positions -= pyLIMA.xallarap.xallarap.xallarap_shifts(
-                self.xallarap_model,
-                np.array([self.xallarap_model[1]]),
-                pyLIMA_parameters)*(pyLIMA_parameters.xi_mass_ratio /
-                                     (1 + pyLIMA_parameters.xi_mass_ratio))
+            self.xallarap_model, time, pyLIMA_parameters,
+                                body=body)
         xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
 
         xallarap_delta_tau, xallarap_delta_beta = (
