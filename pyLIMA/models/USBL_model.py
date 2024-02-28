@@ -46,7 +46,7 @@ class USBLmodel(MLmodel):
 
             # self.u0_t0_from_uc_tc(pyLIMA_parameters)
 
-          
+
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,
              dseparation, dalpha) = self.sources_trajectory(
@@ -66,8 +66,8 @@ class USBLmodel(MLmodel):
 
                 source2_magnification = magnification_VBB.magnification_USBL(separation,
                                                          pyLIMA_parameters.mass_ratio,
-                                                         source1_trajectory_x,
-                                                         source1_trajectory_y,
+                                                         source2_trajectory_x,
+                                                         source2_trajectory_y,
                                                          pyLIMA_parameters.rho_2)
 
                 blend_magnification_factor = getattr(pyLIMA_parameters,

@@ -18,20 +18,46 @@ class FSBLmodel(USBLmodel):
 
         if telescope.lightcurve_flux is not None:
 
-            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters,
-                                                        data_type='photometry')
-
             linear_limb_darkening = telescope.ld_a1
 
-            separation = source_trajectoire[2] + pyLIMA_parameters.separation
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
 
-            magnification_FSBL = \
-                magnification_VBB.magnification_FSBL(separation,
+            separation = dseparation[2] + pyLIMA_parameters.separation
+
+            source1_magnification = magnification_VBB.magnification_FSBL(separation,
                                                      pyLIMA_parameters.mass_ratio,
-                                                     source_trajectoire[0],
-                                                     source_trajectoire[1],
+                                                     source1_trajectory_x,
+                                                     source1_trajectory_y,
                                                      pyLIMA_parameters.rho,
                                                      linear_limb_darkening)
+
+            if source2_trajectory_x is not None:
+                # need to update limb_darkening
+
+                source2_magnification = magnification_VBB.magnification_FSBL(separation,
+                                                     pyLIMA_parameters.mass_ratio,
+                                                     source1_trajectory_x,
+                                                     source1_trajectory_y,
+                                                     pyLIMA_parameters.rho_2,
+                                                     linear_limb_darkening)
+
+                blend_magnification_factor = getattr(pyLIMA_parameters,
+                                                     'q_flux_' + telescope.filter)
+                effective_magnification = (
+                        source1_magnification +
+                        source2_magnification *
+                        blend_magnification_factor)
+
+                magnification_FSBL = effective_magnification
+
+            else:
+
+                magnification_FSBL = source1_magnification
+
 
         else:
 
