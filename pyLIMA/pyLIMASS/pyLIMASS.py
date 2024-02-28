@@ -77,6 +77,7 @@ class SourceLensProbabilities(object):
                                     'log10(theta_E)': None,
                                     'pi_EN': None,
                                     'pi_EE': None,
+                                    'phi_E': None,
                                     'log10(pi_E)': None,
                                     'mu_relN': None,
                                     'mu_relE': None,
@@ -94,26 +95,27 @@ class SourceLensProbabilities(object):
         for key in observables.keys():
             self.observables[key] = observables[key]
 
-        if self.observables['mags_lens'] is not None:
-            print('Switching stellar_lens to True since lens magnitudes are provided')
+        if ((self.observables['mags_lens'] is not None) |
+                (self.observables['mags_baseline'] is not None)):
+            print('Switching stellar_lens to True since lens magnitudes are needed')
             self.stellar_lens = True
 
-        self.log10_Mass_bounds = [-1, 2]
-        self.log10_Distance_bounds = [-2, 2]
-        self.Fe_bounds = [-2, 0.5]
-        self.log10_Teff_bounds = [3, 4]
-        self.logg_bounds = [0, 6]
-        self.muN_bounds = [-20, 20]
-        self.muE_bounds = [-20, 20]
-        self.log10_Av_bounds = [-2, 1]
-        self.log10_epsilon = [-2, 0]
+        self.Mass_bounds = [0,100] #Msun
+        self.Distance_bounds = [0, 100] #kpc
+        self.Fe_bounds = [-2, 0.5] #dex
+        self.log10_Teff_bounds = [3, 4] #K
+        self.logg_bounds = [0, 6] #cgs
+        self.muN_bounds = [-20, 20] #mas/yr
+        self.muE_bounds = [-20, 20] #mas/yr
+        self.Av_bounds = [0,10] #mag
+        self.epsilon = [0, 1]
 
-        self.bounds = [self.log10_Mass_bounds, self.log10_Distance_bounds,
+        self.bounds = [self.Mass_bounds, self.Distance_bounds,
                        self.log10_Teff_bounds, self.Fe_bounds, self.logg_bounds,
-                       self.muN_bounds, self.muE_bounds, self.log10_Av_bounds,
-                       self.log10_Mass_bounds, self.log10_epsilon,
+                       self.muN_bounds, self.muE_bounds, self.Av_bounds,
+                       self.Mass_bounds, self.epsilon,
                        self.log10_Teff_bounds, self.Fe_bounds, self.logg_bounds,
-                       self.muN_bounds, self.muE_bounds, self.log10_epsilon]
+                       self.muN_bounds, self.muE_bounds, self.epsilon]
 
 
         self.priors = [None, UniformDistribution(0,100),
@@ -128,7 +130,7 @@ class SourceLensProbabilities(object):
         if stellar_lens is False:
 
             self.priors[8] = UniformDistribution(0, 100)
-            self.priors[10] = UniformDistribution(1000, 100000)
+            self.priors[10] = UniformDistribution(3, 5)
             self.priors[11] = UniformDistribution(-2,0.5)
             self.priors[12] = UniformDistribution(0,8)
 
@@ -138,6 +140,15 @@ class SourceLensProbabilities(object):
         self.build_filters()
 
         self.Earth_speeds_at_t0()
+
+    def update_priors(self):
+
+        for ind in range(len(self.priors)):
+
+            if self.priors[ind] is not None:
+
+                self.priors[ind] = UniformDistribution(self.bounds[ind][0],
+                                                       self.bounds[ind][1])
 
     def modify_observables(self, observables={}, stellar_lens=False, t0=None, ra=None,
                            dec=None):
@@ -181,7 +192,7 @@ class SourceLensProbabilities(object):
 
             Earth_pos_speed = astropy_ephemerides.Earth_ephemerides(self.t0)
 
-            Earth_speed = Earth_pos_speed[1].xyz.value * 365.25
+            Earth_speed = Earth_pos_speed[1].xyz.value*365.25
 
             self.Earth_speed_projected_at_t0 = np.array(
                 [np.dot(Earth_speed, self.North), np.dot(Earth_speed, self.East)])
@@ -323,6 +334,12 @@ class SourceLensProbabilities(object):
                             'Fe'].value, ISO['logg'].value], ISO['logL'])]
         self.isochrones = ISO
 
+
+        self.bounds[0] = [np.min(10**ISO['logMass']),np.max(10**ISO['logMass'])]
+
+        if self.stellar_lens:
+            self.bounds[8] = [np.min(10 ** ISO['logMass']),
+                              np.max(10 ** ISO['logMass'])]
         #######Interpolator with 1/dist_isochrones**2 seems efficient and robust...
 
     def local_isochrones(self, params):
@@ -376,24 +393,27 @@ class SourceLensProbabilities(object):
 
     def generate_observables(self, parameters):
 
-        (log10_M_s, log10_D_s, log10_Teff_s, Fe_s, logg_s, mu_sN, mu_sE,
-         log10_Av_s) = parameters[:8]
+        (M_s, D_s, log10_Teff_s, Fe_s, logg_s, mu_sN, mu_sE,
+         Av_s) = parameters[:8]
 
-        (log10_M_l, log10_epsilon_D_l, log10_Teff_l, Fe_l, logg_l, mu_lN, mu_lE,
-         log10_epsilon_Av_l) = parameters[8:]
+        (M_l, epsilon_D_l, log10_Teff_l, Fe_l, logg_l, mu_lN, mu_lE,
+         epsilon_Av_l) = parameters[8:]
 
-        Ms = 10 ** log10_M_s
-        Ml = 10 ** log10_M_l
+        D_l = epsilon_D_l * D_s
+        Av_l = epsilon_Av_l * Av_s
 
-        Ds = 10 ** log10_D_s
-        Dl = 10 ** log10_epsilon_D_l * Ds
+        log10_M_s = np.log10(M_s)
+        log10_M_l = np.log10(M_l)
 
-        Avs = 10 ** log10_Av_s
-        Avl = 10 ** log10_epsilon_Av_l * Avs
+        log10_D_s = np.log10(D_s)
+        log10_D_l = np.log10(D_l)
 
-        pirel = 1 / Dl - 1 / Ds
+        log10_Av_s = np.log10(Av_s)
+        log10_Av_l = np.log10(Av_l)
 
-        theta_E = (8.144 * Ml * pirel) ** 0.5
+        pirel = 1 / D_l - 1 / D_s
+
+        theta_E = (8.144 * M_l * pirel) ** 0.5
         pi_E = pirel / theta_E
 
         mu_rel_vector = np.array((mu_lN, mu_lE)) - (mu_sN, mu_sE)
@@ -401,22 +421,24 @@ class SourceLensProbabilities(object):
         mu_rel = np.sqrt(np.sum(mu_rel_vector ** 2))
 
         pi_EN, pi_EE = mu_rel_vector * pi_E / mu_rel
+        phi_E = np.arctan2(pi_EE, pi_EN)
 
         t_E = theta_E / mu_rel * 365.25
 
         Rs = 10 ** ((log10_M_s - logg_s + 4.4374) / 2)
         Rl = 10 ** ((log10_M_l - logg_l + 4.4374) / 2)
 
-        theta_s = Rs / Ds * 4.65046694812766  #
-        theta_l = Rl / Dl * 4.65046694812766  # 2.25461*10**-11*1000*180/np.pi*3600*1000
+        theta_s = Rs / D_s * 4.65046694812766  #
+        theta_l = Rl / D_l * 4.65046694812766  #
+        # 2.25461*10**-11*1000*180/np.pi*3600*1000
 
         rhos = theta_s / theta_E / 1000
 
         Teffs = 10 ** log10_Teff_s
         Teffl = 10 ** log10_Teff_l
 
-        Source = [np.log10(theta_s), Avs, Teffs, Fe_s, logg_s]
-        Lens = [np.log10(theta_l), Avl, Teffl, Fe_l, logg_l]
+        Source = [np.log10(theta_s), Av_s, Teffs, Fe_s, logg_s]
+        Lens = [np.log10(theta_l), Av_l, Teffl, Fe_l, logg_l]
 
         local_isochrones_source = None
         local_dist_source = None
@@ -441,7 +463,7 @@ class SourceLensProbabilities(object):
 
                         mags_source, lumi_source = (
                             self.reconstruct_mags_from_isochrones(
-                            [Ds, Avs, Teffs, Fe_s, logg_s], observation,
+                            [D_s, Av_s, Teffs, Fe_s, logg_s], observation,
                             local_isochrones_source, local_dist_source))
                     else:
                         pass
@@ -489,7 +511,7 @@ class SourceLensProbabilities(object):
                     if self.catalog == 'Isochrones':
 
                         mags_lens, lumi_lens = self.reconstruct_mags_from_isochrones(
-                            [Dl, Avl, Teffl, Fe_l, logg_l], observation,
+                            [D_l, Av_l, Teffl, Fe_l, logg_l], observation,
                             local_isochrones_lens, local_dist_lens)
                     else:
                         pass
@@ -501,10 +523,10 @@ class SourceLensProbabilities(object):
 
                     if self.catalog == 'Isochrones':
                         mags_s, lumi_s = self.reconstruct_mags_from_isochrones(
-                            [Ds, Avs, Teffs, Fe_s, logg_s], observation,
+                            [D_s, Av_s, Teffs, Fe_s, logg_s], observation,
                             local_isochrones_lens, local_dist_lens)
                         mags_l, lumi_l = self.reconstruct_mags_from_isochrones(
-                            [Dl, Avl, Teffl, Fe_l, logg_l], observation,
+                            [D_l, Av_l, Teffl, Fe_l, logg_l], observation,
                             local_isochrones_lens, local_dist_lens)
 
                         for ind_mag in range(len(mags_s)):
@@ -543,17 +565,17 @@ class SourceLensProbabilities(object):
                        'log10(theta_s)': np.log10(theta_s),
                        'log10(R_s)': np.log10(Rs),
                        'log10(M_l)': log10_M_l,
-                       'log10(epsilon_D_l)': log10_epsilon_D_l,
-                       'log10(D_l)': np.log10(Dl),
-                       'log10(pi_l)': -np.log10(Dl),
+                       'log10(epsilon_D_l)': np.log10(epsilon_D_l),
+                       'log10(D_l)': np.log10(D_l),
+                       'log10(pi_l)': -np.log10(D_l),
                        'log10(Teff_l)': np.log10(Teffl),
                        'Fe_l': Fe_l,
                        'logg_l': logg_l,
                        'log10(L_l)': lumi_lens,
                        'mu_lN': mu_lN,
                        'mu_lE': mu_lE,
-                       'log10(epsilon_Av_l)': log10_epsilon_Av_l,
-                       'log10(Av_l)': np.log10(Avl),
+                       'log10(epsilon_Av_l)': np.log10(epsilon_Av_l),
+                       'log10(Av_l)': np.log10(Av_l),
                        'log10(theta_l)': np.log10(theta_l),
                        'log10(R_l)': np.log10(Rl),
                        'log10(t_E)': np.log10(t_E),
@@ -561,6 +583,7 @@ class SourceLensProbabilities(object):
                        'log10(theta_E)': np.log10(theta_E),
                        'pi_EN': pi_EN,
                        'pi_EE': pi_EE,
+                       'phi_E': phi_E,
                        'log10(pi_E)': np.log10(pi_E),
                        'mu_relN': mu_rel_vector[0],
                        'mu_relE': mu_rel_vector[1],
@@ -659,27 +682,27 @@ class SourceLensProbabilities(object):
         dist_s, dist_l = self.isochrones_score(observed)
 
         if dist_s is not None:
-            score_prior = -(dist_s.min() * 100)
+            score_prior = -(dist_s.min() * 500)
             # score_tot -= np.mean(np.sort(dist_s)[:10])*1000
 
         else:
             return -np.inf
 
         if dist_l is not None:
-            score_prior -= (dist_l.min() * 100)
+            score_prior -= (dist_l.min() * 500)
 
         params = [10 ** observed['log10(M_s)'], 10 ** observed['log10(D_s)'],
                   observed['log10(Teff_s)'], observed['Fe_s'], observed['logg_s'],
                   observed['mu_sN'],observed['mu_sE'],10**observed['log10(Av_s)'],
                   10 ** observed['log10(M_l)'], 10 ** observed['log10(epsilon_D_l)'],
-                  10**observed['log10(Teff_l)'], observed['Fe_l'], observed['logg_l'],
+                  observed['log10(Teff_l)'], observed['Fe_l'], observed['logg_l'],
                   observed['mu_lN'],observed['mu_lE'],
                   10**observed['log10(epsilon_Av_l)']]
 
         for ind,prior in enumerate(self.priors):
 
             if prior is not None:
-
+                #print(ind,self.bounds[ind],params[ind],prior.pdf(params[ind]))
                 score_prior += np.log(prior.pdf(params[ind]))
 
         return score_prior
@@ -752,6 +775,7 @@ class SourceLensProbabilities(object):
         return obj
 
     def mcmc(self, seeds, n_walkers=2, n_chains=10000):
+        #self.update_priors()
 
         import emcee
 
@@ -774,6 +798,8 @@ class SourceLensProbabilities(object):
                                         moves=[(emcee.moves.DEMove(), 0.8), (
                                             emcee.moves.DESnookerMove(),
                                             0.2)], )  # pool = pool)
+
+        #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
         final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
                                                                        progress=True)
 
@@ -782,7 +808,7 @@ class SourceLensProbabilities(object):
     def de(self, maxiter=5000, popsize=1):
 
         # breakpoint()
-
+        #self.update_priors()
         result = so.differential_evolution(self.objective, self.bounds, maxiter=maxiter,
                                         disp=True, popsize=popsize, tol=0, atol=0.1,
                                         workers=1, polish=False, strategy='best1bin')
