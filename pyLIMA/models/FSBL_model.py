@@ -26,7 +26,7 @@ class FSBLmodel(USBLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            separation = dseparation[2] + pyLIMA_parameters.separation
+            separation = dseparation + pyLIMA_parameters.separation
 
             source1_magnification = magnification_VBB.magnification_FSBL(separation,
                                                      pyLIMA_parameters.mass_ratio,

@@ -228,75 +228,88 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                 [i for i in range(len(microlensing_model.event.telescopes)) if
                  microlensing_model.event.telescopes[i].name == telescope.name][0]
 
-            trajectory_x, trajectory_y, dseparation, dalpha = \
-                microlensing_model.source_trajectory(
-                    telescope, pyLIMA_parameters,
-                    data_type='photometry')
+
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = microlensing_model.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
+
 
             color = MARKERS_COLORS.by_key()["color"][telescope_index]
-            figure_axes.plot(trajectory_x, trajectory_y,
+            figure_axes.plot(source1_trajectory_x, source1_trajectory_y,
                              c=color,
                              label=platform, linestyle=linestyle)
 
             if bokeh_geometry is not None:
-                bokeh_geometry.line(trajectory_x, trajectory_y,
+
+                bokeh_geometry.line(source1_trajectory_x,
+                                    source1_trajectory_y,
                                     color=color,
                                     legend_label=platform)
 
-            for ind in [-2, -1, 0, 1, 2]:
+            if source2_trajectory_y is not None:
 
-                try:
-
-                    index = np.argmin(
-                        np.abs(telescope.lightcurve_magnitude['time'].value -
-                               (pyLIMA_parameters.t0 + ind * pyLIMA_parameters.tE)))
-                    sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
-                    derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
-                            trajectory_x[index - 1] - trajectory_x[index + 1])
-
-                    figure_axes.annotate('',
-                                         xy=(trajectory_x[index], trajectory_y[index]),
-                                         xytext=(trajectory_x[index] - (
-                                                 trajectory_x[index + 1] -
-                                                 trajectory_x[index]) * 0.001,
-                                                 trajectory_y[index] - (
-                                                         trajectory_x[index + 1] -
-                                                         trajectory_x[
-                                                             index]) * 0.001 *
-                                                 derivative),
-                                         arrowprops=dict(arrowstyle="->",
-                                                         mutation_scale=35,
-                                                         color=color))
-
-                    if bokeh_geometry is not None:
-                        oh = OpenHead(line_color=color, line_width=1)
-
-                        bokeh_geometry.add_layout(Arrow(end=oh,
-                                                        x_start=trajectory_x[index],
-                                                        y_start=trajectory_y[index],
-                                                        x_end=trajectory_x[
-                                                                  index] + sign * 0.001,
-                                                        y_end=trajectory_y[
-                                                                  index] + sign *
-                                                              0.001 * derivative))
-
-                except IndexError:
-
-                    pass
-
-            if microlensing_model.model_type == 'DSPL':
-
-                _, _, trajectory_x, trajectory_y = \
-                    microlensing_model.sources_trajectory(
-                        reference_telescope,
-                        pyLIMA_parameters)
-
-                figure_axes.plot(trajectory_x, trajectory_y,
-                                 c=color, alpha=0.5)
+                figure_axes.plot(source2_trajectory_x, source2_trajectory_y,
+                                 c=color, alpha=0.5,
+                                 linestyle=linestyle)
 
                 if bokeh_geometry is not None:
-                    bokeh_geometry.line(trajectory_x, trajectory_y,
-                                        color=color, alpha=0.5)
+
+                    bokeh_geometry.line(source2_trajectory_x,
+                                    source2_trajectory_y,
+                                    color=color, alpha=0.5)
+
+
+
+            for trajectory in [[source1_trajectory_x, source1_trajectory_y],
+                         [source2_trajectory_x, source2_trajectory_y] ]:
+
+                trajectory_x,trajectory_y=trajectory
+
+                if trajectory_x is not None:
+
+                    for ind in [-2, -1, 0, 1, 2]:
+
+                        try:
+
+                            index = np.argmin(
+                                np.abs(telescope.lightcurve_magnitude['time'].value -
+                                       (pyLIMA_parameters.t0 + ind * pyLIMA_parameters.tE)))
+                            sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
+                            derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
+                                    trajectory_x[index - 1] - trajectory_x[index + 1])
+
+                            figure_axes.annotate('',
+                                                 xy=(trajectory_x[index], trajectory_y[index]),
+                                                 xytext=(trajectory_x[index] - (
+                                                         trajectory_x[index + 1] -
+                                                         trajectory_x[index]) * 0.001,
+                                                         trajectory_y[index] - (
+                                                                 trajectory_x[index + 1] -
+                                                                 trajectory_x[
+                                                                     index]) * 0.001 *
+                                                         derivative),
+                                                 arrowprops=dict(arrowstyle="->",
+                                                                 mutation_scale=35,
+                                                                 color=color))
+
+                            if bokeh_geometry is not None:
+                                oh = OpenHead(line_color=color, line_width=1)
+
+                                bokeh_geometry.add_layout(Arrow(end=oh,
+                                                                x_start=trajectory_x[index],
+                                                                y_start=trajectory_y[index],
+                                                                x_end=trajectory_x[
+                                                                          index] + sign * 0.001,
+                                                                y_end=trajectory_y[
+                                                                          index] + sign *
+                                                                      0.001 * derivative))
+
+                        except IndexError:
+
+                            pass
+
 
     if 'BL' in microlensing_model.model_type():
 
@@ -346,37 +359,59 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
         if telescope.lightcurve_flux is not None:
 
-            trajectory_x, trajectory_y, dseparation, dalpha = \
-                microlensing_model.source_trajectory(
-                    telescope,
-                    pyLIMA_parameters,
-                    data_type='photometry')
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = microlensing_model.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
 
-            if 'rho' in microlensing_model.pyLIMA_standards_dictionnary.keys():
+            for ind, trajectory in enumerate([[source1_trajectory_x,
+                                             source1_trajectory_y],
+                               [source2_trajectory_x, source2_trajectory_y]]):
 
-                rho = pyLIMA_parameters.rho
+                trajectory_x, trajectory_y = trajectory
 
-            else:
+                if trajectory_x is not None:
 
-                rho = 10 ** -5
+                    if 'rho' in microlensing_model.pyLIMA_standards_dictionnary.keys():
 
-            color = MARKERS_COLORS.by_key()["color"][telescope_index]
+                        rho = pyLIMA_parameters.rho
+                        if ind == 1:
+                            rho = pyLIMA_parameters.rho_2
+                    else:
 
-            patches = [plt.Circle((x, y), rho, color=color,
-                                  alpha=0.2) for x, y in
-                       zip(trajectory_x, trajectory_y)]
-            coll = matplotlib.collections.PatchCollection(patches, match_original=True)
+                        rho = 10 ** -5
 
-            figure_axes.scatter(trajectory_x, trajectory_y,
-                                c=color,
-                                alpha=0.5, label=telescope.name, s=0.1)
+                    color = MARKERS_COLORS.by_key()["color"][telescope_index]
 
-            figure_axes.add_collection(coll)
 
-            if bokeh_geometry is not None:
-                bokeh_geometry.circle(trajectory_x, trajectory_y, radius=rho,
-                                      color=color,
-                                      radius_dimension='max', fill_alpha=0.5)
+
+
+
+                    if ind == 1:
+
+                        patches = [plt.Circle((x, y), rho, edgecolor=color,
+                                              facecolor='none',
+                                              alpha=0.2) for x, y in
+                                   zip(trajectory_x, trajectory_y)]
+                    else:
+
+                        patches = [plt.Circle((x, y), rho, color=color,
+                                              alpha=0.2) for x, y in
+                                   zip(trajectory_x, trajectory_y)]
+
+                        figure_axes.scatter(trajectory_x, trajectory_y,
+                                        c=color,
+                                        alpha=0.5, label=telescope.name, s=0.1)
+
+                    coll = matplotlib.collections.PatchCollection(patches, match_original=True)
+
+                    figure_axes.add_collection(coll)
+
+                    if bokeh_geometry is not None:
+                        bokeh_geometry.circle(trajectory_x, trajectory_y, radius=rho,
+                                              color=color,
+                                              radius_dimension='max', fill_alpha=0.5)
 
     if microlensing_model.parallax_model[0] != 'None':
 

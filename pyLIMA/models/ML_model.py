@@ -1051,10 +1051,16 @@ class MLmodel(object):
         xallarap_delta_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
             self.xallarap_model, time, pyLIMA_parameters,
                                 body=body)
-        xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
 
-        xallarap_delta_tau, xallarap_delta_beta = (
-            pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
-                                                                xallarap_delta_positions))
+        if self.xallarap_model[0] == 'Circular':
+            xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
+
+            xallarap_delta_tau, xallarap_delta_beta = (
+                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
+                                                                    xallarap_delta_positions))
+        else:
+
+            xallarap_delta_tau=xallarap_delta_positions[0]
+            xallarap_delta_beta = xallarap_delta_positions[1]
 
         return xallarap_delta_tau, xallarap_delta_beta
