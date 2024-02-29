@@ -46,8 +46,11 @@ def compute_parallax_curvature(piE, delta_positions):
     delta_tau : array, the x shift induced by the parallax
     delta_beta : array, the y shift induced by the parallax
     """
-    delta_tau = np.dot(piE, delta_positions)
-    delta_beta = np.cross(piE, delta_positions.T)
+    #delta_tau = np.dot(piE, delta_positions)
+    #delta_beta = np.cross(piE, delta_positions.T)
+
+    delta_tau = piE[0]*delta_positions[0]+piE[1]*delta_positions[1]
+    delta_beta = piE[0]*delta_positions[1]-piE[1]*delta_positions[0]
 
     return delta_tau, delta_beta
 
