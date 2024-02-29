@@ -217,6 +217,7 @@ class MLmodel(object):
                                                       x_center=new_x_center,
                                                       y_center=new_y_center)
 
+
         setattr(pyLIMA_parameters, 't0', t_0)
         setattr(pyLIMA_parameters, 'u0', u_0)
 
@@ -602,9 +603,11 @@ class MLmodel(object):
 
                 f_source = 0.0
                 f_blend = 0.0
+
         setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
         setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
         setattr(pyLIMA_parameters, 'gblend_' + telescope.name, f_blend/f_source)
+    
 
     def find_telescopes_fluxes(self, parameters):
         """
@@ -903,14 +906,7 @@ class MLmodel(object):
             xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
                 time, pyLIMA_parameters, body='primary')
 
-            tau1 = tau+xallarap_delta_tau
-            beta1 = beta+xallarap_delta_beta
 
-            lens_trajectory_x1 = tau1 * np.cos(alpha) - beta1 * np.sin(alpha)
-            lens_trajectory_y1 = tau1 * np.sin(alpha) + beta1 * np.cos(alpha)
-
-            source1_trajectory_x = -lens_trajectory_x1
-            source1_trajectory_y = -lens_trajectory_y1
 
             xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
                 time, pyLIMA_parameters, body='secondary')
@@ -930,7 +926,14 @@ class MLmodel(object):
             xallarap_delta_tau, xallarap_delta_beta = 0, 0
             source2_trajectory_x, source2_trajectory_y = None, None
 
+        tau1 = tau + xallarap_delta_tau
+        beta1 = beta + xallarap_delta_beta
 
+        lens_trajectory_x1 = tau1 * np.cos(alpha) - beta1 * np.sin(alpha)
+        lens_trajectory_y1 = tau1 * np.sin(alpha) + beta1 * np.cos(alpha)
+
+        source1_trajectory_x = -lens_trajectory_x1
+        source1_trajectory_y = -lens_trajectory_y1
 
         return (source1_trajectory_x, source1_trajectory_y,
                 source2_trajectory_x, source2_trajectory_y,

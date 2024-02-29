@@ -47,7 +47,7 @@ def rho_boundaries():
 
 
 def q_flux_boundaries():
-    return (0.001, 1.0)
+    return (0.001, 100.0)
 
 
 def separation_boundaries():

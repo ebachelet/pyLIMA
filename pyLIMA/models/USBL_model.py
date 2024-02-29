@@ -97,9 +97,6 @@ class USBLmodel(MLmodel):
 
         """
 
-        x_center = 0
-        y_center = 0
-
         if 'caustic' in self.origin[0]:
 
             caustic_regime = binary_caustics.find_2_lenses_caustic_regime(
