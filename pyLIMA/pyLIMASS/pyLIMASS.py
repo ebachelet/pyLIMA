@@ -313,7 +313,7 @@ class SourceLensProbabilities(object):
         self.filters = filters
         # self.all_filters = all_filters
 
-    def load_isochrones(self):
+    def load_isochrones(self, mass_limits=[0,2],age_limits=[9,12],logg_limits=[0,6]):
 
         resource_path = '/'.join(('data', 'Bressan_Isochrones.dat'))
         template = pkg_resources.resource_filename('pyLIMA', resource_path)
@@ -323,9 +323,14 @@ class SourceLensProbabilities(object):
 
         ISO = QTable(ISO, names=ISOCHRONES_HEADER)
         # Needs tunable isochrones cuts
-        mask = (ISO['logMass'].value < 2) & (ISO['logg'].value < 6) & (
-                    ISO['logg'].value > 0) & (ISO['logAge'].value > 9) & (
-                           ISO['Vmag'].value < 20)
+
+        mask = (ISO['logMass'].value < np.log10(mass_limits[1]))
+
+        mask = (mask &  (ISO['logg'].value < logg_limits[1])
+                & (ISO['logg'].value > logg_limits[0]))
+
+        mask = mask & (ISO['logAge'].value > age_limits[0])
+
         ISO = ISO[mask]
 
         self.isoLogL = [si.LinearNDInterpolator(
@@ -672,7 +677,6 @@ class SourceLensProbabilities(object):
 
                     to_compare_with_gm.append(observed[key])
 
-        # breakpoint()
         score = self.gm.score([to_compare_with_gm])  # log-likelihood
 
         return score, observed
@@ -798,6 +802,34 @@ class SourceLensProbabilities(object):
                                         moves=[(emcee.moves.DEMove(), 0.8), (
                                             emcee.moves.DESnookerMove(),
                                             0.2)], )  # pool = pool)
+
+        #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
+        final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
+                                                                       progress=True)
+
+        return sampler
+
+    def mcmc2(self, seeds, n_walkers=2, n_chains=10000):
+        #self.update_priors()
+
+        import emcee
+
+        nwalkers = n_walkers * len(seeds[0])
+
+        ndim = len(seeds[0])
+
+        pos = []
+        for i in range(nwalkers):
+            choice = np.random.randint(0, len(seeds))
+
+            trial = seeds[choice] + len(seeds[choice]) * [1] * np.random.randn(
+                len(seeds[choice])) * 10 ** -4
+
+            pos.append(trial)
+        # pos = seed +  len(seed)*[1] * np.random.randn(nwalkers, len(seed))*10**-4
+        pos = np.array(pos)
+        # with mul.Pool(processes=4) as pool:
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc)
 
         #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
         final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
