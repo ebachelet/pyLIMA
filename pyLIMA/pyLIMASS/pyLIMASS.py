@@ -217,7 +217,7 @@ class SourceLensProbabilities(object):
     def build_filters(self):
 
         filters = {}
-        all_filters = {}
+        #all_filters = {}
 
         twomass_filters = speclite.filters.load_filters('twomass-*')
         bessel_filters = speclite.filters.load_filters('bessell-*')
@@ -414,7 +414,7 @@ class SourceLensProbabilities(object):
         log10_D_l = np.log10(D_l)
 
         log10_Av_s = np.log10(Av_s)
-        log10_Av_l = np.log10(Av_l)
+        #log10_Av_l = np.log10(Av_l)
 
         pirel = 1 / D_l - 1 / D_s
 
@@ -442,8 +442,8 @@ class SourceLensProbabilities(object):
         Teffs = 10 ** log10_Teff_s
         Teffl = 10 ** log10_Teff_l
 
-        Source = [np.log10(theta_s), Av_s, Teffs, Fe_s, logg_s]
-        Lens = [np.log10(theta_l), Av_l, Teffl, Fe_l, logg_l]
+        #Source = [np.log10(theta_s), Av_s, Teffs, Fe_s, logg_s]
+        #Lens = [np.log10(theta_l), Av_l, Teffl, Fe_l, logg_l]
 
         local_isochrones_source = None
         local_dist_source = None
@@ -571,8 +571,8 @@ class SourceLensProbabilities(object):
                        'log10(R_s)': np.log10(Rs),
                        'log10(M_l)': log10_M_l,
                        'log10(epsilon_D_l)': np.log10(epsilon_D_l),
-                       'log10(D_l)': np.log10(D_l),
-                       'log10(pi_l)': -np.log10(D_l),
+                       'log10(D_l)': log10_D_l,
+                       'log10(pi_l)': -log10_D_l,
                        'log10(Teff_l)': np.log10(Teffl),
                        'Fe_l': Fe_l,
                        'logg_l': logg_l,
@@ -730,7 +730,7 @@ class SourceLensProbabilities(object):
 
             dist_s += (self.isochrones['logL'].value - log10_L_s) ** 2
 
-        except:
+        except ValueError:
 
             pass
 
@@ -745,7 +745,7 @@ class SourceLensProbabilities(object):
 
                 dist_l += (self.isochrones['logL'].value - log10_L_l) ** 2
 
-            except:
+            except ValueError:
 
                 pass
         else:
