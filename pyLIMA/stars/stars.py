@@ -9,14 +9,12 @@ from __future__ import division
 
 import astropy.io.fits as fits
 import numpy as np
-import pkg_resources
 import scipy.interpolate as si
 
-resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
-template = pkg_resources.resource_filename('pyLIMA', resource_path)
+from pyLIMA.data import PACKAGE_DATA
 
-resource_path = '/'.join(('data', 'Claret2011.fits'))
-template = pkg_resources.resource_filename('pyLIMA', resource_path)
+template = PACKAGE_DATA / "Yoo_B0B1.dat"
+template = PACKAGE_DATA / "Claret2011.fits"
 
 CLARET_PATH = template
 

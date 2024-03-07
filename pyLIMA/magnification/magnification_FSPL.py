@@ -1,9 +1,9 @@
 import numpy as np
-import pkg_resources
 from scipy import interpolate
 
-resource_path = '/'.join(('data', 'Yoo_B0B1.dat'))
-template = pkg_resources.resource_filename('pyLIMA', resource_path)
+from pyLIMA.data import PACKAGE_DATA
+
+template = PACKAGE_DATA / "Yoo_B0B1.dat"
 
 try:
 
