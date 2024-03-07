@@ -33,12 +33,9 @@ dependencies = [
     "scipy >= 1.0",
     "tqdm >= 4.0",
     "VBBinaryLensing>=3.6.2",
+    "importlib-resources ; python_version < '3.9'",
 ]
 
 [project.urls]
 Homepage = "http://github.com/ebachelet/pyLIMA"
 Documentation = "https://pylima.readthedocs.io/en/latest/"
-
-[tools.setuptools.package-data]
-"" = ["Claret2011.fits", "Yoo_B0B1.dat"]
-
