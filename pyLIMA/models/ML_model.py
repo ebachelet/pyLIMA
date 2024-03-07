@@ -934,7 +934,7 @@ class MLmodel(object):
 
         else:
 
-            parallax_delta_tau, parallax_delta_beta = 0,0
+            parallax_delta_tau, parallax_delta_beta = 0, 0
 
         # Xallarap?
         if 'xiEN' in pyLIMA_parameters._fields:
