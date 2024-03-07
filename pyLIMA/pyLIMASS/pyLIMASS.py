@@ -778,6 +778,19 @@ class SourceLensProbabilities(object):
 
         return obj
 
+    def model_is_plausible(self, parameters, threshold=1.5):
+
+        likelihood,observed = self.gm.GM_proba(parameters)
+        score_at_means = self.gm.score(self.gm.means_)
+
+        flag = True
+
+        if likelihood > threshold*score_at_means:
+
+            flag = False
+
+        return (likelihood,score_at_means,flag)
+
     def mcmc(self, seeds, n_walkers=2, n_chains=10000):
         #self.update_priors()
 
