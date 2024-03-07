@@ -34,13 +34,11 @@ dependencies = [
     "tqdm >= 4.0",
     "VBBinaryLensing>=3.6.2",
     "speclite",
-    "scikit-learn"
+    "scikit-learn",
+    "importlib-resources ; python_version < '3.9'",
 ]
 
 [project.urls]
 Homepage = "http://github.com/ebachelet/pyLIMA"
 Documentation = "https://pylima.readthedocs.io/en/latest/"
-
-[tools.setuptools.package-data]
-"" = ["Bressan_Isochrones.dat", "Claret2011.fits", "Roman_Filters.dat", "Yoo_B0B1.dat"]
 
