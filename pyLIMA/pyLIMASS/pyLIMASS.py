@@ -730,7 +730,7 @@ class SourceLensProbabilities(object):
 
             dist_s += (self.isochrones['logL'].value - log10_L_s) ** 2
 
-        except ValueError:
+        except TypeError:
 
             pass
 
@@ -745,7 +745,7 @@ class SourceLensProbabilities(object):
 
                 dist_l += (self.isochrones['logL'].value - log10_L_l) ** 2
 
-            except ValueError:
+            except TypeError:
 
                 pass
         else:
@@ -778,18 +778,21 @@ class SourceLensProbabilities(object):
 
         return obj
 
-    def model_is_plausible(self, parameters, threshold=1.5):
+    def model_is_plausible(self, parameters, alpha=0.05):
 
-        likelihood,observed = self.gm.GM_proba(parameters)
+        import scipy.stats as ss
+
+        likelihood, observed = self.GM_proba(parameters)
         score_at_means = self.gm.score(self.gm.means_)
 
-        flag = True
+        significance = ss.chi2.ppf(1-alpha,len(self.gm.means_[0]))
+        flag = False
 
-        if likelihood > threshold*score_at_means:
+        if -2*(likelihood-score_at_means)<significance:
 
-            flag = False
+            flag = True
 
-        return (likelihood,score_at_means,flag)
+        return (likelihood,score_at_means,significance,flag)
 
     def mcmc(self, seeds, n_walkers=2, n_chains=10000):
         #self.update_priors()
