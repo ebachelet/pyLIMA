@@ -2,6 +2,7 @@
 try:
     from importlib.resources import files
 except ImportError:
+    # Backport for Python < 3.9
     from importlib_resources import files
 
 PACKAGE_DATA = files(__name__)
@@ -19,7 +20,7 @@ Examples:
 
     # Get true path of the file
     >>> from importlib.resources import as_file
-    >>> print(as_file(PACKAGE_DATA / "Yoo_B0B1.dat")
+    >>> print(as_file(PACKAGE_DATA / "Yoo_B0B1.dat"))
     /path/to/site-packages/pyLIMA/data/Yoo_B0B1.dat
 
 See Python docs on `importlib.resources`.
