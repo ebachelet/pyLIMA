@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyLIMA"
 description = "Microlsening analysis package."
-version = "1.9.3"
+version = "1.9.4"
 keywords = ['Microlsening analysis package']
 authors = [
     { name = "Etienne Bachelet", email = "etibachelet@gmail.com" },
@@ -33,12 +33,11 @@ dependencies = [
     "scipy >= 1.0",
     "tqdm >= 4.0",
     "VBBinaryLensing>=3.6.2",
+    "speclite",
+    "scikit-learn",
+    "importlib-resources ; python_version < '3.9'",
 ]
 
 [project.urls]
 Homepage = "http://github.com/ebachelet/pyLIMA"
 Documentation = "https://pylima.readthedocs.io/en/latest/"
-
-[tools.setuptools.package-data]
-"" = ["Claret2011.fits", "Yoo_B0B1.dat"]
-
