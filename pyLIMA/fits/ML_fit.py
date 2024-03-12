@@ -856,10 +856,10 @@ class MLfit(object):
             residuals = np.concatenate(residuals)
             errors = np.concatenate(errors)
 
-            ln_likelihood += np.sum(residuals / errors + np.log(errors) +
+            ln_likelihood += 0.5*np.sum(residuals / errors + np.log(errors) +
                                     np.log(2 * np.pi))
 
-            ln_likelihood *= 0.5
+            #ln_likelihood *= 0.5
 
             return ln_likelihood, pyLIMA_parameters
 
