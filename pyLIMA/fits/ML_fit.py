@@ -1168,9 +1168,11 @@ class MLfit(object):
         matplotlib_geometry = None
         matplotlib_astrometry = None
         matplotlib_distribution = None
+        matplotlib_table = None
         bokeh_figure = None
         bokeh_lightcurves = None
         bokeh_astrometry = None
+        bokeh_parameters = None
 
         pyLIMA_plots.update_matplotlib_colors(self.model.event)
 
@@ -1189,32 +1191,45 @@ class MLfit(object):
         parameters = [key for ind, key in enumerate(self.model.model_dictionnary.keys())
                       if ('fsource' not in key) and ('fblend' not in key) and (
                               'gblend' not in key)]
-
+        try:
+            chi2 = self.model_chi2(self.fit_results['best_model'])[0]
+        except Exception as e:
+            chi2 = None
+            print (f"An error occurred while trying to get chi2 for the best model: {e}")
+            pass
+        
         samples = self.samples_to_plot()
 
         samples_to_plot = samples[:, :len(parameters)]
 
         matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(
             samples_to_plot, parameters_names=parameters, bokeh_plot=bokeh_plot)
-        # matplotlib_table = pyLIMA_plots.plot_parameters_table(samples,
-        # parameters_names=[key for key in self.fit_parameters.keys()])
-        matplotlib_table = None
+    
+        matplotlib_table, bokeh_parameters = pyLIMA_plots.plot_parameters_table(samples_to_plot,
+                           parameters_names=[key for key in self.fit_parameters.keys()],
+                           chi2 = chi2,
+                           bokeh_plot=bokeh_plot)
+        #matplotlib_table = None
         try:
-
             bokeh_figure = gridplot(
-                [[bokeh_lightcurves, bokeh_geometry], [bokeh_astrometry, None]],
-                toolbar_location='above')
-
-        except ValueError:
-
+                [[bokeh_lightcurves, bokeh_geometry],
+                 [bokeh_distribution, bokeh_parameters]],
+#                 [bokeh_astrometry, None]],
+                 toolbar_location='above')
+        
+        except Exception as e:
+            print(f"An error occurred while creating the gridplot: {e}")
+            
             pass
-
+        
         if bokeh_figure is not None:
             bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
-
-            output_file(filename='./' + bokeh_plot_name + '.html',
-                        title=bokeh_plot_name)
-            save(bokeh_figure)
+            try:
+                output_file(filename='./' + bokeh_plot_name + '.html',
+                            title=bokeh_plot_name)
+                save(bokeh_figure)
+            except Exception as e:
+                print(f"Warning: Failed to generate the HTML file due to {e}")
 
         return matplotlib_lightcurves, matplotlib_geometry, matplotlib_astrometry, \
             matplotlib_distribution, \

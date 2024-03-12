@@ -9,11 +9,17 @@ import pygtc
 from bokeh.layouts import gridplot
 from bokeh.models import Arrow, OpenHead
 from bokeh.models import BasicTickFormatter
+from bokeh.models import ColumnDataSource, DataTable, TableColumn
 from bokeh.plotting import figure
 from matplotlib.ticker import MaxNLocator
+from matplotlib.colors import ListedColormap
 from pyLIMA.astrometry import astrometric_positions
 from pyLIMA.parallax import parallax
 from pyLIMA.toolbox import fake_telescopes, plots
+
+import io
+from PIL import Image
+from bokeh.models import ImageRGBA
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.21
@@ -419,8 +425,15 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
             np.abs(telescope.lightcurve_magnitude['time'].value -
                    microlensing_model.parallax_model[1]))
 
+        #print(telescope.lightcurve_magnitude['time'].value, 
+        #      microlensing_model.parallax_model[1], 
+        #      origin_t0par_index)
+        
+        #print(trajectory_x, trajectory_y)
+        #import pdb;
+        #pdb.set_trace()
         origin_t0par = np.array(
-            (trajectory_x[origin_t0par_index], trajectory_y[origin_t0par_index]))
+            (source1_trajectory_x[origin_t0par_index], source1_trajectory_y[origin_t0par_index]))
         # origin_t0par += 0.1
 
         piEN = pyLIMA_parameters.piEN
@@ -869,7 +882,7 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     if bokeh_plot is not None:
 
-        bokeh_lightcurves = figure(width=800, height=600, toolbar_location=None,
+        bokeh_lightcurves = figure(width=900, height=600, toolbar_location=None,
                                    y_axis_label=r'$$m [mag]$$')
         bokeh_residuals = figure(width=bokeh_lightcurves.width, height=200,
                                  x_range=bokeh_lightcurves.x_range,
@@ -1170,69 +1183,87 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
 
 def plot_distribution(samples, parameters_names=None, bokeh_plot=None):
     names = [str(i) for i in range(len(parameters_names))]
-
-    GTC = pygtc.plotGTC(chains=[samples], sigmaContourLevels=True, paramNames=names,
-                        customLabelFont={'family': 'serif', 'size': 14},
-                        customLegendFont={'family': 'serif', 'size': 14},
-                        customTickFont={'family': 'serif', 'size': 7}, nContourLevels=3)
-
+    
+    try:
+        GTC = pygtc.plotGTC(chains=[samples], sigmaContourLevels=True, paramNames=names,
+                        customLabelFont={'family': 'serif', 'size': 8},
+                        customLegendFont={'family': 'serif', 'size': 8},
+                        customTickFont={'family': 'serif', 'size': 5}, nContourLevels=3)
+    except ValueError:
+        plt.close(3)
+        GTC = pygtc.plotGTC(chains=[samples], sigmaContourLevels=True, paramNames=names,
+                        customLabelFont={'family': 'serif', 'size': 8},
+                        customLegendFont={'family': 'serif', 'size': 8},
+                        customTickFont={'family': 'serif', 'size': 5})
+    
     text = [names[i] + ' : ' + parameters_names[i] + '\n' for i in
             range(len(parameters_names))]
-    GTC.text(0.71, .41, ''.join(text), size=15)
-
+    GTC.text(0.71, .41, ''.join(text), size=8)
+    
     if bokeh_plot is not None:
-        # Not implemented yet
-        pass
-
+        buf = io.BytesIO()
+        GTC.savefig(buf, format='png', dpi=300)
+        buf.seek(0)
+        
+        # Load the image into PIL, convert to RGBA and then to a numpy array
+        img = Image.open(buf)
+        img_array = np.array(img.convert('RGBA'))
+        img_array_flipped = np.flipud(img_array)  # Flip the image vertically
+        height, width, _ = img_array_flipped.shape
+        dw = 14  # Width of the display area; adjust as needed
+        dh = dw * (height / width)  # Calculate height to maintain aspect ratio
+        
+        # Update figure creation and image display
+        p = figure(x_range=(0, dw), y_range=(0, dh))
+        p.xaxis.visible = False
+        p.yaxis.visible = False
+        img_data = img_array_flipped.view(dtype=np.uint32).reshape((height, width))
+        source = ColumnDataSource({'image': [img_data]})
+        p.image_rgba(image='image', x=0, y=0, dw=dw, dh=dh, source=source)
+        
+        # Update the bokeh_plot variable with the new figure
+        bokeh_plot = p
+        
+        buf.close()
+        #pass
+    
     return GTC, bokeh_plot
 
-
-def plot_parameters_table(samples, parameters_names=None, bokeh_plot=None):
+def plot_parameters_table(samples, parameters_names=None, chi2=None, bokeh_plot=None):
+    # Calculate percentiles
     percentiles = np.percentile(samples, [16, 50, 84], axis=0)
-
-    table_val = [[r'$' + str(percentiles[1][i]) + '^{+' + str(
-        percentiles[2][i] - percentiles[1][i]) + '}_{-' + str(
-        percentiles[1][i] - percentiles[0][i]) + '}$'] for i in
-                 range(len(percentiles[0]))]
-    raw_labels = parameters_names
-
-    table_colors = []
-    raw_colors = []
-    last_color = 'dodgerblue'
-
-    for i in range(len(table_val)):
-        table_colors.append([last_color])
-        raw_colors.append(last_color)
-
-        if last_color == 'dodgerblue':
-
-            last_color = 'white'
-
-        else:
-
-            last_color = 'dodgerblue'
-
-    # column_labels = ['Parameters', 'Values']
-
-    fig_size = [10, 7.5]
-    figure_table = plt.figure(figsize=(fig_size[0], fig_size[1]), dpi=75)
-    table_axes = figure_table.add_subplot(111, aspect=1)
-    ax = plt.gca()
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    plt.box(on=None)
-    the_table = table_axes.table(cellText=table_val, loc='center', rowLabels=raw_labels,
-                                 cellColours=table_colors, rowColours=raw_colors,
-                                 colWidths=[.5] * 2)
-    the_table.set_fontsize(25)
-    breakpoint()
-
-    # the_table = table_axes.table(cellText=table_val, cellColours=table_colors,
-    # rowColours=raw_colors,
-    #                             rowLabels=raw_labels,
-    ##                             colLabels=column_labels, loc='center left',
-    #                            rowLoc='left', colLoc='center',
-    #                            bbox=[0.0, -0.0, 1.0, 1.0]
-    #                            )
-
-    return figure_table
+    table_val = [f"{percentiles[1][i]:.2f} (+{percentiles[2][i] - percentiles[1][i]:.2f}, -{percentiles[1][i] - percentiles[0][i]:.2f})"
+                 for i in range(percentiles.shape[1])]
+    
+    # Add chi2 if provided
+    if chi2 is not None:
+        table_val.append(f"{chi2:.2f}")
+        parameters_names.append('chi2')
+    
+    # Create Bokeh table
+    bokeh_table = None
+    if bokeh_plot is not None:
+        data = dict(names=parameters_names, values=table_val)
+        source = ColumnDataSource(data)
+        columns = [TableColumn(field="names", title="Parameter name"),
+                   TableColumn(field="values", title="Value (uncertainty)")]
+        bokeh_table = DataTable(source=source, columns=columns, width=600, height=600)
+    
+    # Create Matplotlib table
+    cell_text = []
+    for i, name in enumerate(parameters_names):
+        cell_text.append([name, table_val[i]])
+    
+    fig, ax = plt.subplots()
+    ax.axis('off')
+    mpl_table = ax.table(cellText=cell_text, colLabels=['Parameter', 'Value'], loc='center', cellLoc='left', colWidths=[0.3, 0.7])
+    mpl_table.auto_set_font_size(False)
+    mpl_table.set_fontsize(12)
+    mpl_table.scale(1, 1.5)  
+    # Alternating row colors
+    for i, (row, col) in enumerate(mpl_table.get_celld()):
+        if row > 0:  # Skip the header row
+            color = 'lightgrey' if row % 2 == 0 else 'white'
+            mpl_table.get_celld()[(row, col)].set_facecolor(color)
+    
+    return fig, bokeh_table
