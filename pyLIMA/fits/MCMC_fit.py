@@ -55,7 +55,7 @@ class MCMCfit(MLfit):
             nwalkers = self.MCMC_walkers * number_of_parameters
 
             # Initialize the population of MCMC
-            eps = 10 ** -1
+            eps = 10 ** -4
             floors = np.floor(np.round(best_solution))
             initial = best_solution - floors
             mask = initial == 0

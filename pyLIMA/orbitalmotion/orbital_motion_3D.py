@@ -65,7 +65,7 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     # separation0 = (r_microlens_0[0] ** 2 + r_microlens_0[1] ** 2) ** 0.5
     # angle_0 = np.arctan2(r_microlens_0[1], r_microlens_0[0])
     # breakpoint()
-    return sep - separation0, -(angle - angle_0)  # binary axes kept fixed
+    return sep - separation0, (angle - angle_0)
 
 
 def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_para,

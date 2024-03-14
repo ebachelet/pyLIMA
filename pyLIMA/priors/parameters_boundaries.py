@@ -149,9 +149,9 @@ def t_center_boundaries():
 def u_center_boundaries():
     return (-1, 1)
 
-def xiEN_boundaries():
+def xi_para_boundaries():
     return (-0.25, 0.25)
-def xiEE_boundaries():
+def xi_perp_boundaries():
     return (-0.25, 0.25)
 def xi_angular_velocity_boundaries():
     return (0.00001, 1000) #yr

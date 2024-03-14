@@ -4,48 +4,59 @@ def xallarap_shifts(xallarap_model, time, pyLIMA_parameters, body='primary'):
 
     if xallarap_model[0] == 'Static':
 
-        if body != 'primary':
+        #if body != 'primary':
 
-            separation_1 = pyLIMA_parameters.delta_t0/pyLIMA_parameters.tE
-            separation_2 = pyLIMA_parameters.delta_u0
+        #    separation_1 = pyLIMA_parameters.delta_t0/pyLIMA_parameters.tE
+        #    separation_2 = pyLIMA_parameters.delta_u0
 
-        else:
+        #else:
 
-            separation_1 = 0
-            separation_2 = 0
+        #    separation_1 = 0
+        #    separation_2 = 0
+
+        separation_1 = pyLIMA_parameters.delta_t0/pyLIMA_parameters.tE
+        separation_2 = pyLIMA_parameters.delta_u0
+
+        separation_1_0 = 0
+        separation_2_0 = 0
 
     if xallarap_model[0] == 'Circular':
 
         xi_angular_velocity = pyLIMA_parameters.xi_angular_velocity/pyLIMA_parameters.tE
-
         xi_phase = pyLIMA_parameters.xi_phase
         xi_inclination = pyLIMA_parameters.xi_inclination
         
         xallarap_delta_positions = circular_xallarap(time, xallarap_model[1],
                                                       xi_angular_velocity, xi_phase,
                                                       xi_inclination)
+
         xallarap_delta_positions *= (pyLIMA_parameters.xi_mass_ratio /
                                      (1 + pyLIMA_parameters.xi_mass_ratio))
 
-        if body != 'primary':
-
-            xallarap_delta_positions *= -1 / pyLIMA_parameters.xi_mass_ratio
-
         xallarap_delta_positions_0 = circular_xallarap(xallarap_model[1],
                                                        xallarap_model[1],
-                                                      xi_angular_velocity, xi_phase,
-                                                      xi_inclination)
+                                                       xi_angular_velocity, xi_phase,
+                                                       xi_inclination)
 
         xallarap_delta_positions_0 *= (pyLIMA_parameters.xi_mass_ratio /
-          (1 + pyLIMA_parameters.xi_mass_ratio))
+                                       (1 + pyLIMA_parameters.xi_mass_ratio))
+
+
+        #if body != 'primary':
+
+        #    xallarap_delta_positions *= -1 / pyLIMA_parameters.xi_mass_ratio
+        #    xallarap_delta_positions_0 *= -1 / pyLIMA_parameters.xi_mass_ratio
+
+
 
         separation_1, separation_2 = xallarap_delta_positions
+        separation_1_0, separation_2_0 = xallarap_delta_positions_0
 
-        separation_1[0] = -xallarap_delta_positions_0[0]
-        separation_1[1] = -xallarap_delta_positions_0[1]
+        #breakpoint()
+        #separation_1 += -xallarap_delta_positions_0[0]
+        #separation_2 += -xallarap_delta_positions_0[1]
 
-
-    return np.array([separation_1, separation_2])
+    return separation_1, separation_2, separation_1_0, separation_2_0
 
 
 def circular_xallarap(time, t0_xi, xi_angular_velocity, xi_phase,
@@ -79,7 +90,10 @@ def compute_xallarap_curvature(xiE, delta_positions):
     delta_tau : array, the x shift induced by the parallax
     delta_beta : array, the y shift induced by the parallax
     """
-    delta_tau = np.dot(xiE, delta_positions)
-    delta_beta = np.cross(xiE, delta_positions.T)
+    #delta_tau = np.dot(xiE, delta_positions)
+    #delta_beta = np.cross(xiE, delta_positions.T)
+
+    delta_tau = xiE[0] * delta_positions[0] + xiE[1] * delta_positions[1]
+    delta_beta = xiE[0] * delta_positions[1] - xiE[1] * delta_positions[0]
 
     return delta_tau, delta_beta

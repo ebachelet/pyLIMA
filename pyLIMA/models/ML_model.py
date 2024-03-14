@@ -404,8 +404,8 @@ class MLmodel(object):
 
         if self.xallarap_model[0] == 'Circular':
             jack = 'Numerical'
-            model_dictionnary['xiEN'] = len(model_dictionnary)
-            model_dictionnary['xiEE'] = len(model_dictionnary)
+            model_dictionnary['xi_para'] = len(model_dictionnary)
+            model_dictionnary['xi_perp'] = len(model_dictionnary)
             model_dictionnary['xi_angular_velocity'] = len(model_dictionnary)
             model_dictionnary['xi_phase'] = len(model_dictionnary)
             model_dictionnary['xi_inclination'] = len(model_dictionnary)
@@ -889,7 +889,7 @@ class MLmodel(object):
                 telescope.lightcurve_flux['time'].value,
                 pyLIMA_parameters)
 
-            alpha += dalpha
+            alpha -= dalpha #Binary axes is fixed
 
         else:
 
@@ -899,20 +899,15 @@ class MLmodel(object):
         tau += parallax_delta_tau
         beta += parallax_delta_beta
 
-
         # Xallarap?
         if self.xallarap_model[0] != 'None': #then we have two sources
 
-            xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
-                time, pyLIMA_parameters, body='primary')
+            (source1_delta_tau, source1_delta_beta,source2_delta_tau,
+            source2_delta_beta) = self.xallarap_trajectory_shifts(
+                                time, pyLIMA_parameters, body='primary')
 
-
-
-            xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
-                time, pyLIMA_parameters, body='secondary')
-
-            tau2 = tau + xallarap_delta_tau
-            beta2 = beta + xallarap_delta_beta
+            tau2 = tau - source2_delta_tau
+            beta2 = beta - source2_delta_beta
 
             lens_trajectory_x2 = tau2 * np.cos(alpha) - beta2 * np.sin(alpha)
             lens_trajectory_y2 = tau2 * np.sin(alpha) + beta2 * np.cos(alpha)
@@ -923,11 +918,11 @@ class MLmodel(object):
 
         else:
 
-            xallarap_delta_tau, xallarap_delta_beta = 0, 0
+            source1_delta_tau, source1_delta_beta = 0, 0
             source2_trajectory_x, source2_trajectory_y = None, None
 
-        tau1 = tau + xallarap_delta_tau
-        beta1 = beta + xallarap_delta_beta
+        tau1 = tau - source1_delta_tau
+        beta1 = beta - source1_delta_beta
 
         lens_trajectory_x1 = tau1 * np.cos(alpha) - beta1 * np.sin(alpha)
         lens_trajectory_y1 = tau1 * np.sin(alpha) + beta1 * np.cos(alpha)
@@ -939,105 +934,6 @@ class MLmodel(object):
                 source2_trajectory_x, source2_trajectory_y,
                 dseparation, dalpha)
 
-    def source_trajectory(self, telescope, pyLIMA_parameters, data_type=None,
-                          body='primary'):
-        """
-        Compute the microlensing source trajectory associated to a telescope for the
-        given parameters for the photometry
-        or astrometry data
-
-        Parameters
-        ----------
-        telescope : a telescope object
-        pyLIMA_parameters : a pyLIMA_parameters object
-        data_type : str, photometry or astrometry
-
-        Returns
-        ----------
-        source_trajectory_x : array, the source x position
-        source_trajectory_y : array, the source y position
-        dseparation : array, the modification of binary separation if orbital motion
-        is present
-        dalpha : array, the modification of the lens trajectory angle due to the
-        orbital motion of the lens
-        """
-
-        if data_type == 'photometry':
-
-            lightcurve = telescope.lightcurve_flux
-            time = lightcurve['time'].value
-
-            if 'piEN' in pyLIMA_parameters._fields:
-                parallax_delta_positions = telescope.deltas_positions['photometry']
-
-        if data_type == 'astrometry':
-
-            astrometry = telescope.astrometry
-            time = astrometry['time'].value
-
-            if 'piEN' in pyLIMA_parameters._fields:
-                parallax_delta_positions = telescope.deltas_positions['astrometry']
-
-        tau = (time - pyLIMA_parameters.t0) / pyLIMA_parameters.tE
-        beta = np.array([pyLIMA_parameters.u0] * len(tau))
-
-        # These following second order induce curvatures in the source trajectory
-        # Parallax?
-
-        if 'piEN' in pyLIMA_parameters._fields:
-
-            parallax_delta_tau, parallax_delta_beta = (
-                    self.parallax_trajectory_shifts(parallax_delta_positions,
-                                                 pyLIMA_parameters))
-
-        else:
-
-            parallax_delta_tau, parallax_delta_beta = 0, 0
-
-        # Xallarap?
-        if 'xiEN' in pyLIMA_parameters._fields:
-
-            xallarap_delta_tau, xallarap_delta_beta = self.xallarap_trajectory_shifts(
-                time , pyLIMA_parameters,body=body)
-
-        else:
-
-            xallarap_delta_tau, xallarap_delta_beta = 0,0
-
-        if 'alpha' in pyLIMA_parameters._fields:
-
-            alpha = pyLIMA_parameters.alpha
-
-        else:
-
-            alpha = 0
-
-        # Orbital motion?
-
-        if self.orbital_motion_model[0] != 'None':
-
-            dseparation, dalpha = orbital_motion.orbital_motion_shifts(
-                self.orbital_motion_model,
-                telescope.lightcurve_flux['time'].value,
-                pyLIMA_parameters)
-
-            alpha += dalpha
-
-        else:
-
-            dseparation = np.array([0] * len(tau))
-            dalpha = np.array([0] * len(tau))
-
-        tau += parallax_delta_tau+xallarap_delta_tau
-        beta += parallax_delta_beta+xallarap_delta_beta
-
-        lens_trajectory_x = tau * np.cos(alpha) - beta * np.sin(alpha)
-        lens_trajectory_y = tau * np.sin(alpha) + beta * np.cos(alpha)
-
-        source_trajectory_x = -lens_trajectory_x
-        source_trajectory_y = -lens_trajectory_y
-
-        return source_trajectory_x, source_trajectory_y, dseparation, dalpha
 
     def parallax_trajectory_shifts(self, parallax_delta_positions, pyLIMA_parameters):
 
@@ -1051,19 +947,45 @@ class MLmodel(object):
 
     def xallarap_trajectory_shifts(self, time, pyLIMA_parameters, body='primary'):
 
-        xallarap_delta_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
+        #xallarap_delta_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
+        #    self.xallarap_model, time, pyLIMA_parameters,
+        #                        body=body)
+
+        delta_position_1, delta_position_2, delta_position_1_0, delta_position_2_0 = pyLIMA.xallarap.xallarap.xallarap_shifts(
             self.xallarap_model, time, pyLIMA_parameters,
                                 body=body)
 
         if self.xallarap_model[0] == 'Circular':
-            xiE = np.array([pyLIMA_parameters.xiEN, pyLIMA_parameters.xiEE])
 
-            xallarap_delta_tau, xallarap_delta_beta = (
-                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
-                                                                    xallarap_delta_positions))
+            xiE = np.array([pyLIMA_parameters.xi_para, pyLIMA_parameters.xi_perp])
+
+            delta_position = np.array([delta_position_1-delta_position_1_0,
+                                       delta_position_2-delta_position_2_0])
+
+            source1_delta_tau, source1_delta_beta = (
+                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE, delta_position))
+
+            delta_position2 = np.array([
+                delta_position_1*(-1/pyLIMA_parameters.xi_mass_ratio) -
+                                        delta_position_1_0,
+                                   delta_position_2*(
+                                           -1/pyLIMA_parameters.xi_mass_ratio) -
+                                   delta_position_2_0])
+
+            source2_delta_tau, source2_delta_beta = (
+                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE, delta_position2))
+
+
         else:
 
-            xallarap_delta_tau=xallarap_delta_positions[0]
-            xallarap_delta_beta = xallarap_delta_positions[1]
+            #xallarap_delta_tau = xallarap_delta_positions[0]
+            #xallarap_delta_beta = xallarap_delta_positions[1]
 
-        return xallarap_delta_tau, xallarap_delta_beta
+            source1_delta_tau = 0
+            source1_delta_beta = 0
+
+            source2_delta_tau = delta_position_1
+            source2_delta_beta = delta_position_2
+
+
+        return source1_delta_tau, source1_delta_beta, source2_delta_tau, source2_delta_beta

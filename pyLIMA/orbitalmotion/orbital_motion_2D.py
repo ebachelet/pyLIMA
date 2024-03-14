@@ -15,7 +15,7 @@ def orbital_motion_2D_trajectory_shift(time, t0_om, dalpha_dt):
     """
     dalpha = dalpha_dt * (time - t0_om) / 365.25
 
-    return -dalpha
+    return dalpha
 
 
 def orbital_motion_2D_separation_shift(time, t0_om, ds_dt):
