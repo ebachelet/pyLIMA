@@ -383,8 +383,9 @@ class SourceLensProbabilities(object):
 
             filt = self.filters[obs]
             vega_mag = float(filt['M0_interpolator'][0](np.log10(Teff), Fe, logg))
+            vega_mag_close = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
             # vega_mag = np.nan
-            if np.isnan(vega_mag):
+            if (np.isnan(vega_mag)) | (np.abs(vega_mag-vega_mag_close)>0.25):
                 vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
                 # vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff),Fe,logg))
                 # vega_mag = -999

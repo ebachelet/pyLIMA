@@ -131,15 +131,8 @@ class DEfitnew(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
-        likelihood *= -1
-
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += -priors
-
-        return likelihood
+        objective = self.standard_objective_function(fit_process_parameters)
+        return objective
 
     def fit(self, initial_population=[], computational_pool=None):
 

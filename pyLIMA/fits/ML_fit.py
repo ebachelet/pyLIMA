@@ -809,7 +809,7 @@ class MLfit(object):
 
         prior = self.get_priors_probability(pyLIMA_parameters)
 
-        ln_likelihood = prior
+        ln_likelihood = -prior #Default is -ln_likelihood
 
         if np.isinf(ln_likelihood):
 
