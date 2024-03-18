@@ -159,3 +159,25 @@ def test_MCMC():
     assert values[2].shape == (10, 8, 5)
 
     assert values[3].shape == (10, 8, 9)
+
+
+def test_objective_functions():
+
+    eve = create_event()
+
+    pspl = pymod.FSPLmodel(eve)
+
+    my_fit = pyfit.TRFfit(pspl)
+    my_fit.fit()
+
+    de_fit = pyfit.TRFfit(pspl)
+    mcmc_fit = pyfit.TRFfit(pspl)
+
+
+    values = [my_fit.fit_results[key] for key in my_fit.fit_results.keys()]
+    chi2_de = de_fit.model_chi2(values[0])[0]
+    chi2_mcmc = mcmc_fit.model_chi2(values[0])[0]
+
+    assert np.allclose(values[1], 3851.0557824024704)
+    assert np.allclose(values[1], chi2_de)
+    assert np.allclose(values[1], chi2_mcmc)

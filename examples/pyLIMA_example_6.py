@@ -66,6 +66,7 @@ SLP.generate_GM()
 
 SLP.bounds[1] = [0.0,15]
 SLP.update_priors()
+
 ### Find maximum likelihood region
 
 results = SLP.de(popsize=10)

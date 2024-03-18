@@ -1,7 +1,7 @@
 import unittest.mock as mock
 
 import numpy as np
-from pyLIMA.models import DFSPLmodel, DSPLmodel, FSBLmodel, FSPLmodel, FSPLargemodel, \
+from pyLIMA.models import FSBLmodel, FSPLmodel, FSPLargemodel, \
     PSBLmodel, PSPLmodel, USBLmodel
 from pyLIMA.toolbox import time_series
 
@@ -174,7 +174,7 @@ def test_compute_pyLIMA_parameters():
     assert np.allclose(params, values)
 
 
-def test_source_trajcetory():
+def test_sources_trajcetory():
     event = _create_event()
 
     Model = FSPLmodel(event, origin=['nothere', [9, 8]])
@@ -183,10 +183,10 @@ def test_source_trajcetory():
 
     pym = Model.compute_pyLIMA_parameters(params)
 
-    X, Y, dS, dA = Model.source_trajectory(event.telescopes[0], pym,
+    X1, Y1,X2,Y2, dS, dA = Model.sources_trajectory(event.telescopes[0], pym,
                                            data_type='photometry')
-    assert np.allclose(X, [9.01428571, 8.44285714])
-    assert np.allclose(Y, [7.998, 7.998])
+    assert np.allclose(X1, [9.01428571, 8.44285714])
+    assert np.allclose(Y1, [7.998, 7.998])
     assert np.allclose(dS, [0, 0])
     assert np.allclose(dA, [0, 0])
 
@@ -220,54 +220,6 @@ def test_fancy_parameters():
     assert fspl2.pyLIMA_to_fancy['t_star'] == t_star
     assert fspl2.fancy_to_pyLIMA['rho'] == pyLIMA_fancy_parameters.rho
     assert fspl2.fancy_to_pyLIMA['tE'] == pyLIMA_fancy_parameters.tE
-
-
-def test_DFSPL():
-    event = _create_event()
-
-    Model = DFSPLmodel(event)
-    Model.event.telescopes[0].ld_gamma1 = 0.25
-    Model.event.telescopes[0].ld_gamma2 = 0.25
-
-    assert dict(Model.model_dictionnary) == {'t0': 0, 'u0': 1, 'delta_t0': 2,
-                                             'delta_u0': 3, 'tE': 4, 'rho_1': 5,
-                                             'rho_2': 6, 'q_flux_I': 7,
-                                             'fsource_Test': 8, 'fblend_Test': 9}
-
-
-    params = [0.5, 0.002, 0.1, 0.14, 35, 0.05, 0.007, 0.25]
-
-    pym = Model.compute_pyLIMA_parameters(params)
-
-    magi = Model.model_magnification(event.telescopes[0], pym)
-    assert np.allclose(magi, [42.42126683,  2.48813695])
-
-
-
-def test_DSPL():
-    event = _create_event()
-
-    Model = DSPLmodel(event)
-    assert dict(Model.model_dictionnary) == {'t0': 0, 'u0': 1, 'delta_t0': 2,
-                                             'delta_u0': 3, 'tE': 4,
-                                             'q_flux_I': 5, 'fsource_Test': 6,
-                                             'fblend_Test': 7}
-
-    params = [0.5, 0.002, 0.1, 0.14, 35, 0.05]
-
-    pym = Model.compute_pyLIMA_parameters(params)
-    magi = Model.model_magnification(event.telescopes[0], pym)
-
-    assert np.allclose(magi, [69.68158215,  2.09514647])
-
-    source1x, source1y, source2x, source2y = Model.sources_trajectory(
-        event.telescopes[0], pym)
-
-    assert np.allclose(source1x, [0.01428571, -0.55714286])
-    assert np.allclose(source1y, [-0.002, -0.002])
-    assert np.allclose(source2x, [0.01714286, -0.55428571])
-    assert np.allclose(source2y, [-0.142, -0.142])
-
 
 def test_FSBL():
     event = _create_event()

@@ -39,8 +39,11 @@ class PSPLmodel(MLmodel):
         """
         if telescope.astrometry is not None:
 
-            source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(
-                telescope, pyLIMA_parameters, data_type='astrometry')
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
 
             # Blended centroid shifts....
             # magnification = self.model_magnification(telescope, pyLIMA_parameters)
@@ -54,8 +57,8 @@ class PSPLmodel(MLmodel):
 
             # except:
 
-            shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x,
-                                                             source_trajectory_y,
+            shifts = astrometric_shifts.PSPL_shifts_no_blend(source1_trajectory_x,
+                                                             source1_trajectory_y,
                                                              pyLIMA_parameters.theta_E)
 
             delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,
