@@ -5,6 +5,7 @@ import numpy as np
 import scipy
 from pyLIMA.fits.ML_fit import MLfit
 from tqdm import tqdm
+from pyLIMA.priors import parameters_priors
 
 
 class DEfit(MLfit):
@@ -49,6 +50,8 @@ class DEfit(MLfit):
     def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
+        # Safety, recompute in case user changes boundaries after init
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
         if computational_pool:
 

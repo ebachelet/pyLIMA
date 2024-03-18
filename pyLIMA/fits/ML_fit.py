@@ -7,6 +7,7 @@ import pyLIMA.fits.objective_functions as objective_functions
 from bokeh.layouts import gridplot
 from bokeh.plotting import output_file, save
 from pyLIMA.priors import parameters_boundaries
+from pyLIMA.priors import parameters_priors
 
 
 class FitException(Exception):
@@ -77,6 +78,9 @@ class MLfit(object):
 
         self.define_fit_parameters()
         self.define_priors_parameters()
+
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
+
 
     def define_parameters(self, include_telescopes_fluxes=True):
         """

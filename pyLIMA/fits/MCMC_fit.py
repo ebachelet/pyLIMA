@@ -28,7 +28,6 @@ class MCMCfit(MLfit):
 
         self.MCMC_walkers = MCMC_walkers  # times number of dimension!
         self.MCMC_links = MCMC_links
-        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
     def fit_type(self):
         return "Monte Carlo Markov Chain (Affine Invariant)"

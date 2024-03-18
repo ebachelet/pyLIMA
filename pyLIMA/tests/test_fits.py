@@ -170,9 +170,14 @@ def test_objective_functions():
     my_fit = pyfit.TRFfit(pspl)
     my_fit.fit()
 
-    de_fit = pyfit.TRFfit(pspl)
-    mcmc_fit = pyfit.TRFfit(pspl)
+    de_fit = pyfit.DEfit(pspl, loss_function='chi2')
+    mcmc_fit = pyfit.MCMCfit(pspl, loss_function='chi2')
 
+    de_fit2 = pyfit.DEfit(pspl, loss_function='soft_l1')
+    mcmc_fit2 = pyfit.MCMCfit(pspl, loss_function='soft_l1')
+
+    de_fit3 = pyfit.DEfit(pspl, loss_function='likelihood')
+    mcmc_fit3 = pyfit.MCMCfit(pspl, loss_function='likelihood')
 
     values = [my_fit.fit_results[key] for key in my_fit.fit_results.keys()]
     chi2_de = de_fit.model_chi2(values[0])[0]
@@ -181,3 +186,26 @@ def test_objective_functions():
     assert np.allclose(values[1], 3851.0557824024704)
     assert np.allclose(values[1], chi2_de)
     assert np.allclose(values[1], chi2_mcmc)
+    assert np.allclose(values[1], de_fit.objective_function(np.array(values[0])))
+    assert np.allclose(values[1], -mcmc_fit.objective_function(np.array(values[0])))
+
+    assert np.allclose(my_fit.model_soft_l1(values[0])[0], 2688.1436988659825)
+    assert np.allclose(de_fit.model_soft_l1(values[0])[0], 2688.1436988659825)
+    assert np.allclose(mcmc_fit.model_soft_l1(values[0])[0], 2688.1436988659825)
+    assert np.allclose(de_fit2.objective_function(np.array(values[0])),
+                       2688.1436988659825)
+    assert np.allclose(mcmc_fit2.objective_function(np.array(values[0])),
+                       -2688.1436988659825)
+
+
+    assert np.allclose(de_fit3.objective_function(np.array(values[0])),
+                       20404.346432798076
+)
+    assert np.allclose(mcmc_fit3.objective_function(np.array(values[0])),
+                       -20404.346432798076
+)
+
+
+
+
+
