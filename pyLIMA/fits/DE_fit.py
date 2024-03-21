@@ -140,6 +140,8 @@ class DEfitnew(MLfit):
     def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
+        # Safety, recompute in case user changes boundaries after init
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
         if computational_pool:
 

@@ -79,7 +79,7 @@ class MLfit(object):
         self.define_fit_parameters()
         self.define_priors_parameters()
 
-        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
+        self.define_priors()
 
 
     def define_parameters(self, include_telescopes_fluxes=True):
@@ -281,6 +281,20 @@ class MLfit(object):
 
         self.priors_parameters = fit_parameters
 
+    def define_priors(self):
+
+        self.priors = parameters_priors.default_parameters_priors(
+            self.priors_parameters)
+
+    def fit_parameters_inside_limits(self, fit_process_parameters):
+
+        for ind,key in enumerate(self.fit_parameters.keys()):
+
+            if (fit_process_parameters[ind]<self.fit_parameters[key][1][0]) | (
+                    fit_process_parameters[ind]>self.fit_parameters[key][1][1]):
+
+                return np.inf
+
     def standard_objective_function(self, fit_process_parameters):
         """
         Compute the objective function based on the model and fit_process_parameters
@@ -364,7 +378,7 @@ class MLfit(object):
 
                     else:
 
-                        ln_likelihood = np.inf
+                        ln_likelihood = -np.inf
 
         return ln_likelihood
 
@@ -473,6 +487,7 @@ class MLfit(object):
         if self.telescopes_fluxes_method == 'fit':
 
             if self.telescopes_fluxes_parameters_guess == []:
+
                 telescopes_fluxes = self.model.find_telescopes_fluxes(
                     self.model_parameters_guess)
                 telescopes_fluxes = self.check_telescopes_fluxes_limits(
@@ -558,22 +573,23 @@ class MLfit(object):
                                self.rescale_astrometry_parameters_guess
         fit_parameters_guess = [float(i) for i in fit_parameters_guess]
 
-        if self.priors is not None:
+        #if self.priors is not None:
 
-            for ind, prior_key in enumerate(self.fit_parameters.keys()):
+        #    for ind, prior_key in enumerate(self.fit_parameters.keys()):
 
-                prior_pdf = self.priors[prior_key]
+        #        prior_pdf = self.priors[prior_key]
 
-                probability = prior_pdf.pdf(fit_parameters_guess[ind])
+        #        probability = prior_pdf.pdf(fit_parameters_guess[ind])
 
-                if probability < 10 ** -10:
-                    samples = prior_pdf.rvs(1000)
+        #        if probability < 10 ** -10:
+        #            samples = prior_pdf.rvs(1000)
 
-                    fit_parameters_guess[ind] = np.median(samples)
+        #           fit_parameters_guess[ind] = np.median(samples)
+
         for ind, param in enumerate(self.fit_parameters.keys()):
 
             if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):
-
+                breakpoint()
                 fit_parameters_guess = None
                 print('WARNING: ' + param + ' is out of the parameters boundaries, '
                                              'abord fitting ')
@@ -583,7 +599,7 @@ class MLfit(object):
                 return fit_parameters_guess
 
             if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
-
+                breakpoint()
                 fit_parameters_guess = None
                 print('WARNING: ' + param + ' is out of the parameters boundaries, '
                                             'abord fitting ')
@@ -1141,6 +1157,7 @@ class MLfit(object):
                     flux > self.fit_parameters[key][1][1]):
 
                 flux = np.mean( self.fit_parameters[key][1])
+
             new_fluxes.append(flux)
 
         return new_fluxes

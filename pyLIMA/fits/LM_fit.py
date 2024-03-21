@@ -27,6 +27,7 @@ class LMfit(MLfit):
                          loss_function=loss_function)
 
         self.guess = []
+        #self.priors = None
 
     def fit_type(self):
         return "Levenberg-Marquardt"

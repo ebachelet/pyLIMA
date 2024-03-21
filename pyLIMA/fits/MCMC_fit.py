@@ -34,7 +34,16 @@ class MCMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
+        if self.loss_function != 'likelihood':
+
+            limits_check = self.fit_parameters_inside_limits(fit_process_parameters)
+
+            if limits_check is not None:
+
+                return -limits_check
+
         objective = self.standard_objective_function(fit_process_parameters)
+
         return -objective
 
     def fit(self, initial_population=[], computational_pool=False):
@@ -48,7 +57,8 @@ class MCMCfit(MLfit):
             best_solution = self.initial_guess()
 
             if best_solution is None:
-                return
+
+                return None
 
             number_of_parameters = len(best_solution)
             nwalkers = self.MCMC_walkers * number_of_parameters
