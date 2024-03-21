@@ -827,61 +827,54 @@ class MLfit(object):
 
             pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
-        prior = self.get_priors_probability(pyLIMA_parameters)
 
-        ln_likelihood = -prior #Default is -ln_likelihood
+        if self.rescale_photometry:
 
-        if np.isinf(ln_likelihood):
-
-            return ln_likelihood,pyLIMA_parameters
+            rescaling_photometry_parameters = 10 ** (
+                parameters[self.rescale_photometry_parameters_index])
 
         else:
 
-            if self.rescale_photometry:
+            rescaling_photometry_parameters = None
 
-                rescaling_photometry_parameters = 10 ** (
-                    parameters[self.rescale_photometry_parameters_index])
+        if self.rescale_astrometry:
 
-            else:
+            rescaling_astrometry_parameters = 10 ** (
+                parameters[self.rescale_astrometry_parameters_index])
 
-                rescaling_photometry_parameters = None
+        else:
 
-            if self.rescale_astrometry:
+            rescaling_astrometry_parameters = None
 
-                rescaling_astrometry_parameters = 10 ** (
-                    parameters[self.rescale_astrometry_parameters_index])
+        residus, err = self.model_residuals(pyLIMA_parameters,
+                                            rescaling_photometry_parameters=rescaling_photometry_parameters,
+                                            rescaling_astrometry_parameters=rescaling_astrometry_parameters)
 
-            else:
+        residuals = []
+        errors = []
 
-                rescaling_astrometry_parameters = None
+        for data_type in ['photometry', 'astrometry']:
 
-            residus, err = self.model_residuals(pyLIMA_parameters,
-                                                rescaling_photometry_parameters=rescaling_photometry_parameters,
-                                                rescaling_astrometry_parameters=rescaling_astrometry_parameters)
+            try:
 
-            residuals = []
-            errors = []
+                residuals.append(np.concatenate(residus[data_type]) ** 2)
+                errors.append(np.concatenate(err[data_type]) ** 2)
 
-            for data_type in ['photometry', 'astrometry']:
+            except ValueError:
 
-                try:
+                pass
 
-                    residuals.append(np.concatenate(residus[data_type]) ** 2)
-                    errors.append(np.concatenate(err[data_type]) ** 2)
+        residuals = np.concatenate(residuals)
+        errors = np.concatenate(errors)
 
-                except ValueError:
+        ln_likelihood = 0.5*np.sum(residuals / errors + np.log(errors) +
+                                np.log(2 * np.pi))
 
-                    pass
+        prior = self.get_priors_probability(pyLIMA_parameters)
 
-            residuals = np.concatenate(residuals)
-            errors = np.concatenate(errors)
+        ln_likelihood += -prior  # Default is -ln_likelihood
 
-            ln_likelihood += 0.5*np.sum(residuals / errors + np.log(errors) +
-                                    np.log(2 * np.pi))
-
-            #ln_likelihood *= 0.5
-
-            return ln_likelihood, pyLIMA_parameters
+        return ln_likelihood, pyLIMA_parameters
 
     def model_soft_l1(self, parameters):
         """

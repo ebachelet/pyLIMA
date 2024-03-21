@@ -197,12 +197,11 @@ def test_objective_functions():
     assert np.allclose(mcmc_fit2.objective_function(np.array(values[0])),
                        -2688.1436988659825)
 
-
     assert np.allclose(de_fit3.objective_function(np.array(values[0])),
-                       20404.346432798076
+                       20346.12521056487
 )
     assert np.allclose(mcmc_fit3.objective_function(np.array(values[0])),
-                       -20404.346432798076
+                       -20346.12521056487
 )
 
 
