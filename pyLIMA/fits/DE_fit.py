@@ -22,7 +22,7 @@ class DEfit(MLfit):
     strategy : str, 'best1bin' or 'rand1bin' (default)
     """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', loss_function='likelihood',
+                 telescopes_fluxes_method='polyfit', loss_function='chi2',
                  DE_population_size=10, max_iteration=10000,
                  display_progress=False, strategy='rand1bin'):
 
@@ -51,7 +51,8 @@ class DEfit(MLfit):
 
         start_time = python_time.time()
         # Safety, recompute in case user changes boundaries after init
-        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
+        self.priors = parameters_priors.default_parameters_priors(
+            self.priors_parameters)
 
         if computational_pool:
 

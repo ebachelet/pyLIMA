@@ -34,13 +34,13 @@ class MCMCfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        if self.loss_function != 'likelihood':
+        #if self.loss_function != 'likelihood':
 
-            limits_check = self.fit_parameters_inside_limits(fit_process_parameters)
+        limits_check = self.fit_parameters_inside_limits(fit_process_parameters)
 
-            if limits_check is not None:
+        if limits_check is not None:
 
-                return -limits_check
+            return -limits_check #i.e. -np.inf
 
         objective = self.standard_objective_function(fit_process_parameters)
 
@@ -50,7 +50,8 @@ class MCMCfit(MLfit):
 
         start_time = python_time.time()
         #Safety, recompute in case user changes boundaries after init
-        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
+        self.priors = parameters_priors.default_parameters_priors(
+            self.priors_parameters)
 
         if initial_population == []:
 

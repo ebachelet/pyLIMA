@@ -64,6 +64,7 @@ class MLfit(object):
         self.priors_parameters = []
         self.fit_results = {}
         self.priors = None
+        self.extra_priors = None
         self.trials = Manager().list()  # to be recognize by all process during
         # parallelization
 
@@ -329,15 +330,15 @@ class MLfit(object):
 
                 if tel.lightcurve_flux is not None:
 
-                        if np.isinf(objective):
+                        #if np.isinf(objective):
 
-                            fluxes.append(np.nan)
-                            fluxes.append(np.nan)
-                        else:
+                        #    fluxes.append(np.nan)
+                        #    fluxes.append(np.nan)
+                        #else:
 
-                            fluxes.append(getattr(pyLIMA_parameters,
+                        fluxes.append(getattr(pyLIMA_parameters,
                                                   'fsource_' + tel.name))
-                            fluxes.append(getattr(pyLIMA_parameters,
+                        fluxes.append(getattr(pyLIMA_parameters,
                                                   'fblend_' + tel.name))
 
             self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
@@ -374,11 +375,25 @@ class MLfit(object):
 
                     if probability > 0:
 
-                        ln_likelihood += -np.log(probability)
+                        ln_likelihood += np.log(probability)
 
                     else:
 
                         ln_likelihood = -np.inf
+
+        if self.extra_priors is not None:
+
+            for extra_prior in self.extra_priors:
+
+                probability = extra_prior.pdf(pyLIMA_parameters)
+
+                if probability > 0:
+                   
+                    ln_likelihood += np.log(probability)
+
+                else:
+
+                    ln_likelihood = -np.inf
 
         return ln_likelihood
 
