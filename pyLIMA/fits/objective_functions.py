@@ -198,11 +198,11 @@ def photometric_residuals_in_magnitude(telescope, model, pyLIMA_parameters):
 
         microlensing_model = model.compute_the_microlensing_model(telescope,
                                                                   pyLIMA_parameters)
-        delta_f = telescope.lightcurve_flux['flux'].value-microlensing_model[
-            'photometry']
+        ##delta_f = telescope.lightcurve_flux['flux'].value-microlensing_model[
+        ##    'photometry']
 
-        residuals = -2.5*np.log10(1+delta_f/microlensing_model[
-            'photometry'])
+        residuals = -2.5*np.log10(telescope.lightcurve_flux['flux'].value
+                                  /microlensing_model['photometry'])
         return residuals
 
     except ValueError:

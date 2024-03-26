@@ -98,6 +98,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                                         telescope.lightcurve_magnitude['time'].value
                             model_time = np.r_[model_time, symmetric]
 
+
                     model_time.sort()
 
                     model_time = np.unique(model_time)
@@ -115,8 +116,14 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                         np.max(tel.lightcurve_magnitude['time'].value),
                         0.1).round(2)
 
+
+                    model_time2 = np.arange(
+                        pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
+                        pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
+                        0.01).round(2)
+
                     model_time = np.r_[
-                        model_time, tel.lightcurve_magnitude['time'].value]
+                        model_time, model_time2,tel.lightcurve_magnitude['time'].value]
 
                     model_time.sort()
 

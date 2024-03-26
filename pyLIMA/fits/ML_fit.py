@@ -388,7 +388,7 @@ class MLfit(object):
                 probability = extra_prior.pdf(pyLIMA_parameters)
 
                 if probability > 0:
-                   
+
                     ln_likelihood += np.log(probability)
 
                 else:
