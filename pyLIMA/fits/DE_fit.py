@@ -22,7 +22,7 @@ class DEfit(MLfit):
     strategy : str, 'best1bin' or 'rand1bin' (default)
     """
     def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
-                 telescopes_fluxes_method='polyfit', loss_function='chi2',
+                 telescopes_fluxes_method='polyfit', loss_function='likelihood',
                  DE_population_size=10, max_iteration=10000,
                  display_progress=False, strategy='rand1bin'):
 
@@ -78,7 +78,7 @@ class DEfit(MLfit):
             mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
             maxiter=self.max_iteration, tol=0.00,
             atol=1, strategy=self.strategy,
-            recombination=0.5, polish=False, init=init,
+            recombination=0.75, polish=False, init=init,
             disp=self.display_progress, workers=worker)
 
         self.trials = np.array(self.trials)

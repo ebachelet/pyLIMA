@@ -1258,6 +1258,7 @@ def plot_parameters_table(samples, parameters_names=None, chi2=None, bokeh_plot=
     
     # Create Matplotlib table
     cell_text = []
+
     for i, name in enumerate(parameters_names):
         cell_text.append([name, table_val[i]])
     

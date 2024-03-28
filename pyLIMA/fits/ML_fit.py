@@ -380,6 +380,7 @@ class MLfit(object):
                     else:
 
                         ln_likelihood = -np.inf
+                        return ln_likelihood
 
         if self.extra_priors is not None:
 
@@ -394,6 +395,7 @@ class MLfit(object):
                 else:
 
                     ln_likelihood = -np.inf
+                    return ln_likelihood
 
         return ln_likelihood
 
@@ -1235,7 +1237,7 @@ class MLfit(object):
             samples_to_plot, parameters_names=parameters, bokeh_plot=bokeh_plot)
     
         matplotlib_table, bokeh_parameters = pyLIMA_plots.plot_parameters_table(samples_to_plot,
-                           parameters_names=[key for key in self.fit_parameters.keys()],
+                           parameters_names=parameters,
                            chi2 = chi2,
                            bokeh_plot=bokeh_plot)
         #matplotlib_table = None

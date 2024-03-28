@@ -63,11 +63,11 @@ def alpha_boundaries():
 
 
 def piEN_boundaries():
-    return (-1.0, 1.0)
+    return (-0.5, 0.5)
 
 
 def piEE_boundaries():
-    return (-1.0, 1.0)
+    return (-0.5, 0.5)
 
 
 def v_para_boundaries():
