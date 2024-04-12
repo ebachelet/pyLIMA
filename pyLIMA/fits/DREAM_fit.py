@@ -369,7 +369,7 @@ class DREAMfit(MLfit):
         self.acceptance = np.array(all_acceptance)
         DEMC_population = np.copy(self.population)
         self.Z = Z_prime
-
+        breakpoint()
         print(self.swap / self.max_iteration)
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')

@@ -43,7 +43,18 @@ class DEfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
+        #eps = np.abs(fit_process_parameters[1])*((1+fit_process_parameters[1]**2/2)*(
+        #        1+fit_process_parameters[1]**2/4))**0.5
+
+        #logtE = fit_process_parameters[2]-np.log10(eps)
+
+        #fitp = np.copy(fit_process_parameters)
+
+        #fitp[2] = logtE
+        #fitp[3] = fit_process_parameters[3]-logtE
+        #breakpoint()
         objective = self.standard_objective_function(fit_process_parameters)
+        #print(fit_process_parameters,objective)
 
         return objective
 
@@ -64,7 +75,7 @@ class DEfit(MLfit):
 
         if initial_population == []:
 
-            init = 'latinhypercube'
+            init = 'sobol'
 
         else:
 
@@ -75,10 +86,10 @@ class DEfit(MLfit):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.objective_function,
             bounds=bounds,
-            mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
+            mutation=(0.5,1.5), popsize=int(self.DE_population_size),
             maxiter=self.max_iteration, tol=0.00,
             atol=1, strategy=self.strategy,
-            recombination=0.75, polish=False, init=init,
+            recombination=0.5, polish=False, init=init,
             disp=self.display_progress, workers=worker)
 
         self.trials = np.array(self.trials)
@@ -170,7 +181,7 @@ class DEfitnew(MLfit):
             strategy=self.strategy,
             recombination=0.5, polish=False,
             init=init, disp=self.display_progress,
-            workers=worker)
+            workers=worker,updating='deferred')
 
         if initial_population == []:
 

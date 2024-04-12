@@ -3,20 +3,20 @@ import numpy as np
 
 ### This gives some examples...
 
-def log_tE(x):
-    return np.log10(x.tE)
+#def log_tE(x):
+#    return np.log10(x.tE)
 
 
-def tE(x):
-    return 10 ** x.log_tE
+#def tE(x):
+#    return 10 ** x.log_tE
 
 
-def log_rho(x):
-    return np.log10(x.rho)
+#def log_rho(x):
+#    return np.log10(x.rho)
 
 
-def rho(x):
-    return 10 ** x.log_rho
+#def rho(x):
+#    return 10 ** x.log_rho
 
 
 def log_separation(x):
@@ -109,6 +109,42 @@ def _u0_to_u_center(x, x_center=0, y_center=0):
     return u_center
 
 
-standard_fancy_parameters = {'log_tE': 'tE', 'log_rho': 'rho',
+def log_teff(x):
+
+    u0 = x.u0
+    eps = np.abs(u0)*((1+u0**2/2)*(1+u0**2/4))**0.5
+
+    teff = x.tE*eps
+
+    return np.log10(teff)
+
+def tE(x):
+
+    u0 = x.u0
+    eps = np.abs(u0) * ((1 + u0 ** 2 / 2) * (1 + u0 ** 2 / 4)) ** 0.5
+
+    return 10**x.log_teff/eps
+
+
+def log_tstar(x):
+
+    t_star = x.rho*x.tE
+
+    return np.log10(t_star)
+
+def rho(x):
+
+    te = tE(x)
+    rho = 10**(x.log_tstar)/te
+
+    return rho
+
+
+#standard_fancy_parameters = {'log_tE': 'tE', 'log_rho': 'rho',
+#                             'log_separation': 'separation',
+#                             'log_mass_ratio': 'mass_ratio'}
+
+
+standard_fancy_parameters = {'log_teff': 'tE', 'log_tstar': 'rho',
                              'log_separation': 'separation',
                              'log_mass_ratio': 'mass_ratio'}

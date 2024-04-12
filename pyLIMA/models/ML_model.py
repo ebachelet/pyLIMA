@@ -593,6 +593,13 @@ class MLmodel(object):
                     f_source, f_blend = np.polyfit(magnification, flux, 1,
                                                    w=1 / err_flux)
 
+                    #if np.isinf(flux) | np.isinf(err_flux):
+                    #    breakpoint()
+                    #polynomial = np.polynomial.polynomial.Polynomial.fit(
+                    #    magnification, flux, deg=1,  w=1 / err_flux)
+
+                    #f_blend,f_source = polynomial.convert().coef
+                    #breakpoint()
                     # from sklearn import linear_model, datasets
                     # ransac = linear_model.RANSACRegressor()
                     # ransac.fit(magnification.reshape(-1, 1), flux)

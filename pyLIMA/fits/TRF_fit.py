@@ -83,4 +83,5 @@ class TRFfit(LMfit):
 
         self.fit_results = {'best_model': fit_results, self.loss_function: fit_chi2,
                             'fit_time': computation_time,
-                            'covariance_matrix': covariance_matrix}
+                            'covariance_matrix': covariance_matrix,
+                            'fit_object':trf_fit}

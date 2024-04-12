@@ -35,7 +35,7 @@ def delta_u0_boundaries():
 
 
 def u0_boundaries():
-    return (0.0, 1.0)
+    return (-1.0, 1.0)
 
 
 def tE_boundaries():
@@ -59,7 +59,7 @@ def mass_ratio_boundaries():
 
 
 def alpha_boundaries():
-    return (0, 2 * np.pi)
+    return (-0.10, 2 * np.pi+0.1)
 
 
 def piEN_boundaries():
