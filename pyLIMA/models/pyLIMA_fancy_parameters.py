@@ -1,150 +1,54 @@
 import numpy as np
 
 
-### This gives some examples...
+class StandardFancyParameters(object):
 
-#def log_tE(x):
-#    return np.log10(x.tE)
+    def __init__(self, fancy_parameters = {'tE': 'log_tE', 'rho': 'log_rho',
+                                         'separation': 'log_separation',
+                                         'mass_ratio': 'log_mass_ratio'},
+                        fancy_boundaries = {'log_tE':(-1,3),'log_rho':(-5,-1),
+                                             'log_separation':(-1,1),
+                                             'log_mass_ratio':(-5,0)}):
 
+        self.fancy_parameters = fancy_parameters
+        self.fancy_boundaries = fancy_boundaries
 
-#def tE(x):
-#    return 10 ** x.log_tE
+    @property
+    def _tE(self):
 
+        return 10**self.log_tE
 
-#def log_rho(x):
-#    return np.log10(x.rho)
+    @property
+    def _rho(self):
 
+        return 10 ** self.log_rho
 
-#def rho(x):
-#    return 10 ** x.log_rho
+    @property
+    def _separation(self):
 
+        return 10 ** self.log_separation
 
-def log_separation(x):
-    return np.log10(x.separation)
+    @property
+    def _mass_ratio(self):
 
+        return 10 ** self.log_mass_ratio
 
-def separation(x):
-    return 10 ** x.log_separation
 
+    @property
+    def _log_tE(self):
 
-def log_mass_ratio(x):
-    return np.log10(x.mass_ratio)
+        return np.log10(self.tE)
 
+    @property
+    def _log_rho(self):
+        return np.log10(self.rho)
 
-def mass_ratio(x):
-    return 10 ** x.log_mass_ratio
+    @property
+    def _log_separation(self):
 
+        return  np.log10(self.separation)
 
-def _t_center_to_t0(x, x_center=0, y_center=0):
-    #CROIN : https://iopscience.iop.org/article/10.1088/0004-637X/790/2/142/pdf
+    @property
+    def _log_mass_ratio(self):
 
-    try:
-
-        alpha = x.alpha
-
-    except AttributeError:
-
-        alpha = 0
-
-    rotation = np.array([np.cos(alpha), np.sin(alpha)])
-
-    tau_prime = -np.dot(rotation, [x_center, y_center])
-
-    t_0 = float(x.t_center - tau_prime * x.tE)
-
-    return t_0
-
-
-def _t0_to_t_center(x, x_center=0, y_center=0):
-    try:
-
-        alpha = x.alpha
-
-    except AttributeError:
-
-        alpha = 0
-
-    rotation = np.array([np.cos(alpha), np.sin(alpha)])
-
-    tau_prime = -np.dot(rotation, [x_center, y_center])
-
-    t_center = float(x.t0 + tau_prime * x.tE)
-
-    return t_center
-
-
-def _u_center_to_u0(x, x_center=0, y_center=0):
-    try:
-
-        alpha = x.alpha
-
-    except AttributeError:
-
-        alpha = 0
-
-    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
-
-    u_prime = np.dot(rotation, [x_center, y_center])
-
-    u_0 = float(x.u_center - u_prime)
-
-    return u_0
-
-
-def _u0_to_u_center(x, x_center=0, y_center=0):
-    try:
-
-        alpha = x.alpha
-
-    except AttributeError:
-
-        alpha = 0
-
-    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
-
-    u_prime = np.dot(rotation, [x_center, y_center])
-
-    u_center = float(x.u0 + u_prime)
-
-    return u_center
-
-
-def log_teff(x):
-
-    u0 = x.u0
-    eps = np.abs(u0)*((1+u0**2/2)*(1+u0**2/4))**0.5
-
-    teff = x.tE*eps
-
-    return np.log10(teff)
-
-def tE(x):
-
-    u0 = x.u0
-    eps = np.abs(u0) * ((1 + u0 ** 2 / 2) * (1 + u0 ** 2 / 4)) ** 0.5
-
-    return 10**x.log_teff/eps
-
-
-def log_tstar(x):
-
-    t_star = x.rho*x.tE
-
-    return np.log10(t_star)
-
-def rho(x):
-
-    te = tE(x)
-    rho = 10**(x.log_tstar)/te
-
-    return rho
-
-
-#standard_fancy_parameters = {'log_tE': 'tE', 'log_rho': 'rho',
-#                             'log_separation': 'separation',
-#                             'log_mass_ratio': 'mass_ratio'}
-
-
-standard_fancy_parameters = {'log_teff': 'tE', 'log_tstar': 'rho',
-                             'log_separation': 'separation',
-                             'log_mass_ratio': 'mass_ratio'}
+        return  np.log10(self.mass_ratio)

@@ -51,7 +51,7 @@ class MLmodel(object):
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
                  orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
-                 origin=['center_of_mass', [0.0, 0.0]], fancy_parameters={}):
+                 origin=['center_of_mass', [0.0, 0.0]], fancy_parameters=None):
         """ Initialization of the attributes described above.
         """
 
@@ -66,13 +66,8 @@ class MLmodel(object):
 
         self.model_dictionnary = {}
         self.pyLIMA_standards_dictionnary = {}
-        self.fancy_to_pyLIMA_dictionnary = fancy_parameters.copy()
-        self.pyLIMA_to_fancy_dictionnary = dict(
-            (v, k) for k, v in self.fancy_to_pyLIMA_dictionnary.items())
 
-        self.pyLIMA_to_fancy = {}
-        self.fancy_to_pyLIMA = {}
-
+        self.fancy_parameters = fancy_parameters
         self.Jacobian_flag = 'Numerical'
         self.standard_parameters_boundaries = []
 
@@ -80,7 +75,7 @@ class MLmodel(object):
 
         self.check_data_in_event()
         self.define_pyLIMA_standard_parameters()
-        self.define_fancy_parameters()
+        self.define_model_parameters()
 
     @abc.abstractmethod
     def model_type(self):
@@ -255,73 +250,6 @@ class MLmodel(object):
             pyLIMA.priors.parameters_boundaries.parameters_boundaries(
                 self.event, self.pyLIMA_standards_dictionnary)
 
-    def define_fancy_parameters(self):
-        """
-        Define the fancy parameters, if the origin is different than center of mass
-        and if users defined fancy parameters.
-        Also define the standard parameters boundaries
-        """
-
-        if self.origin[0] != 'center_of_mass':
-            self.fancy_to_pyLIMA_dictionnary['t_center'] = 't0'
-            self.fancy_to_pyLIMA_dictionnary['u_center'] = 'u0'
-
-            self.pyLIMA_to_fancy_dictionnary = dict(
-                (v, k) for k, v in self.fancy_to_pyLIMA_dictionnary.items())
-
-        if len(self.fancy_to_pyLIMA_dictionnary) != 0:
-
-            import pickle
-
-            keys = self.fancy_to_pyLIMA_dictionnary.copy().keys()
-
-            for key in keys:
-
-                parameter = self.fancy_to_pyLIMA_dictionnary[key]
-
-                if parameter in self.pyLIMA_standards_dictionnary.keys():
-
-                    self.fancy_to_pyLIMA_dictionnary[key] = parameter
-
-                    try:
-                        self.pyLIMA_to_fancy[key] = pickle.loads(
-                            pickle.dumps(getattr(pyLIMA_fancy_parameters, key)))
-                        self.fancy_to_pyLIMA[parameter] = pickle.loads(
-                            pickle.dumps(getattr(pyLIMA_fancy_parameters, parameter)))
-
-                    except AttributeError:
-
-                        self.pyLIMA_to_fancy[key] = None
-                        self.fancy_to_pyLIMA[parameter] = None
-
-                    if key == 't_center':
-
-                        self.pyLIMA_to_fancy[key] = pickle.loads(
-                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
-                                             '_t0_to_t_center')))
-                        self.fancy_to_pyLIMA[parameter] = pickle.loads(
-                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
-                                             '_t_center_to_t0')))
-
-                    if key == 'u_center':
-
-                        self.pyLIMA_to_fancy[key] = pickle.loads(
-                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
-                                             '_u0_to_u_center')))
-                        self.fancy_to_pyLIMA[parameter] = pickle.loads(
-                        pickle.dumps(getattr(pyLIMA_fancy_parameters,
-                                             '_u_center_to_u0')))
-
-                else:
-
-                    self.fancy_to_pyLIMA_dictionnary.pop(key)
-                    print(
-                        'I skip the fancy parameter ' + parameter + ', as it is not '
-                                                                    'part of model '
-                        + self.model_type())
-
-        self.define_model_parameters()
-
     def astrometric_model_parameters(self, model_dictionnary):
         """
         Define the standard astrometric model parameters, i.e. add theta_E, pi_s,
@@ -488,22 +416,25 @@ class MLmodel(object):
 
         self.model_dictionnary = self.pyLIMA_standards_dictionnary.copy()
 
-        if len(self.pyLIMA_to_fancy) != 0:
+        if len(self.fancy_parameters.fancy_parameters) != 0:
 
             self.Jacobian_flag = 'Numerical'
 
-            for key_parameter in self.fancy_to_pyLIMA_dictionnary.keys():
+            for key_parameter in self.fancy_parameters.fancy_parameters.keys():
 
                 try:
-                    self.model_dictionnary[key_parameter] = self.model_dictionnary.pop(
-                        self.fancy_to_pyLIMA_dictionnary[key_parameter])
-                except ValueError:
 
+                    self.model_dictionnary[self.fancy_parameters.fancy_parameters[
+                        key_parameter]] = self.model_dictionnary.pop(
+                        key_parameter)
+
+                except KeyError:
+                    print('I skip the fancy parameter ' + key_parameter + ', as it is '
+                           'not part of model ' + self.model_type())
                     pass
 
             self.model_dictionnary = OrderedDict(
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
-
     def print_model_parameters(self):
         """
         Print the model parameters currently defined
@@ -663,85 +594,6 @@ class MLmodel(object):
         return thefluxes
 
 
-    def fancy_parameters_to_pyLIMA_standard_parameters(self, pyLIMA_parameters):
-        """
-        Transform the fancy parameters to the pyLIMA standards. The output got all
-        the necessary standard attributes, example t0, u0, tE...
-
-        Parameters
-        ----------
-        fancy_parameters :  a pyLIMA_parameters object
-
-        Returns
-        -------
-        fancy_parameters : dict, an updated dictionnary the pyLIMA parameters
-        """
-
-        if len(self.fancy_to_pyLIMA) != 0:
-
-            list_of_keys = (list(pyLIMA_parameters._fields) +
-                            [key for key in self.fancy_to_pyLIMA.keys()])
-
-            new_pyLIMA_parameters = collections.namedtuple('parameters',
-                                                           list_of_keys)
-
-            for key_parameter in pyLIMA_parameters._fields:
-                param_value = getattr(pyLIMA_parameters, key_parameter)
-
-                setattr(new_pyLIMA_parameters, key_parameter,
-                        param_value)
-
-            for key_parameter in self.fancy_to_pyLIMA.keys():
-                setattr(new_pyLIMA_parameters, key_parameter,
-                        self.fancy_to_pyLIMA[key_parameter](pyLIMA_parameters))
-        else:
-
-            new_pyLIMA_parameters = pyLIMA_parameters
-
-        return new_pyLIMA_parameters
-
-
-    def pyLIMA_standard_parameters_to_fancy_parameters(self, pyLIMA_parameters):
-        """
-        Transform the pyLIMA standards parameters to the fancy parameters. The output
-        got all
-        the necessary fancy attributes.
-
-        Parameters
-        ----------
-        pyLIMA_parameter :  a pyLIMA parameter object
-
-        :Returns
-        -------
-        pyLIMA_parameters : dict, the updated pyLIMA parameter containing the fancy
-        parameters
-        """
-
-        if len(self.pyLIMA_to_fancy) != 0:
-
-            list_of_keys = (list(pyLIMA_parameters._fields) +
-                            [key for key in self.pyLIMA_to_fancy.keys()])
-
-            new_pyLIMA_parameters = collections.namedtuple('parameters',
-                                                           list_of_keys)
-
-            for key_parameter in pyLIMA_parameters._fields:
-
-                param_value = getattr(pyLIMA_parameters, key_parameter)
-
-                setattr(new_pyLIMA_parameters, key_parameter,
-                       param_value)
-
-            for key_parameter in self.pyLIMA_to_fancy.keys():
-
-                setattr(new_pyLIMA_parameters, key_parameter,
-                        self.pyLIMA_to_fancy[key_parameter](pyLIMA_parameters))
-        else:
-
-            new_pyLIMA_parameters = pyLIMA_parameters
-
-        return new_pyLIMA_parameters
-
     def compute_pyLIMA_parameters(self, model_parameters, fancy_parameters=True):
         """
          Realize the transformation between the fancy parameters to fit to the
@@ -756,17 +608,10 @@ class MLmodel(object):
          pyLIMA_parameters : dict, a dictionnary the pyLIMA parameters
          """
 
-        if fancy_parameters:
-
-            parameter_dictionnary = self.model_dictionnary.copy()
-
-        else:
-
-            parameter_dictionnary = self.pyLIMA_standards_dictionnary.copy()
+        parameter_dictionnary = self.model_dictionnary.copy()
 
         pyLIMA_parameters = collections.namedtuple('parameters',
                                                        parameter_dictionnary.keys())
-
         for key_parameter in pyLIMA_parameters._fields:
 
             try:
@@ -778,15 +623,10 @@ class MLmodel(object):
 
                 setattr(pyLIMA_parameters, key_parameter, None)
 
-        if fancy_parameters:
+        if self.fancy_parameters is not None:
 
-            pyLIMA_parameters = self.fancy_parameters_to_pyLIMA_standard_parameters(
-                                pyLIMA_parameters)
+            self.fancy_to_pyLIMA_parameters(pyLIMA_parameters)
 
-        else:
-
-            pyLIMA_parameters = self.pyLIMA_standard_parameters_to_fancy_parameters(
-                                pyLIMA_parameters)
 
         if self.origin[0] != 'center_of_mass':
             self.change_origin(pyLIMA_parameters)
@@ -832,6 +672,24 @@ class MLmodel(object):
             setattr(pyLIMA_parameters, 't_periastron', t_periastron)
 
         return pyLIMA_parameters
+
+
+    def fancy_to_pyLIMA_parameters(self, fancy_parameters):
+
+        for standard_key, fancy_key in self.fancy_parameters.fancy_parameters.items():
+
+            try:
+
+                param = getattr(fancy_parameters, fancy_key)
+
+                setattr(self.fancy_parameters, fancy_key, param)
+
+                setattr(fancy_parameters, standard_key,
+                getattr(self.fancy_parameters, '_'+standard_key))
+
+            except:
+
+                pass
 
     def sources_trajectory(self, telescope, pyLIMA_parameters,  data_type=None):
         """

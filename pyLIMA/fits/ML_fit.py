@@ -123,21 +123,11 @@ class MLfit(object):
 
             else:
 
-                if key in self.model.fancy_to_pyLIMA.keys():
+                if key in self.model.fancy_parameters.fancy_parameters.keys():
 
-                    parameter = self.model.pyLIMA_to_fancy_dictionnary[key]
-                    try:
-
-                        new_bounds = np.sort(
-                            self.model.pyLIMA_to_fancy[parameter](thebounds))
-
-                    except (TypeError, AttributeError) as error:
-                        print(error)
-                        new_bounds = standard_parameters_boundaries[ind]
-
-                    thekey = parameter
+                    thekey = self.model.fancy_parameters.fancy_parameters[key]
                     theind = ind
-                    theboundaries = new_bounds
+                    theboundaries = self.model.fancy_parameters.fancy_boundaries[thekey]
 
                 else:
 
