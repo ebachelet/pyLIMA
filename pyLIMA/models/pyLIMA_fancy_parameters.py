@@ -11,6 +11,11 @@ class StandardFancyParameters(object):
                                              'log_mass_ratio':(-5,0)}):
 
         self.fancy_parameters = fancy_parameters
+        for key,value in self.fancy_parameters.items():
+
+            setattr(self,key,None)
+            setattr(self, value, None)
+
         self.fancy_boundaries = fancy_boundaries
 
     @property
