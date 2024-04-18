@@ -6,54 +6,43 @@ class StandardFancyParameters(object):
     def __init__(self, fancy_parameters = {'tE': 'log_tE', 'rho': 'log_rho',
                                          'separation': 'log_separation',
                                          'mass_ratio': 'log_mass_ratio'},
-                        fancy_boundaries = {'log_tE':(-1,3),'log_rho':(-5,-1),
+                        fancy_boundaries = {'log_tE':(-3,1),'log_rho':(-5,-1),
                                              'log_separation':(-1,1),
                                              'log_mass_ratio':(-5,0)}):
 
         self.fancy_parameters = fancy_parameters
-        for key,value in self.fancy_parameters.items():
-
-            setattr(self,key,None)
-            setattr(self, value, None)
 
         self.fancy_boundaries = fancy_boundaries
 
-    @property
-    def _tE(self):
+    def tE(self, fancy_params):
 
-        return 10**self.log_tE
+        return 10**-fancy_params.log_tE
 
-    @property
-    def _rho(self):
+    def rho(self, fancy_params):
 
-        return 10 ** self.log_rho
+        return 10 **fancy_params.log_rho
 
-    @property
-    def _separation(self):
+    def separation(self, fancy_params):
 
-        return 10 ** self.log_separation
+        return 10 ** fancy_params.log_separation
 
-    @property
-    def _mass_ratio(self):
+    def mass_ratio(self, fancy_params):
 
-        return 10 ** self.log_mass_ratio
+        return 10 ** fancy_params.log_mass_ratio
 
 
-    @property
-    def _log_tE(self):
+    def log_tE(self, standard_params):
 
-        return np.log10(self.tE)
+        return np.log10(1/standard_params.tE)
 
-    @property
-    def _log_rho(self):
-        return np.log10(self.rho)
+    def log_rho(self, standard_params):
 
-    @property
-    def _log_separation(self):
+        return np.log10(standard_params.rho)
 
-        return  np.log10(self.separation)
+    def log_separation(self, standard_params):
 
-    @property
-    def _log_mass_ratio(self):
+        return np.log10(standard_params.separation)
 
-        return  np.log10(self.mass_ratio)
+    def log_mass_ratio(self, standard_params):
+
+        return np.log10(standard_params.mass_ratio)

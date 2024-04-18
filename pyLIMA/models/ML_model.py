@@ -416,7 +416,7 @@ class MLmodel(object):
 
         self.model_dictionnary = self.pyLIMA_standards_dictionnary.copy()
 
-        if len(self.fancy_parameters.fancy_parameters) != 0:
+        if self.fancy_parameters is not None:
 
             self.Jacobian_flag = 'Numerical'
 
@@ -680,12 +680,20 @@ class MLmodel(object):
 
             try:
 
-                param = getattr(fancy_parameters, fancy_key)
+                value = getattr(self.fancy_parameters, standard_key)(fancy_parameters)
+                setattr(fancy_parameters, standard_key, value)
 
-                setattr(self.fancy_parameters, fancy_key, param)
+            except:
 
-                setattr(fancy_parameters, standard_key,
-                getattr(self.fancy_parameters, '_'+standard_key))
+                pass
+    def pyLIMA_to_fancy_parameters(self, pyLIMA_parameters):
+
+        for standard_key, fancy_key in self.fancy_parameters.fancy_parameters.items():
+
+            try:
+
+                value = getattr(self.fancy_parameters, fancy_key)(pyLIMA_parameters)
+                setattr(pyLIMA_parameters, fancy_key, value)
 
             except:
 

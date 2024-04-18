@@ -6,7 +6,7 @@ class FSPLmodel(MLmodel):
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
                  orbital_motion=['None', 0.0], origin=['center_of_mass', [0, 0]],
-                 blend_flux_parameter='fblend', fancy_parameters={}):
+                 blend_flux_parameter='fblend', fancy_parameters=None):
 
         super().__init__(event, parallax=parallax, xallarap=xallarap,
                          orbital_motion=orbital_motion, origin=origin,

@@ -8,7 +8,7 @@ class USBLmodel(MLmodel):
 
     def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
                  orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
-                 origin=['center_of_mass', [0, 0]], fancy_parameters={}):
+                 origin=['center_of_mass', [0, 0]], fancy_parameters=None):
         """The fit class has to be intialized with an event object."""
 
         super().__init__(event, parallax=parallax, xallarap=xallarap,
