@@ -53,24 +53,25 @@ class USBLmodel(MLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            separation = dseparation + pyLIMA_parameters.separation
+            separation = dseparation + pyLIMA_parameters['separation']
 
             source1_magnification = magnification_VBB.magnification_USBL(separation,
-                                                     pyLIMA_parameters.mass_ratio,
+                                                     pyLIMA_parameters['mass_ratio'],
                                                      source1_trajectory_x,
                                                      source1_trajectory_y,
-                                                     pyLIMA_parameters.rho)
+                                                     pyLIMA_parameters['rho'])
 
             if source2_trajectory_x is not None:
 
                 source2_magnification = magnification_VBB.magnification_USBL(separation,
-                                                         pyLIMA_parameters.mass_ratio,
+                                                         pyLIMA_parameters[
+                                                             'mass_ratio'],
                                                          source2_trajectory_x,
                                                          source2_trajectory_y,
-                                                         pyLIMA_parameters.rho_2)
+                                                         pyLIMA_parameters['rho_2'])
 
-                blend_magnification_factor = getattr(pyLIMA_parameters,
-                                                     'q_flux_' + telescope.filter)
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
                 effective_magnification = (
                         source1_magnification +
                         source2_magnification *
@@ -100,12 +101,12 @@ class USBLmodel(MLmodel):
         if 'caustic' in self.origin[0]:
 
             caustic_regime = binary_caustics.find_2_lenses_caustic_regime(
-                pyLIMA_parameters.separation,
-                pyLIMA_parameters.mass_ratio)
+                pyLIMA_parameters['separation'],
+                pyLIMA_parameters['mass_ratio'])
 
             caustics = binary_caustics.caustic_points_at_phi_0(
-                pyLIMA_parameters.separation,
-                pyLIMA_parameters.mass_ratio)
+                pyLIMA_parameters['separation'],
+                pyLIMA_parameters['mass_ratio'])
 
             caustic = 0 + 0 * 1j
 
@@ -135,17 +136,17 @@ class USBLmodel(MLmodel):
             return x_center, y_center
 
         if 'primary' in self.origin[0]:
-            primary_location = -pyLIMA_parameters.separation * \
-                               pyLIMA_parameters.mass_ratio / (
-                                       1 + pyLIMA_parameters.mass_ratio)
+            primary_location = -pyLIMA_parameters['separation'] * \
+                               pyLIMA_parameters['mass_ratio'] / (
+                                       1 + pyLIMA_parameters['mass_ratio'])
 
             x_center = primary_location
             y_center = 0
             return x_center, y_center
 
         if 'secondary' in self.origin[0]:
-            secondary_location = pyLIMA_parameters.separation / (
-                    1 + pyLIMA_parameters.mass_ratio)
+            secondary_location = pyLIMA_parameters['separation'] / (
+                    1 + pyLIMA_parameters['mass_ratio'])
 
             x_center = secondary_location
             y_center = 0

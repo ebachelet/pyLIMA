@@ -36,23 +36,23 @@ class PSBLmodel(USBLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            separation = dseparation + pyLIMA_parameters.separation
+            separation = dseparation + pyLIMA_parameters['separation']
 
 
             source1_magnification = magnification_VBB.magnification_PSBL(separation,
-                                                     pyLIMA_parameters.mass_ratio,
+                                                     pyLIMA_parameters['mass_ratio'],
                                                      source1_trajectory_x,
                                                      source1_trajectory_y)
 
             if source2_trajectory_x is not None:
 
                 source2_magnification = magnification_VBB.magnification_PSBL(separation,
-                                                     pyLIMA_parameters.mass_ratio,
+                                                     pyLIMA_parameters['mass_ratio'],
                                                      source2_trajectory_x,
                                                      source2_trajectory_y)
 
-                blend_magnification_factor = getattr(pyLIMA_parameters,
-                                                     'q_flux_' + telescope.filter)
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
                 effective_magnification = (
                         source1_magnification +
                         source2_magnification *

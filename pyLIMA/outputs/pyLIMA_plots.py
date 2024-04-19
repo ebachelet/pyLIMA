@@ -72,17 +72,17 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time1 = np.arange(np.min((np.min(
                         tel.lightcurve_magnitude['time'].value),
-                                                    pyLIMA_parameters.t0 - 5 *
-                                                    pyLIMA_parameters.tE)),
+                                                    pyLIMA_parameters['t0'] - 5 *
+                                                    pyLIMA_parameters['tE'])),
                         np.max((np.max(
                             tel.lightcurve_magnitude['time'].value),
-                                pyLIMA_parameters.t0 + 5 *
-                                pyLIMA_parameters.tE)),
+                                pyLIMA_parameters['t0'] + 5 *
+                                pyLIMA_parameters['tE'])),
                         1).round(2)
 
                     model_time2 = np.arange(
-                        pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
-                        pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
+                        pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
+                        pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
                         0.01).round(2)
 
                     model_time = np.r_[model_time1, model_time2]
@@ -94,7 +94,7 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                                 model_time, telescope.lightcurve_magnitude[
                                     'time'].value]
 
-                            symmetric = 2 * pyLIMA_parameters.t0 - \
+                            symmetric = 2 * pyLIMA_parameters['t0'] - \
                                         telescope.lightcurve_magnitude['time'].value
                             model_time = np.r_[model_time, symmetric]
 
@@ -118,8 +118,8 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
 
                     model_time2 = np.arange(
-                        pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
-                        pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
+                        pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
+                        pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
                         0.01).round(2)
 
                     model_time = np.r_[
@@ -155,21 +155,21 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time1 = np.arange(
                         np.min((np.min(tel.lightcurve_magnitude['time'].value),
-                                pyLIMA_parameters.t0 - 5 * pyLIMA_parameters.tE)),
+                                pyLIMA_parameters['t0'] - 5 * pyLIMA_parameters['tE'])),
                         np.max((np.max(tel.lightcurve_magnitude['time'].value),
-                                pyLIMA_parameters.t0 + 5 * pyLIMA_parameters.tE)),
+                                pyLIMA_parameters['t0'] + 5 * pyLIMA_parameters['tE'])),
                         1).round(2)
 
                     model_time2 = np.arange(
-                        pyLIMA_parameters.t0 - 1 * pyLIMA_parameters.tE,
-                        pyLIMA_parameters.t0 + 1 * pyLIMA_parameters.tE,
+                        pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
+                        pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
                         0.01).round(2)
 
                     model_time = np.r_[model_time1, model_time2]
 
                     model_time = np.r_[model_time, telescope.astrometry['time'].value]
 
-                    symmetric = 2 * pyLIMA_parameters.t0 - telescope.astrometry[
+                    symmetric = 2 * pyLIMA_parameters['t0'] - telescope.astrometry[
                         'time'].value
                     model_time = np.r_[model_time, symmetric]
                     model_time.sort()
@@ -288,7 +288,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                             index = np.argmin(
                                 np.abs(telescope.lightcurve_magnitude['time'].value -
-                                       (pyLIMA_parameters.t0 + ind * pyLIMA_parameters.tE)))
+                                       (pyLIMA_parameters['t0'] + ind * pyLIMA_parameters['tE'])))
                             sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
                             derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
                                     trajectory_x[index - 1] - trajectory_x[index + 1])
@@ -330,14 +330,15 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
         regime, caustics, cc = \
             binary_caustics.find_2_lenses_caustics_and_critical_curves(
-                pyLIMA_parameters.separation,
-                pyLIMA_parameters.mass_ratio,
+                pyLIMA_parameters['separation'],
+                pyLIMA_parameters['mass_ratio'],
                 resolution=5000)
 
-        center_of_mass = pyLIMA_parameters.separation * pyLIMA_parameters.mass_ratio / (
-                1 + pyLIMA_parameters.mass_ratio)
+        center_of_mass = (pyLIMA_parameters['separation'] *
+                          pyLIMA_parameters['mass_ratio'] / (
+                1 + pyLIMA_parameters['mass_ratio']))
         plt.scatter(-center_of_mass, 0, s=10, c='k')
-        plt.scatter(-center_of_mass + pyLIMA_parameters.separation, 0, s=10, c='k')
+        plt.scatter(-center_of_mass + pyLIMA_parameters['separation'], 0, s=10, c='k')
 
         for count, caustic in enumerate(caustics):
 
@@ -388,9 +389,9 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                     if 'rho' in microlensing_model.pyLIMA_standards_dictionnary.keys():
 
-                        rho = pyLIMA_parameters.rho
+                        rho = pyLIMA_parameters['rho']
                         if ind == 1:
-                            rho = pyLIMA_parameters.rho_2
+                            rho = pyLIMA_parameters['rho_2']
                     else:
 
                         rho = 10 ** -5
@@ -443,8 +444,8 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
             (source1_trajectory_x[origin_t0par_index], source1_trajectory_y[origin_t0par_index]))
         # origin_t0par += 0.1
 
-        piEN = pyLIMA_parameters.piEN
-        piEE = pyLIMA_parameters.piEE
+        piEN = pyLIMA_parameters['piEN']
+        piEE = pyLIMA_parameters['piEE']
 
         EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
 
@@ -452,7 +453,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
         try:
 
-            plot_angle += pyLIMA_parameters.alpha
+            plot_angle += pyLIMA_parameters['alpha']
 
         except AttributeError:
 
@@ -686,9 +687,9 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters,
 
                         index_time = np.argmin(np.abs(tel.astrometry['time'].value -
                                                       (
-                                                              pyLIMA_parameters.t0 +
+                                                              pyLIMA_parameters['t0'] +
                                                               index *
-                                                              pyLIMA_parameters.tE)))
+                                                              pyLIMA_parameters['tE'])))
                         derivative = (source_N[index_time - 1] - source_N[
                             index_time + 1]) / (
                                              source_E[index_time - 1] - source_E[
@@ -712,9 +713,9 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters,
 
                         index_time = np.argmin(np.abs(tel.astrometry['time'].value -
                                                       (
-                                                              pyLIMA_parameters.t0 +
+                                                              pyLIMA_parameters['t0'] +
                                                               index *
-                                                              pyLIMA_parameters.tE)))
+                                                              pyLIMA_parameters['tE'])))
                         derivative = (lens_N[index_time - 1] - lens_N[
                             index_time + 1]) / (
                                              lens_E[index_time - 1] - lens_E[
@@ -913,8 +914,8 @@ def plot_lightcurves(microlensing_model, model_parameters, bokeh_plot=None):
 
     if len(model_parameters) != len(microlensing_model.model_dictionnary):
         telescopes_fluxes = microlensing_model.find_telescopes_fluxes(model_parameters)
-        telescopes_fluxes = [getattr(telescopes_fluxes, key) for key in
-                             telescopes_fluxes._fields]
+        telescopes_fluxes = [telescopes_fluxes[key] for key in
+                             telescopes_fluxes.keys()]
 
         model_parameters = np.r_[model_parameters, telescopes_fluxes]
 
@@ -1002,8 +1003,8 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
             magni = microlensing_model.model_magnification(tel, pyLIMA_parameters)
             microlensing_model.derive_telescope_flux(tel, pyLIMA_parameters, magni)
 
-            f_source = getattr(pyLIMA_parameters, 'fsource_' + tel.name)
-            f_blend = getattr(pyLIMA_parameters, 'fblend_' + tel.name)
+            f_source = pyLIMA_parameters['fsource_' + tel.name]
+            f_blend = pyLIMA_parameters['fblend_' + tel.name]
 
             if index == 0:
                 ref_source = f_source
@@ -1063,8 +1064,8 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
         microlensing_model.derive_telescope_flux(ref_tel, pyLIMA_parameters,
                                                  model_magnification)
 
-        f_source = getattr(pyLIMA_parameters, 'fsource_' + ref_tel.name)
-        f_blend = getattr(pyLIMA_parameters, 'fblend_' + ref_tel.name)
+        f_source = pyLIMA_parameters['fsource_' + ref_tel.name]
+        f_blend = pyLIMA_parameters['fblend_' + ref_tel.name]
 
         # model_magnification = (model['photometry']-f_blend)/f_source
 

@@ -59,11 +59,12 @@ class PSPLmodel(MLmodel):
 
             shifts = astrometric_shifts.PSPL_shifts_no_blend(source1_trajectory_x,
                                                              source1_trajectory_y,
-                                                             pyLIMA_parameters.theta_E)
+                                                             pyLIMA_parameters[
+                                                                 'theta_E'])
 
             delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,
-                                                                               pyLIMA_parameters.piEN,
-                                                                               pyLIMA_parameters.piEE)
+                                                                               pyLIMA_parameters['piEN'],
+                                                                               pyLIMA_parameters['piEE'])
 
             position_ra, position_dec = \
                 astrometric_positions.source_astrometric_positions(
@@ -101,8 +102,8 @@ class PSPLmodel(MLmodel):
                     source2_trajectory_y,
                     return_impact_parameter)
 
-                blend_magnification_factor = getattr(pyLIMA_parameters,
-                                                     'q_flux_' + telescope.filter)
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
                 effective_magnification = (
                         source1_magnification +
                         source2_magnification *

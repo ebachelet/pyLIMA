@@ -26,27 +26,27 @@ class FSBLmodel(USBLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            separation = dseparation + pyLIMA_parameters.separation
+            separation = dseparation + pyLIMA_parameters['separation']
 
             source1_magnification = magnification_VBB.magnification_FSBL(separation,
-                                                     pyLIMA_parameters.mass_ratio,
+                                                     pyLIMA_parameters['mass_ratio'],
                                                      source1_trajectory_x,
                                                      source1_trajectory_y,
-                                                     pyLIMA_parameters.rho,
+                                                     pyLIMA_parameters['rho'],
                                                      linear_limb_darkening)
 
             if source2_trajectory_x is not None:
                 # need to update limb_darkening
 
                 source2_magnification = magnification_VBB.magnification_FSBL(separation,
-                                                     pyLIMA_parameters.mass_ratio,
+                                                     pyLIMA_parameters['mass_ratio'],
                                                      source1_trajectory_x,
                                                      source1_trajectory_y,
-                                                     pyLIMA_parameters.rho_2,
+                                                     pyLIMA_parameters['rho_2'],
                                                      linear_limb_darkening)
 
-                blend_magnification_factor = getattr(pyLIMA_parameters,
-                                                     'q_flux_' + telescope.filter)
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
                 effective_magnification = (
                         source1_magnification +
                         source2_magnification *

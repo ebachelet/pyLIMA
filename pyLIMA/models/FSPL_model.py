@@ -37,7 +37,7 @@ class FSPLmodel(MLmodel):
         """
         if telescope.lightcurve_flux is not None:
 
-            rho = pyLIMA_parameters.rho
+            rho = pyLIMA_parameters['rho']
             gamma = telescope.ld_gamma
 
             (source1_trajectory_x, source1_trajectory_y,
@@ -53,7 +53,7 @@ class FSPLmodel(MLmodel):
 
             if source2_trajectory_x is not None:
 
-                rho2 = pyLIMA_parameters.rho_2
+                rho2 = pyLIMA_parameters['rho_2']
 
 
                 #Need to change to gamma2
@@ -62,8 +62,8 @@ class FSPLmodel(MLmodel):
                     source2_trajectory_x, source2_trajectory_y, rho2, gamma,
                     return_impact_parameter)
 
-                blend_magnification_factor = getattr(pyLIMA_parameters,
-                                                     'q_flux_' + telescope.filter)
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
                 effective_magnification = (
                         source1_magnification +
                         source2_magnification *

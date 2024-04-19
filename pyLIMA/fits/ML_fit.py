@@ -164,8 +164,7 @@ class MLfit(object):
                     theind = len(fit_parameters_dictionnary_keys)
                     theboundaries = \
                         parameters_boundaries.parameters_boundaries(self.model.event,
-                                                                    {thekey: 'dummy'})[
-                            0]
+                                                    {thekey: 'dummy'})[0]
 
                     fit_parameters_dictionnary_keys.append(thekey)
                     fit_parameters_indexes.append(theind)
@@ -175,8 +174,7 @@ class MLfit(object):
                     theind = len(fit_parameters_dictionnary_keys)
                     theboundaries = \
                         parameters_boundaries.parameters_boundaries(self.model.event,
-                                                                    {thekey: 'dummy'})[
-                            0]
+                                                    {thekey: 'dummy'})[0]
 
                     fit_parameters_dictionnary_keys.append(thekey)
                     fit_parameters_indexes.append(theind)
@@ -326,10 +324,8 @@ class MLfit(object):
                         #    fluxes.append(np.nan)
                         #else:
 
-                        fluxes.append(getattr(pyLIMA_parameters,
-                                                  'fsource_' + tel.name))
-                        fluxes.append(getattr(pyLIMA_parameters,
-                                                  'fblend_' + tel.name))
+                        fluxes.append(pyLIMA_parameters['fsource_' + tel.name])
+                        fluxes.append(pyLIMA_parameters['fblend_' + tel.name])
 
             self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
 
@@ -361,7 +357,7 @@ class MLfit(object):
 
                 if prior_pdf is not None:
 
-                    probability = prior_pdf.pdf(getattr(pyLIMA_parameters, prior_key))
+                    probability = prior_pdf.pdf(pyLIMA_parameters[prior_key])
 
                     if probability > 0:
 
@@ -457,7 +453,7 @@ class MLfit(object):
                 for ind, param in enumerate(list(self.fit_parameters.keys())[:len(
                         guess_paczynski_parameters)]):
 
-                    param_value = getattr(pyLIMA_parameters, param)
+                    param_value = pyLIMA_parameter[param]
 
                     if (param_value < self.fit_parameters[param][
                         1][0]) | (param_value >
@@ -635,12 +631,16 @@ class MLfit(object):
         res_astrometry]
         errors : array, an array containing the corresponding errors
         """
-        if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
 
+        # it is a pyLIMA_parameters object or not
+
+        if (type(pyLIMA_parameters) is not list) & (
+                type(pyLIMA_parameters).__module__ !=
+                np.__name__):
             pass
 
         else:
-
+            breakpoint()
             parameters = np.array(pyLIMA_parameters)
 
             model_parameters = parameters[self.model_parameters_index]
@@ -686,8 +686,11 @@ class MLfit(object):
         i.e. [res_photometry_i] of telescope i
         errflux_photometry : array, an array containing the corresponding errors in flux
         """
-        if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
 
+        # it is a pyLIMA_parameters object or not
+
+        if (type(pyLIMA_parameters) is not list) & (type(pyLIMA_parameters).__module__ !=
+                                             np.__name__):
             pass
 
         else:
@@ -722,7 +725,9 @@ class MLfit(object):
         i.e. [res_ra_i,res_dec_i] of telescope i
         err_astrometry : array, an array containing the corresponding errors
         """
-        if type(pyLIMA_parameters) is type:  # it is a pyLIMA_parameters object
+        # it is a pyLIMA_parameters object or not
+        if (type(pyLIMA_parameters) is not list) & (type(pyLIMA_parameters).__module__ !=
+                                             np.__name__):
 
             pass
 
@@ -755,7 +760,8 @@ class MLfit(object):
         chi2 : float, the chi-square
         pyLIMA_parameters : dict, an updated pyLIMA_parameters object
         """
-        if type(parameters) is type:  # it is a pyLIMA_parameters object
+        # it is a pyLIMA_parameters object or not
+        if (type(parameters) is not list) & (type(parameters).__module__ != np.__name__):
 
             pyLIMA_parameters = parameters
 
@@ -822,7 +828,11 @@ class MLfit(object):
         ln_likelihood : float, the ln-likelihood
         pyLIMA_parameters : dict, an updated pyLIMA_parameters object
         """
-        if type(parameters) is type:  # it is a pyLIMA_parameters object
+        # it is a pyLIMA_parameters object or not
+
+        if (type(parameters) is not list) & (
+                type(parameters).__module__ !=
+                np.__name__):
 
             pyLIMA_parameters = parameters
 
@@ -897,7 +907,11 @@ class MLfit(object):
         soft_l1 : float, the soft_l1 metric
         pyLIMA_parameters : dict, an updated pyLIMA_parameters object
         """
-        if type(parameters) is type:  # it is a pyLIMA_parameters object
+        # it is a pyLIMA_parameters object or not
+
+        if (type(parameters) is not list) & (
+                type(parameters).__module__ !=
+                np.__name__):
 
             pyLIMA_parameters = parameters
 
@@ -1148,10 +1162,9 @@ class MLfit(object):
         """
         new_fluxes = []
 
-        for ind, key in enumerate(telescopes_fluxes._fields):
+        for ind, key in enumerate(telescopes_fluxes.keys()):
 
-            flux = getattr(telescopes_fluxes, key)
-
+            flux = telescopes_fluxes[key]
             # Prior here
             if (flux <= self.fit_parameters[key][1][0]) | (
                     flux > self.fit_parameters[key][1][1]):

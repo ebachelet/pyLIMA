@@ -152,13 +152,12 @@ class MLmodel(object):
         # fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters,
         # amplification[0])
         self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
-        fsource = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
+        fsource = pyLIMA_parameters['fsource_' + telescope.name]
         magnification_jacobian *= fsource
 
         if self.blend_flux_parameter == 'gblend':
-            dfluxdfs = (amplification + getattr(pyLIMA_parameters,
-                                                'gblend_' + telescope.name))
-            dfluxdg = [getattr(pyLIMA_parameters, 'fsource_' + telescope.name)] * len(
+            dfluxdfs = (amplification + pyLIMA_parameters['gblend_' + telescope.name])
+            dfluxdg = [pyLIMA_parameters['fsource_' + telescope.name]] * len(
                 amplification)
 
             jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdg].T
@@ -467,8 +466,8 @@ class MLmodel(object):
             # pyLIMA_parameters, magnification)
             self.derive_telescope_flux(telescope, pyLIMA_parameters, magnification)
 
-            f_source = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
-            f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
+            f_source = pyLIMA_parameters['fsource_' + telescope.name]
+            f_blend = pyLIMA_parameters['fblend_' + telescope.name]
 
             photometric_model = f_source * magnification + f_blend
 
@@ -493,13 +492,13 @@ class MLmodel(object):
         """
         try:
             # Fluxes parameters are in the pyLIMA_parameters
-            f_source = 2 * getattr(pyLIMA_parameters, 'fsource_' + telescope.name) / 2
+            f_source = 2 * pyLIMA_parameters['fsource_' + telescope.name] / 2
 
             if self.blend_flux_parameter == 'fblend':
-                f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
+                f_blend = pyLIMA_parameters['fblend_' + telescope.name]
 
             if self.blend_flux_parameter == 'gblend':
-                g_blend = getattr(pyLIMA_parameters, 'gblend_' + telescope.name)
+                g_blend = pyLIMA_parameters['gblend_' + telescope.name]
                 f_blend = f_source * g_blend
 
             if self.blend_flux_parameter == 'noblend':
@@ -542,9 +541,9 @@ class MLmodel(object):
                 f_source = 0.0
                 f_blend = 0.0
 
-        setattr(pyLIMA_parameters, 'fsource_' + telescope.name, f_source)
-        setattr(pyLIMA_parameters, 'fblend_' + telescope.name, f_blend)
-        setattr(pyLIMA_parameters, 'gblend_' + telescope.name, f_blend/f_source)
+        pyLIMA_parameters['fsource_' + telescope.name] = f_source
+        pyLIMA_parameters['fblend_' + telescope.name] = f_blend
+        pyLIMA_parameters['gblend_' + telescope.name] = f_blend/f_source
     
 
     def find_telescopes_fluxes(self, parameters):
@@ -563,33 +562,32 @@ class MLmodel(object):
 
         keys = []
         fluxes = []
-
         for telescope in self.event.telescopes:
 
             if telescope.lightcurve_flux is not None:
 
                 self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
-                f_source = getattr(pyLIMA_parameters, 'fsource_' + telescope.name)
+                f_source = pyLIMA_parameters['fsource_' + telescope.name]
                 keys.append('fsource_' + telescope.name)
                 fluxes.append(f_source)
 
                 if self.blend_flux_parameter == 'fblend':
-                    f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
+                    f_blend = pyLIMA_parameters['fblend_' + telescope.name]
 
                     keys.append('fblend_' + telescope.name)
                     fluxes.append(f_blend)
 
                 if self.blend_flux_parameter == 'gblend':
-                    f_blend = getattr(pyLIMA_parameters, 'fblend_' + telescope.name)
+                    f_blend = pyLIMA_parameters['blend_' + telescope.name]
 
                     keys.append('gblend_' + telescope.name)
                     fluxes.append(f_blend / f_source)
 
-        thefluxes = collections.namedtuple('parameters', keys)
+        thefluxes = collections.OrderedDict()
 
         for ind, key in enumerate(keys):
-            setattr(thefluxes, key, fluxes[ind])
+            thefluxes[key] = fluxes[ind]
 
         return thefluxes
 
@@ -610,33 +608,31 @@ class MLmodel(object):
 
         parameter_dictionnary = self.model_dictionnary.copy()
 
-        pyLIMA_parameters = collections.namedtuple('parameters',
-                                                       parameter_dictionnary.keys())
-        for key_parameter in pyLIMA_parameters._fields:
+        pyLIMA_parameters = collections.OrderedDict()
+
+        for ind, key_parameter in enumerate(parameter_dictionnary.keys()):
 
             try:
 
-                setattr(pyLIMA_parameters, key_parameter,
-                        model_parameters[parameter_dictionnary[key_parameter]])
+                pyLIMA_parameters[key_parameter] = model_parameters[ind]
 
             except IndexError:
 
-                setattr(pyLIMA_parameters, key_parameter, None)
+                pyLIMA_parameters[key_parameter] = None
 
         if self.fancy_parameters is not None:
 
             self.fancy_to_pyLIMA_parameters(pyLIMA_parameters)
-
 
         if self.origin[0] != 'center_of_mass':
             self.change_origin(pyLIMA_parameters)
 
         if 'v_radial' in self.model_dictionnary.keys():
 
-            v_para = pyLIMA_parameters.v_para
-            v_perp = pyLIMA_parameters.v_perp
-            v_radial = pyLIMA_parameters.v_radial
-            separation = pyLIMA_parameters.separation
+            v_para = pyLIMA_parameters['v_para']
+            v_perp = pyLIMA_parameters['v_perp']
+            v_radial = pyLIMA_parameters['v_radial']
+            separation = pyLIMA_parameters['separation']
 
             if self.orbital_motion_model[0] == 'Circular':
 
@@ -654,8 +650,8 @@ class MLmodel(object):
 
             else:
 
-                r_s = pyLIMA_parameters.r_s
-                a_s = pyLIMA_parameters.a_s
+                r_s = pyLIMA_parameters['r_s']
+                a_s = pyLIMA_parameters['a_s']
 
             longitude_ascending_node, inclination, omega_peri, a_true, \
                 orbital_velocity, eccentricity, true_anomaly, t_periastron, x, y, z = \
@@ -665,11 +661,11 @@ class MLmodel(object):
 
             Rmatrix = np.c_[x[:2], y[:2]]
 
-            setattr(pyLIMA_parameters, 'Rmatrix', Rmatrix)
-            setattr(pyLIMA_parameters, 'a_true', a_true)
-            setattr(pyLIMA_parameters, 'eccentricity', eccentricity)
-            setattr(pyLIMA_parameters, 'orbital_velocity', orbital_velocity)
-            setattr(pyLIMA_parameters, 't_periastron', t_periastron)
+            pyLIMA_parameters['Rmatrix'] =  Rmatrix
+            pyLIMA_parameters['a_true'] = a_true
+            pyLIMA_parameters['eccentricity'] = eccentricity
+            pyLIMA_parameters['orbital_velocity'] = orbital_velocity
+            pyLIMA_parameters['t_periastron'] = t_periastron
 
         return pyLIMA_parameters
 
@@ -681,7 +677,7 @@ class MLmodel(object):
             try:
 
                 value = getattr(self.fancy_parameters, standard_key)(fancy_parameters)
-                setattr(fancy_parameters, standard_key, value)
+                fancy_parameters[standard_key] = value
 
             except:
 
@@ -692,8 +688,8 @@ class MLmodel(object):
 
             try:
 
-                value = getattr(self.fancy_parameters, fancy_key)(pyLIMA_parameters)
-                setattr(pyLIMA_parameters, fancy_key, value)
+                value = getattr(self.fancy_parameters,fancy_key)(pyLIMA_parameters)
+                pyLIMA_parameters[fancy_key] = value
 
             except:
 
@@ -723,7 +719,7 @@ class MLmodel(object):
             lightcurve = telescope.lightcurve_flux
             time = lightcurve['time'].value
 
-            if 'piEN' in pyLIMA_parameters._fields:
+            if 'piEN' in pyLIMA_parameters.keys():
                 parallax_delta_positions = telescope.deltas_positions['photometry']
 
         if data_type == 'astrometry':
@@ -731,15 +727,15 @@ class MLmodel(object):
             astrometry = telescope.astrometry
             time = astrometry['time'].value
 
-            if 'piEN' in pyLIMA_parameters._fields:
+            if 'piEN' in pyLIMA_parameters.keys():
                 parallax_delta_positions = telescope.deltas_positions['astrometry']
 
-        tau = (time - pyLIMA_parameters.t0) / pyLIMA_parameters.tE
-        beta = np.array([pyLIMA_parameters.u0] * len(tau))
+        tau = (time - pyLIMA_parameters['t0']) / pyLIMA_parameters['tE']
+        beta = np.array([pyLIMA_parameters['u0']] * len(tau))
 
-        if 'alpha' in pyLIMA_parameters._fields:
+        if 'alpha' in pyLIMA_parameters.keys():
 
-            alpha = pyLIMA_parameters.alpha
+            alpha = pyLIMA_parameters['alpha']
 
         else:
 
@@ -810,7 +806,7 @@ class MLmodel(object):
 
     def parallax_trajectory_shifts(self, parallax_delta_positions, pyLIMA_parameters):
 
-        piE = np.array([pyLIMA_parameters.piEN, pyLIMA_parameters.piEE])
+        piE = np.array([pyLIMA_parameters['piEN'], pyLIMA_parameters['piEE']])
 
         parallax_delta_tau, parallax_delta_beta = (
             pyLIMA.parallax.parallax.compute_parallax_curvature(piE,
@@ -820,9 +816,6 @@ class MLmodel(object):
 
     def xallarap_trajectory_shifts(self, time, pyLIMA_parameters, body='primary'):
 
-        #xallarap_delta_positions = pyLIMA.xallarap.xallarap.xallarap_shifts(
-        #    self.xallarap_model, time, pyLIMA_parameters,
-        #                        body=body)
 
         delta_position_1, delta_position_2, delta_position_1_0, delta_position_2_0 = pyLIMA.xallarap.xallarap.xallarap_shifts(
             self.xallarap_model, time, pyLIMA_parameters,
@@ -830,7 +823,7 @@ class MLmodel(object):
 
         if self.xallarap_model[0] == 'Circular':
 
-            xiE = np.array([pyLIMA_parameters.xi_para, pyLIMA_parameters.xi_perp])
+            xiE = np.array([pyLIMA_parameters['xi_para'], pyLIMA_parameters['xi_perp']])
 
             delta_position = np.array([delta_position_1-delta_position_1_0,
                                        delta_position_2-delta_position_2_0])
@@ -839,10 +832,10 @@ class MLmodel(object):
                 pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE, delta_position))
 
             delta_position2 = np.array([
-                delta_position_1*(-1/pyLIMA_parameters.xi_mass_ratio) -
+                delta_position_1*(-1/pyLIMA_parameters['xi_mass_ratio']) -
                                         delta_position_1_0,
                                    delta_position_2*(
-                                           -1/pyLIMA_parameters.xi_mass_ratio) -
+                                           -1/pyLIMA_parameters['xi_mass_ratio']) -
                                    delta_position_2_0])
 
             source2_delta_tau, source2_delta_beta = (
@@ -851,8 +844,6 @@ class MLmodel(object):
 
         else:
 
-            #xallarap_delta_tau = xallarap_delta_positions[0]
-            #xallarap_delta_beta = xallarap_delta_positions[1]
 
             source1_delta_tau = 0
             source1_delta_beta = 0
