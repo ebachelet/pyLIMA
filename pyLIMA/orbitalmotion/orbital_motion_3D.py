@@ -21,10 +21,10 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     dalpha : array, containts the variation of the lens trajectory angle due to the
     motion of the lens
     """
-    Rmatrix = pyLIMA_parameters.Rmatrix
-    orbital_velocity = pyLIMA_parameters.orbital_velocity
-    a_true = pyLIMA_parameters.a_true
-    t_periastron = pyLIMA_parameters.t_periastron
+    Rmatrix = pyLIMA_parameters['Rmatrix']
+    orbital_velocity = pyLIMA_parameters['orbital_velocity']
+    a_true = pyLIMA_parameters['a_true']
+    t_periastron = pyLIMA_parameters['t_periastron']
 
     if om_model[0] == 'Circular':  # Circular
 
@@ -36,7 +36,7 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
 
     else:  # Keplerian
 
-        eccentricity = pyLIMA_parameters.eccentricity
+        eccentricity = pyLIMA_parameters['eccentricity']
 
         eccentric_anomaly = eccentric_anomaly_function(time, eccentricity, t_periastron,
                                                        orbital_velocity / 365.25)
@@ -50,7 +50,7 @@ def orbital_motion_keplerian(time, pyLIMA_parameters, om_model):
     sep = (r_microlens[0] ** 2 + r_microlens[1] ** 2) ** 0.5
     angle = np.arctan2(r_microlens[1], r_microlens[0])
 
-    separation0 = pyLIMA_parameters.separation
+    separation0 = pyLIMA_parameters['separation']
     angle_0 = 0
     ### Just to check,
     # to_om = om_model[1]

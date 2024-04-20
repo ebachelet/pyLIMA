@@ -14,32 +14,33 @@ def xallarap_shifts(xallarap_model, time, pyLIMA_parameters, body='primary'):
         #    separation_1 = 0
         #    separation_2 = 0
 
-        separation_1 = pyLIMA_parameters.delta_t0/pyLIMA_parameters.tE
-        separation_2 = pyLIMA_parameters.delta_u0
+        separation_1 = pyLIMA_parameters['delta_t0']/pyLIMA_parameters['tE']
+        separation_2 = pyLIMA_parameters['delta_u0']
 
         separation_1_0 = 0
         separation_2_0 = 0
 
     if xallarap_model[0] == 'Circular':
 
-        xi_angular_velocity = pyLIMA_parameters.xi_angular_velocity/pyLIMA_parameters.tE
-        xi_phase = pyLIMA_parameters.xi_phase
-        xi_inclination = pyLIMA_parameters.xi_inclination
+        xi_angular_velocity = pyLIMA_parameters[
+                                  'xi_angular_velocity']/pyLIMA_parameters['tE']
+        xi_phase = pyLIMA_parameters['xi_phase']
+        xi_inclination = pyLIMA_parameters['xi_inclination']
         
         xallarap_delta_positions = circular_xallarap(time, xallarap_model[1],
                                                       xi_angular_velocity, xi_phase,
                                                       xi_inclination)
 
-        xallarap_delta_positions *= (pyLIMA_parameters.xi_mass_ratio /
-                                     (1 + pyLIMA_parameters.xi_mass_ratio))
+        xallarap_delta_positions *= (pyLIMA_parameters['xi_mass_ratio'] /
+                                     (1 + pyLIMA_parameters['xi_mass_ratio']))
 
         xallarap_delta_positions_0 = circular_xallarap(xallarap_model[1],
                                                        xallarap_model[1],
                                                        xi_angular_velocity, xi_phase,
                                                        xi_inclination)
 
-        xallarap_delta_positions_0 *= (pyLIMA_parameters.xi_mass_ratio /
-                                       (1 + pyLIMA_parameters.xi_mass_ratio))
+        xallarap_delta_positions_0 *= (pyLIMA_parameters['xi_mass_ratio'] /
+                                       (1 + pyLIMA_parameters['xi_mass_ratio']))
 
 
         #if body != 'primary':

@@ -123,11 +123,19 @@ class MLfit(object):
 
             else:
 
-                if key in self.model.fancy_parameters.fancy_parameters.keys():
+                if self.model.fancy_parameters is not None:
 
-                    thekey = self.model.fancy_parameters.fancy_parameters[key]
-                    theind = ind
-                    theboundaries = self.model.fancy_parameters.fancy_boundaries[thekey]
+                    if key in self.model.fancy_parameters.fancy_parameters.keys():
+
+                        thekey = self.model.fancy_parameters.fancy_parameters[key]
+                        theind = ind
+                        theboundaries = self.model.fancy_parameters.fancy_boundaries[thekey]
+
+                    else:
+
+                        thekey = key
+                        theind = ind
+                        theboundaries = standard_parameters_boundaries[ind]
 
                 else:
 
@@ -453,7 +461,7 @@ class MLfit(object):
                 for ind, param in enumerate(list(self.fit_parameters.keys())[:len(
                         guess_paczynski_parameters)]):
 
-                    param_value = pyLIMA_parameter[param]
+                    param_value = pyLIMA_parameters[param]
 
                     if (param_value < self.fit_parameters[param][
                         1][0]) | (param_value >

@@ -85,14 +85,9 @@ class GRIDfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood = -self.model_likelihood(fit_process_parameters)
+        objective = self.standard_objective_function(fit_process_parameters)
 
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += -priors
-
-        return likelihood
+        return objective
 
     def fit_on_grid_pixel(self, *fixed_parameters):
 

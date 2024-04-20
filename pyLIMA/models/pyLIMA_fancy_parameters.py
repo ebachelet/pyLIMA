@@ -55,10 +55,10 @@ class StandardFancyParameters2(object):
                                          'separation': 'log_separation',
                                          'mass_ratio': 'log_mass_ratio',
                                          'alpha':'tEsin'},
-                 fancy_boundaries={'tEcos': (-1, 1), 'log_rho': (-5, -1),
+                 fancy_boundaries={'tEcos': (-2, 2), 'log_rho': (-5, -1),
                                    'log_separation': (-1, 1),
                                    'log_mass_ratio': (-5, 0),
-                                   'tEsin':(-1,1)}):
+                                   'tEsin':(-2,2)}):
         self.fancy_parameters = fancy_parameters
 
         self.fancy_boundaries = fancy_boundaries
