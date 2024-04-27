@@ -212,8 +212,8 @@ class MLmodel(object):
                                                       y_center=new_y_center)
 
 
-        setattr(pyLIMA_parameters, 't0', t_0)
-        setattr(pyLIMA_parameters, 'u0', u_0)
+        pyLIMA_parameters['t0'] = t_0
+        pyLIMA_parameters['u0'] = u_0
 
     def check_data_in_event(self):
         """
@@ -414,6 +414,11 @@ class MLmodel(object):
         """
 
         self.model_dictionnary = self.pyLIMA_standards_dictionnary.copy()
+
+        if self.origin[0] != 'center_of_mass':
+
+            self.model_dictionnary['t_center'] = self.model_dictionnary.pop('t0')
+            self.model_dictionnary['u_center'] = self.model_dictionnary.pop('u0')
 
         if self.fancy_parameters is not None:
 

@@ -7,13 +7,14 @@ class StandardFancyParameters(object):
                                          'separation': 'log_separation',
                                          'mass_ratio': 'log_mass_ratio'
                                            },
-                        fancy_boundaries = {'log_tE':(0,3),'log_rho':(-5,-1),
+                        fancy_boundaries = {'log_tE':(0,3),'log_rho':(-5,-1.3),
                                              'log_separation':(-1,1),
                                              'log_mass_ratio':(-5,0)}):
 
         self.fancy_parameters = fancy_parameters
 
         self.fancy_boundaries = fancy_boundaries
+
 
     def tE(self, fancy_params):
 
@@ -83,4 +84,74 @@ class StandardFancyParameters2(object):
     def mass_ratio(self, fancy_params):
         return 10 ** fancy_params['log_mass_ratio']
 
+def _t_center_to_t0(pyLIMA_parameters, x_center=0, y_center=0):
+    #CROIN : https://iopscience.iop.org/article/10.1088/0004-637X/790/2/142/pdf
 
+    try:
+
+        alpha = pyLIMA_parameters['alpha']
+
+    except AttributeError:
+
+        alpha = 0
+
+    rotation = np.array([np.cos(alpha), np.sin(alpha)])
+
+    tau_prime = -np.dot(rotation, [x_center, y_center])
+
+    t_0 = float(pyLIMA_parameters['t_center'] - tau_prime * pyLIMA_parameters['tE'])
+
+    return t_0
+def _t0_to_t_center(pyLIMA_parameters, x_center=0, y_center=0):
+
+    try:
+
+        alpha = pyLIMA_parameters['alpha']
+
+    except AttributeError:
+
+        alpha = 0
+
+    rotation = np.array([np.cos(alpha), np.sin(alpha)])
+
+    tau_prime = -np.dot(rotation, [x_center, y_center])
+
+    t_center = float(pyLIMA_parameters['t0'] + tau_prime * pyLIMA_parameters['tE'])
+
+    return t_center
+
+
+def _u_center_to_u0(pyLIMA_parameters, x_center=0, y_center=0):
+    try:
+
+        alpha = pyLIMA_parameters['alpha']
+
+    except AttributeError:
+
+        alpha = 0
+
+    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
+
+    u_prime = np.dot(rotation, [x_center, y_center])
+
+    u_0 = float(pyLIMA_parameters['u_center'] - u_prime)
+
+    return u_0
+
+
+def _u0_to_u_center(pyLIMA_parameters, x_center=0, y_center=0):
+    try:
+
+        alpha = pyLIMA_parameters['alpha']
+
+    except AttributeError:
+
+        alpha = 0
+
+    rotation = np.array([-np.sin(alpha), np.cos(alpha)])
+
+    u_prime = np.dot(rotation, [x_center, y_center])
+
+    u_center = float(pyLIMA_parameters['u0'] + u_prime)
+
+    return u_center

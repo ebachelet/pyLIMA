@@ -43,18 +43,7 @@ class DEfit(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        #eps = np.abs(fit_process_parameters[1])*((1+fit_process_parameters[1]**2/2)*(
-        #        1+fit_process_parameters[1]**2/4))**0.5
-
-        #logtE = fit_process_parameters[2]-np.log10(eps)
-
-        #fitp = np.copy(fit_process_parameters)
-
-        #fitp[2] = logtE
-        #fitp[3] = fit_process_parameters[3]-logtE
-        #breakpoint()
         objective = self.standard_objective_function(fit_process_parameters)
-        #print(fit_process_parameters,objective)
 
         return objective
 
