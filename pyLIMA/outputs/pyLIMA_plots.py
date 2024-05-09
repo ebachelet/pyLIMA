@@ -455,7 +455,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
             plot_angle += pyLIMA_parameters['alpha']
 
-        except AttributeError:
+        except KeyError:
 
             pass
 

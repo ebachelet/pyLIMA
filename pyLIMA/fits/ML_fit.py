@@ -121,9 +121,11 @@ class MLfit(object):
                 thekey = key
                 theboundaries = standard_parameters_boundaries[ind]
 
-                if key in self.model.fancy_parameters.fancy_parameters.values():
+                if self.model.fancy_parameters is not None:
 
-                    theboundaries = self.model.fancy_parameters.fancy_boundaries[thekey]
+                    if key in self.model.fancy_parameters.fancy_parameters.values():
+
+                        theboundaries = self.model.fancy_parameters.fancy_boundaries[thekey]
 
                 fit_parameters_dictionnary_keys.append(thekey)
                 fit_parameters_indexes.append(ind)
@@ -583,7 +585,7 @@ class MLfit(object):
         for ind, param in enumerate(self.fit_parameters.keys()):
 
             if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):
-                breakpoint()
+                #breakpoint()
                 fit_parameters_guess = None
                 print('WARNING: ' + param + ' is out of the parameters boundaries, '
                                              'abord fitting ')
@@ -593,7 +595,7 @@ class MLfit(object):
                 return fit_parameters_guess
 
             if (fit_parameters_guess[ind] > self.fit_parameters[param][1][1]):
-                breakpoint()
+                #breakpoint()
                 fit_parameters_guess = None
                 print('WARNING: ' + param + ' is out of the parameters boundaries, '
                                             'abord fitting ')
@@ -631,7 +633,7 @@ class MLfit(object):
             pass
 
         else:
-            breakpoint()
+
             parameters = np.array(pyLIMA_parameters)
 
             model_parameters = parameters[self.model_parameters_index]
@@ -840,6 +842,12 @@ class MLfit(object):
 
             rescaling_photometry_parameters = 10 ** (
                 parameters[self.rescale_photometry_parameters_index])
+            #Not very nice...
+            for ind,key in enumerate(self.fit_parameters.keys()):
+
+                if key not in pyLIMA_parameters.keys():
+
+                    pyLIMA_parameters[key] = parameters[ind]
 
         else:
 
@@ -850,6 +858,10 @@ class MLfit(object):
             rescaling_astrometry_parameters = 10 ** (
                 parameters[self.rescale_astrometry_parameters_index])
 
+            for ind, key in enumerate(self.fit_parameters.keys()):
+
+                if key not in pyLIMA_parameters.keys():
+                    pyLIMA_parameters[key] = parameters[ind]
         else:
 
             rescaling_astrometry_parameters = None
