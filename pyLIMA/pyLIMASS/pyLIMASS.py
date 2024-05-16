@@ -823,9 +823,9 @@ class SourceLensProbabilities(object):
                                             0.2)], )  # pool = pool)
 
         #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
-        final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
-                                                                       progress=True)
-
+        #final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
+        #                                                               progress=True)
+        sampler.run_mcmc(pos, n_chains, progress=True)
         return sampler
 
     def mcmc2(self, seeds, n_walkers=2, n_chains=10000):
@@ -851,9 +851,9 @@ class SourceLensProbabilities(object):
         sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc)
 
         #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
-        final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
-                                                                       progress=True)
-
+        #final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
+        #                                                              progress=True)
+        sampler.run_mcmc(pos, n_chains,progress = True)
         return sampler
 
     def de(self, maxiter=5000, popsize=1):

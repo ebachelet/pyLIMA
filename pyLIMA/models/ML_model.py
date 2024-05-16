@@ -579,7 +579,7 @@ class MLmodel(object):
                     fluxes.append(f_blend)
 
                 if self.blend_flux_parameter == 'gblend':
-                    f_blend = pyLIMA_parameters['blend_' + telescope.name]
+                    f_blend = pyLIMA_parameters['gblend_' + telescope.name]
 
                     keys.append('gblend_' + telescope.name)
                     fluxes.append(f_blend / f_source)
