@@ -3,9 +3,10 @@ import collections
 from collections import OrderedDict
 
 import numpy as np
+
 import pyLIMA.parallax.parallax
-import pyLIMA.xallarap.xallarap
 import pyLIMA.priors.parameters_boundaries
+import pyLIMA.xallarap.xallarap
 from pyLIMA.magnification import magnification_Jacobian
 from pyLIMA.models import pyLIMA_fancy_parameters
 from pyLIMA.orbitalmotion import orbital_motion
@@ -211,9 +212,8 @@ class MLmodel(object):
                                                       x_center=new_x_center,
                                                       y_center=new_y_center)
 
-
-        setattr(pyLIMA_parameters, 't0', t_0)
-        setattr(pyLIMA_parameters, 'u0', u_0)
+        pyLIMA_parameters['t0'] = t_0
+        pyLIMA_parameters['u0'] = u_0
 
     def check_data_in_event(self):
         """
@@ -415,6 +415,10 @@ class MLmodel(object):
 
         self.model_dictionnary = self.pyLIMA_standards_dictionnary.copy()
 
+        if self.origin[0] != 'center_of_mass':
+            self.model_dictionnary['t_center'] = self.model_dictionnary.pop('t0')
+            self.model_dictionnary['u_center'] = self.model_dictionnary.pop('u0')
+
         if self.fancy_parameters is not None:
 
             self.Jacobian_flag = 'Numerical'
@@ -429,11 +433,14 @@ class MLmodel(object):
 
                 except KeyError:
                     print('I skip the fancy parameter ' + key_parameter + ', as it is '
-                           'not part of model ' + self.model_type())
+                                                                          'not part '
+                                                                          'of model '
+                          + self.model_type())
                     pass
 
             self.model_dictionnary = OrderedDict(
                 sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+
     def print_model_parameters(self):
         """
         Print the model parameters currently defined
@@ -523,13 +530,13 @@ class MLmodel(object):
                     f_source, f_blend = np.polyfit(magnification, flux, 1,
                                                    w=1 / err_flux)
 
-                    #if np.isinf(flux) | np.isinf(err_flux):
+                    # if np.isinf(flux) | np.isinf(err_flux):
                     #    breakpoint()
-                    #polynomial = np.polynomial.polynomial.Polynomial.fit(
+                    # polynomial = np.polynomial.polynomial.Polynomial.fit(
                     #    magnification, flux, deg=1,  w=1 / err_flux)
 
-                    #f_blend,f_source = polynomial.convert().coef
-                    #breakpoint()
+                    # f_blend,f_source = polynomial.convert().coef
+                    # breakpoint()
                     # from sklearn import linear_model, datasets
                     # ransac = linear_model.RANSACRegressor()
                     # ransac.fit(magnification.reshape(-1, 1), flux)
@@ -543,8 +550,7 @@ class MLmodel(object):
 
         pyLIMA_parameters['fsource_' + telescope.name] = f_source
         pyLIMA_parameters['fblend_' + telescope.name] = f_blend
-        pyLIMA_parameters['gblend_' + telescope.name] = f_blend/f_source
-    
+        pyLIMA_parameters['gblend_' + telescope.name] = f_blend / f_source
 
     def find_telescopes_fluxes(self, parameters):
         """
@@ -591,7 +597,6 @@ class MLmodel(object):
 
         return thefluxes
 
-
     def compute_pyLIMA_parameters(self, model_parameters, fancy_parameters=True):
         """
          Realize the transformation between the fancy parameters to fit to the
@@ -621,7 +626,6 @@ class MLmodel(object):
                 pyLIMA_parameters[key_parameter] = None
 
         if self.fancy_parameters is not None:
-
             self.fancy_to_pyLIMA_parameters(pyLIMA_parameters)
 
         if self.origin[0] != 'center_of_mass':
@@ -661,14 +665,13 @@ class MLmodel(object):
 
             Rmatrix = np.c_[x[:2], y[:2]]
 
-            pyLIMA_parameters['Rmatrix'] =  Rmatrix
+            pyLIMA_parameters['Rmatrix'] = Rmatrix
             pyLIMA_parameters['a_true'] = a_true
             pyLIMA_parameters['eccentricity'] = eccentricity
             pyLIMA_parameters['orbital_velocity'] = orbital_velocity
             pyLIMA_parameters['t_periastron'] = t_periastron
 
         return pyLIMA_parameters
-
 
     def fancy_to_pyLIMA_parameters(self, fancy_parameters):
 
@@ -682,20 +685,21 @@ class MLmodel(object):
             except:
 
                 pass
+
     def pyLIMA_to_fancy_parameters(self, pyLIMA_parameters):
 
         for standard_key, fancy_key in self.fancy_parameters.fancy_parameters.items():
 
             try:
 
-                value = getattr(self.fancy_parameters,fancy_key)(pyLIMA_parameters)
+                value = getattr(self.fancy_parameters, fancy_key)(pyLIMA_parameters)
                 pyLIMA_parameters[fancy_key] = value
 
             except:
 
                 pass
 
-    def sources_trajectory(self, telescope, pyLIMA_parameters,  data_type=None):
+    def sources_trajectory(self, telescope, pyLIMA_parameters, data_type=None):
         """
         Compute the trajectories of the two sources, if needed
 
@@ -711,8 +715,6 @@ class MLmodel(object):
         source2_trajectory_x : the x coordinates of source 2
         source2_trajectory_y : the y coordinates of source 2
         """
-
-
 
         if data_type == 'photometry':
 
@@ -758,7 +760,7 @@ class MLmodel(object):
                 telescope.lightcurve_flux['time'].value,
                 pyLIMA_parameters)
 
-            alpha -= dalpha #Binary axes is fixed
+            alpha -= dalpha  # Binary axes is fixed
 
         else:
 
@@ -769,11 +771,11 @@ class MLmodel(object):
         beta += parallax_delta_beta
 
         # Xallarap?
-        if self.xallarap_model[0] != 'None': #then we have two sources
+        if self.xallarap_model[0] != 'None':  # then we have two sources
 
-            (source1_delta_tau, source1_delta_beta,source2_delta_tau,
-            source2_delta_beta) = self.xallarap_trajectory_shifts(
-                                time, pyLIMA_parameters, body='primary')
+            (source1_delta_tau, source1_delta_beta, source2_delta_tau,
+             source2_delta_beta) = self.xallarap_trajectory_shifts(
+                time, pyLIMA_parameters, body='primary')
 
             tau2 = tau - source2_delta_tau
             beta2 = beta - source2_delta_beta
@@ -803,7 +805,6 @@ class MLmodel(object):
                 source2_trajectory_x, source2_trajectory_y,
                 dseparation, dalpha)
 
-
     def parallax_trajectory_shifts(self, parallax_delta_positions, pyLIMA_parameters):
 
         piE = np.array([pyLIMA_parameters['piEN'], pyLIMA_parameters['piEE']])
@@ -816,34 +817,35 @@ class MLmodel(object):
 
     def xallarap_trajectory_shifts(self, time, pyLIMA_parameters, body='primary'):
 
-
-        delta_position_1, delta_position_2, delta_position_1_0, delta_position_2_0 = pyLIMA.xallarap.xallarap.xallarap_shifts(
+        delta_position_1, delta_position_2, delta_position_1_0, delta_position_2_0 = (
+            pyLIMA.xallarap.xallarap.xallarap_shifts(
             self.xallarap_model, time, pyLIMA_parameters,
-                                body=body)
+            body=body))
 
         if self.xallarap_model[0] == 'Circular':
 
             xiE = np.array([pyLIMA_parameters['xi_para'], pyLIMA_parameters['xi_perp']])
 
-            delta_position = np.array([delta_position_1-delta_position_1_0,
-                                       delta_position_2-delta_position_2_0])
+            delta_position = np.array([delta_position_1 - delta_position_1_0,
+                                       delta_position_2 - delta_position_2_0])
 
             source1_delta_tau, source1_delta_beta = (
-                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE, delta_position))
+                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
+                                                                    delta_position))
 
             delta_position2 = np.array([
-                delta_position_1*(-1/pyLIMA_parameters['xi_mass_ratio']) -
-                                        delta_position_1_0,
-                                   delta_position_2*(
-                                           -1/pyLIMA_parameters['xi_mass_ratio']) -
-                                   delta_position_2_0])
+                delta_position_1 * (-1 / pyLIMA_parameters['xi_mass_ratio']) -
+                delta_position_1_0,
+                delta_position_2 * (
+                        -1 / pyLIMA_parameters['xi_mass_ratio']) -
+                delta_position_2_0])
 
             source2_delta_tau, source2_delta_beta = (
-                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE, delta_position2))
+                pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
+                                                                    delta_position2))
 
 
         else:
-
 
             source1_delta_tau = 0
             source1_delta_beta = 0
@@ -851,5 +853,5 @@ class MLmodel(object):
             source2_delta_tau = delta_position_1
             source2_delta_beta = delta_position_2
 
-
-        return source1_delta_tau, source1_delta_beta, source2_delta_tau, source2_delta_beta
+        return (source1_delta_tau, source1_delta_beta, source2_delta_tau,
+                source2_delta_beta)
