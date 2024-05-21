@@ -4,11 +4,11 @@ from pyLIMA.models.ML_model import MLmodel
 
 class FSPLmodel(MLmodel):
 
-    def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
+    def __init__(self, event, parallax=['None', 0.0], double_source=['None',0],
                  orbital_motion=['None', 0.0], origin=['center_of_mass', [0, 0]],
                  blend_flux_parameter='fblend', fancy_parameters=None):
 
-        super().__init__(event, parallax=parallax, xallarap=xallarap,
+        super().__init__(event, parallax=parallax, double_source=double_source,
                          orbital_motion=orbital_motion, origin=origin,
                          blend_flux_parameter=blend_flux_parameter,
                          fancy_parameters=fancy_parameters)

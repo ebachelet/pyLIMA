@@ -24,7 +24,9 @@ class MLmodel(object):
     event : an Event object
     parallax_model : list[str,float], the parallax model type ('Annual', 'Terrestrial
     or 'Full') and t0,par
-    xallarap_model : list[str], the xallarap model (not implemented yet)
+    double_source_model : list[str], the double source model, include ('Circular'
+    with t0,xal) or not ('Static') xallarap
+    yet)
     orbital_motion_model : list[str,float], the orbital motion model type ('2D',
     'Circular' or 'Keplerian') and t0,kep
     blend_flux_parameter : str, the blend flux parameter type ('fblend',
@@ -50,7 +52,7 @@ class MLmodel(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
+    def __init__(self, event, parallax=['None', 0.0], double_source=['None',0],
                  orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
                  origin=['center_of_mass', [0.0, 0.0]], fancy_parameters=None):
         """ Initialization of the attributes described above.
@@ -58,7 +60,7 @@ class MLmodel(object):
 
         self.event = event
         self.parallax_model = parallax
-        self.xallarap_model = xallarap
+        self.double_source_model = double_source
         self.orbital_motion_model = orbital_motion
         self.blend_flux_parameter = blend_flux_parameter
 
@@ -324,12 +326,12 @@ class MLmodel(object):
 
             self.event.compute_parallax_all_telescopes(self.parallax_model)
 
-        if self.xallarap_model[0] == 'Static':
+        if self.double_source_model[0] == 'Static':
             jack = 'Numerical'
             model_dictionnary['delta_t0'] = len(model_dictionnary)
             model_dictionnary['delta_u0'] = len(model_dictionnary)
 
-        if self.xallarap_model[0] == 'Circular':
+        if self.double_source_model[0] == 'Circular':
             jack = 'Numerical'
             model_dictionnary['xi_para'] = len(model_dictionnary)
             model_dictionnary['xi_perp'] = len(model_dictionnary)
@@ -338,7 +340,7 @@ class MLmodel(object):
             model_dictionnary['xi_inclination'] = len(model_dictionnary)
             model_dictionnary['xi_mass_ratio'] = len(model_dictionnary)
 
-        if self.xallarap_model[0] != 'None':
+        if self.double_source_model[0] != 'None':
             jack = 'Numerical'
 
             if 'rho' in model_dictionnary.keys():
@@ -770,8 +772,8 @@ class MLmodel(object):
         tau += parallax_delta_tau
         beta += parallax_delta_beta
 
-        # Xallarap?
-        if self.xallarap_model[0] != 'None':  # then we have two sources
+        # double_source?
+        if self.double_source_model[0] != 'None':  # then we have two sources
 
             (source1_delta_tau, source1_delta_beta, source2_delta_tau,
              source2_delta_beta) = self.xallarap_trajectory_shifts(
@@ -819,10 +821,10 @@ class MLmodel(object):
 
         delta_position_1, delta_position_2, delta_position_1_0, delta_position_2_0 = (
             pyLIMA.xallarap.xallarap.xallarap_shifts(
-            self.xallarap_model, time, pyLIMA_parameters,
+            self.double_source_model, time, pyLIMA_parameters,
             body=body))
 
-        if self.xallarap_model[0] == 'Circular':
+        if self.double_source_model[0] == 'Circular':
 
             xiE = np.array([pyLIMA_parameters['xi_para'], pyLIMA_parameters['xi_perp']])
 
