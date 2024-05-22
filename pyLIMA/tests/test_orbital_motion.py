@@ -28,17 +28,15 @@ def test_orbital_motion2D():
 def test_orbital_motion_circular():
     time = np.array([2458555, 2459855])
 
-    pyLIMA_parameters = collections.namedtuple('parameters',
-                                               ['Rmatrix', 'orbital_velocity', 'a_true',
-                                                't_periastron',
-                                                'separation', 'alpha'])
+    pyLIMA_parameters = collections.OrderedDict()
 
-    setattr(pyLIMA_parameters, 'Rmatrix', np.eye(2))
-    setattr(pyLIMA_parameters, 'orbital_velocity', -2.6)
-    setattr(pyLIMA_parameters, 'a_true', 1.2)
-    setattr(pyLIMA_parameters, 't_periastron', 2459856)
-    setattr(pyLIMA_parameters, 'separation', 0.8)
-    setattr(pyLIMA_parameters, 'alpha', 0.8)
+
+    pyLIMA_parameters['Rmatrix'] = np.eye(2)
+    pyLIMA_parameters['orbital_velocity'] = -2.6
+    pyLIMA_parameters['a_true']  = 1.2
+    pyLIMA_parameters['t_periastron'] =  2459856
+    pyLIMA_parameters['separation']  =  0.8
+    pyLIMA_parameters['alpha'] =  0.8
 
     dsep, dalpha = orbital_motion.orbital_motion_3D.orbital_motion_keplerian(time,
                                                                              pyLIMA_parameters,
@@ -53,19 +51,16 @@ def test_orbital_motion_circular():
 def test_orbital_motion_keplerian():
     time = np.array([2458555, 2459855])
 
-    pyLIMA_parameters = collections.namedtuple('parameters',
-                                               ['Rmatrix', 'orbital_velocity', 'a_true',
-                                                't_periastron', 'eccentricity',
-                                                'separation', 'alpha'])
+    pyLIMA_parameters = collections.OrderedDict()
 
-    setattr(pyLIMA_parameters, 'Rmatrix', np.eye(2))
-    setattr(pyLIMA_parameters, 'orbital_velocity', -2.6)
-    setattr(pyLIMA_parameters, 'a_true', 1.2)
-    setattr(pyLIMA_parameters, 't_periastron', 2459856)
-    setattr(pyLIMA_parameters, 'eccentricity', 0.56)
 
-    setattr(pyLIMA_parameters, 'separation', 0.8)
-    setattr(pyLIMA_parameters, 'alpha', 0.8)
+    pyLIMA_parameters['Rmatrix'] = np.eye(2)
+    pyLIMA_parameters['orbital_velocity'] = -2.6
+    pyLIMA_parameters['a_true'] = 1.2
+    pyLIMA_parameters['t_periastron'] = 2459856
+    pyLIMA_parameters['separation'] = 0.8
+    pyLIMA_parameters['alpha'] = 0.8
+    pyLIMA_parameters['eccentricity'] = 0.56
 
     dsep, dalpha = orbital_motion.orbital_motion_3D.orbital_motion_keplerian(time,
                                                                              pyLIMA_parameters,

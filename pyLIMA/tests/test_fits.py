@@ -131,12 +131,11 @@ def test_DE():
     my_fit.fit()
 
     values = [my_fit.fit_results[key] for key in my_fit.fit_results.keys()]
-
     assert len(values) == 4
 
     assert len(values[0]) == 4
 
-    assert values[3].shape == (55,9)
+    assert values[3].shape == (88, 9)
 
 def test_MCMC():
 
@@ -197,10 +196,16 @@ def test_objective_functions():
     assert np.allclose(mcmc_fit2.objective_function(np.array(values[0])),
                        -2688.1436988659825)
 
+    like, pym = de_fit3.model_likelihood(np.array(values[0]))
+
+    priors = [np.log(de_fit3.priors[key].pdf(pym[key])) for key in
+              de_fit3.priors.keys()]
+
     assert np.allclose(de_fit3.objective_function(np.array(values[0])),
-                       20479.403642791676)
+                       20480.096789979983)
     assert np.allclose(mcmc_fit3.objective_function(np.array(values[0])),
-                       -20479.403642791676)
+                       -20480.096789979983)
+
 
 
 

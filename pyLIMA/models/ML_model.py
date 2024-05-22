@@ -440,8 +440,8 @@ class MLmodel(object):
                           + self.model_type())
                     pass
 
-            self.model_dictionnary = OrderedDict(
-                sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
+        self.model_dictionnary = OrderedDict(
+            sorted(self.model_dictionnary.items(), key=lambda x: x[1]))
 
     def print_model_parameters(self):
         """
@@ -614,7 +614,6 @@ class MLmodel(object):
          """
 
         parameter_dictionnary = self.model_dictionnary.copy()
-
         pyLIMA_parameters = collections.OrderedDict()
 
         for ind, key_parameter in enumerate(parameter_dictionnary.keys()):

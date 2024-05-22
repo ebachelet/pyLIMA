@@ -59,7 +59,7 @@ def mass_ratio_boundaries():
 
 
 def alpha_boundaries():
-    return (-0.10, 2 * np.pi+0.1)
+    return (0.0, 2 * np.pi)
 
 
 def piEN_boundaries():

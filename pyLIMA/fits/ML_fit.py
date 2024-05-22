@@ -360,7 +360,7 @@ class MLfit(object):
 
                         #ln_likelihood = -np.inf
                         ln_likelihood += -10**10
-                        return ln_likelihood
+                        #return ln_likelihood
 
         if self.extra_priors is not None:
 
@@ -374,8 +374,8 @@ class MLfit(object):
 
                 else:
 
-                    ln_likelihood = -np.inf
-                    return ln_likelihood
+                    #ln_likelihood = -np.inf
+                    ln_likelihood += -10 ** 10
 
         return ln_likelihood
 

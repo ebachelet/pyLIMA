@@ -47,15 +47,15 @@ def astrometric_positions_of_the_source(telescope, pyLIMA_parameters, time_ref=N
     time = telescope.astrometry['time'].value
 
     if time_ref is None:
-        time_ref = pyLIMA_parameters.t0
+        time_ref = pyLIMA_parameters['t0']
 
-    ref_N = getattr(pyLIMA_parameters, 'position_source_N_' + telescope.name)
-    ref_E = getattr(pyLIMA_parameters, 'position_source_E_' + telescope.name)
-    mu_N = pyLIMA_parameters.mu_source_N
-    mu_E = pyLIMA_parameters.mu_source_E
+    ref_N = pyLIMA_parameters['position_source_N_' + telescope.name]
+    ref_E = pyLIMA_parameters['position_source_E_' + telescope.name]
+    mu_N = pyLIMA_parameters['mu_source_N']
+    mu_E = pyLIMA_parameters['mu_source_E']
 
     earth_vector = telescope.Earth_positions_projected['astrometry']
-    parallax_source = pyLIMA_parameters.pi_source
+    parallax_source = pyLIMA_parameters['pi_source']
     Earth_projected = earth_vector * parallax_source  # mas
 
     if telescope.astrometry['ra'].unit == 'deg':
@@ -140,9 +140,9 @@ def lens_astrometric_positions(model, telescope, pyLIMA_parameters, time_ref=Non
 
     source_relative_to_lens_EN = xy_shifts_to_NE_shifts(
         (source_relative_to_lens[0], source_relative_to_lens[1])
-        , pyLIMA_parameters.piEN, pyLIMA_parameters.piEE)
+        , pyLIMA_parameters['piEN'], pyLIMA_parameters['piEE'])
 
-    lens_EN = np.array(source_relative_to_lens_EN) * pyLIMA_parameters.theta_E
+    lens_EN = np.array(source_relative_to_lens_EN) * pyLIMA_parameters['theta_E']
 
     if telescope.astrometry['ra'].unit == 'deg':
 

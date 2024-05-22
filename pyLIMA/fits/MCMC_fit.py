@@ -175,7 +175,7 @@ class MCMCfit(MLfit):
                 old_column = columns_to_swap
                 new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
 
-            MCMC_chains_with_fluxes[:, :, old_column + new_column] = MCMC_chains_with_fluxes[:, :,
+                MCMC_chains_with_fluxes[:, :, old_column + new_column] = MCMC_chains_with_fluxes[:, :,
                                                                      new_column + old_column]
 
 

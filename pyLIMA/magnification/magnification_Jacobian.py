@@ -145,7 +145,7 @@ def magnification_numerical_Jacobian(microlensing_model, telescope, pyLIMA_param
     magnification_jacobian_numerical : array, the numerical Jacobian
     """
 
-    x = [getattr(pyLIMA_parameters, key) for key in pyLIMA_parameters._fields if key
+    x = [pyLIMA_parameters[key] for key in pyLIMA_parameters.keys() if key
          not in microlensing_model.telescopes_fluxes_model_parameters({}).keys()]
 
     floors = np.zeros(len(x))

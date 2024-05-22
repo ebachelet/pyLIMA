@@ -28,8 +28,9 @@ def test_magnification_PSPL_Jacobian():
     from pyLIMA.magnification import magnification_Jacobian
     import pyLIMA.telescopes
     from pyLIMA.models import PSPLmodel
+    from pyLIMA import event
 
-    event = pyLIMA.event.Event()
+    ev = event.Event()
     lightcurve = np.array([2456789, 12.8, 0.01])
 
     telo = pyLIMA.telescopes.Telescope(name='fake', camera_filter='I',
@@ -37,9 +38,9 @@ def test_magnification_PSPL_Jacobian():
                                        light_curve_names=['time', 'mag', 'err_mag'],
                                        light_curve_units=['JD', 'mag', 'mag'])
 
-    event.telescopes.append(telo)
+    ev.telescopes.append(telo)
 
-    pspl = PSPLmodel(event)
+    pspl = PSPLmodel(ev)
     params = [2456789.2, 0.1, 34.5]
 
     pym = pspl.compute_pyLIMA_parameters(params)
@@ -56,8 +57,9 @@ def test_magnification_FSPL_Jacobian():
     from pyLIMA.magnification import magnification_Jacobian
     import pyLIMA.telescopes
     from pyLIMA.models import FSPLmodel
+    from pyLIMA import event
 
-    event = pyLIMA.event.Event()
+    ev = event.Event()
     lightcurve = np.array([2456789, 12.8, 0.01])
 
     telo = pyLIMA.telescopes.Telescope(name='fake', camera_filter='I',
@@ -65,9 +67,9 @@ def test_magnification_FSPL_Jacobian():
                                        light_curve_names=['time', 'mag', 'err_mag'],
                                        light_curve_units=['JD', 'mag', 'mag'])
 
-    event.telescopes.append(telo)
+    ev.telescopes.append(telo)
 
-    pspl = FSPLmodel(event)
+    pspl = FSPLmodel(ev)
     params = [2456789.2, 0.1, 34.5, 0.028]
     pym = pspl.compute_pyLIMA_parameters(params)
 
@@ -81,8 +83,9 @@ def test_magnification_numerical_Jacobian():
     from pyLIMA.magnification import magnification_Jacobian
     import pyLIMA.telescopes
     from pyLIMA.models import FSPLmodel
+    from pyLIMA import event
 
-    event = pyLIMA.event.Event()
+    ev = event.Event()
     lightcurve = np.array([2456789, 12.8, 0.01])
 
     telo = pyLIMA.telescopes.Telescope(name='fake', camera_filter='I',
@@ -90,9 +93,9 @@ def test_magnification_numerical_Jacobian():
                                        light_curve_names=['time', 'mag', 'err_mag'],
                                        light_curve_units=['JD', 'mag', 'mag'])
 
-    event.telescopes.append(telo)
+    ev.telescopes.append(telo)
 
-    pspl = FSPLmodel(event)
+    pspl = FSPLmodel(ev)
     params = [2456789.2, 0.1, 34.5, 0.028]
     pym = pspl.compute_pyLIMA_parameters(params)
 

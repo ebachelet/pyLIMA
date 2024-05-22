@@ -91,7 +91,7 @@ def _t_center_to_t0(pyLIMA_parameters, x_center=0, y_center=0):
 
         alpha = pyLIMA_parameters['alpha']
 
-    except AttributeError:
+    except KeyError:
 
         alpha = 0
 
@@ -108,7 +108,7 @@ def _t0_to_t_center(pyLIMA_parameters, x_center=0, y_center=0):
 
         alpha = pyLIMA_parameters['alpha']
 
-    except AttributeError:
+    except KeyError:
 
         alpha = 0
 
@@ -126,7 +126,7 @@ def _u_center_to_u0(pyLIMA_parameters, x_center=0, y_center=0):
 
         alpha = pyLIMA_parameters['alpha']
 
-    except AttributeError:
+    except KeyError:
 
         alpha = 0
 
@@ -144,7 +144,7 @@ def _u0_to_u_center(pyLIMA_parameters, x_center=0, y_center=0):
 
         alpha = pyLIMA_parameters['alpha']
 
-    except AttributeError:
+    except KeyError:
 
         alpha = 0
 
