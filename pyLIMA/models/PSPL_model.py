@@ -43,7 +43,7 @@ class PSPLmodel(MLmodel):
              source2_trajectory_x, source2_trajectory_y,
              dseparation, dalpha) = self.sources_trajectory(
                 telescope, pyLIMA_parameters,
-                data_type='photometry')
+                data_type='astrometry')
 
             # Blended centroid shifts....
             # magnification = self.model_magnification(telescope, pyLIMA_parameters)

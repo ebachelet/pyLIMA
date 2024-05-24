@@ -657,10 +657,22 @@ class MLfit(object):
                 pyLIMA_parameters,
                 rescaling_astrometry_parameters=rescaling_astrometry_parameters)
 
-            residus['astrometry'] = [np.concatenate((i[0], i[1])) for i in
-                                     residuals_astrometry]
-            errors['astrometry'] = [np.concatenate((i[0], i[1])) for i in
-                                    errors_astrometry]
+
+            #breakpoint()
+            residus['astrometry'] = [np.concatenate([residuals_astrometry[0][i], residuals_astrometry[
+                1][i]]) for i in range(len(residuals_astrometry[0]))]
+
+            errors['astrometry'] = [
+                np.concatenate([errors_astrometry[0][i], errors_astrometry[
+                    1][i]]) for i in range(len(errors_astrometry[0]))]
+
+            #residus['astrometry'] = [np.concatenate((i[0], i[1])) for i in
+            #                         residuals_astrometry]
+            #errors['astrometry'] = [np.concatenate((i[0], i[1])) for i in
+            #                        errors_astrometry]
+
+            #residus['astrometry'] = np.ravel(residuals_astrometry)
+            #errors['astrometry'] = np.ravel(errors_astrometry)
 
         return residus, errors
 
@@ -1240,9 +1252,11 @@ class MLfit(object):
 
         samples_to_plot = samples[:, :len(parameters)]
 
-        matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(
+        try:
+            matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(
             samples_to_plot, parameters_names=parameters, bokeh_plot=bokeh_plot)
-    
+        except:
+            pass
         matplotlib_table, bokeh_parameters = pyLIMA_plots.plot_parameters_table(samples_to_plot,
                            parameters_names=parameters,
                            chi2 = chi2,

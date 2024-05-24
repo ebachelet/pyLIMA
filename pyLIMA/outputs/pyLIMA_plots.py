@@ -1191,7 +1191,6 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
 
 def plot_distribution(samples, parameters_names=None, bokeh_plot=None):
     names = [str(i) for i in range(len(parameters_names))]
-    
     try:
         GTC = pygtc.plotGTC(chains=[samples], sigmaContourLevels=True, paramNames=names,
                         customLabelFont={'family': 'serif', 'size': 8},
