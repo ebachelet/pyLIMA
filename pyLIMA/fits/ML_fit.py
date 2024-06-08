@@ -112,7 +112,7 @@ class MLfit(object):
 
         for ind, key in enumerate(model_parameters_dictionnary.keys()):
 
-            if (('fsource' in key) | ('fblend' in key) | ('gblend' in key)) & (
+            if (('fsource' in key) | ('fblend' in key) | ('gblend' in key) | ('ftotal' in key)) & (
                     include_telescopes_fluxes is False):
                 pass
 
@@ -1240,7 +1240,7 @@ class MLfit(object):
 
         parameters = [key for ind, key in enumerate(self.model.model_dictionnary.keys())
                       if ('fsource' not in key) and ('fblend' not in key) and (
-                              'gblend' not in key)]
+                              'gblend' not in key) and ('ftotal' not in key)]
         try:
             chi2 = self.model_chi2(self.fit_results['best_model'])[0]
         except Exception as e:

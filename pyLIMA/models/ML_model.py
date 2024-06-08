@@ -53,7 +53,7 @@ class MLmodel(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, event, parallax=['None', 0.0], double_source=['None',0],
-                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
+                 orbital_motion=['None', 0.0], blend_flux_parameter='ftotal',
                  origin=['center_of_mass', [0.0, 0.0]], fancy_parameters=None):
         """ Initialization of the attributes described above.
         """
@@ -167,9 +167,15 @@ class MLmodel(object):
 
         if self.blend_flux_parameter == 'fblend':
             dfluxdfs = (amplification)
-            dfluxdg = [1] * len(amplification)
+            dfluxdfblend = [1] * len(amplification)
 
-            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdg].T
+            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdfblend].T
+
+        if self.blend_flux_parameter == 'ftotal':
+            dfluxdfs = (amplification-1)
+            dfluxdftot = [1] * len(amplification)
+
+            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdftot].T
 
         if self.blend_flux_parameter == 'noblend':
             dfluxdfs = (amplification)
@@ -403,6 +409,10 @@ class MLmodel(object):
                     model_dictionnary['gblend_' + telescope.name] = len(
                         model_dictionnary)
 
+                if self.blend_flux_parameter == 'ftotal':
+                    model_dictionnary['ftotal_' + telescope.name] = len(
+                        model_dictionnary)
+
                 if self.blend_flux_parameter == 'noblend':
                     pass
 
@@ -510,6 +520,10 @@ class MLmodel(object):
                 g_blend = pyLIMA_parameters['gblend_' + telescope.name]
                 f_blend = f_source * g_blend
 
+            if self.blend_flux_parameter == 'ftotal':
+                f_total = pyLIMA_parameters['ftotal_' + telescope.name]
+                f_blend = f_total-f_source
+
             if self.blend_flux_parameter == 'noblend':
                 f_blend = 0
 
@@ -553,6 +567,7 @@ class MLmodel(object):
         pyLIMA_parameters['fsource_' + telescope.name] = f_source
         pyLIMA_parameters['fblend_' + telescope.name] = f_blend
         pyLIMA_parameters['gblend_' + telescope.name] = f_blend / f_source
+        pyLIMA_parameters['ftotal_' + telescope.name] = f_source+f_blend
 
     def find_telescopes_fluxes(self, parameters):
         """
@@ -591,6 +606,12 @@ class MLmodel(object):
 
                     keys.append('gblend_' + telescope.name)
                     fluxes.append(f_blend / f_source)
+
+                if self.blend_flux_parameter == 'ftotal':
+                    f_blend = pyLIMA_parameters['ftotal_' + telescope.name]
+
+                    keys.append('ftotal_' + telescope.name)
+                    fluxes.append(f_blend + f_source)
 
         thefluxes = collections.OrderedDict()
 

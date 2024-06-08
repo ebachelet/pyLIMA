@@ -99,13 +99,14 @@ def rE_boundaries():
 
 
 def fsource_boundaries(flux):
-    return (0.0, np.max(flux))
+    return (0.0, np.median(flux))
 
 
 def fblend_boundaries(flux):
-    return (-np.max(flux), np.max(flux))
+    return (-np.median(flux), np.median(flux))
 
-
+def ftotal_boundaries(flux):
+    return (0, np.median(flux))
 def gblend_boundaries():
     return (-1.0, 1000)
 
@@ -203,6 +204,15 @@ def parameters_boundaries(event, model_dictionnary):
             if ('fblend_' in key):
                 telescope_ind = \
                     np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][
+                        0]
+                flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
+                arguments = [flux]
+
+                function_name = key.split('_')[0] + '_boundaries'
+
+            if ('ftotal_' in key):
+                telescope_ind = \
+                    np.where(key.split('ftotal_')[1] == np.array(telescopes_names))[0][
                         0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
                 arguments = [flux]
