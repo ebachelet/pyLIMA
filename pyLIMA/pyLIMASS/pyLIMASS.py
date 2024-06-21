@@ -325,12 +325,12 @@ class SourceLensProbabilities(object):
         ISO = QTable(ISO, names=ISOCHRONES_HEADER)
         # Needs tunable isochrones cuts
 
-        mask = (ISO['logMass'].value < np.log10(mass_limits[1]))
+        mask = (ISO['logMass'].value <= np.log10(mass_limits[1]))
 
-        mask = (mask &  (ISO['logg'].value < logg_limits[1])
-                & (ISO['logg'].value > logg_limits[0]))
+        mask = (mask &  (ISO['logg'].value <= logg_limits[1])
+                & (ISO['logg'].value >= logg_limits[0]))
 
-        mask = mask & (ISO['logAge'].value > age_limits[0])
+        mask = mask & (ISO['logAge'].value >= age_limits[0])
 
         ISO = ISO[mask]
 

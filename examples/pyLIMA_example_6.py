@@ -97,4 +97,3 @@ plt.xlabel(r'$D_L~[kpc]$')
 
 plt.show()
 ### This concludes tutorial 6.
-
