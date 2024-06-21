@@ -143,8 +143,13 @@ def test_lens_astrometric_positions():
     telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
     model = mock.MagicMock()
-    model.source_trajectory.return_value = [np.array([0.28, 1.36]),
-                                            np.array([-0.28, 0.78])]
+    model.sources_trajectory.return_value = [np.array([0.28, 1.36]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78])
+                                             ]
 
     pyparams = collections.OrderedDict()
 

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyLIMA"
 description = "Microlsening analysis package."
-version = "1.9.4"
+version = "1.9.5"
 keywords = ['Microlsening analysis package']
 authors = [
     { name = "Etienne Bachelet", email = "etibachelet@gmail.com" },
@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "astropy",
     "astroquery",
-    "bokeh < 3",
+    "bokeh",
     "emcee",
     "importlib-metadata",
     "kepler.py",

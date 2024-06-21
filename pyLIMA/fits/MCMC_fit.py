@@ -160,8 +160,7 @@ class MCMCfit(MLfit):
                         index = np.where(self.trials[:,:len(self.fit_parameters)][:,-1]
                                          ==unique_values[-1])[0][0]
                         unique_trials.append(self.trials[index].tolist())
-                    MCMC_chains_with_fluxes[:,j] = np.array(unique_trials)[
-                        unique_sample[1]]
+                    MCMC_chains_with_fluxes[:,j] = np.array(unique_trials)[unique_sample[1].ravel()]
 
             columns_to_swap = []
             if self.rescale_photometry:
