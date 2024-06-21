@@ -508,7 +508,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                 bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
                                 mode="expand", borderaxespad=0, ncol=3, numpoints=1)
 
-    for handle in legend.legendHandles:
+    for handle in legend.legend_handles:
 
         try:
 
