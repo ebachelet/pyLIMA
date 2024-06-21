@@ -704,7 +704,7 @@ class MLmodel(object):
                 value = getattr(self.fancy_parameters, standard_key)(fancy_parameters)
                 fancy_parameters[standard_key] = value
 
-            except:
+            except Exception as e:
 
                 pass
 
@@ -717,7 +717,7 @@ class MLmodel(object):
                 value = getattr(self.fancy_parameters, fancy_key)(pyLIMA_parameters)
                 pyLIMA_parameters[fancy_key] = value
 
-            except:
+            except Exception as e:
 
                 pass
 

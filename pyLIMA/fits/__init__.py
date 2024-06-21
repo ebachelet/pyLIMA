@@ -25,5 +25,4 @@ else:
     from .NGSA2_fit import NGSA2fit
 
 __all__ = ["BOOTSTRAPfit", "DEMCfit", "DEfit", "DREAMfit", "GRIDfit", "LMfit",
-           "MCMCfit",
-           "MINIMIZEfit",  "TRFfit"]
+           "MCMCfit", "MINIMIZEfit",  "TRFfit", "NGSA2fit"]

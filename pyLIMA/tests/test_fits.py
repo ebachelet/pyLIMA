@@ -197,8 +197,8 @@ def test_objective_functions():
 
     like, pym = de_fit3.model_likelihood(np.array(values[0]))
 
-    priors = [np.log(de_fit3.priors[key].pdf(pym[key])) for key in
-              de_fit3.priors.keys()]
+    #priors = [np.log(de_fit3.priors[key].pdf(pym[key])) for key in
+    #          de_fit3.priors.keys()]
 
     assert np.allclose(de_fit3.objective_function(np.array(values[0])),
                        20467.16900026673)

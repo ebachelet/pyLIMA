@@ -12,14 +12,12 @@ from bokeh.models import BasicTickFormatter
 from bokeh.models import ColumnDataSource, DataTable, TableColumn
 from bokeh.plotting import figure
 from matplotlib.ticker import MaxNLocator
-from matplotlib.colors import ListedColormap
 from pyLIMA.astrometry import astrometric_positions
 from pyLIMA.parallax import parallax
 from pyLIMA.toolbox import fake_telescopes, plots
 
 import io
 from PIL import Image
-from bokeh.models import ImageRGBA
 
 plot_lightcurve_windows = 0.2
 plot_residuals_windows = 0.21
@@ -235,7 +233,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                 linestyle = '-'
 
-            reference_telescope = telescope
+            #reference_telescope = telescope
 
             telescope_index = \
                 [i for i in range(len(microlensing_model.event.telescopes)) if

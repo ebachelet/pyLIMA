@@ -31,7 +31,6 @@ class MLProblem(ElementwiseProblem):
         else:
 
             self.objective_astrometry = None
-        from pymoo.core.problem import ElementwiseProblem
 
         super().__init__(n_var=n_var,
                          n_obj=n_obj,

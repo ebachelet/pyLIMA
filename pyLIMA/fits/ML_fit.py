@@ -1,5 +1,4 @@
 import sys
-import collections
 from collections import OrderedDict
 from multiprocessing import Manager
 
@@ -627,19 +626,17 @@ class MLfit(object):
         """
 
         # it is a pyLIMA_parameters object or not
-
-        if (type(pyLIMA_parameters) is not list) & (
-                type(pyLIMA_parameters).__module__ !=
-                np.__name__):
-            pass
-
-        else:
+        if (isinstance(pyLIMA_parameters,list) | isinstance(pyLIMA_parameters,np.ndarray)):
 
             parameters = np.array(pyLIMA_parameters)
 
             model_parameters = parameters[self.model_parameters_index]
 
             pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        else:
+
+            pass
 
         residus = {'photometry': [], 'astrometry': []}
         errors = residus.copy()
@@ -695,17 +692,17 @@ class MLfit(object):
 
         # it is a pyLIMA_parameters object or not
 
-        if (type(pyLIMA_parameters) is not list) & (type(pyLIMA_parameters).__module__ !=
-                                             np.__name__):
-            pass
-
-        else:
+        if (isinstance(pyLIMA_parameters, list) | isinstance(pyLIMA_parameters, np.ndarray)):
 
             parameters = np.array(pyLIMA_parameters)
 
             model_parameters = parameters[self.model_parameters_index]
 
             pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        else:
+
+            pass
 
         residus_photometry, errflux_photometry = \
             objective_functions.all_telescope_photometric_residuals(
@@ -732,18 +729,17 @@ class MLfit(object):
         err_astrometry : array, an array containing the corresponding errors
         """
         # it is a pyLIMA_parameters object or not
-        if (type(pyLIMA_parameters) is not list) & (type(pyLIMA_parameters).__module__ !=
-                                             np.__name__):
-
-            pass
-
-        else:
+        if (isinstance(pyLIMA_parameters, list) | isinstance(pyLIMA_parameters, np.ndarray)):
 
             parameters = np.array(pyLIMA_parameters)
 
             model_parameters = parameters[self.model_parameters_index]
 
             pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+
+        else:
+
+            pass
 
         residus_ra, residus_dec, err_ra, err_dec = \
             objective_functions.all_telescope_astrometric_residuals(
@@ -767,17 +763,17 @@ class MLfit(object):
         pyLIMA_parameters : dict, an updated pyLIMA_parameters object
         """
         # it is a pyLIMA_parameters object or not
-        if (type(parameters) is not list) & (type(parameters).__module__ != np.__name__):
+        if (isinstance(parameters, list) | isinstance(parameters, np.ndarray)):
 
-            pyLIMA_parameters = parameters
+            parameters = np.array(parameters)
+
+            model_parameters = parameters[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         else:
 
-            params = np.array(parameters)
-
-            model_parameters = params[self.model_parameters_index]
-
-            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+            pyLIMA_parameters = parameters
 
         if self.rescale_photometry:
 
@@ -835,21 +831,17 @@ class MLfit(object):
         pyLIMA_parameters : dict, an updated pyLIMA_parameters object
         """
         # it is a pyLIMA_parameters object or not
+        if (isinstance(parameters, list) | isinstance(parameters, np.ndarray)):
 
-        if (type(parameters) is not list) & (
-                type(parameters).__module__ !=
-                np.__name__):
+            parameters = np.array(parameters)
 
-            pyLIMA_parameters = parameters
-
-        else:
-
-            params = np.array(parameters)
-
-            model_parameters = params[self.model_parameters_index]
+            model_parameters = parameters[self.model_parameters_index]
 
             pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
+        else:
+
+            pyLIMA_parameters = parameters
 
         if self.rescale_photometry:
 
@@ -925,19 +917,17 @@ class MLfit(object):
         """
         # it is a pyLIMA_parameters object or not
 
-        if (type(parameters) is not list) & (
-                type(parameters).__module__ !=
-                np.__name__):
+        if (isinstance(parameters, list) | isinstance(parameters, np.ndarray)):
 
-            pyLIMA_parameters = parameters
+            parameters = np.array(parameters)
+
+            model_parameters = parameters[self.model_parameters_index]
+
+            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
 
         else:
 
-            params = np.array(parameters)
-
-            model_parameters = params[self.model_parameters_index]
-
-            pyLIMA_parameters = self.model.compute_pyLIMA_parameters(model_parameters)
+            pyLIMA_parameters = parameters
 
         if self.rescale_photometry:
 
@@ -1255,7 +1245,7 @@ class MLfit(object):
         try:
             matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(
             samples_to_plot, parameters_names=parameters, bokeh_plot=bokeh_plot)
-        except:
+        except Exception as e:
             pass
         matplotlib_table, bokeh_parameters = pyLIMA_plots.plot_parameters_table(samples_to_plot,
                            parameters_names=parameters,
