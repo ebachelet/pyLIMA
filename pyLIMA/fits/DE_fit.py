@@ -5,6 +5,7 @@ import numpy as np
 import scipy
 from pyLIMA.fits.ML_fit import MLfit
 from tqdm import tqdm
+from pyLIMA.priors import parameters_priors
 
 
 class DEfit(MLfit):
@@ -49,6 +50,9 @@ class DEfit(MLfit):
     def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
+        # Safety, recompute in case user changes boundaries after init
+        self.priors = parameters_priors.default_parameters_priors(
+            self.priors_parameters)
 
         if computational_pool:
 
@@ -60,7 +64,7 @@ class DEfit(MLfit):
 
         if initial_population == []:
 
-            init = 'latinhypercube'
+            init = 'sobol'
 
         else:
 
@@ -71,10 +75,10 @@ class DEfit(MLfit):
         differential_evolution_estimation = scipy.optimize.differential_evolution(
             self.objective_function,
             bounds=bounds,
-            mutation=(0.5, 1.5), popsize=int(self.DE_population_size),
+            mutation=(0.5, 1.0), popsize=int(self.DE_population_size),
             maxiter=self.max_iteration, tol=0.00,
             atol=1, strategy=self.strategy,
-            recombination=0.5, polish=False, init=init,
+            recombination=0.7, polish=False, init=init,
             disp=self.display_progress, workers=worker)
 
         self.trials = np.array(self.trials)
@@ -131,19 +135,14 @@ class DEfitnew(MLfit):
 
     def objective_function(self, fit_process_parameters):
 
-        likelihood, pyLIMA_parameters = self.model_likelihood(fit_process_parameters)
-        likelihood *= -1
-
-        # Priors
-        priors = self.get_priors(fit_process_parameters)
-
-        likelihood += -priors
-
-        return likelihood
+        objective = self.standard_objective_function(fit_process_parameters)
+        return objective
 
     def fit(self, initial_population=[], computational_pool=None):
 
         start_time = python_time.time()
+        # Safety, recompute in case user changes boundaries after init
+        self.priors = parameters_priors.default_parameters_priors(self.fit_parameters)
 
         if computational_pool:
 
@@ -171,7 +170,7 @@ class DEfitnew(MLfit):
             strategy=self.strategy,
             recombination=0.5, polish=False,
             init=init, disp=self.display_progress,
-            workers=worker)
+            workers=worker,updating='deferred')
 
         if initial_population == []:
 

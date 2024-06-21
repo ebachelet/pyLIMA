@@ -74,6 +74,7 @@ class SourceLensProbabilities(object):
                                     'log10(R_l)': None,
                                     'log10(t_E)': None,
                                     'log10(rho_s)': None,
+                                    'log10(t_s)':None,
                                     'log10(theta_E)': None,
                                     'pi_EN': None,
                                     'pi_EE': None,
@@ -324,12 +325,12 @@ class SourceLensProbabilities(object):
         ISO = QTable(ISO, names=ISOCHRONES_HEADER)
         # Needs tunable isochrones cuts
 
-        mask = (ISO['logMass'].value < np.log10(mass_limits[1]))
+        mask = (ISO['logMass'].value <= np.log10(mass_limits[1]))
 
-        mask = (mask &  (ISO['logg'].value < logg_limits[1])
-                & (ISO['logg'].value > logg_limits[0]))
+        mask = (mask &  (ISO['logg'].value <= logg_limits[1])
+                & (ISO['logg'].value >= logg_limits[0]))
 
-        mask = mask & (ISO['logAge'].value > age_limits[0])
+        mask = mask & (ISO['logAge'].value >= age_limits[0])
 
         ISO = ISO[mask]
 
@@ -382,8 +383,9 @@ class SourceLensProbabilities(object):
 
             filt = self.filters[obs]
             vega_mag = float(filt['M0_interpolator'][0](np.log10(Teff), Fe, logg))
+            vega_mag_close = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
             # vega_mag = np.nan
-            if np.isnan(vega_mag):
+            if (np.isnan(vega_mag)) | (np.abs(vega_mag-vega_mag_close)>0.25):
                 vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
                 # vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff),Fe,logg))
                 # vega_mag = -999
@@ -585,6 +587,7 @@ class SourceLensProbabilities(object):
                        'log10(R_l)': np.log10(Rl),
                        'log10(t_E)': np.log10(t_E),
                        'log10(rho_s)': np.log10(rhos),
+                       'log10(t_s)': np.log10(rhos*t_E),
                        'log10(theta_E)': np.log10(theta_E),
                        'pi_EN': pi_EN,
                        'pi_EE': pi_EE,
@@ -820,9 +823,9 @@ class SourceLensProbabilities(object):
                                             0.2)], )  # pool = pool)
 
         #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
-        final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
-                                                                       progress=True)
-
+        #final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
+        #                                                               progress=True)
+        sampler.run_mcmc(pos, n_chains, progress=True)
         return sampler
 
     def mcmc2(self, seeds, n_walkers=2, n_chains=10000):
@@ -848,9 +851,9 @@ class SourceLensProbabilities(object):
         sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc)
 
         #sampler = emcee.EnsembleSampler(nwalkers, ndim, self.objective_mcmc,)
-        final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
-                                                                       progress=True)
-
+        #final_positions, final_probabilities, state = sampler.run_mcmc(pos, n_chains,
+        #                                                              progress=True)
+        sampler.run_mcmc(pos, n_chains,progress = True)
         return sampler
 
     def de(self, maxiter=5000, popsize=1):

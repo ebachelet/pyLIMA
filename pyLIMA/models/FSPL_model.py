@@ -4,11 +4,11 @@ from pyLIMA.models.ML_model import MLmodel
 
 class FSPLmodel(MLmodel):
 
-    def __init__(self, event, parallax=['None', 0.0], xallarap=['None'],
+    def __init__(self, event, parallax=['None', 0.0], double_source=['None',0],
                  orbital_motion=['None', 0.0], origin=['center_of_mass', [0, 0]],
-                 blend_flux_parameter='fblend', fancy_parameters={}):
+                 blend_flux_parameter='fblend', fancy_parameters=None):
 
-        super().__init__(event, parallax=parallax, xallarap=xallarap,
+        super().__init__(event, parallax=parallax, double_source=double_source,
                          orbital_motion=orbital_motion, origin=origin,
                          blend_flux_parameter=blend_flux_parameter,
                          fancy_parameters=fancy_parameters)
@@ -36,17 +36,45 @@ class FSPLmodel(MLmodel):
         The FSPL magnification, see  http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
         """
         if telescope.lightcurve_flux is not None:
-            source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(
-                telescope, pyLIMA_parameters,
-                data_type='photometry')
-            rho = pyLIMA_parameters.rho
+
+            rho = pyLIMA_parameters['rho']
             gamma = telescope.ld_gamma
 
-            magnification = magnification_FSPL.magnification_FSPL_Yoo(
-                source_trajectory_x, source_trajectory_y,
-                rho,
-                gamma,
-                return_impact_parameter)
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
+
+
+            source1_magnification = magnification_FSPL.magnification_FSPL_Yoo(
+                source1_trajectory_x, source1_trajectory_y,rho,
+                gamma,return_impact_parameter)
+
+            if source2_trajectory_x is not None:
+
+                rho2 = pyLIMA_parameters['rho_2']
+
+
+                #Need to change to gamma2
+
+                source2_magnification = magnification_FSPL.magnification_FSPL_Yoo(
+                    source2_trajectory_x, source2_trajectory_y, rho2, gamma,
+                    return_impact_parameter)
+
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
+                effective_magnification = (
+                        source1_magnification +
+                        source2_magnification *
+                        blend_magnification_factor)
+
+                magnification = effective_magnification
+
+            else:
+
+                magnification = source1_magnification
+
         else:
 
             magnification = None

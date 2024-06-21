@@ -12,7 +12,8 @@ def test_orbital_motion2D():
     dalpha = orbital_motion.orbital_motion_2D.orbital_motion_2D_trajectory_shift(time,
                                                                                  t0_om,
                                                                                  dalpha_dt)
-    assert np.allclose(dalpha, [-0.0054757, -0.0109514])
+
+    assert np.allclose(dalpha, [0.0054757, 0.0109514])
 
     time = np.array([12, 13])
     t0_om = 11
@@ -27,17 +28,15 @@ def test_orbital_motion2D():
 def test_orbital_motion_circular():
     time = np.array([2458555, 2459855])
 
-    pyLIMA_parameters = collections.namedtuple('parameters',
-                                               ['Rmatrix', 'orbital_velocity', 'a_true',
-                                                't_periastron',
-                                                'separation', 'alpha'])
+    pyLIMA_parameters = collections.OrderedDict()
 
-    setattr(pyLIMA_parameters, 'Rmatrix', np.eye(2))
-    setattr(pyLIMA_parameters, 'orbital_velocity', -2.6)
-    setattr(pyLIMA_parameters, 'a_true', 1.2)
-    setattr(pyLIMA_parameters, 't_periastron', 2459856)
-    setattr(pyLIMA_parameters, 'separation', 0.8)
-    setattr(pyLIMA_parameters, 'alpha', 0.8)
+
+    pyLIMA_parameters['Rmatrix'] = np.eye(2)
+    pyLIMA_parameters['orbital_velocity'] = -2.6
+    pyLIMA_parameters['a_true']  = 1.2
+    pyLIMA_parameters['t_periastron'] =  2459856
+    pyLIMA_parameters['separation']  =  0.8
+    pyLIMA_parameters['alpha'] =  0.8
 
     dsep, dalpha = orbital_motion.orbital_motion_3D.orbital_motion_keplerian(time,
                                                                              pyLIMA_parameters,
@@ -46,25 +45,22 @@ def test_orbital_motion_circular():
                                                                                  2458555])
 
     assert np.allclose(dsep, [0.4, 0.4])
-    assert np.allclose(dalpha, [-2.97786877, -0.00711841])
+    assert np.allclose(dalpha, [2.97786877, 0.00711841])
 
 
 def test_orbital_motion_keplerian():
     time = np.array([2458555, 2459855])
 
-    pyLIMA_parameters = collections.namedtuple('parameters',
-                                               ['Rmatrix', 'orbital_velocity', 'a_true',
-                                                't_periastron', 'eccentricity',
-                                                'separation', 'alpha'])
+    pyLIMA_parameters = collections.OrderedDict()
 
-    setattr(pyLIMA_parameters, 'Rmatrix', np.eye(2))
-    setattr(pyLIMA_parameters, 'orbital_velocity', -2.6)
-    setattr(pyLIMA_parameters, 'a_true', 1.2)
-    setattr(pyLIMA_parameters, 't_periastron', 2459856)
-    setattr(pyLIMA_parameters, 'eccentricity', 0.56)
 
-    setattr(pyLIMA_parameters, 'separation', 0.8)
-    setattr(pyLIMA_parameters, 'alpha', 0.8)
+    pyLIMA_parameters['Rmatrix'] = np.eye(2)
+    pyLIMA_parameters['orbital_velocity'] = -2.6
+    pyLIMA_parameters['a_true'] = 1.2
+    pyLIMA_parameters['t_periastron'] = 2459856
+    pyLIMA_parameters['separation'] = 0.8
+    pyLIMA_parameters['alpha'] = 0.8
+    pyLIMA_parameters['eccentricity'] = 0.56
 
     dsep, dalpha = orbital_motion.orbital_motion_3D.orbital_motion_keplerian(time,
                                                                              pyLIMA_parameters,
@@ -73,7 +69,7 @@ def test_orbital_motion_keplerian():
                                                                                  2458555])
 
     assert np.allclose(dsep, [1.06829756, -0.27191207])
-    assert np.allclose(dalpha, [-3.08578103, -0.03045918])
+    assert np.allclose(dalpha, [3.08578103, 0.03045918])
 
 
 def test_orbital_parameters_from_position_and_velocities():

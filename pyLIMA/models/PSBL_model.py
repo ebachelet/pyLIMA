@@ -30,16 +30,39 @@ class PSBLmodel(USBLmodel):
         """
         if telescope.lightcurve_flux is not None:
 
-            source_trajectoire = self.source_trajectory(telescope, pyLIMA_parameters,
-                                                        data_type='photometry')
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
 
-            separation = source_trajectoire[2] + pyLIMA_parameters.separation
+            separation = dseparation + pyLIMA_parameters['separation']
 
-            magnification_PSBL = \
-                magnification_VBB.magnification_PSBL(separation,
-                                                     pyLIMA_parameters.mass_ratio,
-                                                     source_trajectoire[0],
-                                                     source_trajectoire[1])
+
+            source1_magnification = magnification_VBB.magnification_PSBL(separation,
+                                                     pyLIMA_parameters['mass_ratio'],
+                                                     source1_trajectory_x,
+                                                     source1_trajectory_y)
+
+            if source2_trajectory_x is not None:
+
+                source2_magnification = magnification_VBB.magnification_PSBL(separation,
+                                                     pyLIMA_parameters['mass_ratio'],
+                                                     source2_trajectory_x,
+                                                     source2_trajectory_y)
+
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
+                effective_magnification = (
+                        source1_magnification +
+                        source2_magnification *
+                        blend_magnification_factor)
+
+                magnification_PSBL = effective_magnification
+
+            else:
+
+                magnification_PSBL = source1_magnification
 
         else:
 

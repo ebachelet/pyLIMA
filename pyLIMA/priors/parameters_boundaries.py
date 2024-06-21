@@ -35,7 +35,7 @@ def delta_u0_boundaries():
 
 
 def u0_boundaries():
-    return (0.0, 1.0)
+    return (-1.0, 1.0)
 
 
 def tE_boundaries():
@@ -47,7 +47,7 @@ def rho_boundaries():
 
 
 def q_flux_boundaries():
-    return (0.001, 1.0)
+    return (0.001, 100.0)
 
 
 def separation_boundaries():
@@ -59,15 +59,15 @@ def mass_ratio_boundaries():
 
 
 def alpha_boundaries():
-    return (0, 2 * np.pi)
+    return (0.0, 2 * np.pi)
 
 
 def piEN_boundaries():
-    return (-1.0, 1.0)
+    return (-0.5, 0.5)
 
 
 def piEE_boundaries():
-    return (-1.0, 1.0)
+    return (-0.5, 0.5)
 
 
 def v_para_boundaries():
@@ -99,13 +99,14 @@ def rE_boundaries():
 
 
 def fsource_boundaries(flux):
-    return (0.0, np.max(flux))
+    return (0.0, np.median(flux))
 
 
 def fblend_boundaries(flux):
-    return (-np.max(flux), np.max(flux))
+    return (-np.median(flux), np.median(flux))
 
-
+def ftotal_boundaries(flux):
+    return (0, np.median(flux))
 def gblend_boundaries():
     return (-1.0, 1000)
 
@@ -149,9 +150,9 @@ def t_center_boundaries():
 def u_center_boundaries():
     return (-1, 1)
 
-def xiEN_boundaries():
+def xi_para_boundaries():
     return (-0.25, 0.25)
-def xiEE_boundaries():
+def xi_perp_boundaries():
     return (-0.25, 0.25)
 def xi_angular_velocity_boundaries():
     return (0.00001, 1000) #yr
@@ -160,7 +161,7 @@ def xi_phase_boundaries():
 def xi_inclination_boundaries():
     return (-np.pi/2, np.pi/2)
 def xi_mass_ratio_boundaries():
-    return (0.0001,1) #yr
+    return (0.1,10)
 
 
 def parameters_boundaries(event, model_dictionnary):
@@ -203,6 +204,15 @@ def parameters_boundaries(event, model_dictionnary):
             if ('fblend_' in key):
                 telescope_ind = \
                     np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][
+                        0]
+                flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
+                arguments = [flux]
+
+                function_name = key.split('_')[0] + '_boundaries'
+
+            if ('ftotal_' in key):
+                telescope_ind = \
+                    np.where(key.split('ftotal_')[1] == np.array(telescopes_names))[0][
                         0]
                 flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
                 arguments = [flux]

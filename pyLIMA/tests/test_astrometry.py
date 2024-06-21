@@ -32,15 +32,13 @@ def test_astrometric_position_of_the_source():
     telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
     telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
-    pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test',
-                                               'position_source_E_test', 'mu_source_N',
-                                               'mu_source_E', 'pi_source'])
-    setattr(pyparams, 't0', 2459875)
-    setattr(pyparams, 'position_source_N_test', 10.11)
-    setattr(pyparams, 'position_source_E_test', 182.5)
-    setattr(pyparams, 'mu_source_N', 8.88)
-    setattr(pyparams, 'mu_source_E', -2.56)
-    setattr(pyparams, 'pi_source', 5.6)
+    pyparams = collections.OrderedDict()
+    pyparams['t0'] =  2459875
+    pyparams['position_source_N_test'] = 10.11
+    pyparams['position_source_E_test'] = 182.5
+    pyparams['mu_source_N'] = 8.88
+    pyparams['mu_source_E'] = -2.56
+    pyparams['pi_source'] = 5.6
 
     position_ra, position_dec = \
         astrometric_positions.astrometric_positions_of_the_source(
@@ -63,15 +61,14 @@ def test_astrometric_position_of_the_source():
 
     telescope.pixel_scale = 100  # mas/pix
 
-    pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test',
-                                               'position_source_E_test', 'mu_source_N',
-                                               'mu_source_E', 'pi_source'])
-    setattr(pyparams, 't0', 2459875)
-    setattr(pyparams, 'position_source_N_test', 1.11)
-    setattr(pyparams, 'position_source_E_test', 12.5)
-    setattr(pyparams, 'mu_source_N', 8.88)
-    setattr(pyparams, 'mu_source_E', -2.56)
-    setattr(pyparams, 'pi_source', 5.6)
+    pyparams = collections.OrderedDict()
+
+    pyparams['t0'] = 2459875
+    pyparams['position_source_N_test'] = 1.11
+    pyparams['position_source_E_test'] = 12.5
+    pyparams['mu_source_N'] = 8.88
+    pyparams['mu_source_E'] = -2.56
+    pyparams['pi_source'] = 5.6
 
     time_ref = 2459800
     position_ra, position_dec = \
@@ -93,15 +90,14 @@ def test_source_astrometric_positions():
     telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
     telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
-    pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test',
-                                               'position_source_E_test', 'mu_source_N',
-                                               'mu_source_E', 'pi_source'])
-    setattr(pyparams, 't0', 2459875)
-    setattr(pyparams, 'position_source_N_test', 10.11)
-    setattr(pyparams, 'position_source_E_test', 182.5)
-    setattr(pyparams, 'mu_source_N', 8.88)
-    setattr(pyparams, 'mu_source_E', -2.56)
-    setattr(pyparams, 'pi_source', 5.6)
+    pyparams = collections.OrderedDict()
+
+    pyparams['t0'] =  2459875
+    pyparams['position_source_N_test'] = 10.11
+    pyparams['position_source_E_test'] = 182.5
+    pyparams['mu_source_N'] = 8.88
+    pyparams['mu_source_E'] = -2.56
+    pyparams['pi_source'] = 5.6
 
     position_ra, position_dec = astrometric_positions.source_astrometric_positions(
         telescope, pyparams,
@@ -119,15 +115,14 @@ def test_source_astrometric_positions():
     telescope.Earth_positions_projected.__getitem__.side_effect = dico.__getitem__
     telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
-    pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test',
-                                               'position_source_E_test', 'mu_source_N',
-                                               'mu_source_E', 'pi_source'])
-    setattr(pyparams, 't0', 2459875)
-    setattr(pyparams, 'position_source_N_test', 10.11)
-    setattr(pyparams, 'position_source_E_test', 182.5)
-    setattr(pyparams, 'mu_source_N', 8.88)
-    setattr(pyparams, 'mu_source_E', -2.56)
-    setattr(pyparams, 'pi_source', 5.6)
+    pyparams = collections.OrderedDict()
+
+    pyparams['t0'] =  2459875
+    pyparams['position_source_N_test'] = 10.11
+    pyparams['position_source_E_test'] = 182.5
+    pyparams['mu_source_N'] = 8.88
+    pyparams['mu_source_E'] = -2.56
+    pyparams['pi_source'] = 5.6
 
     shifts = [np.array([0.1, 0.89]), np.array([-0.8, -10])]
     position_ra, position_dec = astrometric_positions.source_astrometric_positions(
@@ -148,27 +143,30 @@ def test_lens_astrometric_positions():
     telescope.Earth_positions_projected.__iter__.side_effect = dico.__iter__
 
     model = mock.MagicMock()
-    model.source_trajectory.return_value = [np.array([0.28, 1.36]),
-                                            np.array([-0.28, 0.78])]
+    model.sources_trajectory.return_value = [np.array([0.28, 1.36]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78]),
+                                             np.array([-0.28, 0.78])
+                                             ]
 
-    pyparams = collections.namedtuple('test', ['t0', 'position_source_N_test',
-                                               'position_source_E_test', 'mu_source_N',
-                                               'mu_source_E', 'pi_source'])
-    setattr(pyparams, 't0', 2459875)
-    setattr(pyparams, 'position_source_N_test', 10.11)
-    setattr(pyparams, 'position_source_E_test', 182.5)
-    setattr(pyparams, 'mu_source_N', 8.88)
-    setattr(pyparams, 'mu_source_E', -2.56)
-    setattr(pyparams, 'pi_source', 5.6)
-    setattr(pyparams, 'piEN', -2.56)
-    setattr(pyparams, 'piEE', 5.6)
-    setattr(pyparams, 'theta_E', 5.6)
+    pyparams = collections.OrderedDict()
+
+    pyparams['t0'] =  2459875
+    pyparams['position_source_N_test'] = 10.11
+    pyparams['position_source_E_test'] = 182.5
+    pyparams['mu_source_N'] = 8.88
+    pyparams['mu_source_E'] = -2.56
+    pyparams['pi_source'] = 5.6
+    pyparams['piEN'] = -2.56
+    pyparams['piEE'] =  5.6
+    pyparams['theta_E'] = 5.6
 
     position_ra, position_dec = astrometric_positions.lens_astrometric_positions(model,
                                                                                  telescope,
                                                                                  pyparams,
                                                                                  time_ref=None)
-
     assert np.allclose(position_ra, np.array([182.49999852, 182.49999689]))
     assert np.allclose(position_dec, np.array([10.10999935, 10.11000239]))
 

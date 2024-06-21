@@ -1,5 +1,4 @@
 import numpy as np
-import pyLIMA.toolbox.brightness_transformation
 
 
 def astrometric_residuals(astrometry, astrometric_model):
@@ -183,19 +182,26 @@ def photometric_residuals_in_magnitude(telescope, model, pyLIMA_parameters):
     :rtype: array_like, float
     """
     try:
-        lightcurve = telescope.lightcurve_magnitude
+        #lightcurve = telescope.lightcurve_magnitude
 
-        mag = lightcurve['mag'].value
+        #mag = lightcurve['mag'].value
+
+        #microlensing_model = model.compute_the_microlensing_model(telescope,
+        #                                                          pyLIMA_parameters)
+
+        #microlensing_model = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - \
+        #                     2.5 * np.log10(
+        #    microlensing_model['photometry'])
+
+        #residuals = mag - microlensing_model
 
         microlensing_model = model.compute_the_microlensing_model(telescope,
                                                                   pyLIMA_parameters)
+        ##delta_f = telescope.lightcurve_flux['flux'].value-microlensing_model[
+        ##    'photometry']
 
-        microlensing_model = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - \
-                             2.5 * np.log10(
-            microlensing_model['photometry'])
-
-        residuals = mag - microlensing_model
-
+        residuals = -2.5*np.log10(telescope.lightcurve_flux['flux'].value
+                                  /microlensing_model['photometry'])
         return residuals
 
     except ValueError:

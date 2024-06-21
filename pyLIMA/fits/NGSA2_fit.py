@@ -2,6 +2,7 @@
 import numpy as np
 
 from pyLIMA.fits.ML_fit import MLfit
+
 from pymoo.core.problem import ElementwiseProblem
 
 
@@ -55,6 +56,20 @@ class NGSA2fit(MLfit):
     """
     Under Construction
     """
+
+    def __init__(self, model, rescale_photometry=False, rescale_astrometry=False,
+                 telescopes_fluxes_method='polyfit', loss_function='likelihood',
+                 ):
+        if int(np.__version__[0]) >= 2:
+            raise NotImplementedError(
+                "This fit is not yet supported for numpy>=2. Downgrade to numpy if you must. "
+                "See GitHub issue (https://github.com/anyoptimization/pymoo/issues/606)")
+        else:
+
+            super().__init__(model, rescale_photometry=rescale_photometry,
+                             rescale_astrometry=rescale_astrometry,
+                             telescopes_fluxes_method=telescopes_fluxes_method,
+                             loss_function=loss_function)
     def fit_type(self):
         return "Non-dominated Sorting Genetic Algorithm"
 

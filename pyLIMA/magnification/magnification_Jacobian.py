@@ -27,11 +27,11 @@ def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
             Amplification[1] ** 2 * (Amplification[1] ** 2 + 4) ** 1.5)
 
     # Derivative of U = (uo^2+(t-to)^2/tE^2)^0.5
-    dUdt0 = -(time - pyLIMA_parameters.t0) / \
-            (pyLIMA_parameters.tE ** 2 * Amplification[1])
-    dUdu0 = pyLIMA_parameters.u0 / Amplification[1]
-    dUdtE = -(time - pyLIMA_parameters.t0) ** 2 / \
-            (pyLIMA_parameters.tE ** 3 * Amplification[1])
+    dUdt0 = -(time - pyLIMA_parameters['t0']) / \
+            (pyLIMA_parameters['tE'] ** 2 * Amplification[1])
+    dUdu0 = pyLIMA_parameters['u0'] / Amplification[1]
+    dUdtE = -(time - pyLIMA_parameters['t0']) ** 2 / \
+            (pyLIMA_parameters['tE'] ** 3 * Amplification[1])
 
     # Derivative of the model
 
@@ -76,7 +76,7 @@ def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):
             Amplification_PSPL[1] ** 2 * (Amplification_PSPL[1] ** 2 + 4) ** (1.5))
 
     # z_yoo=U/rho
-    z_yoo = Amplification_PSPL[1] / pyLIMA_parameters.rho
+    z_yoo = Amplification_PSPL[1] / pyLIMA_parameters['rho']
 
     dAdu = np.zeros(len(Amplification_PSPL[0]))
     dAdrho = np.zeros(len(Amplification_PSPL[0]))
@@ -92,7 +92,7 @@ def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):
             2 * z_yoo[ind] - telescope.ld_gamma * (2 - 3 * np.pi / 4) * z_yoo[ind])
 
     dAdrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][
-        ind] / pyLIMA_parameters.rho ** 2 * \
+        ind] / pyLIMA_parameters['rho'] ** 2 * \
                   (2 - telescope.ld_gamma * (2 - 3 * np.pi / 4))
 
     # FSPL regime (z_yoo~1), then Yoo et al derivatives
@@ -104,20 +104,20 @@ def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):
                 Amplification_PSPL[0][ind] * \
                 (yoo_table[3](z_yoo[ind]) - \
                  telescope.ld_gamma * yoo_table[4](
-                            z_yoo[ind])) * 1 / pyLIMA_parameters.rho
+                            z_yoo[ind])) * 1 / pyLIMA_parameters['rho']
 
     dAdrho[ind] = -Amplification_PSPL[0][ind] * Amplification_PSPL[1][
-        ind] / pyLIMA_parameters.rho ** 2 * \
+        ind] / pyLIMA_parameters['rho'] ** 2 * \
                   (yoo_table[3](z_yoo[ind]) - telescope.ld_gamma * yoo_table[4](
                       z_yoo[ind]))
 
-    dUdt0 = -(time - pyLIMA_parameters.t0) / (
-            pyLIMA_parameters.tE ** 2 * Amplification_PSPL[1])
+    dUdt0 = -(time - pyLIMA_parameters['t0']) / (
+            pyLIMA_parameters['tE'] ** 2 * Amplification_PSPL[1])
 
-    dUdu0 = pyLIMA_parameters.u0 / Amplification_PSPL[1]
+    dUdu0 = pyLIMA_parameters['u0'] / Amplification_PSPL[1]
 
-    dUdtE = -(time - pyLIMA_parameters.t0) ** 2 / (
-            pyLIMA_parameters.tE ** 3 * Amplification_PSPL[1])
+    dUdtE = -(time - pyLIMA_parameters['t0']) ** 2 / (
+            pyLIMA_parameters['tE'] ** 3 * Amplification_PSPL[1])
 
     # Derivative of the model
     dAdt0 = dAdu * dUdt0
@@ -145,7 +145,7 @@ def magnification_numerical_Jacobian(microlensing_model, telescope, pyLIMA_param
     magnification_jacobian_numerical : array, the numerical Jacobian
     """
 
-    x = [getattr(pyLIMA_parameters, key) for key in pyLIMA_parameters._fields if key
+    x = [pyLIMA_parameters[key] for key in pyLIMA_parameters.keys() if key
          not in microlensing_model.telescopes_fluxes_model_parameters({}).keys()]
 
     floors = np.zeros(len(x))

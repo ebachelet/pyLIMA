@@ -283,6 +283,17 @@ def simulate_microlensing_model_parameters(model):
         fake_parameters[0] = np.random.uniform(model.parallax_model[1] - 1,
                                                model.parallax_model[1] + 1)
 
+
+    if model.astrometry:
+
+        for telescope in model.event.telescopes:
+            if telescope.astrometry is not None:
+
+                fake_parameters[model.model_dictionnary['position_source_E_'+
+                                telescope.name]] = model.event.ra
+                fake_parameters[model.model_dictionnary['position_source_N_' +
+                                telescope.name]] = model.event.dec
+
     return fake_parameters
 
 

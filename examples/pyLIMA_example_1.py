@@ -96,7 +96,7 @@ plt.show()
 ### Let's try another fit with the differential evolution (DE) algorithm. 
 ### This will take longer... 
 
-my_fit2 = DE_fit.DEfit(pspl)
+my_fit2 = DE_fit.DEfit(pspl,loss_function='chi2')
 my_fit2.fit()
 
 ### Look at the results:
@@ -112,7 +112,7 @@ fspl = FSPL_model.FSPLmodel(your_event)
 
 ### You can still use the FITTING ALGORITHM that you imported previously. 
 ### Let's just use DE_fit for this:
-my_fit3 = DE_fit.DEfit(fspl)
+my_fit3 = DE_fit.DEfit(fspl, loss_function='chi2')
 my_fit3.fit()
 
 ### Let's see some plots. You can zoom close to the peak to see what is going on.
@@ -128,7 +128,7 @@ your_event.telescopes[0].ld_gamma = 0.5
 your_event.telescopes[1].ld_gamma = 0.5
 
 ### Fit again:
-my_fit4 = DE_fit.DEfit(fspl)
+my_fit4 = DE_fit.DEfit(fspl, loss_function='chi2')
 my_fit4.fit()
 
 ### And plot it. Then zoom at the peak again.

@@ -39,8 +39,11 @@ class PSPLmodel(MLmodel):
         """
         if telescope.astrometry is not None:
 
-            source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(
-                telescope, pyLIMA_parameters, data_type='astrometry')
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='astrometry')
 
             # Blended centroid shifts....
             # magnification = self.model_magnification(telescope, pyLIMA_parameters)
@@ -54,13 +57,14 @@ class PSPLmodel(MLmodel):
 
             # except:
 
-            shifts = astrometric_shifts.PSPL_shifts_no_blend(source_trajectory_x,
-                                                             source_trajectory_y,
-                                                             pyLIMA_parameters.theta_E)
+            shifts = astrometric_shifts.PSPL_shifts_no_blend(source1_trajectory_x,
+                                                             source1_trajectory_y,
+                                                             pyLIMA_parameters[
+                                                                 'theta_E'])
 
             delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,
-                                                                               pyLIMA_parameters.piEN,
-                                                                               pyLIMA_parameters.piEE)
+                                                                               pyLIMA_parameters['piEN'],
+                                                                               pyLIMA_parameters['piEE'])
 
             position_ra, position_dec = \
                 astrometric_positions.source_astrometric_positions(
@@ -82,13 +86,35 @@ class PSPLmodel(MLmodel):
 
         if telescope.lightcurve_flux is not None:
 
-            source_trajectory_x, source_trajectory_y, _, _ = self.source_trajectory(
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = self.sources_trajectory(
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            magnification = magnification_PSPL.magnification_PSPL(source_trajectory_x,
-                                                                  source_trajectory_y,
-                                                                  return_impact_parameter)
+            source1_magnification = magnification_PSPL.magnification_PSPL(
+                source1_trajectory_x,source1_trajectory_y,return_impact_parameter)
+
+            if source2_trajectory_x is not None:
+
+                source2_magnification = magnification_PSPL.magnification_PSPL(
+                    source2_trajectory_x,
+                    source2_trajectory_y,
+                    return_impact_parameter)
+
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
+                                                               telescope.filter]
+                effective_magnification = (
+                        source1_magnification +
+                        source2_magnification *
+                        blend_magnification_factor)
+
+                magnification = effective_magnification
+
+            else:
+
+                magnification = source1_magnification
+
         else:
 
             magnification = None

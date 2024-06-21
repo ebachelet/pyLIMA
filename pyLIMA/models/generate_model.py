@@ -1,7 +1,7 @@
 import importlib
 
 
-def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None'],
+def create_model(model_type, event, parallax=['None', 0.0], double_source=['None',0],
                  orbital_motion=['None', 0.0], origin=['center_of_mass', [0, 0]],
                  blend_flux_parameter='fblend',
                  fancy_parameters={}):
@@ -23,7 +23,7 @@ def create_model(model_type, event, parallax=['None', 0.0], xallarap=['None'],
 
     new_model = getattr(model_module, '{}model'.format(model_type))
 
-    return new_model(event, parallax=parallax, xallarap=xallarap,
+    return new_model(event, parallax=parallax, double_source=double_source,
                      orbital_motion=orbital_motion,
                      blend_flux_parameter=blend_flux_parameter, origin=origin,
                      fancy_parameters=fancy_parameters)
