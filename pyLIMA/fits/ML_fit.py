@@ -1246,6 +1246,7 @@ class MLfit(object):
             matplotlib_distribution, bokeh_distribution = pyLIMA_plots.plot_distribution(
             samples_to_plot, parameters_names=parameters, bokeh_plot=bokeh_plot)
         except Exception as e:
+            print(e)
             pass
         matplotlib_table, bokeh_parameters = pyLIMA_plots.plot_parameters_table(samples_to_plot,
                            parameters_names=parameters,

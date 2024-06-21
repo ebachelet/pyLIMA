@@ -705,6 +705,7 @@ class MLmodel(object):
                 fancy_parameters[standard_key] = value
 
             except Exception as e:
+                print(e)
 
                 pass
 
@@ -718,6 +719,7 @@ class MLmodel(object):
                 pyLIMA_parameters[fancy_key] = value
 
             except Exception as e:
+                print(e)
 
                 pass
 
