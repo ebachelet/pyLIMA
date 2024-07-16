@@ -241,7 +241,7 @@ def initial_guess_PSPL(event):
 
     # Method 3 : the first points before/after to_guess that reach the baseline. Very
     # rough
-    # approximation ot tE.
+    # approximation ot 3xtE.
 
     index_tE_baseline_plus = \
         np.where((time > to_guess) & (np.abs(flux - fs_guess) < np.abs(errflux)))[0]
@@ -251,12 +251,12 @@ def initial_guess_PSPL(event):
     if len(index_tE_baseline_plus) != 0:
         tEPlus = time[index_tE_baseline_plus[0]] - to_guess
 
-        tE_guesses.append(tEPlus)
+        tE_guesses.append(tEPlus/3)
 
     if len(index_tE_baseline_moins) != 0:
         tEMoins = to_guess - time[index_tE_baseline_moins[-1]]
 
-        tE_guesses.append(tEMoins)
+        tE_guesses.append(tEMoins/3)
 
     tE_guess = np.median(tE_guesses)
 
@@ -318,7 +318,7 @@ def initial_guess_FSPLarge(event):
     #Amax = np.array(event.telescopes[0].lightcurve_flux['flux'].max())/fs_guess
     u0 = PSPL_guess[1]
     Amax = (u0**2+2)/(u0*(u0**2+4)**0.5)
-    rho_guess = np.max((2/(Amax**2-1)**0.5,2*np.abs(u0)))
+    rho_guess = np.max((2/(Amax**2-1)**0.5,1.1*np.abs(u0)))
 
     if np.isnan(rho_guess):
 
