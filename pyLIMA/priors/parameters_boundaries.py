@@ -47,7 +47,7 @@ def rho_boundaries():
 
 
 def q_flux_boundaries():
-    return (0.001, 100.0)
+    return (0.01, 100)
 
 
 def separation_boundaries():
@@ -161,7 +161,7 @@ def xi_phase_boundaries():
 def xi_inclination_boundaries():
     return (-np.pi/2, np.pi/2)
 def xi_mass_ratio_boundaries():
-    return (0.1,10)
+    return (0.01,1)
 
 
 def parameters_boundaries(event, model_dictionnary):

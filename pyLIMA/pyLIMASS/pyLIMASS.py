@@ -135,6 +135,7 @@ class SourceLensProbabilities(object):
             self.priors[11] = UniformDistribution(-2,0.5)
             self.priors[12] = UniformDistribution(0,8)
 
+        self.extra_priors = None
 
         self.load_isochrones()
 
@@ -711,6 +712,21 @@ class SourceLensProbabilities(object):
             if prior is not None:
                 #print(ind,self.bounds[ind],params[ind],prior.pdf(params[ind]))
                 score_prior += np.log(prior.pdf(params[ind]))
+
+        if self.extra_priors is not None:
+
+            for extra_prior in self.extra_priors:
+
+                probability = extra_prior.pdf(observed)
+
+                if probability > 0:
+
+                    score_prior += np.log(probability)
+
+                else:
+
+                    #ln_likelihood = -np.inf
+                    score_prior = -np.inf
 
         return score_prior
 

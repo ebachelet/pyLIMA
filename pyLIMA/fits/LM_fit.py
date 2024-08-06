@@ -130,11 +130,13 @@ class LMfit(MLfit):
         computation_time = python_time.time() - start_time
 
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
-        print('best_model:', fit_results, ' chi2:', fit_chi2)
 
         self.fit_results = {'best_model': fit_results, 'chi2': fit_chi2,
                             'fit_time': computation_time,
-                            'covariance_matrix': covariance_matrix}
+                            'covariance_matrix': covariance_matrix,
+                            'fit_object': lm_fit}
+
+        self.print_fit_results()
 
     def samples_to_plot(self):
 

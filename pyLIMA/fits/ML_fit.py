@@ -315,10 +315,18 @@ class MLfit(object):
                         #    fluxes.append(np.nan)
                         #    fluxes.append(np.nan)
                         #else:
-
                         fluxes.append(pyLIMA_parameters['fsource_' + tel.name])
-                        fluxes.append(pyLIMA_parameters['fblend_' + tel.name])
+                        if self.model.blend_flux_parameter == 'gblend':
+                            fluxes.append(pyLIMA_parameters['gblend_' + tel.name])
 
+                        if self.model.blend_flux_parameter == 'fblend':
+                            fluxes.append(pyLIMA_parameters['fblend_' + tel.name])
+
+                        if self.model.blend_flux_parameter == 'ftotal':
+                            fluxes.append(pyLIMA_parameters['ftotal_' + tel.name])
+
+                        if self.model.blend_flux_parameter == 'noblend':
+                            pass
             self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
 
         else:
@@ -1277,3 +1285,12 @@ class MLfit(object):
         return matplotlib_lightcurves, matplotlib_geometry, matplotlib_astrometry, \
             matplotlib_distribution, \
             matplotlib_table, bokeh_figure
+
+    def print_fit_results(self):
+
+        import pprint
+
+        params = self.model.compute_pyLIMA_parameters(self.fit_results['best_model'])
+        params[self.loss_function] = self.fit_results[self.loss_function]
+        print('best model:')
+        pprint.pprint(params)

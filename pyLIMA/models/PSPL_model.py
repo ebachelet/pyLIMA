@@ -110,7 +110,7 @@ class PSPLmodel(MLmodel):
                         blend_magnification_factor)
 
                 magnification = effective_magnification
-
+                #breakpoint()
             else:
 
                 magnification = source1_magnification

@@ -88,21 +88,21 @@ class DEfit(MLfit):
         print('DE converge to parameters : = ',
               differential_evolution_estimation['x'].astype(str))
 
-        fit_results = differential_evolution_estimation['x']
-        fit_log_likelihood = differential_evolution_estimation['fun']
+        results = differential_evolution_estimation['x']
+        results_log_likelihood = differential_evolution_estimation['fun']
+
+        DE_population = self.trials
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
 
-        DE_population = self.trials
-
-        print('best_model:', fit_results, self.loss_function, fit_log_likelihood)
-
-        self.fit_results = {'best_model': fit_results,
-                             self.loss_function: fit_log_likelihood,
+        self.fit_results = {'best_model': results,
+                             self.loss_function: results_log_likelihood,
                             'fit_time': computation_time,
-                            'DE_population': DE_population}
+                            'DE_population': DE_population,
+                            'fit_object': differential_evolution_estimation}
 
+        self.print_fit_results()
     def samples_to_plot(self):
 
         samples = self.fit_results['DE_population']

@@ -14,50 +14,36 @@ def xallarap_shifts(xallarap_model, time, pyLIMA_parameters, body='primary'):
         #    separation_1 = 0
         #    separation_2 = 0
 
-        separation_1 = pyLIMA_parameters['delta_t0']/pyLIMA_parameters['tE']
-        separation_2 = pyLIMA_parameters['delta_u0']
+        separation_1_1 = 0
+        separation_2_1 = 0
 
-        separation_1_0 = 0
-        separation_2_0 = 0
+        separation_1_2 = -pyLIMA_parameters['delta_t0']/pyLIMA_parameters['tE']
+        separation_2_2 = pyLIMA_parameters['delta_u0']
 
     if xallarap_model[0] == 'Circular':
 
-        xi_angular_velocity = pyLIMA_parameters[
-                                  'xi_angular_velocity']/pyLIMA_parameters['tE']
+        xi_angular_velocity = pyLIMA_parameters['xi_angular_velocity']
         xi_phase = pyLIMA_parameters['xi_phase']
         xi_inclination = pyLIMA_parameters['xi_inclination']
-        
+
+        mass_1 = pyLIMA_parameters['xi_mass_ratio']/(1+pyLIMA_parameters['xi_mass_ratio'])
+        origin_1 = np.cos(xi_phase)*mass_1
+        origin_2 = np.sin(xi_phase)*np.sin(xi_inclination)*mass_1
+
         xallarap_delta_positions = circular_xallarap(time, xallarap_model[1],
                                                       xi_angular_velocity, xi_phase,
                                                       xi_inclination)
 
-        xallarap_delta_positions *= (pyLIMA_parameters['xi_mass_ratio'] /
-                                     (1 + pyLIMA_parameters['xi_mass_ratio']))
+        xallarap_delta_positions[0] *= mass_1
+        xallarap_delta_positions[1] *= mass_1
 
-        xallarap_delta_positions_0 = circular_xallarap(xallarap_model[1],
-                                                       xallarap_model[1],
-                                                       xi_angular_velocity, xi_phase,
-                                                       xi_inclination)
+        separation_1_1 = xallarap_delta_positions[0]-origin_1
+        separation_2_1 = xallarap_delta_positions[1]-origin_2
 
-        xallarap_delta_positions_0 *= (pyLIMA_parameters['xi_mass_ratio'] /
-                                       (1 + pyLIMA_parameters['xi_mass_ratio']))
+        separation_1_2 = -xallarap_delta_positions[0]*1/pyLIMA_parameters['xi_mass_ratio']-origin_1
+        separation_2_2 = -xallarap_delta_positions[1]*1/pyLIMA_parameters['xi_mass_ratio']-origin_2
 
-
-        #if body != 'primary':
-
-        #    xallarap_delta_positions *= -1 / pyLIMA_parameters.xi_mass_ratio
-        #    xallarap_delta_positions_0 *= -1 / pyLIMA_parameters.xi_mass_ratio
-
-
-
-        separation_1, separation_2 = xallarap_delta_positions
-        separation_1_0, separation_2_0 = xallarap_delta_positions_0
-
-        #breakpoint()
-        #separation_1 += -xallarap_delta_positions_0[0]
-        #separation_2 += -xallarap_delta_positions_0[1]
-
-    return separation_1, separation_2, separation_1_0, separation_2_0
+    return separation_1_1, separation_2_1, separation_1_2, separation_2_2
 
 
 def circular_xallarap(time, t0_xi, xi_angular_velocity, xi_phase,
@@ -69,7 +55,7 @@ def circular_xallarap(time, t0_xi, xi_angular_velocity, xi_phase,
     omega = angular_velocity*(time-t0_xi)+xi_phase
 
     separation_1 = np.cos(omega)#-np.cos(xi_phase)
-    separation_2 = np.sin(xi_inclination)*(np.sin(omega))#-np.sin(xi_phase))
+    separation_2 = np.sin(xi_inclination)*(np.sin(omega))#np.sin(xi_phase))
 
     return np.array([separation_1, separation_2])
 

@@ -801,8 +801,8 @@ class MLmodel(object):
              source2_delta_beta) = self.xallarap_trajectory_shifts(
                 time, pyLIMA_parameters, body='primary')
 
-            tau2 = tau - source2_delta_tau
-            beta2 = beta - source2_delta_beta
+            tau2 = tau + source2_delta_tau
+            beta2 = beta + source2_delta_beta
 
             lens_trajectory_x2 = tau2 * np.cos(alpha) - beta2 * np.sin(alpha)
             lens_trajectory_y2 = tau2 * np.sin(alpha) + beta2 * np.cos(alpha)
@@ -816,8 +816,8 @@ class MLmodel(object):
             source1_delta_tau, source1_delta_beta = 0, 0
             source2_trajectory_x, source2_trajectory_y = None, None
 
-        tau1 = tau - source1_delta_tau
-        beta1 = beta - source1_delta_beta
+        tau1 = tau + source1_delta_tau
+        beta1 = beta + source1_delta_beta
 
         lens_trajectory_x1 = tau1 * np.cos(alpha) - beta1 * np.sin(alpha)
         lens_trajectory_y1 = tau1 * np.sin(alpha) + beta1 * np.cos(alpha)
@@ -841,7 +841,7 @@ class MLmodel(object):
 
     def xallarap_trajectory_shifts(self, time, pyLIMA_parameters, body='primary'):
 
-        delta_position_1, delta_position_2, delta_position_1_0, delta_position_2_0 = (
+        delta_position_1_1, delta_position_2_1, delta_position_1_2, delta_position_2_2 = (
             pyLIMA.xallarap.xallarap.xallarap_shifts(
             self.double_source_model, time, pyLIMA_parameters,
             body=body))
@@ -850,19 +850,15 @@ class MLmodel(object):
 
             xiE = np.array([pyLIMA_parameters['xi_para'], pyLIMA_parameters['xi_perp']])
 
-            delta_position = np.array([delta_position_1 - delta_position_1_0,
-                                       delta_position_2 - delta_position_2_0])
+            delta_position = np.array([delta_position_1_1 ,
+                                       delta_position_2_1 ])
 
             source1_delta_tau, source1_delta_beta = (
                 pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
                                                                     delta_position))
 
-            delta_position2 = np.array([
-                delta_position_1 * (-1 / pyLIMA_parameters['xi_mass_ratio']) -
-                delta_position_1_0,
-                delta_position_2 * (
-                        -1 / pyLIMA_parameters['xi_mass_ratio']) -
-                delta_position_2_0])
+            delta_position2 =  np.array([delta_position_1_2 ,
+                                       delta_position_2_2 ])
 
             source2_delta_tau, source2_delta_beta = (
                 pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
@@ -871,11 +867,11 @@ class MLmodel(object):
 
         else:
 
-            source1_delta_tau = 0
-            source1_delta_beta = 0
+            source1_delta_tau = delta_position_1_1
+            source1_delta_beta = delta_position_2_1
 
-            source2_delta_tau = delta_position_1
-            source2_delta_beta = delta_position_2
+            source2_delta_tau = delta_position_1_2
+            source2_delta_beta = delta_position_2_2
 
         return (source1_delta_tau, source1_delta_beta, source2_delta_tau,
                 source2_delta_beta)
