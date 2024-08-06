@@ -28,11 +28,10 @@ class TRFfit(LMfit):
                       self.fit_parameters.keys()]
         bounds_max = [self.fit_parameters[key][1][1] for key in
                       self.fit_parameters.keys()]
-        scaling = (np.array(bounds_max)-bounds_min)/2
-        eps = 10**-5
-        mask = np.abs(scaling)<eps
 
-        scaling[mask] = eps
+
+        scaling = 10**np.floor(np.log10(np.abs(self.guess)))+1
+
         n_data = 0
 
         for telescope in self.model.event.telescopes:

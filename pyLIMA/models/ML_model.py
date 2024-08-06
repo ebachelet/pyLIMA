@@ -154,8 +154,10 @@ class MLmodel(object):
             telescope, pyLIMA_parameters)
         # fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters,
         # amplification[0])
+
         self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
         fsource = pyLIMA_parameters['fsource_' + telescope.name]
+
         magnification_jacobian *= fsource
 
         if self.blend_flux_parameter == 'gblend':
@@ -705,7 +707,8 @@ class MLmodel(object):
                 fancy_parameters[standard_key] = value
 
             except Exception as e:
-                print(e)
+
+                #print(e)
 
                 pass
 
@@ -719,7 +722,7 @@ class MLmodel(object):
                 pyLIMA_parameters[fancy_key] = value
 
             except Exception as e:
-                print(e)
+                #print(e)
 
                 pass
 

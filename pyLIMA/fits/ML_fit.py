@@ -445,9 +445,46 @@ class MLfit(object):
                 if 'spot_size' in self.fit_parameters.keys():
                     guess_paczynski_parameters = guess_paczynski_parameters + [0]
 
-
                 pyLIMA_parameters = self.model.compute_pyLIMA_parameters(
                     guess_paczynski_parameters, fancy_parameters=False)
+
+                if self.model.fancy_parameters is not None:
+
+                    self.model.pyLIMA_to_fancy_parameters(guess_paczynski_parameters)
+
+                if self.model.fancy_parameters is not None:
+
+                    pyLIMA_parameters = OrderedDict()
+
+                    for standard_key, index in (
+                            self.model.pyLIMA_standards_dictionnary.items()):
+                        try:
+                            pyLIMA_parameters[standard_key] = guess_paczynski_parameters[
+                            index]
+
+                        except IndexError:
+
+                            pyLIMA_parameters[standard_key] = None
+
+                    self.model.pyLIMA_to_fancy_parameters(pyLIMA_parameters)
+
+                    new_guess_paczynski_parameters = []
+
+                    for fancy_key, index in self.model.model_dictionnary.items():
+
+                        try:
+                            new_guess_paczynski_parameters.append(pyLIMA_parameters[
+                                                                  fancy_key])
+                        except IndexError:
+
+                            pass
+                else:
+
+                    new_guess_paczynski_parameters = guess_paczynski_parameters
+
+
+                pyLIMA_parameters = self.model.compute_pyLIMA_parameters(
+                    new_guess_paczynski_parameters, fancy_parameters=False)
 
                 final_guess_paczynski_parameters = []
 
@@ -488,6 +525,7 @@ class MLfit(object):
         """
         Estimate the telescopes fluxes guesses
         """
+
         if self.telescopes_fluxes_method == 'fit':
 
             if self.telescopes_fluxes_parameters_guess == []:
@@ -589,7 +627,6 @@ class MLfit(object):
         #            samples = prior_pdf.rvs(1000)
 
         #           fit_parameters_guess[ind] = np.median(samples)
-
         for ind, param in enumerate(self.fit_parameters.keys()):
 
             if (fit_parameters_guess[ind] < self.fit_parameters[param][1][0]):

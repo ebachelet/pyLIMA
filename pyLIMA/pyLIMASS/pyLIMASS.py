@@ -707,12 +707,18 @@ class SourceLensProbabilities(object):
                   observed['mu_lN'],observed['mu_lE'],
                   10**observed['log10(epsilon_Av_l)']]
 
+#        #Additional prior, eps_Av_l>eps_D:
+
+#        if params[-1]<params[9]/params[1]:
+#            return -np.inf
+
         for ind,prior in enumerate(self.priors):
 
             if prior is not None:
                 #print(ind,self.bounds[ind],params[ind],prior.pdf(params[ind]))
                 score_prior += np.log(prior.pdf(params[ind]))
 
+<<<<<<< HEAD
         if self.extra_priors is not None:
 
             for extra_prior in self.extra_priors:
@@ -727,6 +733,10 @@ class SourceLensProbabilities(object):
 
                     #ln_likelihood = -np.inf
                     score_prior = -np.inf
+=======
+
+
+>>>>>>> 4552e71107954f912301f443ee3ad51f4557f7a1
 
         return score_prior
 
