@@ -47,17 +47,18 @@ def test_initialize_model():
     assert Model.parallax_model == ['None', 0.0]
     assert Model.double_source_model == ['None', 0.0]
     assert Model.orbital_motion_model == ['None', 0.0]
-    assert Model.blend_flux_parameter == 'fblend'
+    assert Model.blend_flux_parameter == 'ftotal'
     assert Model.photometry is True
     assert Model.astrometry is False
     assert dict(Model.model_dictionnary) == {'t0': 0, 'u0': 1, 'tE': 2, 'rho': 3,
-                                             'fsource_Test': 4, 'fblend_Test': 5}
+                                             'fsource_Test': 4, 'ftotal_Test': 5}
     assert dict(Model.pyLIMA_standards_dictionnary) == {'t0': 0, 'u0': 1, 'tE': 2,
                                                         'rho': 3, 'fsource_Test': 4,
-                                                        'fblend_Test': 5}
+                                                        'ftotal_Test': 5}
+
     assert Model.standard_parameters_boundaries == [(2400000, 2500000), (-1.0, 1.0),
                                                     (0.1, 500), (5e-05, 0.05),
-                                                    (0.0, 105), (-105, 105.0)]
+                                                    (0.0, 105), (0, 105.0)]
     assert Model.origin == ['center_of_mass', [0, 0]]
     assert Model.model_type() == 'FSPL'
 
@@ -104,12 +105,13 @@ def test_photometric_model_Jacobian():
     pym = Model.compute_pyLIMA_parameters(params)
     jacob = Model.photometric_model_Jacobian(event.telescopes[0], pym)
 
-    assert np.allclose(jacob, np.array([[2.61179660e+01, -3.90491801e-01],
-                                        [1.27978034e+02, 4.90617904e-02],
+    assert np.allclose(jacob, np.array([[ 2.61179661e+01, -3.90491801e-01],
+                                        [ 1.27978034e+02,  4.90617904e-02],
                                         [-3.73113801e-01, -2.17559718e-01],
-                                        [3.72223348e+03, -3.44379393e-01],
-                                        [4.21617658e+01, 1.99919488e+00],
-                                        [1.00000000e+00, 1.00000000e+00]]))
+                                        [ 3.72223348e+03, -3.44379448e-01],
+                                        [ 4.11617658e+01,  9.99194882e-01],
+                                        [ 1.00000000e+00,  1.00000000e+00]]))
+
 
 
 def test_compute_the_microlensing_model():
@@ -155,7 +157,7 @@ def test_find_telescopes_fluxes():
     fluxes = Model.find_telescopes_fluxes(params)
 
     assert np.allclose(fluxes['fsource_Test'], 13664813.15722887)
-    assert np.allclose(fluxes['fblend_Test'], -13666064.196499277)
+    assert np.allclose(fluxes['ftotal_Test'], -1251.039270406589)
 
 
 def test_compute_pyLIMA_parameters():
