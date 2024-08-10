@@ -1,4 +1,3 @@
-import sys
 import time as python_time
 
 import numpy as np
