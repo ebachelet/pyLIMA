@@ -50,9 +50,9 @@ def test_simulate_a_telescope():
     assert telo.lightcurve_flux is not None
     assert telo.lightcurve_magnitude is not None
     assert telo.astrometry is not None
-    assert telo.Earth_positions is not {}
-    assert telo.Earth_speeds is not {}
-    assert telo.spacecraft_positions is not {}
+    assert telo.Earth_positions != {}
+    assert telo.Earth_speeds != {}
+    assert telo.spacecraft_positions != {}
 
 
 def test_time_simulation():

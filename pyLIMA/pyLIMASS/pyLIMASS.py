@@ -718,7 +718,6 @@ class SourceLensProbabilities(object):
                 #print(ind,self.bounds[ind],params[ind],prior.pdf(params[ind]))
                 score_prior += np.log(prior.pdf(params[ind]))
 
-<<<<<<< HEAD
         if self.extra_priors is not None:
 
             for extra_prior in self.extra_priors:
@@ -733,10 +732,6 @@ class SourceLensProbabilities(object):
 
                     #ln_likelihood = -np.inf
                     score_prior = -np.inf
-=======
-
-
->>>>>>> 4552e71107954f912301f443ee3ad51f4557f7a1
 
         return score_prior
 
