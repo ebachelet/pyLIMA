@@ -261,7 +261,7 @@ def initial_guess_PSPL(event):
     tE_guess = np.median(tE_guesses)
 
     # safety reason, unlikely
-    if (tE_guess < 0.1) | np.isnan(tE_guess):
+    if np.isnan(tE_guess):
         tE_guess = 20.0
 
     # [to,uo,tE], fsource

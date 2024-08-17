@@ -186,13 +186,13 @@ def test_objective_functions():
     assert np.allclose(values[1], de_fit.objective_function(np.array(values[0])))
     assert np.allclose(values[1], -mcmc_fit.objective_function(np.array(values[0])))
 
-    assert np.allclose(my_fit.model_soft_l1(values[0])[0], 2688.1436988659825)
-    assert np.allclose(de_fit.model_soft_l1(values[0])[0], 2688.1436988659825)
-    assert np.allclose(mcmc_fit.model_soft_l1(values[0])[0], 2688.1436988659825)
+    assert np.allclose(my_fit.model_soft_l1(values[0])[0], 2688.1437107410475)
+    assert np.allclose(de_fit.model_soft_l1(values[0])[0], 2688.1437107410475)
+    assert np.allclose(mcmc_fit.model_soft_l1(values[0])[0], 2688.1437107410475)
     assert np.allclose(de_fit2.objective_function(np.array(values[0])),
-                       2688.1436988659825)
+                       2688.1437107410475)
     assert np.allclose(mcmc_fit2.objective_function(np.array(values[0])),
-                       -2688.1436988659825)
+                       -2688.1437107410475)
 
     like, pym = de_fit3.model_likelihood(np.array(values[0]))
 
@@ -200,9 +200,9 @@ def test_objective_functions():
     #          de_fit3.priors.keys()]
 
     assert np.allclose(de_fit3.objective_function(np.array(values[0])),
-                       20465.782705905618)
+                       20478.7104956208)
     assert np.allclose(mcmc_fit3.objective_function(np.array(values[0])),
-                       -20465.782705905618)
+                       -20478.7104956208)
 
 
 

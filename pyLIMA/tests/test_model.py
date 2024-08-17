@@ -58,7 +58,7 @@ def test_initialize_model():
 
     assert Model.standard_parameters_boundaries == [(2400000, 2500000), (-1.0, 1.0),
                                                     (0.1, 500), (5e-05, 0.05),
-                                                    (0.0, 105), (0, 105.0)]
+                                                    (0.0, 200), (0.0, 200)]
     assert Model.origin == ['center_of_mass', [0, 0]]
     assert Model.model_type() == 'FSPL'
 
