@@ -4,8 +4,6 @@ from multiprocessing import Manager
 
 import numpy as np
 import pyLIMA.fits.objective_functions as objective_functions
-from bokeh.layouts import gridplot
-from bokeh.plotting import output_file, save
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.priors import parameters_priors
 
@@ -1254,6 +1252,8 @@ class MLfit(object):
         implemented yet)
         bokeh_figure : bokehh.fig, a bokeh.figure containing all the above
         """
+        from bokeh.layouts import gridplot
+        from bokeh.plotting import output_file, save
         from pyLIMA.outputs import pyLIMA_plots
 
         matplotlib_lightcurves = None
