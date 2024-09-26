@@ -36,8 +36,13 @@ dependencies = [
     "speclite",
     "scikit-learn",
     "importlib-resources ; python_version < '3.9'",
+    "iminuit",
 ]
 
 [project.urls]
 Homepage = "http://github.com/ebachelet/pyLIMA"
 Documentation = "https://pylima.readthedocs.io/en/latest/"
+
+[tool.ruff]
+# In addition to the standard set of exclusions, omit all tests, plus a specific file.
+extend-exclude = ["./examples/SAGAN_binary_3_old.ipynb"]
