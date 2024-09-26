@@ -5,7 +5,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pyLIMA.fits.objective_functions
-import pygtc
 from bokeh.layouts import gridplot
 from bokeh.models import Arrow, OpenHead
 from bokeh.models import BasicTickFormatter
@@ -1188,6 +1187,7 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
 
 
 def plot_distribution(samples, parameters_names=None, bokeh_plot=None):
+    import pygtc
     names = [str(i) for i in range(len(parameters_names))]
     try:
         GTC = pygtc.plotGTC(chains=[samples], sigmaContourLevels=True, paramNames=names,

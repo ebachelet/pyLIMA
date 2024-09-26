@@ -4,7 +4,6 @@ import time as python_time
 import emcee
 import numpy as np
 from pyLIMA.fits.ML_fit import MLfit
-from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA.priors import parameters_priors
 
 
@@ -142,7 +141,7 @@ class DEMCfit(MLfit):
                             'DEMC_chains': DEMC_chains, 'fit_time': computation_time}
 
     def fit_outputs(self):
-
+        from pyLIMA.outputs import pyLIMA_plots
         pyLIMA_plots.plot_lightcurves(self.model, self.fit_results['best_model'])
         pyLIMA_plots.plot_geometry(self.model, self.fit_results['best_model'])
 
