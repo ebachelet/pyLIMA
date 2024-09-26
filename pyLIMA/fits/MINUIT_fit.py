@@ -1,7 +1,6 @@
 import time as python_time
 
 import numpy as np
-import scipy
 from pyLIMA.fits.LM_fit import LMfit
 
 from iminuit import Minuit
