@@ -387,9 +387,9 @@ class SourceLensProbabilities(object):
             vega_mag_close = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
             # vega_mag = np.nan
             if (np.isnan(vega_mag)) | (np.abs(vega_mag-vega_mag_close)>0.25):
-                vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
+                #vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff), Fe, logg))
                 # vega_mag = float(filt['M0_interpolator'][1](np.log10(Teff),Fe,logg))
-                # vega_mag = -999
+                vega_mag = -999
 
             absorption = filt['absorption'] * Av
             # breakpoint()
@@ -538,12 +538,23 @@ class SourceLensProbabilities(object):
                             local_isochrones_lens, local_dist_lens)
 
                         for ind_mag in range(len(mags_s)):
-                            flux_source = 10 ** ((25 - mags_s[ind_mag]) / 2.5)
-                            flux_lens = 10 ** ((25 - mags_l[ind_mag]) / 2.5)
 
-                            flux_tot = flux_source + flux_lens
+                            mags = mags_s[ind_mag]
+                            magl = mags_l[ind_mag]
 
-                            mags_baseline.append(25 - 2.5 * np.log10(flux_tot))
+
+                            if (mags<-20) | (magl<-20):
+
+                                mags_baseline.append(-999)
+
+                            else:
+                              
+                                flux_source = 10 ** ((27.4 - mags_s[ind_mag]) / 2.5)
+                                flux_lens = 10 ** ((27.4 - mags_l[ind_mag]) / 2.5)
+
+                                flux_tot = flux_source + flux_lens
+
+                                mags_baseline.append(27.4- 2.5 * np.log10(flux_tot))
 
                     else:
                         pass

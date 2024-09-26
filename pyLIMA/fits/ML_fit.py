@@ -32,7 +32,7 @@ class MLfit(object):
     fit_parameters : dict, dictionnary containing the parameters name and boundaries
     fit_results : dict, dictionnary containing the fit results
     priors : list, a list of parameters priors (None by default)
-    trials : list, a Manager().list() to collect all algorithm fit trials
+    trials_parameters : list, a Manager().list() to collect all algorithm fit trials_parameters
     model_parameters_guess : list, a list containing the parameters guess
     rescale_photometry_parameters_guess : list, contains guess on rescaling photometry
     rescale_astrometry_parameters_guess : list, contains guess on rescaling astrometry
@@ -65,8 +65,10 @@ class MLfit(object):
         self.fit_results = {}
         self.priors = None
         self.extra_priors = None
-        self.trials = Manager().list()  # to be recognize by all process during
+        self.trials_parameters = Manager().list()  # to be recognize by all process during
         # parallelization
+        self.trials_objective = Manager().list()
+        self.trials_priors = Manager().list()
 
         self.model_parameters_guess = []
         self.rescale_photometry_parameters_guess = []
@@ -290,17 +292,19 @@ class MLfit(object):
         objective : float, the value of the objective function
         """
         if self.loss_function == 'likelihood':
-            likelihood, pyLIMA_parameters = self.model_likelihood(
+            likelihood, priors, pyLIMA_parameters = self.model_likelihood(
                 fit_process_parameters)
             objective = likelihood
 
         if self.loss_function == 'chi2':
             chi2, pyLIMA_parameters = self.model_chi2(fit_process_parameters)
             objective = chi2
+            priors = 0.0
 
         if self.loss_function == 'soft_l1':
             soft_l1, pyLIMA_parameters = self.model_soft_l1(fit_process_parameters)
             objective = soft_l1
+            priors = 0.0
 
         if self.telescopes_fluxes_method != 'fit':
 
@@ -327,11 +331,14 @@ class MLfit(object):
 
                         if self.model.blend_flux_parameter == 'noblend':
                             pass
-            self.trials.append(fit_process_parameters.tolist() + fluxes + [objective])
+            self.trials_parameters.append(fit_process_parameters.tolist() + fluxes)
 
         else:
 
-            self.trials.append(fit_process_parameters.tolist() + [objective])
+            self.trials_parameters.append(fit_process_parameters.tolist())
+
+        self.trials_objective.append(objective)
+        self.trials_priors.append(priors)
 
         return objective
 
@@ -944,7 +951,7 @@ class MLfit(object):
 
         ln_likelihood += -prior  # Default is -ln_likelihood
 
-        return ln_likelihood, pyLIMA_parameters
+        return ln_likelihood, -prior, pyLIMA_parameters
 
     def model_soft_l1(self, parameters):
         """

@@ -81,7 +81,9 @@ class DEfit(MLfit):
             recombination=0.7, polish=False, init=init,
             disp=self.display_progress, workers=worker)
 
-        self.trials = np.array(self.trials)
+        self.trials_parameters = np.array(self.trials_parameters)
+        self.trials_objective = np.array(self.trials_objective)
+        self.trials_priors = np.array(self.trials_priors)
 
         print('DE converge to objective function : f(x) = ',
               str(differential_evolution_estimation['fun']))
@@ -91,7 +93,7 @@ class DEfit(MLfit):
         results = differential_evolution_estimation['x']
         results_log_likelihood = differential_evolution_estimation['fun']
 
-        DE_population = self.trials
+        DE_population = np.c_[self.trials_parameters,self.trials_objective,self.trials_priors]
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')

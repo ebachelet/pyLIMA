@@ -36,11 +36,15 @@ class MCMCfit(MLfit):
 
         #if self.loss_function != 'likelihood':
 
-        #limits_check = self.fit_parameters_inside_limits(fit_process_parameters)
+        limits_check = self.fit_parameters_inside_limits(fit_process_parameters)
 
-        #if limits_check is not None:
+        if limits_check is not None:
 
-        #    return -limits_check #i.e. -np.inf
+            #self.trials_parameters.append(fit_process_parameters.tolist())
+            #self.trials_priors.append(np.inf)
+            #self.trials_objective.append(np.inf)
+
+            return -limits_check #i.e. -np.inf
 
         objective = self.standard_objective_function(fit_process_parameters)
 
@@ -124,18 +128,22 @@ class MCMCfit(MLfit):
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
 
-        self.trials = np.array(self.trials)
-        self.trials[:, -1] *= -1
+        self.trials_parameters = np.array(self.trials_parameters)
+        self.trials_objective = np.array(self.trials_objective)
+        self.trials_priors = np.array(self.trials_priors)
+
+        self.trials_objective *= -1
+        self.trials_priors *= -1
 
         MCMC_chains, MCMC_chains_with_fluxes = self.reconstruct_chains(
             sampler.get_chain(), sampler.get_log_prob())
 
         best_model_index = np.where(
-            MCMC_chains[:, :, -1] == MCMC_chains[:, :, -1].max())
+            MCMC_chains[:, :, -2] == MCMC_chains[:, :, -2].max())
         fit_results = MCMC_chains_with_fluxes[np.unique(best_model_index[0])[0],
-                      np.unique(best_model_index[1])[0], :-1]
+                      np.unique(best_model_index[1])[0], :-2]
         fit_log_likelihood = MCMC_chains[
-            np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], -1]
+            np.unique(best_model_index[0])[0], np.unique(best_model_index[1])[0], -2]
 
         self.fit_results = {'best_model': fit_results,
                             self.loss_function: fit_log_likelihood,
@@ -148,52 +156,54 @@ class MCMCfit(MLfit):
 
     def reconstruct_chains(self, mcmc_samples, mcmc_prob):
 
-
-
-
         rangei, rangej, rangek = mcmc_samples.shape
 
-        MCMC_chains = np.zeros((rangei, rangej, rangek + 1))
-        MCMC_chains[:, :, :-1] = mcmc_samples
-        MCMC_chains[:, :, -1] = mcmc_prob
+        MCMC_chains = np.zeros((rangei, rangej, rangek + 2))
+        MCMC_chains[:, :, :-2] = mcmc_samples
+        MCMC_chains[:, :, -2] = mcmc_prob
+        MCMC_chains[:, :, -1] = np.zeros(mcmc_prob.shape)
 
-        if self.telescopes_fluxes_method == 'polyfit':
-            Rangei,Rangej = self.trials.shape
-            MCMC_chains_with_fluxes = np.zeros((rangei,rangej,Rangej))
+        Rangei,Rangej = self.trials_parameters.shape
+        MCMC_chains_with_fluxes = np.zeros((rangei,rangej,Rangej+2))
 
-            for j in range(rangej):
+        for j in range(rangej):
 
-                    unique_sample = np.unique(mcmc_samples[:,j],return_inverse=True,
-                                              axis=0)
+                unique_sample = np.unique(mcmc_samples[:,j],return_inverse=True,
+                                          axis=0)
 
-                    unique_trials = []
-                    for unique_values in unique_sample[0]:
+                unique_trials = []
+                unique_objective = []
+                unique_priors = []
 
-                       index = np.where(self.trials[:, :len(self.fit_parameters)][:, -1]
-                                             == unique_values[-1])[0][0]
-                       unique_trials.append(self.trials[index].tolist())
+                for unique_values in unique_sample[0]:
 
+                   index = np.where(self.trials_parameters[:, :len(self.fit_parameters)][:, -1]
+                                         == unique_values[-1])[0][0]
 
-                    MCMC_chains_with_fluxes[:,j] = np.array(unique_trials)[unique_sample[1].ravel()]
+                   unique_trials.append(self.trials_parameters[index].tolist())
+                   unique_objective.append(self.trials_objective[index].tolist())
+                   unique_priors.append(self.trials_priors[index].tolist())
 
-            columns_to_swap = []
-            if self.rescale_photometry:
-                columns_to_swap += self.rescale_photometry_parameters_index
+                MCMC_chains_with_fluxes[:,j][:,:-2] = np.array(unique_trials)[unique_sample[1].ravel()]
+                MCMC_chains_with_fluxes[:,j][:,-2] = np.array(unique_objective)[unique_sample[1].ravel()]
+                MCMC_chains_with_fluxes[:,j][:,-1] = np.array(unique_priors)[unique_sample[1].ravel()]
 
-            if self.rescale_astrometry:
-                columns_to_swap += self.rescale_photometry_parameters_index
+        columns_to_swap = []
+        if self.rescale_photometry:
+            columns_to_swap += self.rescale_photometry_parameters_index
 
-            if (columns_to_swap != []):
+        if self.rescale_astrometry:
+            columns_to_swap += self.rescale_photometry_parameters_index
 
-                old_column = columns_to_swap
-                new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
+        if (columns_to_swap != []):
 
-                MCMC_chains_with_fluxes[:, :, old_column + new_column] = MCMC_chains_with_fluxes[:, :,
-                                                                     new_column + old_column]
+            old_column = columns_to_swap
+            new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
 
-        else:
+            MCMC_chains_with_fluxes[:, :, old_column + new_column] = MCMC_chains_with_fluxes[:, :,
+                                                                 new_column + old_column]
 
-            MCMC_chains_with_fluxes = MCMC_chains.copy()
+        MCMC_chains[:,:,-1] = np.copy(MCMC_chains_with_fluxes[:,:,-1])
 
         return MCMC_chains, MCMC_chains_with_fluxes
 
