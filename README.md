@@ -62,3 +62,25 @@ Example_5 : [HOW TO FIT PARALLAX?](https://github.com/ebachelet/pyLIMA/tree/mast
 
 Want to contribute? Bug detections? Comments?
 Please email us (etibachelet@gmail.com) or [raise an issue](https://github.com/ebachelet/pyLIMA/issues) (recommended).
+
+# Citations
+
+Please cite [Bachelet et al. 2017](https://ui.adsabs.harvard.edu/abs/2017AJ....154..203B/abstract) (and soon pyLIMA-II Bachelet et al.2025). The BibTeX entry for the paper is::
+
+@ARTICLE{2017AJ....154..203B,
+       author = {{Bachelet}, E. and {Norbury}, M. and {Bozza}, V. and {Street}, R.},
+        title = "{pyLIMA: An Open-source Package for Microlensing Modeling. I. Presentation of the Software and Analysis of Single-lens Models}",
+      journal = {\aj},
+     keywords = {gravitational lensing: micro},
+         year = 2017,
+        month = nov,
+       volume = {154},
+       number = {5},
+          eid = {203},
+        pages = {203},
+          doi = {10.3847/1538-3881/aa911c},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2017AJ....154..203B},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
