@@ -62,7 +62,7 @@ class DEfit(MLfit):
 
             worker = 1
 
-        if initial_population == []:
+        if len(initial_population) == 0:
 
             init = 'sobol'
 
