@@ -67,6 +67,7 @@ Please email us (etibachelet@gmail.com) or [raise an issue](https://github.com/e
 
 Please cite [Bachelet et al. 2017](https://ui.adsabs.harvard.edu/abs/2017AJ....154..203B/abstract) (and soon pyLIMA-II Bachelet et al.2025). The BibTeX entry for the paper is::
 
+'''
 @ARTICLE{2017AJ....154..203B,
        author = {{Bachelet}, E. and {Norbury}, M. and {Bozza}, V. and {Street}, R.},
         title = "{pyLIMA: An Open-source Package for Microlensing Modeling. I. Presentation of the Software and Analysis of Single-lens Models}",
@@ -82,5 +83,5 @@ Please cite [Bachelet et al. 2017](https://ui.adsabs.harvard.edu/abs/2017AJ....1
        adsurl = {https://ui.adsabs.harvard.edu/abs/2017AJ....154..203B},
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
-
+'''
 
