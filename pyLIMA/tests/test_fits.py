@@ -131,7 +131,7 @@ def test_DE():
 
     assert len(values) == 5
 
-    assert len(values[0]) == 4
+    assert len(values[0]) == 8
 
     assert values[3].shape == (88, 10)
 

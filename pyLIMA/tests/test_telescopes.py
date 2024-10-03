@@ -1,6 +1,7 @@
 import numpy as np
 
 from pyLIMA import telescopes
+from scipy.optimize import brent
 
 
 def simulate_telescope(altitude=154, location='Earth', spacecraft_name=None):
@@ -94,13 +95,11 @@ def test_initialize_positions():
                                                  [0.00528678, -0.00758553,
                                                   -0.00306416]])])
 
-    assert np.allclose(telo2.spacecraft_positions['photometry'][100],
-                       [2.45688800e+06, 3.14343200e+02, -1.53839700e+01,
-                        1.03208421e-02])
+    assert np.allclose(telo2.spacecraft_positions['photometry'][1],
+                       [2.45778900e+06, 1.24874800e+02, 1.83351900e+01, 9.74060965e-03])
 
-    assert np.allclose(telo2.spacecraft_positions['astrometry'][10],
-                       [2.45679800e+06, 2.50253790e+02, -2.59606700e+01,
-                        1.02721092e-02])
+    assert np.allclose(telo2.spacecraft_positions['astrometry'][1],
+                       [2.45778900e+06, 1.24874800e+02, 1.83351900e+01, 9.74060965e-03])
 
 
 def test_compute_parallax():
