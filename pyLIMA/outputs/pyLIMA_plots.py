@@ -75,25 +75,27 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                             tel.lightcurve_magnitude['time'].value),
                                 pyLIMA_parameters['t0'] + 5 *
                                 pyLIMA_parameters['tE'])),
-                        1).round(2)
+                        10).round(2)
 
                     model_time2 = np.arange(
                         pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
                         pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
-                        0.01).round(2)
+                        1).round(2)
 
                     model_time = np.r_[model_time1, model_time2]
 
                     for telescope in microlensing_model.event.telescopes:
 
-                        if telescope.location == 'Earth':
-                            model_time = np.r_[
-                                model_time, telescope.lightcurve_magnitude[
-                                    'time'].value]
+                        if telescope.lightcurve_flux is not None:
 
-                            symmetric = 2 * pyLIMA_parameters['t0'] - \
-                                        telescope.lightcurve_magnitude['time'].value
-                            model_time = np.r_[model_time, symmetric]
+                            if telescope.location == 'Earth':
+                                model_time = np.r_[
+                                    model_time, telescope.lightcurve_magnitude[
+                                        'time'].value]
+
+                                symmetric = 2 * pyLIMA_parameters['t0'] - \
+                                            telescope.lightcurve_magnitude['time'].value
+                                model_time = np.r_[model_time, symmetric]
 
 
                     model_time.sort()
@@ -108,19 +110,22 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                     list_of_fake_telescopes.append(model_telescope)
 
                 if tel.location == 'Space':
-                    model_time = np.arange(
-                        np.min(tel.lightcurve_magnitude['time'].value),
-                        np.max(tel.lightcurve_magnitude['time'].value),
-                        0.1).round(2)
-
+                    model_time1 = np.arange(np.min((np.min(
+                        tel.lightcurve_magnitude['time'].value),
+                                                    pyLIMA_parameters['t0'] - 5 *
+                                                    pyLIMA_parameters['tE'])),
+                        np.max((np.max(
+                            tel.lightcurve_magnitude['time'].value),
+                                pyLIMA_parameters['t0'] + 5 *
+                                pyLIMA_parameters['tE'])),
+                        10).round(2)
 
                     model_time2 = np.arange(
                         pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
                         pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
-                        0.01).round(2)
+                        1).round(2)
 
-                    model_time = np.r_[
-                        model_time, model_time2,tel.lightcurve_magnitude['time'].value]
+                    model_time = np.r_[model_time1, model_time2,tel.lightcurve_magnitude['time'].value]
 
                     model_time.sort()
 
@@ -143,33 +148,33 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
             if tel.astrometry is not None:
 
-                if tel.location == 'Space':
+                #if tel.location == 'Space':
 
-                    model_time = np.arange(np.min(tel.astrometry['time'].value),
-                                           np.max(tel.astrometry['time'].value),
-                                           0.1).round(2)
-                else:
+                #    model_time = np.arange(np.min(tel.astrometry['time'].value),
+                #                           np.max(tel.astrometry['time'].value),
+                #                           1).round(2)
+                #else:
 
-                    model_time1 = np.arange(
-                        np.min((np.min(tel.lightcurve_magnitude['time'].value),
-                                pyLIMA_parameters['t0'] - 5 * pyLIMA_parameters['tE'])),
-                        np.max((np.max(tel.lightcurve_magnitude['time'].value),
-                                pyLIMA_parameters['t0'] + 5 * pyLIMA_parameters['tE'])),
-                        1).round(2)
+                model_time1 = np.arange(
+                    np.min((np.min(tel.astrometry['time'].value),
+                            pyLIMA_parameters['t0'] - 5 * pyLIMA_parameters['tE'])),
+                    np.max((np.max(tel.astrometry['time'].value),
+                            pyLIMA_parameters['t0'] + 5 * pyLIMA_parameters['tE'])),
+                    10).round(2)
 
-                    model_time2 = np.arange(
-                        pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
-                        pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
-                        0.01).round(2)
+                model_time2 = np.arange(
+                    pyLIMA_parameters['t0'] - 1 * pyLIMA_parameters['tE'],
+                    pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
+                    1).round(2)
 
-                    model_time = np.r_[model_time1, model_time2]
+                model_time = np.r_[model_time1, model_time2]
 
-                    model_time = np.r_[model_time, telescope.astrometry['time'].value]
+                model_time = np.r_[model_time, tel.astrometry['time'].value]
 
-                    symmetric = 2 * pyLIMA_parameters['t0'] - telescope.astrometry[
-                        'time'].value
-                    model_time = np.r_[model_time, symmetric]
-                    model_time.sort()
+                symmetric = 2 * pyLIMA_parameters['t0'] - tel.astrometry[
+                    'time'].value
+                model_time = np.r_[model_time, symmetric]
+                model_time.sort()
 
                 model_time = np.unique(model_time)
                 model_telescope = fake_telescopes.replicate_a_telescope(
@@ -426,10 +431,14 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     if microlensing_model.parallax_model[0] != 'None':
 
-        origin_t0par_index = np.argmin(
+        try:
+            origin_t0par_index = np.argmin(
             np.abs(telescope.lightcurve_magnitude['time'].value -
                    microlensing_model.parallax_model[1]))
-
+        except:
+            origin_t0par_index = np.argmin(
+                np.abs(telescope.astrometry['time'].value -
+                       microlensing_model.parallax_model[1]))
         #print(telescope.lightcurve_magnitude['time'].value, 
         #      microlensing_model.parallax_model[1], 
         #      origin_t0par_index)
@@ -561,7 +570,7 @@ def plot_astrometry(microlensing_model, model_parameters, bokeh_plot=None):
     ax_res_y.xaxis.grid(True)
     ax_res_y.yaxis.grid(True)
 
-    ax_res_x.get_shared_x_axes().join(ax_res_x, ax_res_y)
+    ax_res_x.get_shared_x_axes().joined(ax_res_x, ax_res_y)
     # ax_main.get_shared_y_axes().join(ax_main, ax_res_y)
     ax_res_y.xaxis.set_major_locator(MaxNLocator(4))
     ax_res_x.xaxis.set_major_locator(MaxNLocator(4))
@@ -1055,22 +1064,22 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
     ref_fluxes = []
 
     for ref_tel in list_of_telescopes:
-        model_magnification = microlensing_model.model_magnification(ref_tel,
-                                                                     pyLIMA_parameters)
+        if ref_tel.lightcurve_flux is not None:
+            model_magnification = microlensing_model.model_magnification(ref_tel,
+                                                                         pyLIMA_parameters)
 
-        microlensing_model.derive_telescope_flux(ref_tel, pyLIMA_parameters,
-                                                 model_magnification)
+            microlensing_model.derive_telescope_flux(ref_tel, pyLIMA_parameters,
+                                                     model_magnification)
 
-        f_source = pyLIMA_parameters['fsource_' + ref_tel.name]
-        f_blend = pyLIMA_parameters['fblend_' + ref_tel.name]
+            f_source = pyLIMA_parameters['fsource_' + ref_tel.name]
+            f_blend = pyLIMA_parameters['fblend_' + ref_tel.name]
 
-        # model_magnification = (model['photometry']-f_blend)/f_source
+            # model_magnification = (model['photometry']-f_blend)/f_source
 
-        ref_names.append(ref_tel.name)
-        ref_locations.append(ref_tel.location)
-        ref_magnification.append(model_magnification)
-        ref_fluxes.append([f_source, f_blend])
-
+            ref_names.append(ref_tel.name)
+            ref_locations.append(ref_tel.location)
+            ref_magnification.append(model_magnification)
+            ref_fluxes.append([f_source, f_blend])
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
         if tel.lightcurve_flux is not None:
@@ -1094,6 +1103,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
 
             # time_mask = [False for i in range(len(ref_magnification[ref_index]))]
             time_mask = []
+
             for time in tel.lightcurve_flux['time'].value:
                 time_index = np.where(list_of_telescopes[ref_index].lightcurve_flux[
                                           'time'].value == time)[0][0]

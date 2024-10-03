@@ -209,7 +209,9 @@ class Telescope(object):
             if choice == 'magnitude':
                 return len(self.lightcurve_magnitude['mag'])
 
-        except ValueError:
+            if choice == 'astrometry':
+                return len(self.astrometry)
+        except TypeError:
 
             return 0
 

@@ -130,7 +130,6 @@ class MLfit(object):
                 fit_parameters_indexes.append(ind)
                 fit_parameters_boundaries.append(theboundaries)
 
-
         if self.rescale_photometry:
 
             for telescope in self.model.event.telescopes:

@@ -11,7 +11,6 @@ Please take some time to familiarize yourself with the pyLIMA documentation.
 ### Import the required libraries.
 import matplotlib.pyplot as plt
 from pyLIMA.fits import DE_fit
-from pyLIMA.models import DSPL_model
 from pyLIMA.models import PSPL_model
 from pyLIMA.outputs import pyLIMA_plots
 ### Import the simulator to be used for generating the simulated light curve
@@ -166,13 +165,13 @@ your_event2.find_survey('CTIO_I')
 ### link it to the EVENT you prepared.
 ### We will use the double-source point-lens (DSPL) model for this example.
 
-dspl = DSPL_model.DSPLmodel(your_event2)
+dspl = PSPL_model.PSPLmodel(your_event2, double_source=['Static',2457500])
 
 ### Now that the MODEL is there, we need to set the relevant parameters.
 ### The parameters are drawn uniformly from the bounds defined but you can 
 ### also set them manually. Please consult the documentation for more 
 ### details on the parameters of the MODEL you want to use. For the DSPL example,
-### dspl_parameters = [to, uo, delta_to, delta_uo, tE, q_fluxr_1, q_fluxr2, ...]
+### dspl_parameters = [to, uo, tE, elta_to, delta_uo, q_fluxr_1, q_fluxr2, ...]
 ### where q_fluxr_* is the flux ratio in each observing band.
 dspl_parameters = simulator.simulate_microlensing_model_parameters(dspl)
 print(dspl_parameters)
@@ -219,8 +218,8 @@ plt.show()
 ### Here's how you can do that. Let's fix the DSPL parameters to some values where
 ### the binary source model produces two clear peaks, and then just adjust the flux 
 ### parameters.
-dspl_parameters[0:7] = [2457760.216627234, 0.8605811108889658, 143.4484970433387,
-                        -0.6046788112617074, 116.43231096591524, 0.15157064165919296,
+dspl_parameters[0:7] = [2457760.216627234, 0.8605811108889658, 116.43231096591524, 143.4484970433387,
+                        -0.6046788112617074,  0.15157064165919296,
                         0.18958495421162946]
 
 ### The order of the parameters is:
@@ -265,11 +264,11 @@ plt.show()
 print(dspl_parameters)
 parameter_commentary = ['Time of minimum impact parameter for source 1',
                         'minimum impact parameter for source 1',
+                        'angular Einstein radius crossing time',
                         'difference of time of minimum impact parameter between the '
                         'two sources',
                         'difference of minimum impact parameters between the two '
                         'sources',
-                        'angular Einstein radius crossing time',
                         'flux ratio in I between source 1 and source 2',
                         'flux ratio in V between source 1 and source 2',
                         'source flux of source 1 for telescope CTIO_I (survey '
@@ -291,7 +290,7 @@ for key in dspl.model_dictionnary.keys():
 ### Let's try to fit this now! (This can take a while!)
 ### You can check the first tutorial again for a detailed explanation if needed.
 
-my_fit = DE_fit.DEfit(dspl, display_progress=True, strategy='best1bin')
+my_fit = DE_fit.DEfit(dspl, display_progress=True, loss_function='likelihood',strategy='best1bin')
 my_fit.fit()
 
 my_fit.fit_results['best_model']
@@ -303,5 +302,4 @@ print(my_fit.fit_results['best_model'] - dspl_parameters[0:7])
 pyLIMA_plots.plot_lightcurves(dspl, my_fit.fit_results['best_model'])
 pyLIMA_plots.plot_lightcurves(dspl, dspl_parameters)
 plt.show()
-
 ### This concludes tutorial 3.

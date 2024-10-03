@@ -35,6 +35,7 @@ class TRFfit(LMfit):
 
         for telescope in self.model.event.telescopes:
             n_data = n_data + telescope.n_data('flux')
+            n_data = n_data + telescope.n_data('astrometry')
 
         if self.model.Jacobian_flag != 'Numerical':
 

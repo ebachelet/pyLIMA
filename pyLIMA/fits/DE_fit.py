@@ -90,10 +90,12 @@ class DEfit(MLfit):
         print('DE converge to parameters : = ',
               differential_evolution_estimation['x'].astype(str))
 
-        results = differential_evolution_estimation['x']
-        results_log_likelihood = differential_evolution_estimation['fun']
-
         DE_population = np.c_[self.trials_parameters,self.trials_objective,self.trials_priors]
+
+        best = np.where(np.all(differential_evolution_estimation['x']==DE_population[:,:len(self.fit_parameters)]
+                               ,axis=1))[0][0]
+        results = DE_population[best,:-2]
+        results_log_likelihood = differential_evolution_estimation['fun']
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')

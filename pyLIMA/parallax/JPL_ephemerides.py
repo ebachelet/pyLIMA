@@ -17,6 +17,17 @@ JPL_HORIZONS_ID = {
 
 }
 
+JPL_HORIZONS_TIME = {
+    'Geocentric': '14400m',
+    'Kepler': '14400m',
+    'Spitzer': '14400m',
+    'HST': '60m',
+    'Gaia': '14400m',
+    'New Horizons': '14400m',
+    'L2': '14400m',
+    'TESS': '1440m'
+
+}
 
 def horizons_obscodes(observatory):
     """
@@ -58,37 +69,26 @@ def horizons_API(body, time_to_treat, observatory='Geocentric'):
     flag : str, success flag
     positions : array, [time,ra,dec,distance]
     """
-    OBSERVATORY_ID = horizons_obscodes(observatory)
-    body = horizons_obscodes(body)
 
+    OBSERVATORY_ID = horizons_obscodes(observatory)
+    Body = horizons_obscodes(body)
     tstart = 'JD' + str(time_to_treat.min() - 1)
 
     tstop = 'JD' + str(time_to_treat.max() + 1)
 
-    obj = Horizons(id=body, location=OBSERVATORY_ID,
-                   epochs={'start': tstart, 'stop': tstop,
-                           'step': '1440m'})  # daily cadence for interpolation
-    ephemerides = obj.ephemerides()
+    step = JPL_HORIZONS_TIME.get(body,'1440m')
 
-    dates = ephemerides['datetime_jd'].data.data
-    ra = ephemerides['RA'].data.data
-    dec = ephemerides['DEC'].data.data
-    distances = ephemerides['delta'].data.data
+    DATES = []
+    RA = []
+    DEC = []
+    DISTANCES = []
 
-    if distances.min() < 0.002:  # Low orbits
+    start = 0
 
-        # adding exact telescopes dates
-        DATES = [dates.tolist()]
-        RA = [ra.tolist()]
-        DEC = [dec.tolist()]
-        DISTANCES = [distances.tolist()]
-
-        start = 0
-
-        while start < len(time_to_treat):  # Split the time request in chunk of 50.
+    while start < len(time_to_treat):  # Split the time request in chunk of 50.
 
             end = start + 50
-            obj = Horizons(id=body, location=OBSERVATORY_ID,
+            obj = Horizons(id=Body, location=OBSERVATORY_ID,
                            epochs=time_to_treat[start:end])
             ephemerides = obj.ephemerides()
 
@@ -104,10 +104,54 @@ def horizons_API(body, time_to_treat, observatory='Geocentric'):
 
             start = end
 
-        dates = np.concatenate(DATES)
-        ra = np.concatenate(RA)
-        dec = np.concatenate(DEC)
-        distances = np.concatenate(DISTANCES)
+    dates = np.concatenate(DATES)
+    ra = np.concatenate(RA)
+    dec = np.concatenate(DEC)
+    distances = np.concatenate(DISTANCES)
+
+    #obj = Horizons(id=Body, location=OBSERVATORY_ID,
+    #               epochs={'start': tstart, 'stop': tstop,
+    #                       'step': step})  # daily cadence for interpolation
+    #ephemerides = obj.ephemerides()
+
+    #dates = ephemerides['datetime_jd'].data.data
+    #ra = ephemerides['RA'].data.data
+    #dec = ephemerides['DEC'].data.data
+    #distances = ephemerides['delta'].data.data
+
+    #if distances.min() < 0.002:  # Low orbits
+
+    #    # adding exact telescopes dates
+    #    DATES = [dates.tolist()]
+    #    RA = [ra.tolist()]
+    ##    DEC = [dec.tolist()]
+    #    DISTANCES = [distances.tolist()]
+
+    #    start = 0
+
+    #    while start < len(time_to_treat):  # Split the time request in chunk of 50.
+
+    #        end = start + 50
+    #        obj = Horizons(id=Body, location=OBSERVATORY_ID,
+    #                       epochs=time_to_treat[start:end])
+    #        ephemerides = obj.ephemerides()
+
+    #        dates = ephemerides['datetime_jd'].data.data
+    #        ra = ephemerides['RA'].data.data
+    #        dec = ephemerides['DEC'].data.data
+    #        distances = ephemerides['delta'].data.data
+
+    #        DATES.append(dates)
+    #        RA.append(ra)
+    #        DEC.append(dec)
+    #        DISTANCES.append(distances)
+
+    #        start = end
+
+    #    dates = np.concatenate(DATES)
+    #    ra = np.concatenate(RA)
+    #    dec = np.concatenate(DEC)
+    #    distances = np.concatenate(DISTANCES)
 
     flag = 'Succes connection to JPL'
     print('Successfully ephemeris from JPL!')

@@ -40,9 +40,11 @@ class MCMCfit(MLfit):
 
         if limits_check is not None:
 
-            #self.trials_parameters.append(fit_process_parameters.tolist())
-            #self.trials_priors.append(np.inf)
-            #self.trials_objective.append(np.inf)
+            bad_parameters = np.zeros(len(self.priors_parameters))
+            bad_parameters[:len(self.fit_parameters)] = fit_process_parameters
+            self.trials_parameters.append(bad_parameters.tolist())
+            self.trials_priors.append(np.inf)
+            self.trials_objective.append(np.inf)
 
             return -limits_check #i.e. -np.inf
 
@@ -177,12 +179,12 @@ class MCMCfit(MLfit):
 
                 for unique_values in unique_sample[0]:
 
-                   index = np.where(self.trials_parameters[:, :len(self.fit_parameters)][:, -1]
-                                         == unique_values[-1])[0][0]
+                    index = np.where(np.all(self.trials_parameters[:, :len(self.fit_parameters)]
+                                         == unique_values,axis=1))[0][0]
 
-                   unique_trials.append(self.trials_parameters[index].tolist())
-                   unique_objective.append(self.trials_objective[index].tolist())
-                   unique_priors.append(self.trials_priors[index].tolist())
+                    unique_trials.append(self.trials_parameters[index].tolist())
+                    unique_objective.append(self.trials_objective[index].tolist())
+                    unique_priors.append(self.trials_priors[index].tolist())
 
                 MCMC_chains_with_fluxes[:,j][:,:-2] = np.array(unique_trials)[unique_sample[1].ravel()]
                 MCMC_chains_with_fluxes[:,j][:,-2] = np.array(unique_objective)[unique_sample[1].ravel()]

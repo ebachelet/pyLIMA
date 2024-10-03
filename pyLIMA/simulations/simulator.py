@@ -365,6 +365,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
 
             telescope.lightcurve_magnitude = telescope.lightcurve_in_magnitude()
 
+    model.define_pyLIMA_standard_parameters()
 
 def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
     """
@@ -414,3 +415,4 @@ def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
             telescope.astrometry['err_ra'] = err_ra * unit.deg
             telescope.astrometry['dec'] = obs_dec * unit.deg
             telescope.astrometry['err_dec'] = err_dec * unit.deg
+    model.define_pyLIMA_standard_parameters()
