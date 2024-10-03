@@ -72,11 +72,11 @@ def horizons_API(body, time_to_treat, observatory='Geocentric'):
 
     OBSERVATORY_ID = horizons_obscodes(observatory)
     Body = horizons_obscodes(body)
-    tstart = 'JD' + str(time_to_treat.min() - 1)
+    #tstart = 'JD' + str(time_to_treat.min() - 1)
 
-    tstop = 'JD' + str(time_to_treat.max() + 1)
+    #tstop = 'JD' + str(time_to_treat.max() + 1)
 
-    step = JPL_HORIZONS_TIME.get(body,'1440m')
+    #step = JPL_HORIZONS_TIME.get(body,'1440m')
 
     DATES = []
     RA = []

@@ -325,6 +325,89 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                             pass
 
+    if microlensing_model.parallax_model[0] != 'None':
+
+        telescope = faketelescopes[0]
+        try:
+            origin_t0par_index = np.argmin(
+                np.abs(telescope.lightcurve_magnitude['time'].value -
+                       microlensing_model.parallax_model[1]))
+        except AttributeError:
+            origin_t0par_index = np.argmin(
+                np.abs(telescope.astrometry['time'].value -
+                       microlensing_model.parallax_model[1]))
+        # print(telescope.lightcurve_magnitude['time'].value,
+        #      microlensing_model.parallax_model[1],
+        #      origin_t0par_index)
+
+        # print(trajectory_x, trajectory_y)
+        # import pdb;
+        # pdb.set_trace()
+        origin_t0par = np.array(
+            (source1_trajectory_x[origin_t0par_index],
+             source1_trajectory_y[origin_t0par_index]))
+        # origin_t0par += 0.1
+
+        piEN = pyLIMA_parameters['piEN']
+        piEE = pyLIMA_parameters['piEE']
+
+        EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
+
+        plot_angle = -EN_trajectory_angle
+
+        try:
+
+            plot_angle += pyLIMA_parameters['alpha']
+
+        except KeyError:
+
+            pass
+
+        north = [0.1, 0]
+        east = [0, 0.1]
+
+        North = [0.105, 0]
+        East = [0, 0.105]
+
+        rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)],
+                             [np.sin(plot_angle), np.cos(plot_angle)]])
+
+        east = np.dot(rota_mat, east)
+        north = np.dot(rota_mat, north)
+        East = np.dot(rota_mat, East)
+        North = np.dot(rota_mat, North)
+
+        plt.annotate('',
+                     xy=(origin_t0par[0] + east[0], origin_t0par[1] + east[1]),
+                     xytext=(origin_t0par[0], origin_t0par[1]),
+                     arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
+        plt.annotate('E', xy=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
+                     xytext=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
+                     weight='bold', alpha=0.5, ha='center', va='center',
+                     rotation=np.rad2deg(plot_angle))
+
+        plt.annotate('', xy=(
+            origin_t0par[0] + north[0], origin_t0par[1] + north[1]),
+                     xytext=(origin_t0par[0], origin_t0par[1]),
+                     arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
+        plt.annotate('N',
+                     xy=(origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
+                     xytext=(
+                         origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
+                     weight='bold', alpha=0.5, ha='center', va='center',
+                     rotation=np.rad2deg(plot_angle))
+
+        if bokeh_geometry is not None:
+            bokeh_geometry.add_layout(
+                Arrow(end=OpenHead(line_color="grey", line_width=1),
+                      x_start=origin_t0par[0], y_start=origin_t0par[1],
+                      x_end=origin_t0par[0] + North[0],
+                      y_end=origin_t0par[1] + North[1]))
+            bokeh_geometry.add_layout(
+                Arrow(end=OpenHead(line_color="grey", line_width=1),
+                      x_start=origin_t0par[0], y_start=origin_t0par[1],
+                      x_end=origin_t0par[0] + East[0],
+                      y_end=origin_t0par[1] + East[1]))
 
     if 'BL' in microlensing_model.model_type():
 
@@ -400,10 +483,6 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                     color = MARKERS_COLORS.by_key()["color"][telescope_index]
 
-
-
-
-
                     if ind == 1:
 
                         patches = [plt.Circle((x, y), rho, edgecolor=color,
@@ -429,87 +508,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                                               color=color,
                                               radius_dimension='max', fill_alpha=0.5)
 
-    if microlensing_model.parallax_model[0] != 'None':
 
-        try:
-            origin_t0par_index = np.argmin(
-            np.abs(telescope.lightcurve_magnitude['time'].value -
-                   microlensing_model.parallax_model[1]))
-        except:
-            origin_t0par_index = np.argmin(
-                np.abs(telescope.astrometry['time'].value -
-                       microlensing_model.parallax_model[1]))
-        #print(telescope.lightcurve_magnitude['time'].value, 
-        #      microlensing_model.parallax_model[1], 
-        #      origin_t0par_index)
-        
-        #print(trajectory_x, trajectory_y)
-        #import pdb;
-        #pdb.set_trace()
-        origin_t0par = np.array(
-            (source1_trajectory_x[origin_t0par_index], source1_trajectory_y[origin_t0par_index]))
-        # origin_t0par += 0.1
-
-        piEN = pyLIMA_parameters['piEN']
-        piEE = pyLIMA_parameters['piEE']
-
-        EN_trajectory_angle = parallax.EN_trajectory_angle(piEN, piEE)
-
-        plot_angle = -EN_trajectory_angle
-
-        try:
-
-            plot_angle += pyLIMA_parameters['alpha']
-
-        except KeyError:
-
-            pass
-
-        north = [0.1, 0]
-        east = [0, 0.1]
-
-        North = [0.105, 0]
-        East = [0, 0.105]
-
-        rota_mat = np.array([[np.cos(plot_angle), -np.sin(plot_angle)],
-                             [np.sin(plot_angle), np.cos(plot_angle)]])
-
-        east = np.dot(rota_mat, east)
-        north = np.dot(rota_mat, north)
-        East = np.dot(rota_mat, East)
-        North = np.dot(rota_mat, North)
-
-        plt.annotate('',
-                     xy=(origin_t0par[0] + east[0], origin_t0par[1] + east[1]),
-                     xytext=(origin_t0par[0], origin_t0par[1]),
-                     arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
-        plt.annotate('E', xy=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
-                     xytext=(origin_t0par[0] + East[0], origin_t0par[1] + East[1]),
-                     weight='bold', alpha=0.5, ha='center', va='center',
-                     rotation=np.rad2deg(plot_angle))
-
-        plt.annotate('', xy=(
-            origin_t0par[0] + north[0], origin_t0par[1] + north[1]),
-                     xytext=(origin_t0par[0], origin_t0par[1]),
-                     arrowprops=dict(arrowstyle="->", lw=3, alpha=0.5))
-        plt.annotate('N',
-                     xy=(origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
-                     xytext=(
-                         origin_t0par[0] + North[0], origin_t0par[1] + North[1]),
-                     weight='bold', alpha=0.5, ha='center', va='center',
-                     rotation=np.rad2deg(plot_angle))
-
-        if bokeh_geometry is not None:
-            bokeh_geometry.add_layout(
-                Arrow(end=OpenHead(line_color="grey", line_width=1),
-                      x_start=origin_t0par[0], y_start=origin_t0par[1],
-                      x_end=origin_t0par[0] + North[0],
-                      y_end=origin_t0par[1] + North[1]))
-            bokeh_geometry.add_layout(
-                Arrow(end=OpenHead(line_color="grey", line_width=1),
-                      x_start=origin_t0par[0], y_start=origin_t0par[1],
-                      x_end=origin_t0par[0] + East[0],
-                      y_end=origin_t0par[1] + East[1]))
     # legend = figure_axes.legend(numpoints=1, loc='best', fancybox=True,
     # framealpha=0.5)
     legend = figure_axes.legend(shadow=True, fontsize='large',
