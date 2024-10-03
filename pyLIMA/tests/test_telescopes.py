@@ -1,7 +1,6 @@
 import numpy as np
 
 from pyLIMA import telescopes
-from scipy.optimize import brent
 
 
 def simulate_telescope(altitude=154, location='Earth', spacecraft_name=None):
