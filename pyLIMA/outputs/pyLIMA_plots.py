@@ -127,6 +127,10 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_time = np.r_[model_time1, model_time2,tel.lightcurve_magnitude['time'].value]
 
+                    mask = (model_time>tel.lightcurve_magnitude['time'].value.min()) &
+                    (model_time < tel.lightcurve_magnitude['time'].value.max())
+                    model_time = model_time[mask]
+
                     model_time.sort()
 
                     model_time = np.unique(model_time)
@@ -174,6 +178,13 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                 symmetric = 2 * pyLIMA_parameters['t0'] - tel.astrometry[
                     'time'].value
                 model_time = np.r_[model_time, symmetric]
+
+                if tel.location == 'Space':
+
+                    mask = (model_time > tel.astrometry['time'].value.min()) &
+                    (model_time < tel.lightcurve_astrometry['time'].value.max())
+                    model_time = model_time[mask]
+
                 model_time.sort()
 
                 model_time = np.unique(model_time)
