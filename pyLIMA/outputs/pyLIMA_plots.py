@@ -68,11 +68,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                 if Earth and tel.location == 'Earth':
 
                     model_time1 = np.arange(np.min((np.min(
-                        tel.lightcurve_magnitude['time'].value),
+                        tel.lightcurve_flux['time'].value),
                                                     pyLIMA_parameters['t0'] - 5 *
                                                     pyLIMA_parameters['tE'])),
                         np.max((np.max(
-                            tel.lightcurve_magnitude['time'].value),
+                            tel.lightcurve_flux['time'].value),
                                 pyLIMA_parameters['t0'] + 5 *
                                 pyLIMA_parameters['tE'])),
                         10).round(2)
@@ -90,11 +90,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                             if telescope.location == 'Earth':
                                 model_time = np.r_[
-                                    model_time, telescope.lightcurve_magnitude[
+                                    model_time, telescope.lightcurve_flux[
                                         'time'].value]
 
                                 symmetric = 2 * pyLIMA_parameters['t0'] - \
-                                            telescope.lightcurve_magnitude['time'].value
+                                            telescope.lightcurve_flux['time'].value
                                 model_time = np.r_[model_time, symmetric]
 
 
@@ -111,11 +111,11 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                 if tel.location == 'Space':
                     model_time1 = np.arange(np.min((np.min(
-                        tel.lightcurve_magnitude['time'].value),
+                        tel.lightcurve_flux['time'].value),
                                                     pyLIMA_parameters['t0'] - 5 *
                                                     pyLIMA_parameters['tE'])),
                         np.max((np.max(
-                            tel.lightcurve_magnitude['time'].value),
+                            tel.lightcurve_flux['time'].value),
                                 pyLIMA_parameters['t0'] + 5 *
                                 pyLIMA_parameters['tE'])),
                         10).round(2)
@@ -125,11 +125,12 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                         pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
                         1).round(2)
 
-                    model_time = np.r_[model_time1, model_time2,tel.lightcurve_magnitude['time'].value]
+                    model_time = np.r_[model_time1, model_time2,tel.lightcurve_flux[
+                        'time'].value]
 
-                    mask = ((model_time > tel.lightcurve_magnitude['time'].value.min())
+                    mask = ((model_time > tel.lightcurve_flux['time'].value.min())
                             & (
-                            model_time < tel.lightcurve_magnitude['time'].value.max()))
+                            model_time < tel.lightcurve_flux['time'].value.max()))
                     model_time = model_time[mask]
 
                     model_time.sort()
@@ -1091,6 +1092,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
             ref_locations.append(ref_tel.location)
             ref_magnification.append(model_magnification)
             ref_fluxes.append([f_source, f_blend])
+
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
         if tel.lightcurve_flux is not None:
