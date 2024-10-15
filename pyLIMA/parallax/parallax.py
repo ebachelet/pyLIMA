@@ -195,9 +195,9 @@ def space_ephemerides(telescope, time_to_treat, data_type='photometry'):
     x, y, z = spherical_to_cartesian(r=distances, lat=dec * np.pi / 180,
                                      lon=ra * np.pi / 180)
 
-    interpolated_x = interpolate.interp1d(dates, x)
-    interpolated_y = interpolate.interp1d(dates, y)
-    interpolated_z = interpolate.interp1d(dates, z)
+    interpolated_x = interpolate.interp1d(dates, x,fill_value="extrapolate")
+    interpolated_y = interpolate.interp1d(dates, y,fill_value="extrapolate")
+    interpolated_z = interpolate.interp1d(dates, z,fill_value="extrapolate")
 
     x_value = interpolated_x(time_to_treat)
     y_value = interpolated_y(time_to_treat)
