@@ -346,10 +346,21 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
             origin_t0par_index = np.argmin(
                 np.abs(telescope.lightcurve_flux['time'].value -
                        microlensing_model.parallax_model[1]))
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = microlensing_model.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='photometry')
+
         except AttributeError:
             origin_t0par_index = np.argmin(
                 np.abs(telescope.astrometry['time'].value -
                        microlensing_model.parallax_model[1]))
+            (source1_trajectory_x, source1_trajectory_y,
+             source2_trajectory_x, source2_trajectory_y,
+             dseparation, dalpha) = microlensing_model.sources_trajectory(
+                telescope, pyLIMA_parameters,
+                data_type='astrometry')
         # print(telescope.lightcurve_magnitude['time'].value,
         #      microlensing_model.parallax_model[1],
         #      origin_t0par_index)
