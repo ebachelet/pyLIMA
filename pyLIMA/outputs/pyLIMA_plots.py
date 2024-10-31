@@ -344,7 +344,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         telescope = faketelescopes[0]
         try:
             origin_t0par_index = np.argmin(
-                np.abs(telescope.lightcurve_magnitude['time'].value -
+                np.abs(telescope.lightcurve_flux['time'].value -
                        microlensing_model.parallax_model[1]))
         except AttributeError:
             origin_t0par_index = np.argmin(
