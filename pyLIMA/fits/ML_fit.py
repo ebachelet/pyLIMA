@@ -1230,7 +1230,7 @@ class MLfit(object):
 
         return new_fluxes
 
-    def fit_outputs(self, bokeh_plot=None):
+    def fit_outputs(self, bokeh_plot=None, bokeh_plot_name=None):
         """
         Produce the standard plots output
 
@@ -1317,10 +1317,15 @@ class MLfit(object):
             pass
         
         if bokeh_figure is not None:
-            bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
+
+            if bokeh_plot_name is None:
+
+                bokeh_plot_name = self.model.event.name.replace('-', '_').replace(' ', '_')
+                bokeh_plot_name =  './' + bokeh_plot_name + '.html'
+
             try:
-                output_file(filename='./' + bokeh_plot_name + '.html',
-                            title=bokeh_plot_name)
+                output_file(filename= bokeh_plot_name,
+                            title=self.model.event.name)
                 save(bokeh_figure)
             except Exception as e:
                 print(f"Warning: Failed to generate the HTML file due to {e}")
