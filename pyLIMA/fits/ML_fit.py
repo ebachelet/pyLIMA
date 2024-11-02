@@ -7,7 +7,6 @@ import pyLIMA.fits.objective_functions as objective_functions
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.priors import parameters_priors
 
-
 class FitException(Exception):
     pass
 
@@ -1230,7 +1229,8 @@ class MLfit(object):
 
         return new_fluxes
 
-    def fit_outputs(self, bokeh_plot=None, bokeh_plot_name=None):
+    def fit_outputs(self, bokeh_plot=None, bokeh_plot_name=None,
+                    json_name='./pyLIMA_fit.json'):
         """
         Produce the standard plots output
 
@@ -1251,9 +1251,12 @@ class MLfit(object):
         implemented yet)
         bokeh_figure : bokehh.fig, a bokeh.figure containing all the above
         """
+        #Non standard call to libraries, but otherwise slow-down codes significantly
         from bokeh.layouts import gridplot
         from bokeh.plotting import output_file, save
-        from pyLIMA.outputs import pyLIMA_plots
+        from pyLIMA.outputs import pyLIMA_plots, file_outputs
+
+        file_outputs.json_output(self,json_name=json_name)
 
         matplotlib_lightcurves = None
         matplotlib_geometry = None

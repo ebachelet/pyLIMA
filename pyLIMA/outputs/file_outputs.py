@@ -4,21 +4,60 @@ import json
 import numpy as np
 
 
-def json_output(array_parameters, parameters_name, filename='parameters',
-                output_directory='./'):
-    fit_results = {}
+def json_output(fit_object,json_name='./pyLIMA_fit.json'):
+    dictionnary = {}
 
-    for index, key in enumerate(parameters_name):
-        value = array_parameters[:, index]
-        param_dic = {}
-        param_dic['value'] = value
-        param_dic['comment'] = ''
-        param_dic['format'] = 'float'
-        param_dic['unit'] = ''
-        fit_results[key] = param_dic
+    dictionnary['Event'] = {'Name':fit_object.model.event.name}
+    dictionnary['Model'] = {'Type':fit_object.model.model_type()}
+    dictionnary['FitParameters'] = {'Parameters':fit_object.fit_parameters}
+    dictionnary['FitPriors'] = {'Parameters':fit_object.priors_parameters}
+    dictionnary['FitResults'] = {}
 
-    with open(output_directory + filename + '_.json', 'w') as outfile:
-        json.dump(fit_results, outfile)
+    for key, value in fit_object.fit_results.items():
+
+        if isinstance(value, np.ndarray):
+
+            tosave = value.tolist()
+        else:
+
+            tosave = value
+
+        if key == 'fit_object':
+
+            pass
+
+        else:
+
+            try:
+
+                dictionnary['FitResults'][key] = tosave
+
+            except TypeError:
+
+                pass
+
+    with open(json_name, 'w') as outfile:
+        json.dump(dictionnary,outfile,indent=4)
+
+
+
+
+
+# def json_output(array_parameters, parameters_name, filename='parameters',
+#                 output_directory='./'):
+#     fit_results = {}
+#
+#     for index, key in enumerate(parameters_name):
+#         value = array_parameters[:, index]
+#         param_dic = {}
+#         param_dic['value'] = value
+#         param_dic['comment'] = ''
+#         param_dic['format'] = 'float'
+#         param_dic['unit'] = ''
+#         fit_results[key] = param_dic
+#
+#     with open(output_directory + filename + '_.json', 'w') as outfile:
+#         json.dump(fit_results, outfile)
 
 
 def numpy_output(array_parameters, filename='parameters', output_directory='./'):
