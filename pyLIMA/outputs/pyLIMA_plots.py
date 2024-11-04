@@ -1392,8 +1392,7 @@ def plot_2d_sigmas(mat_ax, params1, params2, bins=50, eps=0.25, x_range=None,
 
         levels.append(hist_to_plot.ravel()[order][mask][-1])
 
-    mat_ax.contourf(xx, yy, hist_to_plot, levels=levels, cmap='Blues', extend='max',
-                    label='pyLIMASS')
+    mat_ax.contourf(xx, yy, hist_to_plot, levels=levels, cmap='Blues', extend='max')
     mat_ax.contour(xx, yy, hist_to_plot, levels=levels,
                    linestyles=['dotted', 'dashdot', 'dashed', 'solid'],
                    colors='skyblue')
