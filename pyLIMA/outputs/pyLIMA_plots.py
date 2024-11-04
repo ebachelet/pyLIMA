@@ -225,7 +225,6 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
     figure_axes.set_aspect('equal', adjustable='box')
     plt.subplots_adjust(top=0.8, bottom=0.1, left=0.2, right=0.9, wspace=0.1,
                         hspace=0.1)
-
     if bokeh_plot is not None:
 
         bokeh_geometry = figure(width=600, height=600, x_range=(-3, 3), y_range=(-3, 3),

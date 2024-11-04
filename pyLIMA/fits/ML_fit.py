@@ -1307,6 +1307,7 @@ class MLfit(object):
                            chi2 = chi2,
                            bokeh_plot=bokeh_plot)
         #matplotlib_table = None
+
         try:
             bokeh_figure = gridplot(
                 [[bokeh_lightcurves, bokeh_geometry],
@@ -1315,11 +1316,12 @@ class MLfit(object):
                  toolbar_location='above')
         
         except Exception as e:
+
             print(f"An error occurred while creating the gridplot: {e}")
             
             pass
         
-        if bokeh_figure is not None:
+        if bokeh_plot is not None:
 
             if bokeh_plot_name is None:
 
