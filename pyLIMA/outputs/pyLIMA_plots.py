@@ -1229,12 +1229,13 @@ def plot_distribution(samples, parameters_names=None, bokeh_plot=None):
     fig_size = [10, 10]
     mat_figure, mat_figure_axes = plt.subplots(len(names), len(names),
                                                figsize=(fig_size[0], fig_size[1]),
-                                               dpi=75)
+                                               sharex='col',dpi=75)
 
-    pos_text = mat_figure_axes[-2,-1].get_position()
+    pos_text = mat_figure_axes[0,-2].get_position()
+    eps = 0.1
 
     for ii in range(len(names)):
-        params2 = samples[:,ii]
+        params2 = samples[:,ii]-np.median(samples[:,ii])
 
         for jj in range(len(names)):
 
@@ -1244,13 +1245,16 @@ def plot_distribution(samples, parameters_names=None, bokeh_plot=None):
 
             if jj==ii:
 
-                mat_figure_axes[ii, jj].hist(params2,bins=50)
+                mat_figure_axes[ii, jj].hist(params2,bins=50, density=True,
+                                             range = [params2.min() - eps*np.abs(params2.min()),
+                                                      params2.max() + eps*np.abs(params2.max())])
 
             if jj<ii:
 
-                params1 = samples[:, jj]
+                params1 = samples[:, jj]-np.median(samples[:,jj])
 
-                plot_2d_sigmas(mat_figure_axes[ii,jj], params1, params2, bins=50, eps=0.1,
+
+                plot_2d_sigmas(mat_figure_axes[ii,jj], params1, params2, bins=50, eps=eps,
                                x_range=None,
                                y_range=None)
 
@@ -1262,11 +1266,15 @@ def plot_distribution(samples, parameters_names=None, bokeh_plot=None):
 
                 mat_figure_axes[ii, jj].set_xlabel(names[jj])
 
-    text = [names[i] + ' : ' + parameters_names[i] + '\n' for i in
+            if (jj>0) & (ii>-1):
+
+                mat_figure_axes[ii,jj].set_yticks([])
+
+    text = [names[i] + ' : ' + parameters_names[i] + ' - '+f'{np.median(samples[:,i]):.1}'+'\n' for i in
               range(len(parameters_names))]
 
     ax_text = mat_figure.add_axes(pos_text)
-    ax_text.text(0.25,0.25,''.join(text), size=15)
+    ax_text.text(0.25,0.25,''.join(text), verticalalignment='top',size=15)
     ax_text.xaxis.set_visible(False)
     ax_text.yaxis.set_visible(False)  # Hide only x axis
     ax_text.spines['right'].set_visible(False)
@@ -1373,7 +1381,7 @@ def plot_2d_sigmas(mat_ax, params1, params2, bins=50, eps=0.25, x_range=None,
 
     xx, yy = np.meshgrid(x_center, y_center)
     import scipy.ndimage as snd
-    hist_to_plot = snd.gaussian_filter(hist[0], 2).T
+    hist_to_plot = snd.gaussian_filter(hist[0], 1).T
 
     order = np.argsort(hist_to_plot.flat)
     sorted_cumsum = np.cumsum(hist_to_plot.flat[order])
