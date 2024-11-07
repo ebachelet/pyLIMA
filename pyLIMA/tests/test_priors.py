@@ -9,12 +9,14 @@ def _create_event(JD=0, astrometry=False):
     event = mock.MagicMock()
     event.telescopes = [mock.MagicMock()]
     event.telescopes[0].name = 'Test'
-    event.telescopes[0].lightcurve_flux = time_series.construct_time_series(
-        np.array([[JD + 0, 10, 2], [JD + 20, 200, 3]]), ['time', 'flux', 'err_flux'],
+    event.telescopes[0].lightcurve = time_series.construct_time_series(
+        np.array([[JD + 0, 10, 2,], [JD + 20, 200, 3]]), ['time', 'flux', 'err_flux'],
         ['JD', 'W/m^2', 'W/m^2'])
-    event.telescopes[0].lightcurve_magnitude = time_series.construct_time_series(
-        np.array([[JD + 0, 15, 0.2], [JD + 20, 20, 0.3]]), ['time', 'mag', 'err_mag'],
-        ['JD', 'mag', 'mag'])
+
+    event.telescopes[0].lightcurve = time_series.construct_time_series(
+        np.array([[JD + 0, 15, 0.2,10,2,1/2], [JD + 20, 20, 0.3,200,3,1/3]]), ['time', 'mag', 'err_mag','flux',
+                                                                               'err_flux','inv_err_flux'],
+        ['JD', 'mag', 'mag','W/m^2','W/m^2','m^2/W'])
     if astrometry:
         event.telescopes[0].astrometry = time_series.construct_time_series(
             np.array([[JD + 0, 10, 2, 10, 2], [JD + 20, 200, 3, 200, 3]]),
@@ -37,8 +39,8 @@ def _create_event(JD=0, astrometry=False):
 
 def test_initial_guess_PSPL():
     event = _create_event()
-    theguess = guess.initial_guess_PSPL(event)
 
+    theguess = guess.initial_guess_PSPL(event)
     assert np.allclose(theguess[0], [0.0, 1.6735571651998717, 17.540988328240694])
     assert np.allclose(theguess[1], 46056.54738747334)
 

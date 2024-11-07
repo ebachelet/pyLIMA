@@ -17,7 +17,7 @@ def magnification_PSPL_Jacobian(pspl_model, telescope, pyLIMA_parameters):
     magnification_jacobian : array, the magnification Jacobian
     Amplification : array, the magnification associated
     """
-    time = telescope.lightcurve_flux['time'].value
+    time = telescope.lightcurve['time'].value
 
     # Derivative of A = (u^2+2)/(u(u^2+4)^0.5). Amplification[0] is A(t).
     # Amplification[1] is U(t).
@@ -65,7 +65,7 @@ def magnification_FSPL_Jacobian(fspl_model, telescope, pyLIMA_parameters):
 
     yoo_table = magnification_FSPL.YOO_TABLE.copy()
 
-    time = telescope.lightcurve_flux['time'].value
+    time = telescope.lightcurve['time'].value
 
     fake_model = PSPL_model.PSPLmodel(fspl_model.event)
     # Derivative of A = Yoo et al (2004) method.

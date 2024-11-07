@@ -42,7 +42,7 @@ class USBLmodel(MLmodel):
         See https://ui.adsabs.harvard.edu/abs/2010MNRAS.408.2188B/abstract
             https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
         """
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             # self.u0_t0_from_uc_tc(pyLIMA_parameters)
 

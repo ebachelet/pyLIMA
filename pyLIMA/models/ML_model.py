@@ -231,7 +231,7 @@ class MLmodel(object):
         """
         for telescope in self.event.telescopes:
 
-            if telescope.lightcurve_magnitude is not None:
+            if telescope.lightcurve is not None:
                 self.photometry = True
 
             if telescope.astrometry is not None:
@@ -289,7 +289,7 @@ class MLmodel(object):
                     # print('Defining a default parallax model since we have
                     # astrometric data....')
                     # self.parallax_model = ['Full', np.mean(
-                    # telescope.lightcurve_flux['time'].value)]
+                    # telescope.lightcurve['time'].value)]
 
                 model_dictionnary['theta_E'] = len(model_dictionnary)
                 model_dictionnary['pi_source'] = len(model_dictionnary)
@@ -399,7 +399,7 @@ class MLmodel(object):
          """
         for telescope in self.event.telescopes:
 
-            if telescope.lightcurve_flux is not None:
+            if telescope.lightcurve is not None:
 
                 model_dictionnary['fsource_' + telescope.name] = len(model_dictionnary)
 
@@ -480,7 +480,7 @@ class MLmodel(object):
         photometric_model = None
         astrometric_model = None
 
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
             magnification = self.model_magnification(telescope, pyLIMA_parameters)
 
             # f_source, f_blend = self.derive_telescope_flux(telescope,
@@ -532,7 +532,7 @@ class MLmodel(object):
         except TypeError:
 
             # Fluxes parameters are estimated through np.polyfit
-            lightcurve = telescope.lightcurve_flux
+            lightcurve = telescope.lightcurve
             flux = lightcurve['flux'].value
             err_flux = lightcurve['err_flux'].value
 
@@ -589,7 +589,7 @@ class MLmodel(object):
         fluxes = []
         for telescope in self.event.telescopes:
 
-            if telescope.lightcurve_flux is not None:
+            if telescope.lightcurve is not None:
 
                 self.compute_the_microlensing_model(telescope, pyLIMA_parameters)
 
@@ -742,7 +742,7 @@ class MLmodel(object):
 
         if data_type == 'photometry':
 
-            lightcurve = telescope.lightcurve_flux
+            lightcurve = telescope.lightcurve
             time = lightcurve['time'].value
 
             if 'piEN' in pyLIMA_parameters.keys():
@@ -781,7 +781,7 @@ class MLmodel(object):
 
             dseparation, dalpha = orbital_motion.orbital_motion_shifts(
                 self.orbital_motion_model,
-                telescope.lightcurve_flux['time'].value,
+                telescope.lightcurve['time'].value,
                 pyLIMA_parameters)
 
             alpha -= dalpha  # Binary axes is fixed

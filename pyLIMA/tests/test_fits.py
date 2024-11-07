@@ -14,16 +14,16 @@ def create_event():
     data_1 = np.loadtxt('./examples/data/Survey_1.dat')
     telescope_1 = telescopes.Telescope(name='OGLE',
                                        camera_filter='I',
-                                       light_curve=data_1.astype(float),
-                                       light_curve_names=['time', 'mag', 'err_mag'],
-                                       light_curve_units=['JD', 'mag', 'mag'])
+                                       lightcurve=data_1.astype(float),
+                                       lightcurve_names=['time', 'mag', 'err_mag'],
+                                       lightcurve_units=['JD', 'mag', 'mag'])
 
     data_2 = np.loadtxt('./examples/data/Followup_1.dat')
     telescope_2 = telescopes.Telescope(name='LCO',
                                        camera_filter='I',
-                                       light_curve=data_2.astype(float),
-                                       light_curve_names=['time', 'mag', 'err_mag'],
-                                       light_curve_units=['JD', 'mag', 'mag'])
+                                       lightcurve=data_2.astype(float),
+                                       lightcurve_names=['time', 'mag', 'err_mag'],
+                                       lightcurve_units=['JD', 'mag', 'mag'])
 
     your_event.telescopes.append(telescope_1)
     your_event.telescopes.append(telescope_2)

@@ -25,11 +25,11 @@ class BOOTSTRAPfit(MLfit):
 
         for tel in self.model.event.telescopes:
 
-            if tel.lightcurve_flux is not None:
+            if tel.lightcurve is not None:
 
                 bootstrap_indexes_photometry = np.random.randint(0,
-                                                                 len(tel.lightcurve_flux),
-                                                                 len(tel.lightcurve_flux))
+                                                                 len(tel.lightcurve),
+                                                                 len(tel.lightcurve))
 
             else:
 

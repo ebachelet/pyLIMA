@@ -37,23 +37,23 @@ your_event.name = 'OB150966'
 data_1 = np.loadtxt('./data/OGLE_OB150966.dat')
 telescope_1 = telescopes.Telescope(name='OGLE',
                                    camera_filter='I',
-                                   light_curve=data_1.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_1.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_2 = np.loadtxt('./data/MOA_OB150966.dat')
 telescope_2 = telescopes.Telescope(name='MOA',
                                    camera_filter='I+R',
-                                   light_curve=data_2.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_2.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_3 = np.loadtxt('./data/SPITZER_OB150966.dat')
 telescope_3 = telescopes.Telescope(name='SPITZER',
                                    camera_filter='IRAC1',
-                                   light_curve=data_3.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_3.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 ### IMPORTANT: Tell the code that SPITZER is in space!
 telescope_3.location = 'Space'
@@ -62,58 +62,58 @@ telescope_3.spacecraft_name = 'Spitzer'
 data_4 = np.loadtxt('./data/DANISH_OB150966.dat')
 telescope_4 = telescopes.Telescope(name='DANISH',
                                    camera_filter='Z+I',
-                                   light_curve=data_4.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_4.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_5 = np.loadtxt('./data/LCO_CTIO_A_OB150966.dat')
 telescope_5 = telescopes.Telescope(name='LCO_CTIO_A',
                                    camera_filter='I',
-                                   light_curve=data_5.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_5.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_6 = np.loadtxt('./data/LCO_CTIO_B_OB150966.dat')
 telescope_6 = telescopes.Telescope(name='LCO_CTIO_B',
                                    camera_filter='I',
-                                   light_curve=data_6.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_6.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_7 = np.loadtxt('./data/LCO_CTIO_OB150966.dat')
 telescope_7 = telescopes.Telescope(name='LCO_CTIO',
                                    camera_filter='I',
-                                   light_curve=data_7.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_7.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_8 = np.loadtxt('./data/LCO_SAAO_OB150966.dat')
 telescope_8 = telescopes.Telescope(name='LCO_SAAO',
                                    camera_filter='I',
-                                   light_curve=data_8.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_8.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_9 = np.loadtxt('./data/LCO_SSO_A_OB150966.dat')
 telescope_9 = telescopes.Telescope(name='LCO_SSO_A',
                                    camera_filter='I',
-                                   light_curve=data_9.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_9.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_10 = np.loadtxt('./data/LCO_SSO_B_OB150966.dat')
 telescope_10 = telescopes.Telescope(name='LCO_SSO_B',
                                     camera_filter='I',
-                                    light_curve=data_10.astype(float),
-                                    light_curve_names=['time', 'mag', 'err_mag'],
-                                    light_curve_units=['JD', 'mag', 'mag'])
+                                    lightcurve=data_10.astype(float),
+                                    lightcurve_names=['time', 'mag', 'err_mag'],
+                                    lightcurve_units=['JD', 'mag', 'mag'])
 
 data_11 = np.loadtxt('./data/LCO_SSO_OB150966.dat')
 telescope_11 = telescopes.Telescope(name='LCO_SSO',
                                     camera_filter='I',
-                                    light_curve=data_11.astype(float),
-                                    light_curve_names=['time', 'mag', 'err_mag'],
-                                    light_curve_units=['JD', 'mag', 'mag'])
+                                    lightcurve=data_11.astype(float),
+                                    lightcurve_names=['time', 'mag', 'err_mag'],
+                                    lightcurve_units=['JD', 'mag', 'mag'])
 
 ### Add the telescopes to your EVENT:
 your_event.telescopes.append(telescope_1)
@@ -205,7 +205,7 @@ plt.show()
 ### and blending)
 
 # Use the default fancy parameters log(tE), log(rho), log(s), log(q)
-fancy = pyLIMA_fancy_parameters.standard_fancy_parameters
+fancy = pyLIMA_fancy_parameters.StandardFancyParameters()
 usbl = USBL_model.USBLmodel(your_event, fancy_parameters=fancy,
                             parallax=['Full', 2457205.5])
 ### t0par = 2457265.5

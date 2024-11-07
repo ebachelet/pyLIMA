@@ -140,9 +140,9 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
 
     telescope = telescopes.Telescope(name=name, camera_filter=camera_filter,
                                      pixel_scale=pixel_scale,
-                                     light_curve=lightcurveflux,
-                                     light_curve_names=['time', 'flux', 'err_flux'],
-                                     light_curve_units=['JD', 'w/m^2', 'w/m^2'],
+                                     lightcurve=lightcurveflux,
+                                     lightcurve_names=['time', 'flux', 'err_flux'],
+                                     lightcurve_units=['JD', 'w/m^2', 'w/m^2'],
                                      astrometry=astrometry,
                                      astrometry_names=['time', 'ra', 'err_ra', 'dec',
                                                        'err_dec'],
@@ -263,9 +263,9 @@ def simulate_microlensing_model_parameters(model):
 
     for telescope in model.event.telescopes:
 
-        if telescope.lightcurve_flux is not None:
-            mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
-            maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
+        if telescope.lightcurve is not None:
+            mins_time.append(np.min(telescope.lightcurve['time'].value))
+            maxs_time.append(np.max(telescope.lightcurve['time'].value))
 
         if telescope.astrometry is not None:
             mins_time.append(np.min(telescope.astrometry['time'].value))
@@ -327,7 +327,7 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude=[10, 20],
     return fake_fluxes_parameters
 
 
-def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
+def simulate_lightcurve(model, pyLIMA_parameters, add_noise=True):
     """
     Simulate the fluxes in the telescopes according to the model and parameters
 
@@ -340,7 +340,7 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
 
     for ind, telescope in enumerate(model.event.telescopes):
 
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             theoritical_flux = \
                 model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[
@@ -360,10 +360,14 @@ def simulate_lightcurve_flux(model, pyLIMA_parameters, add_noise=True):
                 observed_flux = theoritical_flux
                 err_observed_flux = theoritical_flux ** 0.5
 
-            telescope.lightcurve_flux['flux'] = observed_flux
-            telescope.lightcurve_flux['err_flux'] = err_observed_flux
+            telescope.lightcurve['flux'] = observed_flux
+            telescope.lightcurve['err_flux'] = err_observed_flux
+            telescope.lightcurve['inv_err_flux'] = 1/err_observed_flux
 
-            telescope.lightcurve_magnitude = telescope.lightcurve_in_magnitude()
+            lightcurve_magnitude =  telescope.lightcurve_in_magnitude(telescope.lightcurve)
+            telescope.lightcurve['mag'] = lightcurve_magnitude[:,1]
+            telescope.lightcurve['err_mag'] = lightcurve_magnitude[:,2]
+
 
     model.define_pyLIMA_standard_parameters()
 

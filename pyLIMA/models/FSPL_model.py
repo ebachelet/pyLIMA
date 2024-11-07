@@ -35,7 +35,7 @@ class FSPLmodel(MLmodel):
         """
         The FSPL magnification, see  http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
         """
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             rho = pyLIMA_parameters['rho']
             gamma = telescope.ld_gamma

@@ -16,7 +16,7 @@ class FSBLmodel(USBLmodel):
         https://ui.adsabs.harvard.edu/abs/2018MNRAS.479.5157B/abstract
         """
 
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             linear_limb_darkening = telescope.ld_a1
 

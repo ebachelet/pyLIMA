@@ -7,14 +7,14 @@ def test_event():
     lightcurve = np.array([[2456789, 12.8, 0.01], [2458888, 12, 0.25]])
 
     telo = telescopes.Telescope(name='fake', camera_filter='I',
-                                light_curve=lightcurve,
-                                light_curve_names=['time', 'mag', 'err_mag'],
-                                light_curve_units=['JD', 'mag', 'mag'])
+                                lightcurve=lightcurve,
+                                lightcurve_names=['time', 'mag', 'err_mag'],
+                                lightcurve_units=['JD', 'mag', 'mag'])
 
     telo2 = telescopes.Telescope(name='fake2', camera_filter='I',
-                                 light_curve=lightcurve,
-                                 light_curve_names=['time', 'mag', 'err_mag'],
-                                 light_curve_units=['JD', 'mag', 'mag'])
+                                 lightcurve=lightcurve,
+                                 lightcurve_names=['time', 'mag', 'err_mag'],
+                                 lightcurve_units=['JD', 'mag', 'mag'])
     ev = event.Event(ra=20, dec=-20)
     ev.telescopes.append(telo)
     ev.telescopes.append(telo2)

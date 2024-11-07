@@ -10,7 +10,7 @@ def _create_event(JD=0, astrometry=False):
     event = mock.MagicMock()
     event.telescopes = [mock.MagicMock()]
     event.telescopes[0].name = 'Test'
-    event.telescopes[0].lightcurve_flux = time_series.construct_time_series(
+    event.telescopes[0].lightcurve = time_series.construct_time_series(
         np.array([[JD + 0, 10, 2], [JD + 20, 200, 3]]), ['time', 'flux', 'err_flux'],
         ['JD', 'W/m^2', 'W/m^2'])
 

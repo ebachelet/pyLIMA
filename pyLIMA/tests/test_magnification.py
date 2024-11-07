@@ -31,12 +31,12 @@ def test_magnification_PSPL_Jacobian():
     from pyLIMA import event
 
     ev = event.Event()
-    lightcurve = np.array([2456789, 12.8, 0.01])
+    lightcurve = np.array([[2456789, 12.8, 0.01]])
 
     telo = pyLIMA.telescopes.Telescope(name='fake', camera_filter='I',
-                                       light_curve=lightcurve,
-                                       light_curve_names=['time', 'mag', 'err_mag'],
-                                       light_curve_units=['JD', 'mag', 'mag'])
+                                       lightcurve=lightcurve,
+                                       lightcurve_names=['time', 'mag', 'err_mag'],
+                                       lightcurve_units=['JD', 'mag', 'mag'])
 
     ev.telescopes.append(telo)
 
@@ -60,12 +60,12 @@ def test_magnification_FSPL_Jacobian():
     from pyLIMA import event
 
     ev = event.Event()
-    lightcurve = np.array([2456789, 12.8, 0.01])
+    lightcurve = np.array([[2456789, 12.8, 0.01]])
 
     telo = pyLIMA.telescopes.Telescope(name='fake', camera_filter='I',
-                                       light_curve=lightcurve,
-                                       light_curve_names=['time', 'mag', 'err_mag'],
-                                       light_curve_units=['JD', 'mag', 'mag'])
+                                       lightcurve=lightcurve,
+                                       lightcurve_names=['time', 'mag', 'err_mag'],
+                                       lightcurve_units=['JD', 'mag', 'mag'])
 
     ev.telescopes.append(telo)
 
@@ -86,12 +86,12 @@ def test_magnification_numerical_Jacobian():
     from pyLIMA import event
 
     ev = event.Event()
-    lightcurve = np.array([2456789, 12.8, 0.01])
+    lightcurve = np.array([[2456789, 12.8, 0.01]])
 
     telo = pyLIMA.telescopes.Telescope(name='fake', camera_filter='I',
-                                       light_curve=lightcurve,
-                                       light_curve_names=['time', 'mag', 'err_mag'],
-                                       light_curve_units=['JD', 'mag', 'mag'])
+                                       lightcurve=lightcurve,
+                                       lightcurve_names=['time', 'mag', 'err_mag'],
+                                       lightcurve_units=['JD', 'mag', 'mag'])
 
     ev.telescopes.append(telo)
 

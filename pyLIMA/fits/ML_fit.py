@@ -133,7 +133,7 @@ class MLfit(object):
 
             for telescope in self.model.event.telescopes:
 
-                if telescope.lightcurve_flux is not None:
+                if telescope.lightcurve is not None:
                     thekey = 'logk_photometry_' + telescope.name
                     theind = len(fit_parameters_dictionnary_keys)
                     theboundaries = \
@@ -185,9 +185,9 @@ class MLfit(object):
 
         for telescope in self.model.event.telescopes:
 
-            if telescope.lightcurve_flux is not None:
-                mins_time.append(np.min(telescope.lightcurve_flux['time'].value))
-                maxs_time.append(np.max(telescope.lightcurve_flux['time'].value))
+            if telescope.lightcurve is not None:
+                mins_time.append(np.min(telescope.lightcurve['time'].value))
+                maxs_time.append(np.max(telescope.lightcurve['time'].value))
 
             if telescope.astrometry is not None:
                 mins_time.append(np.min(telescope.astrometry['time'].value))
@@ -308,14 +308,10 @@ class MLfit(object):
 
             for tel in self.model.event.telescopes:
 
-                if tel.lightcurve_flux is not None:
+                if tel.lightcurve is not None:
 
-                        #if np.isinf(objective):
-
-                        #    fluxes.append(np.nan)
-                        #    fluxes.append(np.nan)
-                        #else:
                         fluxes.append(pyLIMA_parameters['fsource_' + tel.name])
+
                         if self.model.blend_flux_parameter == 'gblend':
                             fluxes.append(pyLIMA_parameters['gblend_' + tel.name])
 
@@ -327,6 +323,7 @@ class MLfit(object):
 
                         if self.model.blend_flux_parameter == 'noblend':
                             pass
+
             self.trials_parameters.append(fit_process_parameters.tolist() + fluxes)
 
         else:
@@ -559,7 +556,7 @@ class MLfit(object):
 
                 for telescope in self.model.event.telescopes:
 
-                    if telescope.lightcurve_flux is not None:
+                    if telescope.lightcurve is not None:
                         rescale_photometry_guess.append(0)
 
                 self.rescale_photometry_parameters_guess = rescale_photometry_guess
@@ -1155,14 +1152,14 @@ class MLfit(object):
 
                 _jacobi = self.model.photometric_model_Jacobian(telescope,
                                                                 pyLIMA_parameters) / \
-                          telescope.lightcurve_flux['err_flux'].value
+                          telescope.lightcurve['err_flux'].value
 
             else:
 
                 _jacobi = np.c_[
                     _jacobi, self.model.photometric_model_Jacobian(telescope,
                                                                    pyLIMA_parameters) /
-                             telescope.lightcurve_flux['err_flux'].value]
+                             telescope.lightcurve['err_flux'].value]
 
             count += 1
 
@@ -1186,7 +1183,7 @@ class MLfit(object):
 
         for telescope in self.model.event.telescopes:
             derivative_fs = np.zeros((len(dresdfs)))
-            index = np.arange(start_index, start_index + len(telescope.lightcurve_flux))
+            index = np.arange(start_index, start_index + len(telescope.lightcurve))
 
             if self.model.blend_flux_parameter != 'noblend':
                 derivative_g = np.zeros((len(dresdg)))

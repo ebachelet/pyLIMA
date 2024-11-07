@@ -32,16 +32,16 @@ your_event.name = 'My event name'
 data_1 = np.loadtxt('./data/Survey_1.dat')
 telescope_1 = telescopes.Telescope(name='OGLE',
                                    camera_filter='I',
-                                   light_curve=data_1.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_1.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_2 = np.loadtxt('./data/Followup_1.dat')
 telescope_2 = telescopes.Telescope(name='LCO',
                                    camera_filter='I',
-                                   light_curve=data_2.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_2.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 ### Append these two telescope data sets to your EVENT object.
 your_event.telescopes.append(telescope_1)
@@ -75,8 +75,8 @@ def chisq(fit_process_parameters, your_model):
         # Compute fit residuals
         model = your_model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[
             'photometry']
-        flux = telescope.lightcurve_flux['flux'].value
-        errflux = telescope.lightcurve_flux['err_flux'].value
+        flux = telescope.lightcurve['flux'].value
+        errflux = telescope.lightcurve['err_flux'].value
         residus = (flux - model) / errflux
         chichi += (residus ** 2).sum()
 

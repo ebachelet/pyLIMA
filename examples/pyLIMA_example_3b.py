@@ -90,7 +90,7 @@ pyLIMA_parameters_1 = pspl.compute_pyLIMA_parameters(pspl_parameters)
 ### Now we have defined the MODEL we want to simulate, we have defined the telescope
 # details,
 ### so we just inject these into our simulator to produce a light curve:
-simulator.simulate_lightcurve_flux(pspl, pyLIMA_parameters_1)
+simulator.simulate_lightcurve(pspl, pyLIMA_parameters_1)
 
 #### Let's plot our simulated light curve using the pyLIMA plotter:
 

@@ -6,15 +6,17 @@ Created on Thu Aug 27 16:39:32 2015
 """
 import numpy as np
 from astropy import constants as astronomical_constants
+from astropy.table import join
+
 from pyLIMA.parallax import parallax
 from pyLIMA.toolbox.time_series import construct_time_series, clean_time_series
 
 # Conventions for magnitude and flux lightcurves for all pyLIMA. If the injected
 # lightcurve format differs, please
-# indicate this in the correponding lightcurve_magnitude_dictionnary or
-# lightcurve_flux_dictionnary, see below.
-PYLIMA_LIGHTCURVE_MAGNITUDE_NAMES = ['time', 'mag', 'err_mag']
-PYLIMA_LIGHTCURVE_FLUX_NAMES = ['time', 'flux', 'err_flux', 'inv_err_flux']
+# indicate this in the correponding lightcurve_dictionnary or
+# lightcurve_dictionnary, see below.
+PYLIMA_lightcurve_NAMES = ['time', 'mag', 'err_mag']
+PYLIMA_lightcurve_NAMES = ['time', 'flux', 'err_flux', 'inv_err_flux']
 
 
 class Telescope(object):
@@ -26,10 +28,8 @@ class Telescope(object):
     ----------
     name : str, the telescope name (needs to be unique!)
     filter : str, the filter used for observations
-    lightcurve_magnitude : array, the observed lightcurve in magnitude
-    [time,mag,err_mag]
-    lightcurve_flux : array, the observed lightcurve in flux
-    [time,flux,err_flux]
+    lightcurve : array, the observed lightcurve
+    [time,mag,err_mag,flux,err_flux,1/err_flux]
     astrometry : array, the astrometric time series
     [time,ra,err_ra,dec,err_dec], should be in degree or pixel
     bad_data : dict, a dictionnary containing non-finite data and duplicates
@@ -58,8 +58,8 @@ class Telescope(object):
     ld_a2 : float, the classic sqrt  limb darkening coefficient
     """
 
-    def __init__(self, name='NDG', camera_filter='I', pixel_scale=1, light_curve=None,
-                 light_curve_names=None, light_curve_units=None,
+    def __init__(self, name='NDG', camera_filter='I', pixel_scale=1, lightcurve=None,
+                 lightcurve_names=None, lightcurve_units=None,
                  astrometry=None, astrometry_names=None, astrometry_units=None,
                  location='Earth', altitude=-astronomical_constants.R_earth.value,
                  longitude=0.57, latitude=49.49,
@@ -70,8 +70,7 @@ class Telescope(object):
         self.name = name
         self.filter = camera_filter
         self.pixel_scale = pixel_scale  # mas/pix
-        self.lightcurve_magnitude = None
-        self.lightcurve_flux = None
+        self.lightcurve = None
         self.astrometry = None
         self.bad_data = {}
 
@@ -100,35 +99,40 @@ class Telescope(object):
         self.ld_a1 = 0
         self.ld_a2 = 0
 
-        if light_curve is not None:
+        if lightcurve is not None:
 
-            if 'mag' in light_curve_names:
-                data = construct_time_series(light_curve, light_curve_names,
-                                             light_curve_units)
-                good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
+            data = construct_time_series(lightcurve, lightcurve_names,
+                                         lightcurve_units)
 
-                self.lightcurve_magnitude = data[good_lines]
-                self.lightcurve_flux = self.lightcurve_in_flux()
 
-                bad_data = {}
-                bad_data['non_finite_lines'] = non_finite_lines
-                bad_data['non_unique_lines'] = non_unique_lines
+            if 'mag' in lightcurve_names:
 
-                self.bad_data['photometry'] = bad_data
+                lightcurve_magnitude = lightcurve
+                lightcurve_flux = self.lightcurve_in_flux(data)
 
-            if 'flux' in light_curve_names:
-                data = construct_time_series(light_curve, light_curve_names,
-                                             light_curve_units)
-                good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
+            else:
 
-                self.lightcurve_flux = data[good_lines]
-                self.lightcurve_magnitude = self.lightcurve_in_magnitude()
+                lightcurve_flux = lightcurve
 
-                bad_data = {}
-                bad_data['non_finite_lines'] = non_finite_lines
-                bad_data['non_unique_lines'] = non_unique_lines
+                if 'inv_err_flux' not in lightcurve_names:
 
-                self.bad_data['photometry'] = bad_data
+                    lightcurve_flux = np.c_[lightcurve_flux,1/data['err_flux'].value]
+
+                lightcurve_magnitude = self.lightcurve_in_magnitude(data)
+
+
+            lightcurve_tot = np.c_[lightcurve_magnitude,lightcurve_flux[:,1:]]
+            data = construct_time_series(lightcurve_tot, ['time','mag','err_mag','flux','err_flux','inv_err_flux'],
+                                         ['JD','mag','mag','W/m^2','W/m^2','m^2/W'])
+            good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
+
+            self.lightcurve = data[good_lines]
+
+            bad_data = {}
+            bad_data['non_finite_lines'] = non_finite_lines
+            bad_data['non_unique_lines'] = non_unique_lines
+
+            self.bad_data['photometry'] = bad_data
 
         if astrometry is not None:
             data = construct_time_series(astrometry, astrometry_names, astrometry_units)
@@ -164,8 +168,7 @@ class Telescope(object):
         astrmetry_mask : array, a boolean array to mask astrometric data
         """
         if photometry_mask is not None:
-            self.lightcurve_flux = self.lightcurve_flux[photometry_mask]
-            self.lightcurve_magnitude = self.lightcurve_magnitude[photometry_mask]
+            self.lightcurve = self.lightcurve[photometry_mask]
 
             self.Earth_positions['photometry'] = self.Earth_positions['photometry'][
                 photometry_mask]
@@ -204,10 +207,10 @@ class Telescope(object):
         """
         try:
             if choice == 'flux':
-                return len(self.lightcurve_flux['time'])
+                return len(self.lightcurve['time'])
 
             if choice == 'magnitude':
-                return len(self.lightcurve_magnitude['mag'])
+                return len(self.lightcurve['mag'])
 
             if choice == 'astrometry':
                 return len(self.astrometry)
@@ -244,7 +247,7 @@ class Telescope(object):
 
             if data_type == 'photometry':
 
-                data = self.lightcurve_flux
+                data = self.lightcurve
 
             else:
 
@@ -269,7 +272,7 @@ class Telescope(object):
 
             if data_type == 'photometry':
 
-                data = self.lightcurve_flux
+                data = self.lightcurve
 
             else:
 
@@ -292,7 +295,7 @@ class Telescope(object):
 
             if data_type == 'photometry':
 
-                data = self.lightcurve_flux
+                data = self.lightcurve
 
             else:
 
@@ -316,7 +319,7 @@ class Telescope(object):
 
             if data_type == 'photometry':
 
-                data = self.lightcurve_flux
+                data = self.lightcurve
 
             else:
 
@@ -350,13 +353,11 @@ class Telescope(object):
         print('Parallax(' + parallax_model[
             0] + ') estimated for the telescope ' + self.name + ': SUCCESS')
 
-    def lightcurve_in_flux(self):
+    def lightcurve_in_flux(self, lightcurve):
         """
         Transform lightcurve magnitude to lightcurve flux
         """
         import pyLIMA.toolbox.brightness_transformation
-
-        lightcurve = self.lightcurve_magnitude
 
         time = lightcurve['time'].value
         mag = lightcurve['mag'].value
@@ -367,21 +368,14 @@ class Telescope(object):
             .error_magnitude_to_error_flux(
             err_mag, flux)
         inv_err_flux = 1.0 / err_flux
-        lightcurve_in_flux = construct_time_series(
-            np.c_[time, flux, err_flux, inv_err_flux],
-            PYLIMA_LIGHTCURVE_FLUX_NAMES,
-            [lightcurve['time'].unit, 'w/m^2', 'w/m^2', 'm^2/W'])
 
-        return lightcurve_in_flux
+        return np.c_[time, flux, err_flux, inv_err_flux]
 
-    def lightcurve_in_magnitude(self):
+    def lightcurve_in_magnitude(self, lightcurve):
         """
         Transform lightcurve flux to lightcurve  magnitude
         """
         import pyLIMA.toolbox.brightness_transformation
-
-        lightcurve = self.lightcurve_flux
-
         time = lightcurve['time'].value
         flux = lightcurve['flux'].value
         err_flux = lightcurve['err_flux'].value
@@ -390,12 +384,8 @@ class Telescope(object):
         err_mag = pyLIMA.toolbox.brightness_transformation \
             .error_flux_to_error_magnitude(
             err_flux, flux)
-        lightcurve_in_mag = construct_time_series(np.c_[time, mag, err_mag],
-                                                  PYLIMA_LIGHTCURVE_MAGNITUDE_NAMES,
-                                                  [lightcurve['time'].unit, 'mag',
-                                                   'mag'])
 
-        return lightcurve_in_mag
+        return np.c_[time, mag, err_mag]
 
     def plot_data(self, choice='Mag'):
         """
@@ -410,9 +400,9 @@ class Telescope(object):
         import matplotlib.pyplot as plt
 
         if choice == 'Mag':
-            plots.plot_light_curve_magnitude(self.lightcurve_magnitude['time'].value,
-                                             self.lightcurve_magnitude['mag'].value,
-                                             self.lightcurve_magnitude['err_mag'].value,
+            plots.plot_light_curve_magnitude(self.lightcurve['time'].value,
+                                             self.lightcurve['mag'].value,
+                                             self.lightcurve['err_mag'].value,
                                              name=self.name)
 
             plt.gca().invert_yaxis()

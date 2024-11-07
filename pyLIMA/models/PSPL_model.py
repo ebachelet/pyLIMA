@@ -84,7 +84,7 @@ class PSPLmodel(MLmodel):
     def model_magnification(self, telescope, pyLIMA_parameters,
                             return_impact_parameter=False):
 
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,

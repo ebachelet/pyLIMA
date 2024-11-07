@@ -10,9 +10,9 @@ def simulate_telescope(altitude=154, location='Earth', spacecraft_name=None):
                                                                     0.002]])
 
     telo = telescopes.Telescope(name='fake', camera_filter='I',
-                                light_curve=lightcurve,
-                                light_curve_names=['time', 'mag', 'err_mag'],
-                                light_curve_units=['JD', 'mag', 'mag'],
+                                lightcurve=lightcurve,
+                                lightcurve_names=['time', 'mag', 'err_mag'],
+                                lightcurve_units=['JD', 'mag', 'mag'],
                                 astrometry=astrometry,
                                 astrometry_names=['time', 'ra', 'err_ra', 'dec',
                                                   'err_dec'],
@@ -33,8 +33,8 @@ def test_time_data():
 
     telo.trim_data(photometry_mask=photometry_mask, astrometry_mask=astrometry_mask)
 
-    assert len(telo.lightcurve_flux) == 1
-    assert len(telo.lightcurve_magnitude) == 1
+    assert len(telo.lightcurve) == 1
+    assert len(telo.lightcurve) == 1
     assert len(telo.astrometry) == 0
 
     assert np.allclose(telo.Earth_positions['photometry'], np.array([[-0.64031624,

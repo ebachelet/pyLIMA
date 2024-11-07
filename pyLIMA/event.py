@@ -51,8 +51,7 @@ class Event(object):
         """
         for telescope in self.telescopes:
 
-            if (telescope.lightcurve_flux is None) & (
-                    telescope.lightcurve_magnitude is None) & (
+            if (telescope.lightcurve is None) & (
                     telescope.astrometry is None):
                 print(
                     'WARNING : The telescope ' + telescope.name + ' is empty (no '
@@ -84,8 +83,7 @@ class Event(object):
 
             for telescope in self.telescopes:
 
-                if (len(telescope.lightcurve_magnitude) == 0) & \
-                        (len(telescope.lightcurve_flux) == 0):
+                if len(telescope.lightcurve) == 0:
                     print(
                         'ERROR : There is no associated lightcurve in magnitude or '
                         'flux with ' \

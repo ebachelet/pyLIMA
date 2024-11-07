@@ -76,7 +76,7 @@ def parallax_combination(telescope, parallax_model, North_vector, East_vector):
 
         if data_type == 'photometry':
 
-            data = telescope.lightcurve_flux
+            data = telescope.lightcurve
         else:
 
             data = telescope.astrometry

@@ -21,8 +21,28 @@ from pyLIMA.outputs import pyLIMA_plots
 from pyLIMA import event
 from pyLIMA import telescopes
 
+class MyFancyParameters(object):
+
+    def __init__(self, fancy_parameters = {'tE': 'log_tE'},
+                       fancy_boundaries = {'log_tE':(0,3)} ):
+
+        self.fancy_parameters = fancy_parameters
+
+        self.fancy_boundaries = fancy_boundaries
+
+
+    def tE(self, fancy_params):
+
+        return 10**fancy_params['log_tE']
+
+    def log_tE(self, standard_params):
+
+        return np.log10(standard_params['tE'])
+
+
+
 ### fancy_parameters already provides some commonly used options, for example:
-pyLIMA_fancy_parameters.standard_fancy_parameters
+pyLIMA_fancy_parameters.StandardFancyParameters
 
 ### Begin by create a new EVENT object and giving it a name, as in example 1.
 your_event = event.Event()
@@ -38,16 +58,16 @@ your_event.name = 'My event name'
 data_1 = np.loadtxt('./data/Survey_1.dat')
 telescope_1 = telescopes.Telescope(name='OGLE',
                                    camera_filter='I',
-                                   light_curve=data_1.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_1.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 data_2 = np.loadtxt('./data/Followup_1.dat')
 telescope_2 = telescopes.Telescope(name='LCO',
                                    camera_filter='I',
-                                   light_curve=data_2.astype(float),
-                                   light_curve_names=['time', 'mag', 'err_mag'],
-                                   light_curve_units=['JD', 'mag', 'mag'])
+                                   lightcurve=data_2.astype(float),
+                                   lightcurve_names=['time', 'mag', 'err_mag'],
+                                   lightcurve_units=['JD', 'mag', 'mag'])
 
 ### Append these two telescope data sets to your EVENT object.
 your_event.telescopes.append(telescope_1)
@@ -76,7 +96,7 @@ your_event.telescopes[1].ld_gamma = 0.5
 ### In essence, we need to define a transformation function within pyLIMA.
 ### For this particular transformation, i.e. from tE to log(tE), pyLIMA already
 # provides the necessary functions to convert back and forth:
-my_pars = {'log_tE': 'tE'}
+my_pars = MyFancyParameters()
 
 fspl = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars)
 
@@ -112,27 +132,35 @@ plt.show()
 
 ### Define the transformation from t_star --> t_E. This uses the default
 # parameterisation.
-def t_star(x):
-    return x.rho * x.tE
+
+class MyFancyParameters2(object):
+
+    def __init__(self, fancy_parameters = {'rho': 'log_rho','tE':'t_star'},
+                       fancy_boundaries = {'log_rho':(-5,0),'t_star':(0,1)} ):
+
+        self.fancy_parameters = fancy_parameters
+
+        self.fancy_boundaries = fancy_boundaries
 
 
-setattr(pyLIMA_fancy_parameters, 't_star', t_star)
+    def rho(self, fancy_params):
 
+        return 10**fancy_params['log_rho']
 
-### It is also necessary to define the inverse transformation from t_E --> t_star.
-### Note that the inverse transformation needs to be defined using the new
-# parameterisation!
-def tE(x):
-    return x.t_star / 10 ** (x.log_rho)
+    def log_rho(self, standard_params):
 
+        return np.log10(standard_params['rho'])
+    
+    def tE(self, fancy_params):
 
-setattr(pyLIMA_fancy_parameters, 'tE', tE)
+        return fancy_params['t_star']/10**fancy_params['log_rho']
 
-### Your new t_star definition is now part of fancy_parameters and you can use it.
-dir(pyLIMA_fancy_parameters)
+    def t_star(self, standard_params):
+
+        return standard_params['tE']*standard_params['rho']
 
 ### Update the fancy parameter dictionary with the new definitions
-my_pars2 = {'log_rho': 'rho', 't_star': 'tE'}
+my_pars2 = MyFancyParameters2()
 fspl2 = FSPL_model.FSPLmodel(your_event, fancy_parameters=my_pars2)
 
 ### Give it the guess parameters we obtained from example 1, formatted using the new

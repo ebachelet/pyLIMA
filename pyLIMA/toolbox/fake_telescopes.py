@@ -1,7 +1,7 @@
 import numpy as np
 from pyLIMA import telescopes
 
-def create_a_fake_telescope(light_curve=None, astrometry_curve=None,
+def create_a_fake_telescope(lightcurve=None, astrometry=None,
                             name='A Fake Telescope', astrometry_unit='deg'):
     """
     Create a telescope for plots
@@ -18,10 +18,10 @@ def create_a_fake_telescope(light_curve=None, astrometry_curve=None,
     telescope : object, a telescope object
     """
 
-    fake_telescope = telescopes.Telescope(name=name, light_curve=light_curve,
-                                     light_curve_names=['time', 'mag', 'err_mag'],
-                                     light_curve_units=['JD', 'mag', 'mag'],
-                                     astrometry=astrometry_curve,
+    fake_telescope = telescopes.Telescope(name=name, lightcurve=lightcurve,
+                                     lightcurve_names=['time', 'mag', 'err_mag'],
+                                     lightcurve_units=['JD', 'mag', 'mag'],
+                                     astrometry=astrometry,
                                      astrometry_names=['time', 'ra', 'err_ra', 'dec',
                                                        'err_dec'],
                                      astrometry_units=['JD', astrometry_unit,
@@ -31,23 +31,23 @@ def create_a_fake_telescope(light_curve=None, astrometry_curve=None,
     return fake_telescope
 
 
-def replicate_a_telescope(microlensing_model, telescope_index, light_curve_time=None,
-                          astrometry_curve_time=None):
+def replicate_a_telescope(microlensing_model, telescope_index, lightcurve_time=None,
+                          astrometry_time=None):
 
     original_telescope = microlensing_model.event.telescopes[telescope_index]
 
-    if light_curve_time is not None:
+    if lightcurve_time is not None:
 
-        model_time = light_curve_time
+        model_time = lightcurve_time
         model_lightcurve = np.c_[
             model_time, [0] * len(model_time), [0.1] * len(model_time)]
     else:
 
         model_lightcurve = None
 
-    if astrometry_curve_time is not None:
+    if astrometry_time is not None:
 
-        model_time = astrometry_curve_time
+        model_time = astrometry_time
         model_astrometry = np.c_[
             model_time, [0] * len(model_time), [0.1] * len(model_time), [
                 0] * len(model_time), [0.1] * len(model_time)]
@@ -58,8 +58,8 @@ def replicate_a_telescope(microlensing_model, telescope_index, light_curve_time=
         model_astrometry = None
         unit_astrometry='deg'
 
-    model_telescope = create_a_fake_telescope(light_curve=model_lightcurve,
-                            astrometry_curve=model_astrometry,
+    model_telescope = create_a_fake_telescope(lightcurve=model_lightcurve,
+                            astrometry=model_astrometry,
                             name=original_telescope.name,
                             astrometry_unit=unit_astrometry)
 

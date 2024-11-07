@@ -67,16 +67,16 @@ pyLIMA_parameters_1 = pspl.compute_pyLIMA_parameters(pspl_parameters)
 
 ### Now we have defined the MODEL we want to simulate, we have defined the telescope
 ### details, so we just inject these into our simulator to produce a light curve:
-simulator.simulate_lightcurve_flux(pspl, pyLIMA_parameters_1)
+simulator.simulate_lightcurve(pspl, pyLIMA_parameters_1)
 
 #### Let's plot our simulated light curve using the pyLIMA plotter (recommended)!
 pyLIMA_plots.plot_lightcurves(pspl, pspl_parameters)
 plt.show()
 
 ### ... or you can just plot the results yourself any way you want to using matplotlib
-plt.errorbar(CTIO_I.lightcurve_magnitude['time'].value - 2450000,
-             CTIO_I.lightcurve_magnitude['mag'].value,
-             yerr=CTIO_I.lightcurve_magnitude['err_mag'].value,
+plt.errorbar(CTIO_I.lightcurve['time'].value - 2450000,
+             CTIO_I.lightcurve['mag'].value,
+             yerr=CTIO_I.lightcurve['err_mag'].value,
              fmt='.', label=CTIO_I.name)
 
 plt.gca().invert_yaxis()
@@ -193,7 +193,7 @@ pyLIMA_parameters = dspl.compute_pyLIMA_parameters(dspl_parameters)
 ### Now we have defined the MODEL we want to simulate, we have defined the telescopes
 ### and fluxes in each observing band, so we just inject these into our simulator to
 ### produce a light curve:
-simulator.simulate_lightcurve_flux(dspl, pyLIMA_parameters)
+simulator.simulate_lightcurve(dspl, pyLIMA_parameters)
 
 ### Let's plot our simulated light curve!
 ### Plot with pyLIMA plotter (recommended):
@@ -204,9 +204,9 @@ plt.show()
 
 ### ... or plot it all manually if you prefer:
 for telescope in your_event2.telescopes:
-    plt.errorbar(telescope.lightcurve_magnitude['time'].value - 2450000,
-                 telescope.lightcurve_magnitude['mag'].value,
-                 yerr=telescope.lightcurve_magnitude['err_mag'].value,
+    plt.errorbar(telescope.lightcurve['time'].value - 2450000,
+                 telescope.lightcurve['mag'].value,
+                 yerr=telescope.lightcurve['err_mag'].value,
                  fmt='.', label=telescope.name)
 
 plt.gca().invert_yaxis()
@@ -253,7 +253,7 @@ dspl_parameters[7:] = fluxes
 pyLIMA_parameters = dspl.compute_pyLIMA_parameters(dspl_parameters)
 
 ### Produce the lightcurve:
-simulator.simulate_lightcurve_flux(dspl, pyLIMA_parameters)
+simulator.simulate_lightcurve(dspl, pyLIMA_parameters)
 
 ### Plot it:
 
@@ -296,7 +296,7 @@ my_fit.fit()
 my_fit.fit_results['best_model']
 
 ### Compare your DSPL fit parameters with what you defined in the DSPL simulation above:
-print(my_fit.fit_results['best_model'] - dspl_parameters[0:7])
+print(my_fit.fit_results['best_model'][:7] - dspl_parameters[0:7])
 
 ### Plot and constrast the optimized fit results and the simulated light curve:
 pyLIMA_plots.plot_lightcurves(dspl, my_fit.fit_results['best_model'])

@@ -53,9 +53,9 @@ def test_parallax_combination():
     lightcurve = np.array([[2456789, 12.8, 0.01], [2458888, 12, 0.25]])
 
     telo = telescopes.Telescope(name='fake', camera_filter='I',
-                                light_curve=lightcurve,
-                                light_curve_names=['time', 'mag', 'err_mag'],
-                                light_curve_units=['JD', 'mag', 'mag'])
+                                lightcurve=lightcurve,
+                                lightcurve_names=['time', 'mag', 'err_mag'],
+                                lightcurve_units=['JD', 'mag', 'mag'])
     telo.initialize_positions()
     North_vector = [0.25, 0.5, 0.88]
     North_vector /= np.sum(np.array(North_vector) ** 2) ** 0.5
@@ -96,9 +96,9 @@ def test_space_ephemerides():
     time_to_treat = lightcurve[:, 0]
 
     telo = telescopes.Telescope(name='fake', camera_filter='I',
-                                light_curve=lightcurve,
-                                light_curve_names=['time', 'mag', 'err_mag'],
-                                light_curve_units=['JD', 'mag', 'mag'],
+                                lightcurve=lightcurve,
+                                lightcurve_names=['time', 'mag', 'err_mag'],
+                                lightcurve_units=['JD', 'mag', 'mag'],
                                 spacecraft_name='HST',
                                 location='Space')
     eph = parallax.space_ephemerides(telo, time_to_treat, data_type='photometry')

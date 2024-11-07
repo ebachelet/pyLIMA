@@ -9,9 +9,9 @@ def t0_boundaries():
 
     #    try:
 
-    #        minimum_observing_time_telescopes.append(min(telescope.lightcurve_flux[
+    #        minimum_observing_time_telescopes.append(min(telescope.lightcurve[
     #        'time'].value))
-    #        maximum_observing_time_telescopes.append(max(telescope.lightcurve_flux[
+    #        maximum_observing_time_telescopes.append(max(telescope.lightcurve[
     #        'time'].value))
 
     #    except:
@@ -197,7 +197,7 @@ def parameters_boundaries(event, model_dictionnary):
                 telescope_ind = \
                     np.where(key.split('fsource_')[1] == np.array(telescopes_names))[0][
                         0]
-                flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
+                flux = event.telescopes[telescope_ind].lightcurve['flux'].value
                 arguments = [flux]
                 function_name = key.split('_')[0] + '_boundaries'
 
@@ -205,7 +205,7 @@ def parameters_boundaries(event, model_dictionnary):
                 telescope_ind = \
                     np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][
                         0]
-                flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
+                flux = event.telescopes[telescope_ind].lightcurve['flux'].value
                 arguments = [flux]
 
                 function_name = key.split('_')[0] + '_boundaries'
@@ -214,7 +214,7 @@ def parameters_boundaries(event, model_dictionnary):
                 telescope_ind = \
                     np.where(key.split('ftotal_')[1] == np.array(telescopes_names))[0][
                         0]
-                flux = event.telescopes[telescope_ind].lightcurve_flux['flux'].value
+                flux = event.telescopes[telescope_ind].lightcurve['flux'].value
                 arguments = [flux]
 
                 function_name = key.split('_')[0] + '_boundaries'

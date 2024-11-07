@@ -49,17 +49,17 @@ def initial_guess_PSPL(event):
 
     for ind, telescope in enumerate(event.telescopes):
 
-        if telescope.lightcurve_magnitude is not None:
+        if telescope.lightcurve is not None:
             # Lot of process here, if one fails, just skip
-            lightcurve_magnitude = telescope.lightcurve_magnitude
-            mean_error_magnitude = np.mean(lightcurve_magnitude['err_mag'].value)
+            lightcurve = telescope.lightcurve
+            mean_error_magnitude = np.mean(lightcurve['err_mag'].value)
             try:
 
                 # only the best photometry
                 good_photometry_indexes = \
-                    np.where((lightcurve_magnitude['err_mag'].value <
+                    np.where((lightcurve['err_mag'].value <
                               max(0.1, mean_error_magnitude)))[0]
-                lightcurve_bis = lightcurve_magnitude[good_photometry_indexes]
+                lightcurve_bis = lightcurve[good_photometry_indexes]
 
                 lightcurve_bis['time'] = lightcurve_bis['time'][
                     lightcurve_bis['time'].value.argsort()]
@@ -123,7 +123,7 @@ def initial_guess_PSPL(event):
         to_guess = (sum(np.array(to_estimations) / np.array(errors_magnitude) ** 2) /
                     sum(1 / np.array(errors_magnitude) ** 2))
 
-        n_data = [len(event.telescopes[i].lightcurve_magnitude) for i in index_surveys]
+        n_data = [len(event.telescopes[i].lightcurve) for i in index_surveys]
 
         index_survey = index_surveys[np.argmax(n_data)]
 
@@ -134,17 +134,17 @@ def initial_guess_PSPL(event):
 
     except ZeroDivisionError:
 
-        to_guess = float(np.array(event.telescopes[0].lightcurve_magnitude[np.argmin(
-            event.telescopes[0].lightcurve_magnitude['mag'])]['time']))
+        to_guess = float(np.array(event.telescopes[0].lightcurve[np.argmin(
+            event.telescopes[0].lightcurve['mag'])]['time']))
 
-        maximum_flux_estimations = [float(np.array(event.telescopes[0].lightcurve_flux[
+        maximum_flux_estimations = [float(np.array(event.telescopes[0].lightcurve[
                                                        np.argmin(
-            event.telescopes[0].lightcurve_magnitude['mag'])]['flux']))]
+            event.telescopes[0].lightcurve['mag'])]['flux']))]
         survey =  event.telescopes[0]
         print('Selecting '+event.telescopes[0].name+
               ' to estimate t0,u0, tE and fs as I can not find good signal....')
 
-    lightcurve = survey.lightcurve_magnitude
+    lightcurve = survey.lightcurve
 
     lightcurve = lightcurve[lightcurve['time'].value.argsort()]
 
@@ -286,7 +286,7 @@ def initial_guess_FSPL(event):
     # Dummy guess
     #rho_guess = np.min((np.abs(PSPL_guess[1]),0.05))
 
-    #Amax = np.array(event.telescopes[0].lightcurve_flux['flux'].max()) / fs_guess
+    #Amax = np.array(event.telescopes[0].lightcurve['flux'].max()) / fs_guess
     u0 = PSPL_guess[1]
     Amax = (u0 ** 2 + 2) / (u0 * (u0 ** 2 + 4) ** 0.5)
     rho_guess = np.max((2/(Amax**2-1)**0.5, 2*np.abs(u0)))
@@ -315,7 +315,7 @@ def initial_guess_FSPLarge(event):
     """
     PSPL_guess, fs_guess = initial_guess_PSPL(event)
 
-    #Amax = np.array(event.telescopes[0].lightcurve_flux['flux'].max())/fs_guess
+    #Amax = np.array(event.telescopes[0].lightcurve['flux'].max())/fs_guess
     u0 = PSPL_guess[1]
     Amax = (u0**2+2)/(u0*(u0**2+4)**0.5)
     rho_guess = np.max((2/(Amax**2-1)**0.5,1.1*np.abs(u0)))

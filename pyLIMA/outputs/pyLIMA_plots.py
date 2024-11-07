@@ -25,7 +25,6 @@ MARKER_SYMBOLS = np.array(
     [['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10])
 
 MARKERS_COLORS = plt.rcParams["axes.prop_cycle"]
-
 # this is a pointer to the module object instance itself.
 thismodule = sys.modules[__name__]
 
@@ -63,16 +62,16 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
         for index,tel in enumerate(microlensing_model.event.telescopes):
 
-            if tel.lightcurve_flux is not None:
+            if tel.lightcurve is not None:
 
                 if Earth and tel.location == 'Earth':
 
                     model_time1 = np.arange(np.min((np.min(
-                        tel.lightcurve_flux['time'].value),
+                        tel.lightcurve['time'].value),
                                                     pyLIMA_parameters['t0'] - 5 *
                                                     pyLIMA_parameters['tE'])),
                         np.max((np.max(
-                            tel.lightcurve_flux['time'].value),
+                            tel.lightcurve['time'].value),
                                 pyLIMA_parameters['t0'] + 5 *
                                 pyLIMA_parameters['tE'])),
                         10).round(2)
@@ -86,15 +85,15 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     for telescope in microlensing_model.event.telescopes:
 
-                        if telescope.lightcurve_flux is not None:
+                        if telescope.lightcurve is not None:
 
                             if telescope.location == 'Earth':
                                 model_time = np.r_[
-                                    model_time, telescope.lightcurve_flux[
+                                    model_time, telescope.lightcurve[
                                         'time'].value]
 
                                 symmetric = 2 * pyLIMA_parameters['t0'] - \
-                                            telescope.lightcurve_flux['time'].value
+                                            telescope.lightcurve['time'].value
                                 model_time = np.r_[model_time, symmetric]
 
 
@@ -104,18 +103,18 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_telescope = fake_telescopes.replicate_a_telescope(
                         microlensing_model, index,
-                        light_curve_time=model_time,
-                        astrometry_curve_time=None)
+                        lightcurve_time=model_time,
+                        astrometry_time=None)
 
                     list_of_fake_telescopes.append(model_telescope)
 
                 if tel.location == 'Space':
                     model_time1 = np.arange(np.min((np.min(
-                        tel.lightcurve_flux['time'].value),
+                        tel.lightcurve['time'].value),
                                                     pyLIMA_parameters['t0'] - 5 *
                                                     pyLIMA_parameters['tE'])),
                         np.max((np.max(
-                            tel.lightcurve_flux['time'].value),
+                            tel.lightcurve['time'].value),
                                 pyLIMA_parameters['t0'] + 5 *
                                 pyLIMA_parameters['tE'])),
                         10).round(2)
@@ -125,12 +124,12 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                         pyLIMA_parameters['t0'] + 1 * pyLIMA_parameters['tE'],
                         1).round(2)
 
-                    model_time = np.r_[model_time1, model_time2,tel.lightcurve_flux[
+                    model_time = np.r_[model_time1, model_time2,tel.lightcurve[
                         'time'].value]
 
-                    mask = ((model_time >= tel.lightcurve_flux['time'].value.min())
+                    mask = ((model_time >= tel.lightcurve['time'].value.min())
                             & (
-                            model_time <= tel.lightcurve_flux['time'].value.max()))
+                            model_time <= tel.lightcurve['time'].value.max()))
                     model_time = model_time[mask]
 
                     model_time.sort()
@@ -139,8 +138,8 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                     model_telescope = fake_telescopes.replicate_a_telescope(
                             microlensing_model, index,
-                            light_curve_time=model_time,
-                            astrometry_curve_time=None)
+                            lightcurve_time=model_time,
+                            astrometry_time=None)
 
                     list_of_fake_telescopes.append(model_telescope)
 
@@ -183,9 +182,9 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
 
                 if tel.location == 'Space':
 
-                    mask = ((model_time >= tel.lightcurve_flux['time'].value.min())
+                    mask = ((model_time >= tel.lightcurve['time'].value.min())
                             & (
-                            model_time <= tel.lightcurve_flux['time'].value.max()))
+                            model_time <= tel.lightcurve['time'].value.max()))
                     model_time = model_time[mask]
 
                 model_time.sort()
@@ -193,8 +192,8 @@ def create_telescopes_to_plot_model(microlensing_model, pyLIMA_parameters):
                 model_time = np.unique(model_time)
                 model_telescope = fake_telescopes.replicate_a_telescope(
                     microlensing_model, index,
-                    light_curve_time=None,
-                    astrometry_curve_time=model_time)
+                    lightcurve_time=None,
+                    astrometry_time=model_time)
 
                 list_of_fake_telescopes.append(model_telescope)
 
@@ -237,7 +236,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     for telescope in faketelescopes:
 
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             platform = 'Earth'
 
@@ -263,8 +262,8 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-
-            color = MARKERS_COLORS.by_key()["color"][telescope_index]
+            ind_color = telescope_index % len(MARKERS_COLORS.by_key()["color"])
+            color = MARKERS_COLORS.by_key()["color"][ind_color]
             figure_axes.plot(source1_trajectory_x, source1_trajectory_y,
                              c=color,
                              label=platform, linestyle=linestyle)
@@ -302,7 +301,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
                         try:
 
                             index = np.argmin(
-                                np.abs(telescope.lightcurve_magnitude['time'].value -
+                                np.abs(telescope.lightcurve['time'].value -
                                        (pyLIMA_parameters['t0'] + ind * pyLIMA_parameters['tE'])))
                             sign = np.sign(trajectory_x[index + 1] - trajectory_x[index])
                             derivative = (trajectory_y[index - 1] - trajectory_y[index + 1]) / (
@@ -343,7 +342,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
         telescope = faketelescopes[0]
         try:
             origin_t0par_index = np.argmin(
-                np.abs(telescope.lightcurve_flux['time'].value -
+                np.abs(telescope.lightcurve['time'].value -
                        microlensing_model.parallax_model[1]))
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,
@@ -360,7 +359,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
              dseparation, dalpha) = microlensing_model.sources_trajectory(
                 telescope, pyLIMA_parameters,
                 data_type='astrometry')
-        # print(telescope.lightcurve_magnitude['time'].value,
+        # print(telescope.lightcurve['time'].value,
         #      microlensing_model.parallax_model[1],
         #      origin_t0par_index)
 
@@ -480,7 +479,7 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
     for telescope_index, telescope in enumerate(microlensing_model.event.telescopes):
 
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,
@@ -505,7 +504,8 @@ def plot_geometry(microlensing_model, model_parameters, bokeh_plot=None):
 
                         rho = 10 ** -5
 
-                    color = MARKERS_COLORS.by_key()["color"][telescope_index]
+                    ind_color = telescope_index % len(MARKERS_COLORS.by_key()["color"])
+                    color = MARKERS_COLORS.by_key()["color"][ind_color]
 
                     if ind == 1:
 
@@ -805,7 +805,8 @@ def plot_astrometric_models(figure_axes, microlensing_model, model_parameters,
             delta_dec = tel.astrometry['dec'].value
             err_dec = tel.astrometry['err_dec'].value
 
-            color = MARKERS_COLORS.by_key()["color"][ind]
+            ind_color = ind % len(MARKERS_COLORS.by_key()["color"])
+            color = MARKERS_COLORS.by_key()["color"][ind_color]
 
             model = microlensing_model.compute_the_microlensing_model(tel,
                                                                       pyLIMA_parameters)
@@ -875,7 +876,8 @@ def plot_astrometric_data(figure_ax, microlensing_model, bokeh_plot=None):
             delta_dec = tel.astrometry['dec'].value
             err_dec = tel.astrometry['err_dec'].value
 
-            color = MARKERS_COLORS.by_key()["color"][ind]
+            ind_color = ind % len(MARKERS_COLORS.by_key()["color"])
+            color = MARKERS_COLORS.by_key()["color"][ind_color]
             # marker = str(MARKER_SYMBOLS[0][ind])
 
             figure_ax.errorbar(delta_ra, delta_dec, xerr=err_ra, yerr=err_dec, fmt='.',
@@ -1027,7 +1029,7 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
 
     for tel in list_of_telescopes:
 
-        if tel.lightcurve_flux is not None:
+        if tel.lightcurve is not None:
 
             magni = microlensing_model.model_magnification(tel, pyLIMA_parameters)
             microlensing_model.derive_telescope_flux(tel, pyLIMA_parameters, magni)
@@ -1061,13 +1063,13 @@ def plot_photometric_models(figure_axe, microlensing_model, model_parameters,
 
                 linestyle = '--'
 
-            plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,
+            plots.plot_light_curve_magnitude(tel.lightcurve['time'].value,
                                              magnitude, figure_axe=figure_axe,
                                              name=name, color=color,
                                              linestyle=linestyle)
 
             if bokeh_plot is not None:
-                bokeh_plot.line(tel.lightcurve_magnitude['time'].value, magnitude,
+                bokeh_plot.line(tel.lightcurve['time'].value, magnitude,
                                 legend_label=name, color=color)
 
 
@@ -1087,7 +1089,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
     ref_fluxes = []
 
     for ref_tel in list_of_telescopes:
-        if ref_tel.lightcurve_flux is not None:
+        if ref_tel.lightcurve is not None:
             model_magnification = microlensing_model.model_magnification(ref_tel,
                                                                          pyLIMA_parameters)
 
@@ -1106,7 +1108,7 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
 
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
-        if tel.lightcurve_flux is not None:
+        if tel.lightcurve is not None:
 
             if tel.location == 'Earth':
 
@@ -1128,8 +1130,8 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
             # time_mask = [False for i in range(len(ref_magnification[ref_index]))]
             time_mask = []
 
-            for time in tel.lightcurve_flux['time'].value:
-                time_index = np.where(list_of_telescopes[ref_index].lightcurve_flux[
+            for time in tel.lightcurve['time'].value:
+                time_index = np.where(list_of_telescopes[ref_index].lightcurve[
                                           'time'].value == time)[0][0]
                 time_mask.append(time_index)
 
@@ -1140,18 +1142,19 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
             magnitude = pyLIMA.toolbox.brightness_transformation.ZERO_POINT - 2.5 * \
                         np.log10(model_flux)
 
-            color = MARKERS_COLORS.by_key()["color"][ind]
+            ind_color = ind%len(MARKERS_COLORS.by_key()["color"])
+            color = MARKERS_COLORS.by_key()["color"][ind_color]
             marker = str(MARKER_SYMBOLS[0][ind])
 
-            plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,
+            plots.plot_light_curve_magnitude(tel.lightcurve['time'].value,
                                              magnitude + residus_in_mag,
-                                             tel.lightcurve_magnitude['err_mag'].value,
+                                             tel.lightcurve['err_mag'].value,
                                              figure_axe=figure_axe, color=color,
                                              marker=marker, name=tel.name)
 
             if bokeh_plot is not None:
 
-                bokeh_plot.scatter(tel.lightcurve_magnitude['time'].value,
+                bokeh_plot.scatter(tel.lightcurve['time'].value,
                                    magnitude + residus_in_mag,
                                    color=color,
                                    size=5, legend_label=tel.name,
@@ -1161,9 +1164,9 @@ def plot_aligned_data(figure_axe, microlensing_model, model_parameters, bokeh_pl
                 err_xs = []
                 err_ys = []
 
-                for x, y, yerr in zip(tel.lightcurve_magnitude['time'].value,
+                for x, y, yerr in zip(tel.lightcurve['time'].value,
                                       magnitude + residus_in_mag,
-                                      tel.lightcurve_magnitude['err_mag'].value):
+                                      tel.lightcurve['err_mag'].value):
                     err_xs.append((x, x))
                     err_ys.append((y - yerr, y + yerr))
 
@@ -1181,23 +1184,24 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
 
     for ind, tel in enumerate(microlensing_model.event.telescopes):
 
-        if tel.lightcurve_flux is not None:
+        if tel.lightcurve is not None:
             residus_in_mag = \
                 pyLIMA.fits.objective_functions.photometric_residuals_in_magnitude(
                     tel, microlensing_model, pyLIMA_parameters)
 
-            color = MARKERS_COLORS.by_key()["color"][ind]
+            ind_color = ind % len(MARKERS_COLORS.by_key()["color"])
+            color = MARKERS_COLORS.by_key()["color"][ind_color]
             marker = str(MARKER_SYMBOLS[0][ind])
 
-            plots.plot_light_curve_magnitude(tel.lightcurve_magnitude['time'].value,
+            plots.plot_light_curve_magnitude(tel.lightcurve['time'].value,
                                              residus_in_mag,
-                                             tel.lightcurve_magnitude['err_mag'].value,
+                                             tel.lightcurve['err_mag'].value,
                                              figure_axe=figure_axe, color=color,
                                              marker=marker, name=tel.name)
 
         if bokeh_plot is not None:
 
-            bokeh_plot.scatter(tel.lightcurve_magnitude['time'].value,
+            bokeh_plot.scatter(tel.lightcurve['time'].value,
                                residus_in_mag,
                                color=color,
                                size=5,
@@ -1207,9 +1211,9 @@ def plot_residuals(figure_axe, microlensing_model, model_parameters, bokeh_plot=
             err_xs = []
             err_ys = []
 
-            for x, y, yerr in zip(tel.lightcurve_magnitude['time'].value,
+            for x, y, yerr in zip(tel.lightcurve['time'].value,
                                   residus_in_mag,
-                                  tel.lightcurve_magnitude['err_mag'].value):
+                                  tel.lightcurve['err_mag'].value):
                 err_xs.append((x, x))
                 err_ys.append((y - yerr, y + yerr))
 

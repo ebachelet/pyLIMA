@@ -3,6 +3,7 @@ from pyLIMA.simulations import simulator
 
 
 def test_simulate_a_telescope():
+
     telo = simulator.simulate_a_telescope("Fake", time_start=2459800, time_end=2459850,
                                           sampling=0.25,
                                           uniform_sampling=False, timestamps=[],
@@ -15,8 +16,7 @@ def test_simulate_a_telescope():
                                           photometry=True,
                                           astrometry=False, pixel_scale=1, ra=270,
                                           dec=-30)
-    assert telo.lightcurve_flux is not None
-    assert telo.lightcurve_magnitude is not None
+    assert telo.lightcurve is not None
     assert telo.astrometry is None
 
     times = np.arange(2458679, 2459788, 1.23)
@@ -32,8 +32,7 @@ def test_simulate_a_telescope():
                                           photometry=True,
                                           astrometry=True, )
 
-    assert np.allclose(telo.lightcurve_flux['time'].value, times)
-    assert np.allclose(telo.lightcurve_magnitude['time'].value, times)
+    assert np.allclose(telo.lightcurve['time'].value, times)
     assert np.allclose(telo.astrometry['time'].value, times)
 
     times = np.arange(2458679, 2458682, 1.23)
@@ -47,8 +46,7 @@ def test_simulate_a_telescope():
     telo.initialize_positions()
 
     assert telo.pixel_scale == 40
-    assert telo.lightcurve_flux is not None
-    assert telo.lightcurve_magnitude is not None
+    assert telo.lightcurve is not None
     assert telo.astrometry is not None
     assert telo.Earth_positions != {}
     assert telo.Earth_speeds != {}
@@ -164,7 +162,7 @@ def test_simulate_fluxes_parameters():
     assert np.all(np.array(params) > 0)
 
 
-def test_simulate_lightcurve_flux():
+def test_simulate_lightcurve():
     from pyLIMA.models import PSPLmodel
 
     event = simulator.simulate_a_microlensing_event()
@@ -187,25 +185,25 @@ def test_simulate_lightcurve_flux():
 
     pym = Model.compute_pyLIMA_parameters(params)
 
-    simulator.simulate_lightcurve_flux(Model, pym, add_noise=False)
+    simulator.simulate_lightcurve(Model, pym, add_noise=False)
 
-    assert np.allclose(telo.lightcurve_flux['time'].value,
+    assert np.allclose(telo.lightcurve['time'].value,
                        [2458679., 2458680.23, 2458681.46])
 
-    assert np.allclose(telo.lightcurve_flux['flux'].value,
+    assert np.allclose(telo.lightcurve['flux'].value,
                        [21326.85145092, 21336.03588373, 21323.47451914])
 
-    assert np.allclose(telo.lightcurve_flux['err_flux'].value,
+    assert np.allclose(telo.lightcurve['err_flux'].value,
                        [146.03715777, 146.06859992, 146.02559542])
 
-    simulator.simulate_lightcurve_flux(Model, pym, add_noise=True)
-    assert np.allclose(telo.lightcurve_flux['time'].value,
+    simulator.simulate_lightcurve(Model, pym, add_noise=True)
+    assert np.allclose(telo.lightcurve['time'].value,
                        [2458679., 2458680.23, 2458681.46])
 
-    assert np.all(telo.lightcurve_flux['flux'].value !=
+    assert np.all(telo.lightcurve['flux'].value !=
                   [21326.85145092, 21336.03588373, 21323.47451914])
 
-    assert np.all(telo.lightcurve_flux['err_flux'].value !=
+    assert np.all(telo.lightcurve['err_flux'].value !=
                   [146.03715777, 146.06859992, 146.02559542])
 
 
@@ -249,7 +247,7 @@ def test_simulate_astrometry():
     assert np.allclose(telo.astrometry['err_dec'].value,
                        [-0.27608117, -0.27608117, -0.27608117])
 
-    simulator.simulate_lightcurve_flux(Model, pym, add_noise=True)
+    simulator.simulate_lightcurve(Model, pym, add_noise=True)
 
     assert np.allclose(telo.astrometry['time'].value,
                        [2458679., 2458680.23, 2458681.46])

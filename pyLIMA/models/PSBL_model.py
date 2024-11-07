@@ -28,7 +28,7 @@ class PSBLmodel(USBLmodel):
         The magnification associated to a PSBL model. No finite source effect ==>
         very fast
         """
-        if telescope.lightcurve_flux is not None:
+        if telescope.lightcurve is not None:
 
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,
