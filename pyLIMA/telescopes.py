@@ -6,7 +6,6 @@ Created on Thu Aug 27 16:39:32 2015
 """
 import numpy as np
 from astropy import constants as astronomical_constants
-from astropy.table import join
 
 from pyLIMA.parallax import parallax
 from pyLIMA.toolbox.time_series import construct_time_series, clean_time_series
