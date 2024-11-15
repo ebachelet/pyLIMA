@@ -327,7 +327,7 @@ def simulate_fluxes_parameters(list_of_telescopes, source_magnitude=[10, 20],
     return fake_fluxes_parameters
 
 
-def simulate_lightcurve(model, pyLIMA_parameters, add_noise=True):
+def simulate_lightcurve(model, pyLIMA_parameters, add_noise=True,efficiency=None):
     """
     Simulate the fluxes in the telescopes according to the model and parameters
 
@@ -345,6 +345,7 @@ def simulate_lightcurve(model, pyLIMA_parameters, add_noise=True):
             theoritical_flux = \
                 model.compute_the_microlensing_model(telescope, pyLIMA_parameters)[
                     'photometry']
+
 
             if add_noise:
 

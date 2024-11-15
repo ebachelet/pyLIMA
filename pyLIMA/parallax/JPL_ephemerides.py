@@ -18,14 +18,14 @@ JPL_HORIZONS_ID = {
 }
 
 JPL_HORIZONS_TIME = {
-    'Geocentric': '14400m',
-    'Kepler': '14400m',
-    'Spitzer': '14400m',
-    'HST': '60m',
-    'Gaia': '14400m',
-    'New Horizons': '14400m',
-    'L2': '14400m',
-    'TESS': '1440m'
+    'Geocentric': 14400,
+    'Kepler': 14400,
+    'Spitzer': 14400,
+    'HST': 60,
+    'Gaia': 14400,
+    'New Horizons': 14400,
+    'L2': 14400,
+    'TESS': 1440
 
 }
 
@@ -53,6 +53,22 @@ def horizons_obscodes(observatory):
 
     return OBSERVATORY_ID
 
+def horizons_obstimes(observatory):
+    """
+    Find the typical required sampling for known observatories
+
+    Parameters
+    ----------
+    observatory : str, observatory name
+
+    Returns
+    -------
+    OBSERVATORY_TIME : str, the typical required sampling
+    """
+
+    OBSERVATORY_TIMES = JPL_HORIZONS_TIME.get(observatory, '14400m')
+
+    return OBSERVATORY_TIMES
 
 def horizons_API(body, time_to_treat, observatory='Geocentric'):
     """
@@ -72,6 +88,8 @@ def horizons_API(body, time_to_treat, observatory='Geocentric'):
 
     OBSERVATORY_ID = horizons_obscodes(observatory)
     Body = horizons_obscodes(body)
+    typical_sampling = horizons_obstimes(body)
+
     #tstart = 'JD' + str(time_to_treat.min() - 1)
 
     #tstop = 'JD' + str(time_to_treat.max() + 1)
@@ -83,13 +101,21 @@ def horizons_API(body, time_to_treat, observatory='Geocentric'):
     DEC = []
     DISTANCES = []
 
+    if np.median(np.diff(time_to_treat))<typical_sampling/24/60:
+
+        TIME_TO_TREAT = np.arange(time_to_treat.min(),time_to_treat.max(),typical_sampling/24/60)
+
+    else:
+
+        TIME_TO_TREAT = time_to_treat
+
     start = 0
 
-    while start < len(time_to_treat):  # Split the time request in chunk of 50.
+    while start < len(TIME_TO_TREAT):  # Split the time request in chunk of 50.
 
             end = start + 50
             obj = Horizons(id=Body, location=OBSERVATORY_ID,
-                           epochs=time_to_treat[start:end])
+                           epochs=TIME_TO_TREAT[start:end])
             ephemerides = obj.ephemerides()
 
             dates = ephemerides['datetime_jd'].data.data

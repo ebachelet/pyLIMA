@@ -144,6 +144,7 @@ def orbital_parameters_from_position_and_velocities(separation_0, r_s, a_s, v_pa
         r_0_norm = r_0 / r_norm
 
         omega_peri = np.arctan2(x_0[2], y_0[2])
+
         cos_true_anomaly = np.dot(r_0_norm, x_0)
         sin_true_anomaly = np.dot(r_0_norm, y_0)
 

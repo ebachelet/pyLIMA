@@ -1,6 +1,7 @@
 import numpy as np
 
-# ZERO POINT AND EXPOSURE TIME MATCH ~Roman telescope by default
+# ZERO POINT AND EXPOSURE TIME MATCH ~Roman telescope by default, should match
+#https://iopscience.iop.org/article/10.3847/1538-4365/aafb69/pdf
 ZERO_POINT = 27.4
 EXPOSURE_TIME = 50  # s
 
@@ -77,7 +78,7 @@ def error_flux_to_error_magnitude(error_flux, flux):
     return error_magnitude
 
 
-def noisy_observations(flux, exp_time=None):
+def noisy_observations(flux, exp_time=None,efficiency=None):
     """
     Add Poisson noise to observations
 
@@ -98,12 +99,16 @@ def noisy_observations(flux, exp_time=None):
 
     else:
 
-        exposure_time = EXPOSURE_TIME
+        exposure_time = np.copy(EXPOSURE_TIME)
+
+    if efficiency is not None:
+
+        exposure_time *= efficiency
 
     photons = flux * exposure_time
 
     photons_observed = np.random.poisson(photons)
-    err_photons_observed = photons_observed ** 0.5
+    err_photons_observed = photons ** 0.5
 
     flux_observed = photons_observed / exposure_time
     err_flux_observed = err_photons_observed / exposure_time
