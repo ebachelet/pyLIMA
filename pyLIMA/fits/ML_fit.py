@@ -1269,15 +1269,17 @@ class MLfit(object):
 
         if self.model.photometry:
             matplotlib_lightcurves, bokeh_lightcurves = pyLIMA_plots.plot_lightcurves(
-                self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
+                self.model, self.fit_results['best_model'][self.model_parameters_index],
+                bokeh_plot=bokeh_plot)
             matplotlib_geometry, bokeh_geometry = pyLIMA_plots.plot_geometry(self.model,
                                                                              self.fit_results[
-                                                                                 'best_model'],
+                                                                                 'best_model'][self.model_parameters_index],
                                                                              bokeh_plot=bokeh_plot)
 
         if self.model.astrometry:
             matplotlib_astrometry, bokeh_astrometry = pyLIMA_plots.plot_astrometry(
-                self.model, self.fit_results['best_model'], bokeh_plot=bokeh_plot)
+                self.model, self.fit_results['best_model'][
+                    self.model_parameters_index], bokeh_plot=bokeh_plot)
 
         parameters = [key for ind, key in enumerate(self.model.model_dictionnary.keys())
                       if ('fsource' not in key) and ('fblend' not in key) and (
