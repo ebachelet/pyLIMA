@@ -105,7 +105,7 @@ class LMfit(MLfit):
                                               gtol=10 ** -10,
                                               x_scale=scaling)
 
-        fit_results = lm_fit['x'].tolist()
+        fit_results = lm_fit['x']
         fit_chi2 = lm_fit['cost'] * 2  # chi2
 
         try:

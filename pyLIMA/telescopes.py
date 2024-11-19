@@ -99,19 +99,20 @@ class Telescope(object):
         self.ld_a2 = 0
 
         if lightcurve is not None:
-
             data = construct_time_series(lightcurve, lightcurve_names,
                                          lightcurve_units)
+            values = [data[key].value for key in data.keys()]
 
 
             if 'mag' in lightcurve_names:
 
-                lightcurve_magnitude = lightcurve
+                lightcurve_magnitude = np.c_[values].T
+
                 lightcurve_flux = self.lightcurve_in_flux(data)
 
             else:
 
-                lightcurve_flux = lightcurve
+                lightcurve_flux = np.c_[values].T
 
                 if 'inv_err_flux' not in lightcurve_names:
 
@@ -121,11 +122,12 @@ class Telescope(object):
 
 
             lightcurve_tot = np.c_[lightcurve_magnitude,lightcurve_flux[:,1:]]
-            data = construct_time_series(lightcurve_tot, ['time','mag','err_mag','flux','err_flux','inv_err_flux'],
+            data_tot = construct_time_series(lightcurve_tot, ['time','mag','err_mag',
+                                                           'flux','err_flux','inv_err_flux'],
                                          ['JD','mag','mag','W/m^2','W/m^2','m^2/W'])
-            good_lines, non_finite_lines, non_unique_lines = clean_time_series(data)
+            good_lines, non_finite_lines, non_unique_lines = clean_time_series(data_tot)
 
-            self.lightcurve = data[good_lines]
+            self.lightcurve = data_tot[good_lines]
 
             bad_data = {}
             bad_data['non_finite_lines'] = non_finite_lines

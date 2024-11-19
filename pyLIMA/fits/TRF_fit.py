@@ -61,7 +61,7 @@ class TRFfit(LMfit):
                                                loss=loss, xtol=10**-10, ftol=10**-10,
                                                gtol=10**-10,
                                                x_scale=scaling)
-        fit_results = trf_fit['x'].tolist()
+        fit_results = trf_fit['x']
         fit_chi2 = trf_fit['cost'] * 2  # chi2
 
         try:
