@@ -47,7 +47,7 @@ class MINUITfit(LMfit):
         minuit.migrad()
 
 
-        fit_results =  [minuit.params[f].value for f in range(len(self.fit_parameters))]
+        fit_results =  np.array([minuit.params[f].value for f in range(len(self.fit_parameters))])
 
         fit_chi2 = minuit.fval
 
