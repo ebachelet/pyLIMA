@@ -1,12 +1,19 @@
 import os
-
-import VBBinaryLensing
+#import VBBinaryLensing
 import numpy as np
+import VBMicrolensing
 
-VBB = VBBinaryLensing.VBBinaryLensing()
-VBB.Tol = 0.001
-VBB.RelTol = 0.001
-VBB.minannuli = 2  # stabilizing for rho>>caustics
+#VBB = VBBinaryLensing.VBBinaryLensing()
+#VBB.Tol = 0.001
+#VBB.RelTol = 0.001
+#VBB.minannuli = 2  # stabilizing for rho>>caustics
+
+
+VBM = VBMicrolensing.VBMicrolensing()
+VBM.Tol = 0.001
+VBM.RelTol = 0.001
+VBM.minannuli = 2  # stabilizing for rho>>caustics
+
 
 
 def magnification_FSPL(tau, beta, rho, limb_darkening_coefficient,
@@ -29,13 +36,18 @@ def magnification_FSPL(tau, beta, rho, limb_darkening_coefficient,
     magnification_fspl : array, A(t) for FSPL
     impact_parameter : array, u(t)
     """
-    VBB.LoadESPLTable(
-        os.path.dirname(VBBinaryLensing.__file__) + '/data/ESPL.tbl')
-    VBB.a1 = limb_darkening_coefficient
+    #VBB.LoadESPLTable(
+    #    os.path.dirname(VBBinaryLensing.__file__) + '/data/ESPL.tbl')
+    #VBB.a1 = limb_darkening_coefficient
+
+    VBM.LoadESPLTable(
+        os.path.dirname(VBMicrolensing.__file__) + '/data/ESPL.tbl')
+    VBM.a1 = limb_darkening_coefficient
+
 
     if sqrt_limb_darkening_coefficient is not None:
-        VBB.SetLDprofile(VBB.LDsquareroot)
-        VBB.a2 = sqrt_limb_darkening_coefficient
+        VBM.SetLDprofile(VBM.LDsquareroot)
+        VBM.a2 = sqrt_limb_darkening_coefficient
 
     magnification_fspl = []
 
@@ -46,9 +58,11 @@ def magnification_FSPL(tau, beta, rho, limb_darkening_coefficient,
     # u(t)
 
     for ind, u in enumerate(impact_parameter):
-        magnification_VBB = VBB.ESPLMagDark(u, rho)
+        #magnification_VBB = VBB.ESPLMagDark(u, rho)
+        magnification_VBM = VBM.ESPLMagDark(u, rho)
 
-        magnification_fspl.append(magnification_VBB)
+        #magnification_fspl.append(magnification_VBB)
+        magnification_fspl.append(magnification_VBM)
 
     return np.array(magnification_fspl)
 
@@ -77,9 +91,10 @@ def magnification_USBL(separation, mass_ratio, x_source, y_source, rho):
 
     for xs, ys, s in zip(x_source, y_source, separation):
        # print(s, mass_ratio, xs, ys, rho)
-        magnification_vbb = VBB.BinaryMag2(s, mass_ratio, xs, ys, rho)
+        #magnification_vbb = VBB.BinaryMag2(s, mass_ratio, xs, ys, rho)
+       magnification_vbb = VBM.BinaryMag2(s, mass_ratio, xs, ys, rho)
 
-        magnification_usbl.append(magnification_vbb)
+       magnification_usbl.append(magnification_vbb)
         #import decimal
         #print(decimal.Decimal.from_float(s))
         #print(decimal.Decimal.from_float(mass_ratio))
@@ -119,7 +134,9 @@ def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho,
     magnification_fsbl = []
 
     for xs, ys, s in zip(x_source, y_source, separation):
-        magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho,
+        #magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho,
+        #                                      limb_darkening_coefficient)
+        magnification_VBB = VBM.BinaryMagDark(s, mass_ratio, xs, ys, rho,
                                               limb_darkening_coefficient)
 
         magnification_fsbl.append(magnification_VBB)
@@ -149,7 +166,8 @@ def magnification_PSBL(separation, mass_ratio, x_source, y_source):
     magnification_psbl = []
 
     for xs, ys, s in zip(x_source, y_source, separation):
-        magnification_VBB = VBB.BinaryMag0(s, mass_ratio, xs, ys)
+#        magnification_VBB = VBB.BinaryMag0(s, mass_ratio, xs, ys)
+        magnification_VBB = VBM.BinaryMag0(s, mass_ratio, xs, ys)
 
         magnification_psbl.append(magnification_VBB)
 
