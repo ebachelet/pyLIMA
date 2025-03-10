@@ -324,11 +324,13 @@ class MLfit(object):
                         if self.model.blend_flux_parameter == 'noblend':
                             pass
 
-            self.trials_parameters.append(fit_process_parameters.tolist() + fluxes)
+            self.trials_parameters.append(fit_process_parameters.tolist() + fluxes+[
+                objective,priors])
 
         else:
 
-            self.trials_parameters.append(fit_process_parameters.tolist())
+            self.trials_parameters.append(fit_process_parameters.tolist()+[
+                objective,priors])
 
         self.trials_objective.append(objective)
         self.trials_priors.append(priors)

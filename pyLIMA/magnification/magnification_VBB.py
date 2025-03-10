@@ -1,5 +1,4 @@
 import os
-
 import VBBinaryLensing
 import numpy as np
 

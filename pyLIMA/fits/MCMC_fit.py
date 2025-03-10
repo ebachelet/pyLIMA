@@ -129,17 +129,21 @@ class MCMCfit(MLfit):
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
+        try:
+            self.trials_parameters = np.array(self.trials_parameters)
+            self.trials_objective = np.array(self.trials_objective)
+            self.trials_priors = np.array(self.trials_priors)
 
-        self.trials_parameters = np.array(self.trials_parameters)
-        self.trials_objective = np.array(self.trials_objective)
-        self.trials_priors = np.array(self.trials_priors)
+            self.trials_parameters[:,-2] *= -1
+            self.trials_parameters[:,-1] *= -1
 
-        self.trials_objective *= -1
-        self.trials_priors *= -1
+            self.trials_objective *= -1
+            self.trials_priors *= -1
 
-        MCMC_chains, MCMC_chains_with_fluxes = self.reconstruct_chains(
-            sampler.get_chain(), sampler.get_log_prob())
-
+            MCMC_chains, MCMC_chains_with_fluxes = self.reconstruct_chains(
+                sampler.get_chain(), sampler.get_log_prob())
+        except:
+            breakpoint()
         best_model_index = np.where(
             MCMC_chains[:, :, -2] == MCMC_chains[:, :, -2].max())
         fit_results = MCMC_chains_with_fluxes[np.unique(best_model_index[0])[0],
@@ -160,54 +164,107 @@ class MCMCfit(MLfit):
 
         rangei, rangej, rangek = mcmc_samples.shape
 
-        MCMC_chains = np.zeros((rangei, rangej, rangek + 2))
-        MCMC_chains[:, :, :-2] = mcmc_samples
-        MCMC_chains[:, :, -2] = mcmc_prob
-        MCMC_chains[:, :, -1] = np.zeros(mcmc_prob.shape)
+        #MCMC_chains = np.zeros((rangei, rangej, rangek + 2))
+        #MCMC_chains[:, :, :-2] = mcmc_samples
+        #MCMC_chains[:, :, -2] = mcmc_prob
+        #MCMC_chains[:, :, -1] = np.zeros(mcmc_prob.shape)
 
-        Rangei,Rangej = self.trials_parameters.shape
-        MCMC_chains_with_fluxes = np.zeros((rangei,rangej,Rangej+2))
+        Rangei,Rangej = self.trials_parameters[:,:-2].shape
+        #MCMC_chains_with_fluxes = np.zeros((rangei,rangej,Rangej+2))
 
-        for j in range(rangej):
+        MCMC = mcmc_samples.reshape(rangei*rangej,rangek)
 
-                unique_sample = np.unique(mcmc_samples[:,j],return_inverse=True,
-                                          axis=0)
+        MCMC_unique, MCMC_index, MCMC_rebuild  = np.unique(MCMC,axis=0,
+                                                        return_index=True,
+                                                        return_inverse=True)
+        PROB_unique = mcmc_prob.reshape(rangei*rangej)[MCMC_index]
+        PROB_order = PROB_unique.argsort()
 
-                unique_trials = []
-                unique_objective = []
-                unique_priors = []
+        trials_unique,trials_rebuild = np.unique(self.trials_parameters,axis=0,
+                                                 return_inverse=True)
+        mask_trials = [True if i in PROB_unique else False for i in trials_unique[:,-2]]
+        trials_unique = trials_unique[mask_trials]
+        trials_order = trials_unique[:,-2].argsort()
 
-                for unique_values in unique_sample[0]:
-
-                    index = np.where(np.all(self.trials_parameters[:, :len(self.fit_parameters)]
-                                         == unique_values,axis=1))[0][0]
-
-                    unique_trials.append(self.trials_parameters[index].tolist())
-                    unique_objective.append(self.trials_objective[index].tolist())
-                    unique_priors.append(self.trials_priors[index].tolist())
-
-                MCMC_chains_with_fluxes[:,j][:,:-2] = np.array(unique_trials)[unique_sample[1].ravel()]
-                MCMC_chains_with_fluxes[:,j][:,-2] = np.array(unique_objective)[unique_sample[1].ravel()]
-                MCMC_chains_with_fluxes[:,j][:,-1] = np.array(unique_priors)[unique_sample[1].ravel()]
-
-        columns_to_swap = []
-        if self.rescale_photometry:
-            columns_to_swap += self.rescale_photometry_parameters_index
-
-        if self.rescale_astrometry:
-            columns_to_swap += self.rescale_photometry_parameters_index
-
-        if (columns_to_swap != []):
-
-            old_column = columns_to_swap
-            new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
-
-            MCMC_chains_with_fluxes[:, :, old_column + new_column] = MCMC_chains_with_fluxes[:, :,
-                                                                 new_column + old_column]
-
-        MCMC_chains[:,:,-1] = np.copy(MCMC_chains_with_fluxes[:,:,-1])
+        MCMC_FLUXES = trials_unique[trials_order][np.argsort(PROB_order)]
+        MCMC_chains_with_fluxes = np.array(MCMC_FLUXES)[MCMC_rebuild].reshape(rangei,
+                                                                              rangej,
+                                                                              Rangej + 2)
+        MCMC_chains = mcmc_samples
 
         return MCMC_chains, MCMC_chains_with_fluxes
+
+        #MCMC_FLUXES = np.zeros((MCMC_unique.shape[0],trials_unique.shape[1]))
+        #match = []
+        #for ind,unique in enumerate(MCMC_unique):
+            #breakpoint()
+
+            #index = np.where(np.all(trials_unique[:,:len(self.fit_parameters)] ==
+            #                        unique,axis=1))[
+            #    0][0]
+        #    index = np.where(trials_unique[:, -2] == PROB_unique[ind])[0][0]
+
+        #    MCMC_FLUXES[ind] = trials_unique[index]
+
+            #trials_unique = np.delete(trials_unique,index,axis=0)
+        #    match.append([ind,index])
+        #breakpoint()
+        #for j in range(rangej):
+
+        #        mask_trials = [True if i in mcmc_prob[:,j] else False for i in
+        #                   self.trials_parameters[:, -2]]
+        #        mask_trials2 = [np.where(self.trials_parameters==mcmc_samples[i,j,
+        #        -2]) for
+        #                       i in range(len(mcmc_samples))]
+        #        unique_sample = np.unique(mcmc_samples[:,j],return_inverse=True,
+        #                                  axis=0)
+
+        #        unique_trials = []
+        #        unique_objective = []
+        #        unique_priors = []
+        #        breakpoint()
+        #        for unique_values in unique_sample[0]:
+
+        #                index = np.where(np.all(self.trials_parameters[mask_trials,
+        #                                        :len(self.fit_parameters)]
+        #                                     == unique_values,axis=1))[0][0]
+
+        #                unique_trials.append(self.trials_parameters[mask_trials][
+        #                                         index,:-2].tolist())
+        #                unique_objective.append(self.trials_parameters[mask_trials][
+        #                                            index,-2].tolist())
+        #                unique_priors.append(self.trials_parameters[mask_trials][
+        #                                         index,-1].tolist())
+                        #breakpoint()
+
+
+        #        MCMC_chains_with_fluxes[:,j][:,:-2] = np.array(unique_trials)[
+        #        unique_sample[1].ravel()]
+        #        MCMC_chains_with_fluxes[:,j][:,-2] = np.array(unique_objective)[
+        #        unique_sample[1].ravel()]
+        #        MCMC_chains_with_fluxes[:,j][:,-1] = np.array(unique_priors)[
+        #        unique_sample[1].ravel()]
+
+        #columns_to_swap = []
+        #if self.rescale_photometry:
+        #    columns_to_swap += self.rescale_photometry_parameters_index
+
+        #if self.rescale_astrometry:
+        #    columns_to_swap += self.rescale_photometry_parameters_index
+
+        #if (columns_to_swap != []):
+
+        #    old_column = columns_to_swap
+        #    new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
+
+         #   MCMC_chains_with_fluxes[:, :, old_column + new_column] =
+         #       #   MCMC_chains_with_fluxes[:, :,
+         #                                                        new_column +
+        #                                                        old_column]
+
+        #MCMC_chains[:,:,-1] = np.copy(MCMC_chains_with_fluxes[:,:,-1])
+
+
 
     def samples_to_plot(self):
 
