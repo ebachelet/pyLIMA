@@ -1,5 +1,6 @@
-![Build Status](https://github.com/ebachelet/pyLIMA/actions/workflows/actions_unit_tests.yaml/badge.svg)
+[![PyPI - Version](https://img.shields.io/pypi/v/pyLIMA.svg)](https://pypi.org/project/pyLIMA)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.997468.svg)](https://doi.org/10.5281/zenodo.997468)
+![Build Status](https://github.com/ebachelet/pyLIMA/actions/workflows/actions_unit_tests.yaml/badge.svg)
 
 > [!WARNING]
 > **Runing pyLIMA in multiprocessing...**

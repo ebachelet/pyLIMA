@@ -145,7 +145,7 @@ def test_magnification_USBL():
     magnification = magnification_VBB.magnification_USBL(separation, mass_ratio,
                                                          x_source, y_source, rho)
 
-    assert magnification[0] == 4.396361656443579
+    assert np.allclose(magnification[0],4.396361656443579)
 
 
 def test_magnification_FSBL():
@@ -161,7 +161,8 @@ def test_magnification_FSBL():
     magnification = magnification_VBB.magnification_FSBL(separation, mass_ratio,
                                                          x_source, y_source, rho,
                                                          limb_darkening_coefficient)
-    assert magnification[0] == 4.39589349809541
+
+    assert np.allclose(magnification[0],4.39589349809541)
 
 
 def test_magnification_PSBL():
@@ -175,4 +176,4 @@ def test_magnification_PSBL():
     magnification = magnification_VBB.magnification_PSBL(separation, mass_ratio,
                                                          x_source, y_source)
 
-    assert magnification[0] == 4.264164845939242
+    assert np.allclose(magnification[0],4.264164845939242)

@@ -22,6 +22,7 @@ class LeastSquares:
 
         objective = np.sum(residuals**2)
         return objective
+
 class MINUITfit(LMfit):
 
     def fit_type(self):
@@ -49,6 +50,7 @@ class MINUITfit(LMfit):
 
         fit_results =  np.array([minuit.params[f].value for f in range(len(
                 self.fit_parameters))])
+
 
         fit_chi2 = minuit.fval
 

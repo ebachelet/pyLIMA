@@ -1,6 +1,6 @@
 import astropy
 import numpy as np
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun, get_moon
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun, get_body
 from astropy.time import Time
 from pyLIMA.priors import parameters_boundaries
 from pyLIMA.toolbox import brightness_transformation
@@ -95,7 +95,7 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
             altazframe = AltAz(obstime=time_convertion, location=earth_location)
             Sun = get_sun(Time(time_of_observations, format='jd')).transform_to(
                 altazframe)
-            Moon = get_moon(Time(time_of_observations, format='jd')).transform_to(
+            Moon = get_body("moon",Time(time_of_observations, format='jd')).transform_to(
                 altazframe)
             Moon_illumination = moon_illumination(Sun, Moon)
             Moon_separation = target.separation(Moon)
