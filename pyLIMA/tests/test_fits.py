@@ -131,9 +131,9 @@ def test_DE():
 
     assert len(values) == 5
 
-    assert len(values[0]) == 8
+    assert len(values[0]) == 10
 
-    assert values[3].shape == (88, 10)
+    assert values[3].shape == (88, 12)
 
 def test_MCMC():
 
@@ -154,7 +154,7 @@ def test_MCMC():
 
     assert len(values[0]) == 8
 
-    assert values[2].shape == (10, 8, 6)
+    assert values[2].shape == (10, 8, 4)
 
     assert values[3].shape == (10, 8, 10)
 

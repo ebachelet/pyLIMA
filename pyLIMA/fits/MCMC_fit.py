@@ -42,9 +42,9 @@ class MCMCfit(MLfit):
 
             bad_parameters = np.zeros(len(self.priors_parameters))
             bad_parameters[:len(self.fit_parameters)] = fit_process_parameters
-            self.trials_parameters.append(bad_parameters.tolist())
-            self.trials_priors.append(np.inf)
-            self.trials_objective.append(np.inf)
+            self.trials_parameters.append(bad_parameters.tolist()+[-np.inf,-np.inf])
+            self.trials_priors.append(-np.inf)
+            self.trials_objective.append(-np.inf)
 
             return -limits_check #i.e. -np.inf
 
@@ -75,15 +75,30 @@ class MCMCfit(MLfit):
             nwalkers = self.MCMC_walkers * number_of_parameters
 
             # Initialize the population of MCMC
-            eps = 10 ** -4
-            floors = np.floor(np.round(best_solution))
-            initial = best_solution - floors
-            mask = initial == 0
-            initial[mask] = eps
+            order_of_magnitude = np.floor(np.log10(np.abs(best_solution)))
+            order_of_magnitude[~np.isfinite(order_of_magnitude)] = 0
+            order_of_magnitude[order_of_magnitude>-1] = 0
+            order_of_magnitude -= 1
 
-            deltas = initial * np.random.uniform(-eps, eps,
-                                                 (nwalkers, number_of_parameters))
-            population = best_solution + deltas
+            population = []
+            while len(population)<nwalkers:
+
+                individual = best_solution+np.random.uniform(-1, 1,number_of_parameters) * 10**order_of_magnitude
+
+                obj = self.objective_function(individual)
+
+                if np.isfinite(obj):
+
+                    population.append(individual)
+
+            #floors = np.floor(np.round(best_solution))
+            #initial = best_solution - floors
+            #mask = initial == 0
+            #initial[mask] = eps
+
+            #deltas = initial * np.random.uniform(-eps, eps,
+            #                                     (nwalkers, number_of_parameters))
+            #population = best_solution + deltas
 
         else:
 
@@ -129,21 +144,20 @@ class MCMCfit(MLfit):
 
         computation_time = python_time.time() - start_time
         print(sys._getframe().f_code.co_name, ' : ' + self.fit_type() + ' fit SUCCESS')
-        try:
-            self.trials_parameters = np.array(self.trials_parameters)
-            self.trials_objective = np.array(self.trials_objective)
-            self.trials_priors = np.array(self.trials_priors)
 
-            self.trials_parameters[:,-2] *= -1
-            self.trials_parameters[:,-1] *= -1
+        self.trials_parameters = np.array(self.trials_parameters)
+        self.trials_objective = np.array(self.trials_objective)
+        self.trials_priors = np.array(self.trials_priors)
 
-            self.trials_objective *= -1
-            self.trials_priors *= -1
+        self.trials_parameters[:,-2] *= -1
+        self.trials_parameters[:,-1] *= -1
 
-            MCMC_chains, MCMC_chains_with_fluxes = self.reconstruct_chains(
+        self.trials_objective *= -1
+        self.trials_priors *= -1
+
+        MCMC_chains, MCMC_chains_with_fluxes = self.reconstruct_chains(
                 sampler.get_chain(), sampler.get_log_prob())
-        except:
-            breakpoint()
+
         best_model_index = np.where(
             MCMC_chains[:, :, -2] == MCMC_chains[:, :, -2].max())
         fit_results = MCMC_chains_with_fluxes[np.unique(best_model_index[0])[0],
