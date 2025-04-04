@@ -176,12 +176,17 @@ class MCMCfit(MLfit):
 
     def reconstruct_chains(self, mcmc_samples, mcmc_prob):
 
+
         rangei, rangej, rangek = mcmc_samples.shape
 
-        #MCMC_chains = np.zeros((rangei, rangej, rangek + 2))
-        #MCMC_chains[:, :, :-2] = mcmc_samples
-        #MCMC_chains[:, :, -2] = mcmc_prob
-        #MCMC_chains[:, :, -1] = np.zeros(mcmc_prob.shape)
+        MCMC_chains = np.zeros((rangei, rangej, rangek + 2))
+        MCMC_chains[:, :, :-2] = mcmc_samples
+        MCMC_chains[:, :, -2] = mcmc_prob
+        MCMC_chains[:, :, -1] = np.zeros(mcmc_prob.shape)
+
+        if self.telescopes_fluxes_method=='fit':
+
+            return MCMC_chains,MCMC_chains
 
         Rangei,Rangej = self.trials_parameters[:,:-2].shape
         #MCMC_chains_with_fluxes = np.zeros((rangei,rangej,Rangej+2))
@@ -204,9 +209,8 @@ class MCMCfit(MLfit):
         MCMC_chains_with_fluxes = np.array(MCMC_FLUXES)[MCMC_rebuild].reshape(rangei,
                                                                               rangej,
                                                                               Rangej + 2)
-        MCMC_chains = mcmc_samples
+        MCMC_chains[:,:,-1] = MCMC_chains_with_fluxes[:,:,-1]
 
-        return MCMC_chains, MCMC_chains_with_fluxes
 
         #MCMC_FLUXES = np.zeros((MCMC_unique.shape[0],trials_unique.shape[1]))
         #match = []
@@ -259,26 +263,24 @@ class MCMCfit(MLfit):
         #        MCMC_chains_with_fluxes[:,j][:,-1] = np.array(unique_priors)[
         #        unique_sample[1].ravel()]
 
-        #columns_to_swap = []
-        #if self.rescale_photometry:
-        #    columns_to_swap += self.rescale_photometry_parameters_index
+        columns_to_swap = []
+        if self.rescale_photometry:
+            columns_to_swap += self.rescale_photometry_parameters_index
 
-        #if self.rescale_astrometry:
-        #    columns_to_swap += self.rescale_photometry_parameters_index
+        if self.rescale_astrometry:
+            columns_to_swap += self.rescale_photometry_parameters_index
 
-        #if (columns_to_swap != []):
+        if (columns_to_swap != []):
 
-        #    old_column = columns_to_swap
-        #    new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
+            old_column = columns_to_swap
+            new_column = np.arange(old_column[-1]+1,Rangej-1,1).tolist()
 
-         #   MCMC_chains_with_fluxes[:, :, old_column + new_column] =
-         #       #   MCMC_chains_with_fluxes[:, :,
-         #                                                        new_column +
-        #                                                        old_column]
+            MCMC_chains_with_fluxes[:, :, old_column + new_column] = MCMC_chains_with_fluxes[:, :,new_column +old_column]
 
         #MCMC_chains[:,:,-1] = np.copy(MCMC_chains_with_fluxes[:,:,-1])
 
 
+        return MCMC_chains, MCMC_chains_with_fluxes
 
     def samples_to_plot(self):
 

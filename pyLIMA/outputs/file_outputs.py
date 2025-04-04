@@ -13,6 +13,8 @@ def json_output(fit_object,json_name='./pyLIMA_fit.json'):
     dictionnary['FitPriors'] = {'Parameters':fit_object.priors_parameters}
     dictionnary['FitResults'] = {}
 
+    distributions_to_output = {}
+
     for key, value in fit_object.fit_results.items():
 
         if isinstance(value, np.ndarray):
@@ -30,17 +32,46 @@ def json_output(fit_object,json_name='./pyLIMA_fit.json'):
 
             try:
 
-                dictionnary['FitResults'][key] = tosave
+                if (key == 'MCMC_chains'):
+
+                    header =  [key for key in fit_object.fit_parameters.keys()]
+                    distributions_to_output[key] = [tosave,header]
+
+                elif (key == 'MCMC_chains_with_fluxes'):
+
+                    header =  [key for key in fit_object.priors_parameters.keys()] +[
+                        'priors',
+                                                                 fit_object.loss_function ]
+                    distributions_to_output[key] = [tosave,header]
+
+                elif (key == 'DE_population'):
+
+                    header =  [key for key in fit_object.priors_parameters.keys()]
+
+                    distributions_to_output[key] = [tosave,header]
+
+                else:
+
+                    dictionnary['FitResults'][key] = tosave
 
             except TypeError:
 
                 pass
 
+
     with open(json_name, 'w') as outfile:
         json.dump(dictionnary,outfile,indent=4)
 
 
+    for key in distributions_to_output.keys():
 
+        dist_name = json_name[:-5]+'_'+key+'.npz'
+        np.savez(dist_name,pyLIMA_distribution=distributions_to_output[key][0],
+                 header=distributions_to_output[key][1]+[
+                     fit_object.loss_function, 'priors'])
+
+   # with open(dist_name, 'w') as outfile:
+   #     json.dump(distributions_to_output,outfile,indent=4)
 
 
 # def json_output(array_parameters, parameters_name, filename='parameters',
