@@ -147,14 +147,13 @@ def test_MCMC():
                                      10.110765454770114,
                                      0.022598878807753468, ]
     my_fit.fit()
-
     values = [my_fit.fit_results[key] for key in my_fit.fit_results.keys()]
 
     assert len(values) == 6
 
     assert len(values[0]) == 8
 
-    assert values[2].shape == (10, 8, 4)
+    assert values[2].shape == (10, 8, 6)
 
     assert values[3].shape == (10, 8, 10)
 
