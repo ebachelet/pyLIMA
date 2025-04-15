@@ -175,7 +175,6 @@ def space_ephemerides(telescope, time_to_treat, data_type='photometry'):
     satellite_name = telescope.spacecraft_name
 
     if len(telescope.spacecraft_positions[data_type]) != 0:
-
         spacecraft_positions = telescope.spacecraft_positions[data_type]
 
     else:

@@ -10,14 +10,16 @@ keywords = ['Microlsening analysis package']
 authors = [
     { name = "Etienne Bachelet", email = "etibachelet@gmail.com" },
 ]
-license = { text = "GPL-3.0" }
+license = "GPL-3.0-or-later"
+license-files = [
+    "LICENSE",
+]
 requires-python = ">=3.6,<4"
 readme = "README.md"
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
     'Topic :: Software Development :: Build Tools',
-    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     'Programming Language :: Python :: 3',
 ]
 dependencies = [
