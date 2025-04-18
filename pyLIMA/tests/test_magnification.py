@@ -162,7 +162,7 @@ def test_magnification_FSBL():
                                                          x_source, y_source, rho,
                                                          limb_darkening_coefficient)
 
-    assert np.allclose(magnification[0],4.39589349809541)
+    assert np.allclose(magnification[0],4.396361656443572)
 
 
 def test_magnification_PSBL():

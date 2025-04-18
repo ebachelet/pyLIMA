@@ -135,8 +135,10 @@ def magnification_FSBL(separation, mass_ratio, x_source, y_source, rho,
     for xs, ys, s in zip(x_source, y_source, separation):
         #magnification_VBB = VBB.BinaryMagDark(s, mass_ratio, xs, ys, rho,
         #                                      limb_darkening_coefficient)
-        magnification_VBB = VBM.BinaryMagDark(s, mass_ratio, xs, ys, rho,
-                                              limb_darkening_coefficient)
+        #magnification_VBB = VBM.BinaryMagDark(s, mass_ratio, xs, ys, rho,
+        #                                      limb_darkening_coefficient)
+        VBM.a1 = limb_darkening_coefficient
+        magnification_VBB = VBM.BinaryMag2(s, mass_ratio, xs, ys, rho)
 
         magnification_fsbl.append(magnification_VBB)
 

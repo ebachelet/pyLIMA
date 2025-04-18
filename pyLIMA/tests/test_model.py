@@ -234,7 +234,8 @@ def test_FSBL():
 
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
-    assert np.allclose(magi, [4.73518855, 2.32967011])
+
+    assert np.allclose(magi, [4.73316752, 2.32814229])
 
 
 def test_FSPL():
@@ -259,7 +260,7 @@ def test_FSPLarge():
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert np.allclose(magi, [1.05837633, 1.05730364])
+    assert np.allclose(magi, [1.05906354, 1.05890356])
 
 
 def test_PSBL():
@@ -312,7 +313,7 @@ def test_USBL():
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert np.allclose(magi, [73.75028234, 2.12549786])
+    assert np.allclose(magi, [74.02173897,  2.12621654])
 
     event = _create_event()
 
@@ -321,4 +322,4 @@ def test_USBL():
     pym = Model.compute_pyLIMA_parameters(params)
     magi = Model.model_magnification(event.telescopes[0], pym)
 
-    assert np.allclose(magi, [76.16515049, 2.11882843])
+    assert np.allclose(magi, [76.32960572,  2.11953819])
