@@ -145,10 +145,11 @@ print(guess_parameters)
 # the parameters.
 ### Let's fit again using MCMC. This might take some time ...
 
-my_fit5 = MCMC_fit.MCMCfit(fspl)
-my_fit5.model_parameters_guess = guess_parameters
-my_fit5.fit()
+my_fit5 = MCMC_fit.MCMCfit(fspl,rescale_photometry=True)
 
+my_fit5.model_parameters_guess = guess_parameters[:4]
+my_fit5.fit()
+my_fit5.fit_outputs()
 ### Now your MCMC run is complete. Congratulations! 
 ### You can now plot the chains and explore how they evolve for each parameter.
 ### For example, to see how the chains for u0 evolve, do:

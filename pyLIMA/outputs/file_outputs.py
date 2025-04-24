@@ -39,15 +39,12 @@ def json_output(fit_object,json_name='./pyLIMA_fit.json'):
 
                 elif (key == 'MCMC_chains_with_fluxes'):
 
-                    header =  [key for key in fit_object.priors_parameters.keys()] +[
-                        'priors',
-                                                                 fit_object.loss_function ]
+                    header =  [key for key in fit_object.priors_parameters.keys()]
                     distributions_to_output[key] = [tosave,header]
 
                 elif (key == 'DE_population'):
 
                     header =  [key for key in fit_object.priors_parameters.keys()]
-
                     distributions_to_output[key] = [tosave,header]
 
                 else:
