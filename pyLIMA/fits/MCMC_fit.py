@@ -78,7 +78,7 @@ class MCMCfit(MLfit):
             order_of_magnitude = np.floor(np.log10(np.abs(best_solution)))
             order_of_magnitude[~np.isfinite(order_of_magnitude)] = 0
             order_of_magnitude[order_of_magnitude>-1] = 0
-            order_of_magnitude -= 1
+            order_of_magnitude -= 3
 
             population = []
             while len(population)<nwalkers:
