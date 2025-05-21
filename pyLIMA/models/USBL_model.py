@@ -7,7 +7,7 @@ from pyLIMA.models.ML_model import MLmodel
 class USBLmodel(MLmodel):
 
     def __init__(self, event, parallax=['None', 0.0], double_source=['None',0.0],
-                 orbital_motion=['None', 0.0], blend_flux_parameter='fblend',
+                 orbital_motion=['None', 0.0], blend_flux_parameter='ftotal',
                  origin=['center_of_mass', [0, 0]], fancy_parameters=None):
         """The fit class has to be intialized with an event object."""
 
@@ -149,6 +149,11 @@ class USBLmodel(MLmodel):
                     1 + pyLIMA_parameters['mass_ratio'])
 
             x_center = secondary_location
+            y_center = 0
+            return x_center, y_center
+
+        if 'half' in self.origin[0]:
+            x_center = pyLIMA_parameters['separation'] / 2
             y_center = 0
             return x_center, y_center
 

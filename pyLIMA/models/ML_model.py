@@ -651,7 +651,6 @@ class MLmodel(object):
 
         if self.fancy_parameters is not None:
             self.fancy_to_pyLIMA_parameters(pyLIMA_parameters)
-
         if self.origin[0] != 'center_of_mass':
             self.change_origin(pyLIMA_parameters)
 

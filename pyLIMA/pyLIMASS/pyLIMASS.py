@@ -80,6 +80,7 @@ class SourceLensProbabilities(object):
                                     'pi_EE': None,
                                     'phi_E': None,
                                     'log10(pi_E)': None,
+                                    'log10(pi_rel)': None,
                                     'mu_relN': None,
                                     'mu_relE': None,
                                     'log10(mu_rel)': None,
@@ -431,6 +432,7 @@ class SourceLensProbabilities(object):
         pi_EN, pi_EE = mu_rel_vector * pi_E / mu_rel
         phi_E = np.arctan2(pi_EE, pi_EN)
 
+
         t_E = theta_E / mu_rel * 365.25
 
         Rs = 10 ** ((log10_M_s - logg_s + 4.4374) / 2)
@@ -566,10 +568,13 @@ class SourceLensProbabilities(object):
             log_10_mu_rel_hel = np.log10(np.sqrt(np.sum(mu_rel_vector_hel ** 2)))
 
 
+
         else:
 
             mu_rel_vector_hel = (None, None)
             log_10_mu_rel_hel = None
+            mu_hel_s = (None,None)
+            mu_hel_l = (None,None)
 
         observables = {'log10(M_s)': log10_M_s,
                        'log10(D_s)': log10_D_s,
@@ -605,6 +610,7 @@ class SourceLensProbabilities(object):
                        'pi_EE': pi_EE,
                        'phi_E': phi_E,
                        'log10(pi_E)': np.log10(pi_E),
+                       'log10(pi_rel)': np.log10(pirel),
                        'mu_relN': mu_rel_vector[0],
                        'mu_relE': mu_rel_vector[1],
                        'log10(mu_rel)': np.log10(mu_rel),
