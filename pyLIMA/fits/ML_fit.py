@@ -260,6 +260,9 @@ class MLfit(object):
 
         self.priors_parameters = fit_parameters
 
+
+
+
     def define_priors(self):
 
         self.priors = parameters_priors.default_parameters_priors(
@@ -1343,8 +1346,15 @@ class MLfit(object):
     def print_fit_results(self):
 
         import pprint
+        import collections
 
-        params = self.model.compute_pyLIMA_parameters(self.fit_results['best_model'])
+        params =  collections.OrderedDict(zip(self.priors_parameters.keys(),self.fit_results['best_model']))
+
         params[self.loss_function] = self.fit_results[self.loss_function]
+
+        #if self.rescale_photometry:
+        #    names = self.fit_parameters.keys()[
+        ##    self.rescale_photometry_parameters_index]
+        ##    params[self.rescale_photometry_parameters_index] = 0
         print('best model:')
-        pprint.pprint(params)
+        pprint.pprint(params,sort_dicts=False )
