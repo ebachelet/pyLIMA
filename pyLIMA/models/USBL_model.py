@@ -1,6 +1,6 @@
-import numpy as np
+import jax.numpy as jnp
 from pyLIMA.caustics import binary_caustics
-from pyLIMA.magnification import magnification_VBB
+from pyLIMA.magnification import magnification_JAX as magnification_JAX
 from pyLIMA.models.ML_model import MLmodel
 
 
@@ -53,22 +53,30 @@ class USBLmodel(MLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            separation = dseparation + pyLIMA_parameters['separation']
-
-            source1_magnification = magnification_VBB.magnification_USBL(separation,
-                                                     pyLIMA_parameters['mass_ratio'],
-                                                     source1_trajectory_x,
-                                                     source1_trajectory_y,
-                                                     pyLIMA_parameters['rho'])
+            # Use microlux-based USBL via JAX wrapper (no VBB fallback)
+            source1_magnification = magnification_JAX.magnification_USBL_microlux(
+                float(pyLIMA_parameters['t0']),
+                float(pyLIMA_parameters['u0']),
+                float(pyLIMA_parameters['tE']),
+                float(pyLIMA_parameters['rho']),
+                float(pyLIMA_parameters['mass_ratio']),
+                float(pyLIMA_parameters['separation']),
+                float(pyLIMA_parameters.get('alpha', 0.0)),
+                telescope.lightcurve['time'].value
+            )
 
             if source2_trajectory_x is not None:
-
-                source2_magnification = magnification_VBB.magnification_USBL(separation,
-                                                         pyLIMA_parameters[
-                                                             'mass_ratio'],
-                                                         source2_trajectory_x,
-                                                         source2_trajectory_y,
-                                                         pyLIMA_parameters['rho_2'])
+                # Use microlux for second source as well
+                source2_magnification = magnification_JAX.magnification_USBL_microlux(
+                    float(pyLIMA_parameters['t0']),
+                    float(pyLIMA_parameters['u0']),
+                    float(pyLIMA_parameters['tE']),
+                    float(pyLIMA_parameters.get('rho_2', pyLIMA_parameters['rho'])),
+                    float(pyLIMA_parameters['mass_ratio']),
+                    float(pyLIMA_parameters['separation']),
+                    float(pyLIMA_parameters.get('alpha', 0.0)),
+                    telescope.lightcurve['time'].value
+                )
 
                 blend_magnification_factor = pyLIMA_parameters['q_flux_' +
                                                                telescope.filter]
@@ -123,7 +131,7 @@ class USBLmodel(MLmodel):
             if (caustic_regime == 'close') & (self.origin[0] == 'central_caustic'):
                 sorting = caustics.imag.argsort()
                 caustic = caustics[
-                    np.where(caustics.real == caustics[sorting[1:3]].real.min())[0]]
+                    jnp.where(caustics.real == caustics[sorting[1:3]].real.min())[0]]
 
             if (caustic_regime == 'close') & (self.origin[0] == 'second_caustic'):
                 caustic = caustics[caustics.imag.argmax()]

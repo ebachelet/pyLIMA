@@ -1,4 +1,5 @@
 import numpy as np
+import jax.numpy as jnp
 
 
 ### Define manual distribution objects are much faster than scipy.pdf....
@@ -6,41 +7,41 @@ class UniformDistribution(object):
 
     def __init__(self, bound_min, bound_max):
 
-        self.bound_min = bound_min
-        self.bound_max = bound_max
-        self.probability = 1 / (bound_max - bound_min)
+        self.bound_min = float(bound_min)
+        self.bound_max = float(bound_max)
+        self.probability = 1.0 / (self.bound_max - self.bound_min)
 
     def pdf(self, x):
-
-        if (x > self.bound_min) & (x < self.bound_max):
-
-            return self.probability
-
-        else:
-
-            return 0
+        # Convert to jnp for JAX compatibility
+        x = jnp.asarray(x)
+        
+        condition = (x > self.bound_min) & (x < self.bound_max)
+        return jnp.where(condition, self.probability, 0.0)
 
     def rvs(self, size):
-
+        # Keep numpy for random sampling (JAX RNG is more complex)
         sample = np.random.uniform(0, 1, size)
-        samples = self.bound_min+sample*(self.bound_max-self.bound_min)
+        samples = self.bound_min + sample * (self.bound_max - self.bound_min)
 
         return samples
 
 class NormalDistribution(object):
 
     def __init__(self, mean, sigma):
-        self.mean = mean
-        self.sigma = sigma
+        self.mean = float(mean)
+        self.sigma = float(sigma)
 
     def pdf(self, x):
-        probability = 1 / self.sigma / np.sqrt(2 * np.pi) * \
-                      np.exp(-0.5 * ((x - self.mean) / self.sigma) ** 2)
+        # Convert to jnp for JAX compatibility
+        x = jnp.asarray(x)
+        
+        probability = 1.0 / self.sigma / jnp.sqrt(2 * jnp.pi) * \
+                      jnp.exp(-0.5 * ((x - self.mean) / self.sigma) ** 2)
 
         return probability
 
     def rvs(self, size):
-
+        # Keep numpy for random sampling
         samples = np.random.normal(self.mean, self.sigma, size)
 
         return samples

@@ -1,4 +1,6 @@
-from pyLIMA.magnification import magnification_FSPL, magnification_Jacobian
+import jax.numpy as jnp
+from pyLIMA.magnification import magnification_Jacobian
+from pyLIMA.magnification import magnification_JAX as magnification_JAX
 from pyLIMA.models.ML_model import MLmodel
 
 
@@ -33,12 +35,12 @@ class FSPLmodel(MLmodel):
     def model_magnification(self, telescope, pyLIMA_parameters,
                             return_impact_parameter=False):
         """
-        The FSPL magnification, see  http://adsabs.harvard.edu/abs/2004ApJ...603..139Y
+        The FSPL magnification, using microlux via JAX.
         """
         if telescope.lightcurve is not None:
 
-            rho = pyLIMA_parameters['rho']
-            gamma = telescope.ld_gamma
+            rho = float(pyLIMA_parameters['rho'])
+            gamma = getattr(telescope, 'ld_gamma', None)
 
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,
@@ -47,20 +49,30 @@ class FSPLmodel(MLmodel):
                 data_type='photometry')
 
 
-            source1_magnification = magnification_FSPL.magnification_FSPL_Yoo(
-                source1_trajectory_x, source1_trajectory_y,rho,
-                gamma,return_impact_parameter)
+            # Use microlux-based FSPL via JAX wrapper (no fallback for speed)
+            source1_magnification = magnification_JAX.magnification_FSPL_microlux(
+                float(pyLIMA_parameters['t0']),
+                float(pyLIMA_parameters['u0']),
+                float(pyLIMA_parameters['tE']),
+                rho,
+                telescope.lightcurve['time'].value,
+                limb_darkening_coeff=gamma if gamma is not None else None,
+                return_impact_parameter=return_impact_parameter
+            )
 
             if source2_trajectory_x is not None:
 
-                rho2 = pyLIMA_parameters['rho_2']
-
-
-                #Need to change to gamma2
-
-                source2_magnification = magnification_FSPL.magnification_FSPL_Yoo(
-                    source2_trajectory_x, source2_trajectory_y, rho2, gamma,
-                    return_impact_parameter)
+                rho2 = float(pyLIMA_parameters.get('rho_2', rho))
+                # Use microlux for second source as well (no fallback)
+                source2_magnification = magnification_JAX.magnification_FSPL_microlux(
+                    float(pyLIMA_parameters['t0']),
+                    float(pyLIMA_parameters['u0']),
+                    float(pyLIMA_parameters['tE']),
+                    rho2,
+                    telescope.lightcurve['time'].value,
+                    limb_darkening_coeff=gamma if gamma is not None else None,
+                    return_impact_parameter=return_impact_parameter
+                )
 
                 blend_magnification_factor = pyLIMA_parameters['q_flux_' +
                                                                telescope.filter]

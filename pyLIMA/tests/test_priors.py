@@ -41,30 +41,35 @@ def test_initial_guess_PSPL():
     event = _create_event()
 
     theguess = guess.initial_guess_PSPL(event)
-    assert np.allclose(theguess[0], [0.0, 1.6735571651998717, 17.540988328240694])
-    assert np.allclose(theguess[1], 46056.54738747334)
+    gdict, fs = theguess
+    assert np.allclose([gdict['t0'], gdict['u0'], gdict['tE']],
+                       [0.0, 1.6735571651998717, 17.540988328240694])
+    assert np.allclose(fs, 46056.54738747334)
 
 
 def test_initial_guess_FSPL():
     event = _create_event()
 
     theguess = guess.initial_guess_FSPL(event)
+    gdict, fs = theguess
 
-    assert np.allclose(theguess[0],
+    assert np.allclose([gdict['t0'], gdict['u0'], gdict['tE'], gdict['rho']],
                        [0.0, 1.6735571651998717, 17.540988328240694,
                         4.3643578047198455])
-    assert np.allclose(theguess[1], 46056.54738747334)
+    assert np.allclose(fs, 46056.54738747334)
 
 
 def test_initial_guess_DSPL():
     event = _create_event()
 
     theguess = guess.initial_guess_DSPL(event)
+    gdict, fs = theguess
 
-
-    assert np.allclose(theguess[0],
-                       [0.0, 1.6735571651998717, 5, 0.01, 17.540988328240694, 0.5])
-    assert np.allclose(theguess[1], 46056.54738747334)
+    expected = [0.0, 1.6735571651998717, 5, 0.01, 17.540988328240694, 0.5]
+    got = [gdict['t0'], gdict['u0'], gdict['delta_t0'], gdict['delta_u0'], gdict['tE'],
+           gdict.get('q_flux_I', 0.5)]
+    assert np.allclose(got, expected)
+    assert np.allclose(fs, 46056.54738747334)
 
 
 def test_all_parameters_boundaries():

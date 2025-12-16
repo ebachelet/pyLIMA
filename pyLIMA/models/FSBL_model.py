@@ -1,4 +1,5 @@
-from pyLIMA.magnification import magnification_VBB
+import jax.numpy as jnp
+from pyLIMA.magnification import magnification_JAX as magnification_JAX
 from pyLIMA.models.USBL_model import USBLmodel
 
 
@@ -18,7 +19,7 @@ class FSBLmodel(USBLmodel):
 
         if telescope.lightcurve is not None:
 
-            linear_limb_darkening = telescope.ld_a1
+            linear_limb_darkening = getattr(telescope, 'ld_a1', None)
 
             (source1_trajectory_x, source1_trajectory_y,
              source2_trajectory_x, source2_trajectory_y,
@@ -26,24 +27,32 @@ class FSBLmodel(USBLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            separation = dseparation + pyLIMA_parameters['separation']
-
-            source1_magnification = magnification_VBB.magnification_FSBL(separation,
-                                                     pyLIMA_parameters['mass_ratio'],
-                                                     source1_trajectory_x,
-                                                     source1_trajectory_y,
-                                                     pyLIMA_parameters['rho'],
-                                                     linear_limb_darkening)
+            # Use microlux-based FSBL via JAX wrapper (no VBB fallback)
+            source1_magnification = magnification_JAX.magnification_FSBL_microlux(
+                float(pyLIMA_parameters['t0']),
+                float(pyLIMA_parameters['u0']),
+                float(pyLIMA_parameters['tE']),
+                float(pyLIMA_parameters['rho']),
+                float(pyLIMA_parameters['mass_ratio']),
+                float(pyLIMA_parameters['separation']),
+                float(pyLIMA_parameters.get('alpha', 0.0)),
+                telescope.lightcurve['time'].value,
+                limb_darkening_coeff=linear_limb_darkening if linear_limb_darkening is not None else None
+            )
 
             if source2_trajectory_x is not None:
-                # need to update limb_darkening
-
-                source2_magnification = magnification_VBB.magnification_FSBL(separation,
-                                                     pyLIMA_parameters['mass_ratio'],
-                                                     source1_trajectory_x,
-                                                     source1_trajectory_y,
-                                                     pyLIMA_parameters['rho_2'],
-                                                     linear_limb_darkening)
+                # Use microlux for second source as well
+                source2_magnification = magnification_JAX.magnification_FSBL_microlux(
+                    float(pyLIMA_parameters['t0']),
+                    float(pyLIMA_parameters['u0']),
+                    float(pyLIMA_parameters['tE']),
+                    float(pyLIMA_parameters.get('rho_2', pyLIMA_parameters['rho'])),
+                    float(pyLIMA_parameters['mass_ratio']),
+                    float(pyLIMA_parameters['separation']),
+                    float(pyLIMA_parameters.get('alpha', 0.0)),
+                    telescope.lightcurve['time'].value,
+                    limb_darkening_coeff=linear_limb_darkening if linear_limb_darkening is not None else None
+                )
 
                 blend_magnification_factor = pyLIMA_parameters['q_flux_' +
                                                                telescope.filter]

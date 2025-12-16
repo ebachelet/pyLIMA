@@ -197,7 +197,16 @@ def parameters_boundaries(event, model_dictionnary):
                 telescope_ind = \
                     np.where(key.split('fsource_')[1] == np.array(telescopes_names))[0][
                         0]
-                flux = event.telescopes[telescope_ind].lightcurve['flux'].value
+                # support legacy Telescope (dict-like lightcurve) and JaxTelescope (LightcurveData)
+                lc = event.telescopes[telescope_ind].lightcurve
+                try:
+                    flux = lc['flux'].value
+                except Exception:
+                    try:
+                        flux = np.asarray(lc.flux)
+                    except Exception:
+                        flux = np.array([])
+
                 arguments = [flux]
                 function_name = key.split('_')[0] + '_boundaries'
 
@@ -205,7 +214,15 @@ def parameters_boundaries(event, model_dictionnary):
                 telescope_ind = \
                     np.where(key.split('fblend_')[1] == np.array(telescopes_names))[0][
                         0]
-                flux = event.telescopes[telescope_ind].lightcurve['flux'].value
+                lc = event.telescopes[telescope_ind].lightcurve
+                try:
+                    flux = lc['flux'].value
+                except Exception:
+                    try:
+                        flux = np.asarray(lc.flux)
+                    except Exception:
+                        flux = np.array([])
+
                 arguments = [flux]
 
                 function_name = key.split('_')[0] + '_boundaries'
@@ -214,7 +231,15 @@ def parameters_boundaries(event, model_dictionnary):
                 telescope_ind = \
                     np.where(key.split('ftotal_')[1] == np.array(telescopes_names))[0][
                         0]
-                flux = event.telescopes[telescope_ind].lightcurve['flux'].value
+                lc = event.telescopes[telescope_ind].lightcurve
+                try:
+                    flux = lc['flux'].value
+                except Exception:
+                    try:
+                        flux = np.asarray(lc.flux)
+                    except Exception:
+                        flux = np.array([])
+
                 arguments = [flux]
 
                 function_name = key.split('_')[0] + '_boundaries'
@@ -231,7 +256,6 @@ def parameters_boundaries(event, model_dictionnary):
             if 'position_source' in key:
 
                 try:
-
                     telescope_ind = np.where(
                         key.split('position_source_N_')[1] == np.array(
                             telescopes_names))[0][0]
@@ -242,25 +266,29 @@ def parameters_boundaries(event, model_dictionnary):
                         key.split('position_source_E_')[1] == np.array(
                             telescopes_names))[0][0]
 
-                if event.telescopes[telescope_ind].astrometry['ra'].unit == 'deg':
+                ast = event.telescopes[telescope_ind].astrometry
+                # Try legacy dict-like astrometry with units
+                try:
+                    unit = ast['ra'].unit
+                    is_deg = (unit == 'deg')
+                except Exception:
+                    # Jax AstrometryData: no units; assume degrees
+                    try:
+                        _ = ast.ra
+                        is_deg = True
+                    except Exception:
+                        is_deg = False
 
+                if is_deg:
                     if 'position_source_E' in key:
-
                         function_name = 'position_ra_boundaries'
-
                     else:
-
                         function_name = 'position_dec_boundaries'
-
-
                 else:
-
                     function_name = 'position_pixel_boundaries'
 
             if 'position_blend' in key:
-
                 try:
-
                     telescope_ind = np.where(
                         key.split('position_blend_N_')[1] == np.array(
                             telescopes_names))[0][0]
@@ -271,18 +299,23 @@ def parameters_boundaries(event, model_dictionnary):
                         key.split('position_blend_E_')[1] == np.array(
                             telescopes_names))[0][0]
 
-                if event.telescopes[telescope_ind].astrometry['ra'].unit == 'deg':
+                ast = event.telescopes[telescope_ind].astrometry
+                try:
+                    unit = ast['ra'].unit
+                    is_deg = (unit == 'deg')
+                except Exception:
+                    try:
+                        _ = ast.ra
+                        is_deg = True
+                    except Exception:
+                        is_deg = False
 
+                if is_deg:
                     if 'position_source_E' in key:
-
                         function_name = 'position_ra_boundaries'
-
                     else:
-
                         function_name = 'position_dec_boundaries'
-
                 else:
-
                     function_name = 'position_pixel_boundaries'
 
             bounds.append(eval(function_name)(*arguments))

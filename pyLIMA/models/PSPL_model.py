@@ -1,7 +1,7 @@
-import numpy as np
+import jax.numpy as jnp
 from pyLIMA.astrometry import astrometric_shifts, astrometric_positions
 from pyLIMA.magnification import magnification_Jacobian
-from pyLIMA.magnification import magnification_PSPL
+from pyLIMA.magnification import magnification_JAX as magnification_JAX
 from pyLIMA.models.ML_model import MLmodel
 
 
@@ -57,23 +57,19 @@ class PSPLmodel(MLmodel):
 
             # except:
 
-            shifts = astrometric_shifts.PSPL_shifts_no_blend(source1_trajectory_x,
-                                                             source1_trajectory_y,
-                                                             pyLIMA_parameters[
-                                                                 'theta_E'])
+            shifts = astrometric_shifts.PSPL_shifts_no_blend(
+                source1_trajectory_x, source1_trajectory_y, pyLIMA_parameters["theta_E"]
+            )
 
-            delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(shifts,
-                                                                               pyLIMA_parameters['piEN'],
-                                                                               pyLIMA_parameters['piEE'])
+            delta_ra, delta_dec = astrometric_positions.xy_shifts_to_NE_shifts(
+                shifts, pyLIMA_parameters["piEN"], pyLIMA_parameters["piEE"]
+            )
 
-            position_ra, position_dec = \
-                astrometric_positions.source_astrometric_positions(
-                    telescope, pyLIMA_parameters,
-                    shifts=(delta_ra, delta_dec),
-                    time_ref=self.parallax_model[
-                        1])
+            position_ra, position_dec = astrometric_positions.source_astrometric_positions(
+                telescope, pyLIMA_parameters, shifts=(delta_ra, delta_dec), time_ref=self.parallax_model[1]
+            )
 
-            astro_shifts = np.array([position_ra, position_dec])
+            astro_shifts = jnp.array([position_ra, position_dec])
 
         else:
 
@@ -81,8 +77,7 @@ class PSPLmodel(MLmodel):
 
         return astro_shifts
 
-    def model_magnification(self, telescope, pyLIMA_parameters,
-                            return_impact_parameter=False):
+    def model_magnification(self, telescope, pyLIMA_parameters):
 
         if telescope.lightcurve is not None:
 
@@ -92,27 +87,20 @@ class PSPLmodel(MLmodel):
                 telescope, pyLIMA_parameters,
                 data_type='photometry')
 
-            source1_magnification = magnification_PSPL.magnification_PSPL(
-                source1_trajectory_x,source1_trajectory_y,return_impact_parameter)
+            source1_magnification = magnification_JAX.magnification_PSPL(
+                source1_trajectory_x, source1_trajectory_y)
 
             if source2_trajectory_x is not None:
+                source2_magnification = magnification_JAX.magnification_PSPL(
+                    source2_trajectory_x, source2_trajectory_y)
 
-                source2_magnification = magnification_PSPL.magnification_PSPL(
-                    source2_trajectory_x,
-                    source2_trajectory_y,
-                    return_impact_parameter)
-
-                blend_magnification_factor = pyLIMA_parameters['q_flux_' +
-                                                               telescope.filter]
+                blend_magnification_factor = pyLIMA_parameters['q_flux_' + telescope.filter]
                 effective_magnification = (
-                        source1_magnification +
-                        source2_magnification *
-                        blend_magnification_factor)
+                    source1_magnification + source2_magnification * blend_magnification_factor
+                )
 
                 magnification = effective_magnification
-                #breakpoint()
             else:
-
                 magnification = source1_magnification
 
         else:
@@ -128,9 +116,9 @@ class PSPLmodel(MLmodel):
 
         if self.Jacobian_flag == 'Analytical':
 
-            magnification_jacobian, amplification = \
-                magnification_Jacobian.magnification_PSPL_Jacobian(
-                    self, telescope, pyLIMA_parameters)
+                magnification_jacobian, amplification = \
+                    magnification_Jacobian.magnification_PSPL_Jacobian(
+                        self, telescope, pyLIMA_parameters)
 
         else:
 

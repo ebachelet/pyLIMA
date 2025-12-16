@@ -2,6 +2,7 @@ import abc
 import collections
 from collections import OrderedDict
 
+import jax.numpy as jnp
 import numpy as np
 
 import pyLIMA.parallax.parallax
@@ -152,37 +153,37 @@ class MLmodel(object):
 
         magnification_jacobian, amplification = self.model_magnification_Jacobian(
             telescope, pyLIMA_parameters)
-        # fsource, fblend = self.derive_telescope_flux(telescope, pyLIMA_parameters,
-        # amplification[0])
+        # Ensure jax arrays for Jacobian assembly
+        magnification_jacobian = jnp.asarray(magnification_jacobian)
+        amplification = jnp.asarray(amplification)
 
+        # Ensure telescope flux parameters exist (may be set by derive_telescope_flux)
         self.derive_telescope_flux(telescope, pyLIMA_parameters, amplification)
-        fsource = pyLIMA_parameters['fsource_' + telescope.name]
+        fsource = float(pyLIMA_parameters['fsource_' + telescope.name])
 
-        magnification_jacobian *= fsource
+        magnification_jacobian = magnification_jacobian * fsource
 
         if self.blend_flux_parameter == 'gblend':
-            dfluxdfs = (amplification + pyLIMA_parameters['gblend_' + telescope.name])
-            dfluxdg = [pyLIMA_parameters['fsource_' + telescope.name]] * len(
-                amplification)
+            dfluxdfs = amplification + float(pyLIMA_parameters['gblend_' + telescope.name])
+            dfluxdg = jnp.full_like(amplification, float(pyLIMA_parameters['fsource_' + telescope.name]))
 
-            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdg].T
+            jacobi = jnp.column_stack([magnification_jacobian, dfluxdfs, dfluxdg]).T
 
-        if self.blend_flux_parameter == 'fblend':
-            dfluxdfs = (amplification)
-            dfluxdfblend = [1] * len(amplification)
+        elif self.blend_flux_parameter == 'fblend':
+            dfluxdfs = amplification
+            dfluxdfblend = jnp.ones_like(amplification)
 
-            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdfblend].T
+            jacobi = jnp.column_stack([magnification_jacobian, dfluxdfs, dfluxdfblend]).T
 
-        if self.blend_flux_parameter == 'ftotal':
-            dfluxdfs = (amplification-1)
-            dfluxdftot = [1] * len(amplification)
+        elif self.blend_flux_parameter == 'ftotal':
+            dfluxdfs = amplification - 1
+            dfluxdftot = jnp.ones_like(amplification)
 
-            jacobi = np.c_[magnification_jacobian, dfluxdfs, dfluxdftot].T
+            jacobi = jnp.column_stack([magnification_jacobian, dfluxdfs, dfluxdftot]).T
 
-        if self.blend_flux_parameter == 'noblend':
-            dfluxdfs = (amplification)
-
-            jacobi = np.c_[magnification_jacobian, dfluxdfs].T
+        else:  # 'noblend'
+            dfluxdfs = amplification
+            jacobi = jnp.column_stack([magnification_jacobian, dfluxdfs]).T
 
         return jacobi
 
@@ -639,15 +640,16 @@ class MLmodel(object):
         parameter_dictionnary = self.model_dictionnary.copy()
         pyLIMA_parameters = collections.OrderedDict()
 
-        for ind, key_parameter in enumerate(parameter_dictionnary.keys()):
-
-            try:
-
-                pyLIMA_parameters[key_parameter] = model_parameters[ind]
-
-            except IndexError:
-
-                pyLIMA_parameters[key_parameter] = None
+        # Accept either an ordered list/tuple or a dict of parameter_name->value
+        if isinstance(model_parameters, dict):
+            for key_parameter in parameter_dictionnary.keys():
+                pyLIMA_parameters[key_parameter] = model_parameters.get(key_parameter, None)
+        else:
+            for ind, key_parameter in enumerate(parameter_dictionnary.keys()):
+                try:
+                    pyLIMA_parameters[key_parameter] = model_parameters[ind]
+                except IndexError:
+                    pyLIMA_parameters[key_parameter] = None
 
         if self.fancy_parameters is not None:
             self.fancy_to_pyLIMA_parameters(pyLIMA_parameters)
@@ -756,7 +758,9 @@ class MLmodel(object):
                 parallax_delta_positions = telescope.deltas_positions['astrometry']
 
         tau = (time - pyLIMA_parameters['t0']) / pyLIMA_parameters['tE']
-        beta = np.array([pyLIMA_parameters['u0']] * len(tau))
+        # Use jax arrays for trajectories
+        tau = jnp.asarray(tau)
+        beta = jnp.full(len(tau), float(pyLIMA_parameters['u0']))
 
         if 'alpha' in pyLIMA_parameters.keys():
 
@@ -787,8 +791,8 @@ class MLmodel(object):
 
         else:
 
-            dseparation = np.array([0] * len(tau))
-            dalpha = np.array([0] * len(tau))
+            dseparation = jnp.zeros(len(tau))
+            dalpha = jnp.zeros(len(tau))
 
         tau += parallax_delta_tau
         beta += parallax_delta_beta
@@ -803,8 +807,8 @@ class MLmodel(object):
             tau2 = tau + source2_delta_tau
             beta2 = beta + source2_delta_beta
 
-            lens_trajectory_x2 = tau2 * np.cos(alpha) - beta2 * np.sin(alpha)
-            lens_trajectory_y2 = tau2 * np.sin(alpha) + beta2 * np.cos(alpha)
+            lens_trajectory_x2 = tau2 * jnp.cos(alpha) - beta2 * jnp.sin(alpha)
+            lens_trajectory_y2 = tau2 * jnp.sin(alpha) + beta2 * jnp.cos(alpha)
 
             source2_trajectory_x = -lens_trajectory_x2
             source2_trajectory_y = -lens_trajectory_y2
@@ -818,8 +822,8 @@ class MLmodel(object):
         tau1 = tau + source1_delta_tau
         beta1 = beta + source1_delta_beta
 
-        lens_trajectory_x1 = tau1 * np.cos(alpha) - beta1 * np.sin(alpha)
-        lens_trajectory_y1 = tau1 * np.sin(alpha) + beta1 * np.cos(alpha)
+        lens_trajectory_x1 = tau1 * jnp.cos(alpha) - beta1 * jnp.sin(alpha)
+        lens_trajectory_y1 = tau1 * jnp.sin(alpha) + beta1 * jnp.cos(alpha)
 
         source1_trajectory_x = -lens_trajectory_x1
         source1_trajectory_y = -lens_trajectory_y1
@@ -830,7 +834,7 @@ class MLmodel(object):
 
     def parallax_trajectory_shifts(self, parallax_delta_positions, pyLIMA_parameters):
 
-        piE = np.array([pyLIMA_parameters['piEN'], pyLIMA_parameters['piEE']])
+        piE = jnp.array([pyLIMA_parameters['piEN'], pyLIMA_parameters['piEE']])
 
         parallax_delta_tau, parallax_delta_beta = (
             pyLIMA.parallax.parallax.compute_parallax_curvature(piE,
@@ -847,17 +851,17 @@ class MLmodel(object):
 
         if self.double_source_model[0] == 'Circular':
 
-            xiE = np.array([pyLIMA_parameters['xi_para'], pyLIMA_parameters['xi_perp']])
+            xiE = jnp.array([pyLIMA_parameters['xi_para'], pyLIMA_parameters['xi_perp']])
 
-            delta_position = np.array([delta_position_1_1 ,
-                                       delta_position_2_1 ])
+            delta_position = jnp.array([delta_position_1_1,
+                                       delta_position_2_1])
 
             source1_delta_tau, source1_delta_beta = (
                 pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,
                                                                     delta_position))
 
-            delta_position2 =  np.array([delta_position_1_2 ,
-                                       delta_position_2_2 ])
+            delta_position2 = jnp.array([delta_position_1_2,
+                                        delta_position_2_2])
 
             source2_delta_tau, source2_delta_beta = (
                 pyLIMA.xallarap.xallarap.compute_xallarap_curvature(xiE,

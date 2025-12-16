@@ -401,29 +401,30 @@ class MLfit(object):
 
             try:
                 # Estimate the Paczynski parameters
+                guess_dict = {}
 
                 if self.model.model_type() == 'PSPL':
-                    guess_paczynski_parameters, f_source = \
+                    guess_dict, f_source = \
                         pyLIMA.priors.guess.initial_guess_PSPL(
                             self.model.event)
 
                 elif self.model.model_type() == 'FSPL':
-                    guess_paczynski_parameters, f_source = \
+                    guess_dict, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
                 elif self.model.model_type() == 'FSPLee':
-                    guess_paczynski_parameters, f_source = \
+                    guess_dict, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPL(
                             self.model.event)
 
                 elif self.model.model_type() == 'FSPLarge':
-                    guess_paczynski_parameters, f_source = \
+                    guess_dict, f_source = \
                         pyLIMA.priors.guess.initial_guess_FSPLarge(
                             self.model.event)
 
                 elif self.model.model_type() == 'DSPL':
-                    guess_paczynski_parameters, f_source = \
+                    guess_dict, f_source = \
                         pyLIMA.priors.guess.initial_guess_DSPL(
                             self.model.event)
                 
@@ -434,28 +435,31 @@ class MLfit(object):
                         "This model requires manually setting initial parameters."
                     )
 
+                # Add secondary parameters to guess dict
                 if 'theta_E' in self.fit_parameters.keys():
-                    guess_paczynski_parameters = guess_paczynski_parameters + [1.0]
+                    guess_dict['theta_E'] = 1.0
 
                 if 'piEN' in self.fit_parameters.keys():
-                    guess_paczynski_parameters = guess_paczynski_parameters + [0.0, 0.0]
+                    guess_dict['piEN'] = 0.0
+                    guess_dict['piEE'] = 0.0
 
                 if 'xiEN' in self.fit_parameters.keys():
-                    guess_paczynski_parameters = guess_paczynski_parameters + [0, 0,
-                                                                               1,0,0]
+                    guess_dict['xi_para'] = 0
+                    guess_dict['xi_perp'] = 0
+                    guess_dict['xi_angular_velocity'] = 1
+                    guess_dict['xi_phase'] = 0
+                    guess_dict['xi_inclination'] = 0
 
                 if 'dsdt' in self.fit_parameters.keys():
-                    guess_paczynski_parameters = guess_paczynski_parameters + [0, 0]
+                    guess_dict['v_para'] = 0
+                    guess_dict['v_perp'] = 0
 
                 if 'spot_size' in self.fit_parameters.keys():
-                    guess_paczynski_parameters = guess_paczynski_parameters + [0]
+                    guess_dict['spot_size'] = 0
 
+                # Convert guess dict to parameter vector following model ordering
                 pyLIMA_parameters = self.model.compute_pyLIMA_parameters(
-                    guess_paczynski_parameters, fancy_parameters=False)
-
-                if self.model.fancy_parameters is not None:
-
-                    self.model.pyLIMA_to_fancy_parameters(guess_paczynski_parameters)
+                    guess_dict, fancy_parameters=False)
 
                 if self.model.fancy_parameters is not None:
 
