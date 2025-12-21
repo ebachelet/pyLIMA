@@ -41,6 +41,15 @@ dependencies = [
     "iminuit",
 ]
 
+[project.optional-dependencies]
+inference = [
+    "jax >= 0.4.28",
+    "numpyro >= 0.14.0",
+    "jaxns >= 0.0.10",
+    "arviz >= 0.14.0",
+    "microlux >= 0.1.0",
+]
+
 [project.urls]
 Homepage = "http://github.com/ebachelet/pyLIMA"
 Documentation = "https://pylima.readthedocs.io/en/latest/"

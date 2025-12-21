@@ -11,6 +11,8 @@ import sys
 from typing import Any, Dict, Optional, Tuple
 
 import jax
+from jax import config
+config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 
 import microlux

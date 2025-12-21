@@ -744,7 +744,12 @@ class MLmodel(object):
         if data_type == 'photometry':
 
             lightcurve = telescope.lightcurve
-            time = lightcurve['time'].value
+            # Support both legacy dict-like and JaxTelescope attribute access
+            try:
+                t = lightcurve['time'].value
+            except Exception:
+                t = lightcurve.time
+            time = jnp.asarray(t)
 
             if 'piEN' in pyLIMA_parameters.keys():
                 parallax_delta_positions = telescope.deltas_positions['photometry']
@@ -752,50 +757,50 @@ class MLmodel(object):
         if data_type == 'astrometry':
 
             astrometry = telescope.astrometry
-            time = astrometry['time'].value
+            try:
+                t = astrometry['time'].value
+            except Exception:
+                t = astrometry.time
+            time = jnp.asarray(t)
 
             if 'piEN' in pyLIMA_parameters.keys():
                 parallax_delta_positions = telescope.deltas_positions['astrometry']
 
+        # Compute dimensionless time tau using JAX-friendly ops
         tau = (time - pyLIMA_parameters['t0']) / pyLIMA_parameters['tE']
-        # Use jax arrays for trajectories
         tau = jnp.asarray(tau)
-        beta = jnp.full(len(tau), float(pyLIMA_parameters['u0']))
+
+        # Avoid Python float() on possible JAX tracers; use jnp.asarray
+        u0_val = pyLIMA_parameters.get('u0', 0.0)
+        u0_j = jnp.asarray(u0_val)
+        beta = jnp.full(tau.shape, u0_j)
 
         if 'alpha' in pyLIMA_parameters.keys():
-
-            alpha = pyLIMA_parameters['alpha']
-
+            alpha = jnp.asarray(pyLIMA_parameters['alpha'])
         else:
-
-            alpha = 0
+            alpha = 0.0
 
         if self.parallax_model[0] != 'None':
-
             parallax_delta_tau, parallax_delta_beta = (
                 self.parallax_trajectory_shifts(parallax_delta_positions,
                                                 pyLIMA_parameters))
-
         else:
-
             parallax_delta_tau, parallax_delta_beta = 0, 0
 
         if self.orbital_motion_model[0] != 'None':
-
+            # pass raw times (numpy or jnp) to orbital motion routine
             dseparation, dalpha = orbital_motion.orbital_motion_shifts(
                 self.orbital_motion_model,
-                telescope.lightcurve['time'].value,
+                time,
                 pyLIMA_parameters)
 
-            alpha -= dalpha  # Binary axes is fixed
-
+            alpha = alpha - dalpha  # Binary axes is fixed
         else:
+            dseparation = jnp.zeros_like(tau)
+            dalpha = jnp.zeros_like(tau)
 
-            dseparation = jnp.zeros(len(tau))
-            dalpha = jnp.zeros(len(tau))
-
-        tau += parallax_delta_tau
-        beta += parallax_delta_beta
+        tau = tau + parallax_delta_tau
+        beta = beta + parallax_delta_beta
 
         # double_source?
         if self.double_source_model[0] != 'None':  # then we have two sources
