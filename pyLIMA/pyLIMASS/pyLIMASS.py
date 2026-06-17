@@ -1,6 +1,5 @@
 import astropy.units as u
 import numpy as np
-import pkg_resources
 import scipy.interpolate as si
 import scipy.optimize as so
 import sklearn.mixture as skmix
@@ -9,6 +8,7 @@ import speclite.filters
 from astropy.table import QTable
 
 from pyLIMA.priors.parameters_priors import UniformDistribution
+from pyLIMA.data import PACKAGE_DATA
 
 ISOCHRONES_HEADER = ['Fe', 'logAge', 'logMass', 'logL', 'logTe', 'logg', 'mbolmag',
                      'Umag', 'Bmag', 'Vmag', 'Rmag', 'Imag', 'Jmag', 'Hmag', 'Kmag',
@@ -16,10 +16,7 @@ ISOCHRONES_HEADER = ['Fe', 'logAge', 'logMass', 'logL', 'logTe', 'logg', 'mbolma
                      'G_RPmag', 'F062mag', 'F087mag', 'F106mag', 'F129mag', 'F158mag',
                      'F184mag', 'F146mag', 'F213mag']
 
-resource_path = '/'.join(('data', 'Roman_Filters.dat'))
-template = pkg_resources.resource_filename('pyLIMA', resource_path)
-
-ROMAN_FILTERS_RESPONSE = np.loadtxt(template)
+ROMAN_FILTERS_RESPONSE = np.loadtxt(PACKAGE_DATA / 'Roman_Filters.dat')
 
 ROMAN_FILTERS_RESPONSE = QTable(ROMAN_FILTERS_RESPONSE,
                                 names=['wavelength'] + ['F062mag', 'F087mag', 'F106mag',
@@ -318,10 +315,7 @@ class SourceLensProbabilities(object):
 
     def load_isochrones(self, mass_limits=[0,2],age_limits=[9,12],logg_limits=[0,6]):
 
-        resource_path = '/'.join(('data', 'Bressan_Isochrones.dat'))
-        template = pkg_resources.resource_filename('pyLIMA', resource_path)
-
-        ISO = np.loadtxt(template, dtype=str)[1:].astype(float)
+        ISO = np.loadtxt(PACKAGE_DATA / 'Bressan_Isochrones.dat', dtype=str)[1:].astype(float)
         ISO[:, 2] = np.log10(ISO[:, 2])
 
         ISO = QTable(ISO, names=ISOCHRONES_HEADER)
@@ -550,7 +544,7 @@ class SourceLensProbabilities(object):
                                 mags_baseline.append(-999)
 
                             else:
-                              
+
                                 flux_source = 10 ** ((27.4 - mags_s[ind_mag]) / 2.5)
                                 flux_lens = 10 ** ((27.4 - mags_l[ind_mag]) / 2.5)
 
