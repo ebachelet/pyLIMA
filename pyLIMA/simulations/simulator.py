@@ -88,17 +88,29 @@ def simulate_a_telescope(name, time_start=2460000, time_end=2460500, sampling=0.
                                                    minimum_sampling,
                                                    bad_weather_percentage)
 
-            time_convertion = Time(time_of_observations, format='jd').isot
+            # Keeps time_convertion a Time object by removing Time(...).isot,
+            # which returned a string
+            time_convertion = Time(time_of_observations, format='jd')
 
-            telescope_altaz = target.transform_to(
-                AltAz(obstime=time_convertion, location=earth_location))
             altazframe = AltAz(obstime=time_convertion, location=earth_location)
-            Sun = get_sun(Time(time_of_observations, format='jd')).transform_to(
-                altazframe)
-            Moon = get_body("moon",Time(time_of_observations, format='jd')).transform_to(
-                altazframe)
+
+            # Reusing altazframe, which was not being done in previous versions
+            telescope_altaz = target.transform_to(altazframe)
+
+            # Reusing time_convertion, which was not being done in previous versions
+            Sun = get_sun(time_convertion).transform_to(altazframe)
+            Moon = get_body("moon", time_convertion).transform_to(altazframe)
+
+            # Converts maximum_moon_illumination to a fraction for compatibility
+            # with the returned value of moon_illumination() function (also a fraction)
+            maximum_moon_illumination /= 100
+
             Moon_illumination = moon_illumination(Sun, Moon)
-            Moon_separation = target.separation(Moon)
+
+            # MAIN FIX: Moon_separation was mixing ICRS (target) with AltAz (Moon).
+            # Astropy warns because the transform isn’t a simple rotation;
+            # results can depend on transform direction.
+            Moon_separation = telescope_altaz.separation(Moon)
 
             observing_windows = \
                 np.where((telescope_altaz.alt > minimum_alt * astropy.units.deg)
@@ -371,6 +383,7 @@ def simulate_lightcurve(model, pyLIMA_parameters, add_noise=True,efficiency=None
 
 
     model.define_pyLIMA_standard_parameters()
+
 
 def simulate_astrometry(model, pyLIMA_parameters, add_noise=True):
     """
