@@ -1,28 +1,43 @@
 import numpy as np
 import scipy.signal as ss
 
-def check_signal_in_lightcurve(magnitude,err_magnitude):
+def check_signal_in_lightcurve(time, magnitude):
+    """
+    Tests data via Theilslopes to check if slope differs from zero.
+    Significance check based on the built-in confidence interval.
 
-    chichidof = np.sum((magnitude-np.median(magnitude))**2/
-                       err_magnitude**2)/len(magnitude)
+    Parameters
+    ----------
+    time : array_like
+        The time measurement associated with the observations (e.g., Julian Date).
+    magnitude : array_like
+        The corresponding stellar magnitude readings.
 
-    if chichidof<1.1:
+    Returns
+    -------
+    bool
+        True if the variation is statistically significant using 95% bounds of 
+        theilslopes, False otherwise.
+    """
 
+    from scipy.stats import theilslopes
+    # This limit is still problematic for survey with too few datapoints, but 
+    # it mostly affects the selection for the guess.
+    if len(time) < 3:
         return False
 
-    else:
+    try:
+        slope, intercept, low_slope, high_slope = theilslopes(magnitude, time)
+    except Exception:
+        return False
 
-        return True
+    floating_point_tolerance = 1e-8
+    
+    #check based on bounds of the 95% confidence interval
+    is_positive_significant = (low_slope > floating_point_tolerance)
+    is_negative_significant = (high_slope < -floating_point_tolerance)
+    return is_positive_significant or is_negative_significant
 
-    #signal = np.diff(np.percentile(magnitude,[16,84]))/2
-
-    #if signal<1*np.median(err_magnitude):
-
-    #    return False
-
-    #else:
-
-    #    return True
 
 def initial_guess_PSPL(event):
     """
